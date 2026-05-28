@@ -1,81 +1,57 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
+const { seo } = useAppConfig()
 
-const items = computed<NavigationMenuItem[]>(() => [
-  { label: 'Install', to: '#install' },
-  { label: 'Packages', to: '#packages' },
-  { label: 'Theming', to: '#theming' },
-  { label: 'Icons', to: '#icons' },
-  { label: 'Roadmap', to: '#roadmap' },
-  { label: 'GitHub', to: 'https://github.com/KealanAU/vyui', target: '_blank' },
-])
+const { data: navigation } = await useAsyncData('navigation', () => queryCollectionNavigation('docs'))
+
+useHead({
+  meta: [
+    { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+  ],
+  link: [
+    { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+  ],
+  htmlAttrs: {
+    lang: 'en',
+  },
+})
+
+useSeoMeta({
+  titleTemplate: `%s — ${seo?.siteName}`,
+  ogSiteName: seo?.siteName,
+  twitterCard: 'summary_large_image',
+})
+
+provide('navigation', navigation)
 </script>
 
 <template>
   <UApp>
+    <NuxtLoadingIndicator
+      :height="3"
+      color="#d6a5b3"
+    />
+
     <UBanner
       id="prealpha-banner"
       icon="i-lucide-flask-conical"
-      color="warning"
-      title="Vy UI is pre-alpha. Vue-Lynx is pre-alpha. APIs will change. Not production-ready."
+      title="Vy UI is pre-alpha. Vue-Lynx is pre-alpha. Expect breaking changes. Not production-ready."
       close
+      :ui="{
+        root: 'bg-(--color-warm-mist) border-b border-(--color-ink)/10',
+        title: 'text-sm font-medium truncate text-(--color-ink)',
+        icon: 'size-5 shrink-0 pointer-events-none text-(--color-ink)',
+        close: '-me-1.5 lg:me-0 text-(--color-ink) hover:bg-(--color-ink)/10 focus-visible:bg-(--color-ink)/10',
+      }"
     />
 
-    <UHeader>
-      <template #title>
-        <span class="inline-flex items-center gap-2">
-          <span class="inline-flex size-6 items-center justify-center rounded-md bg-primary text-inverted font-semibold">
-            V
-          </span>
-          <span class="text-lg font-semibold tracking-tight">Vy UI</span>
-        </span>
-      </template>
-
-      <UNavigationMenu :items="items" />
-
-      <template #right>
-        <UColorModeButton />
-        <UButton
-          icon="i-simple-icons-github"
-          color="neutral"
-          variant="ghost"
-          to="https://github.com/KealanAU/vyui"
-          target="_blank"
-          aria-label="GitHub"
-        />
-      </template>
-
-      <template #body>
-        <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" />
-      </template>
-    </UHeader>
+    <AppHeader />
 
     <UMain>
-      <NuxtPage />
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
     </UMain>
 
-    <UFooter>
-      <template #left>
-        <p class="text-muted text-sm">
-          MIT &copy; {{ new Date().getFullYear() }} &middot; Built for Vue-Lynx
-        </p>
-      </template>
-      <template #right>
-        <UButton
-          icon="i-simple-icons-github"
-          color="neutral"
-          variant="ghost"
-          to="https://github.com/KealanAU/vyui"
-          target="_blank"
-        />
-        <UButton
-          icon="i-lucide-book-open"
-          color="neutral"
-          variant="ghost"
-          to="https://lynxjs.org"
-          target="_blank"
-        />
-      </template>
-    </UFooter>
+    <AppFooter />
   </UApp>
 </template>

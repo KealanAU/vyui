@@ -1,2 +1,122 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+@source "../../../content/**/*";
+
+@theme static {
+  --container-7xl: 80rem;
+  --font-sans: 'Haskoy', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: 'Haskoy', ui-sans-serif, system-ui, sans-serif;
+
+  /* Steep — Warm Crisp Canvas tokens */
+  --color-canvas: #ffffff;
+  --color-ink: #17191c;
+  --color-graphite: #000000;
+  --color-warm-mist: #fbe1d1;
+  --color-terracotta: #5d2a1a;
+  --color-fog: #f7f7f8;
+  --color-muted-stone: #4c4c4c;
+  --color-light-steel: #777b86;
+  --color-hint-of-grey: #a3a6af;
+  --color-dusk-link: #8b8c8d;
+  --color-peach: #ffdcd2;
+  --color-lilac: #e2d4e4;
+
+  /* Ink palette — primary anchor, ramped around #17191c */
+  --color-ink-50: #f6f6f7;
+  --color-ink-100: #e9eaeb;
+  --color-ink-200: #cdced1;
+  --color-ink-300: #a8aab0;
+  --color-ink-400: #777b86;
+  --color-ink-500: #4c4c4c;
+  --color-ink-600: #353638;
+  --color-ink-700: #25272a;
+  --color-ink-800: #1c1e22;
+  --color-ink-900: #17191c;
+  --color-ink-950: #0a0b0d;
+
+  /* Terracotta palette — accent */
+  --color-terracotta-50: #fdf4ef;
+  --color-terracotta-100: #fbe1d1;
+  --color-terracotta-200: #f5c1a1;
+  --color-terracotta-300: #ec9a73;
+  --color-terracotta-400: #d97247;
+  --color-terracotta-500: #b85432;
+  --color-terracotta-600: #8d3a22;
+  --color-terracotta-700: #5d2a1a;
+  --color-terracotta-800: #3f1d12;
+  --color-terracotta-900: #2a130c;
+  --color-terracotta-950: #190a06;
+
+  /* Layout + shapes */
+  --radius-card: 24px;
+  --radius-input: 16px;
+  --shadow-steep: rgba(4, 23, 43, 0.05) 0 0 0 1px, rgba(0, 0, 0, 0.10) 0 20px 25px -5px, rgba(0, 0, 0, 0.10) 0 8px 10px -6px;
+}
+
+body {
+  background-color: var(--ui-bg);
+  background-image: linear-gradient(to bottom, var(--color-warm-mist) 0, transparent 12rem);
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+
+.dark body {
+  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--color-warm-mist) 10%, transparent) 0, transparent 12rem);
+}
+
+:root {
+  --ui-container: 80rem;
+
+  /* Map UI tokens to Steep palette */
+  --ui-bg: var(--color-canvas);
+  --ui-bg-muted: var(--color-fog);
+  --ui-bg-elevated: var(--color-fog);
+  --ui-bg-accented: #ececee;
+  --ui-bg-inverted: var(--color-ink);
+
+  --ui-text: var(--color-ink);
+  --ui-text-highlighted: var(--color-ink);
+  --ui-text-toned: var(--color-muted-stone);
+  --ui-text-muted: var(--color-light-steel);
+  --ui-text-dimmed: var(--color-hint-of-grey);
+  --ui-text-inverted: var(--color-canvas);
+
+  --ui-border: #e6e6e8;
+  --ui-border-muted: #efeff0;
+  --ui-border-accented: #d6d7da;
+  --ui-border-inverted: var(--color-ink);
+}
+
+.dark {
+  --ui-bg: var(--color-ink);
+  --ui-bg-muted: var(--color-ink-800);
+  --ui-bg-elevated: var(--color-ink-800);
+  --ui-bg-accented: var(--color-ink-700);
+  --ui-bg-inverted: var(--color-canvas);
+
+  --ui-text: #f4f4f5;
+  --ui-text-highlighted: var(--color-canvas);
+  --ui-text-toned: #d6d7da;
+  --ui-text-muted: #a8aab0;
+  --ui-text-dimmed: var(--color-light-steel);
+  --ui-text-inverted: var(--color-ink);
+
+  --ui-border: var(--color-ink-700);
+  --ui-border-muted: var(--color-ink-800);
+  --ui-border-accented: var(--color-ink-600);
+}
+
+/* Display weight for prominent headings + hero typography */
+.font-display,
+.u-page-hero h1,
+.u-page-header h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+/* Steep shadow utility */
+.shadow-steep {
+  box-shadow: var(--shadow-steep);
+}
