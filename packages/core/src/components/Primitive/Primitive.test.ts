@@ -16,17 +16,20 @@ describe('test Primitive functionalities', () => {
   })
 
   it('should by pass the comment tag', () => {
+    // Lynx renders structural `<div>` markup as `<view>` in JSDOM, so we
+    // assert on `<view>` here (and below) — the upstream reka-ui port used
+    // `<div>` because it was DOM-only.
     const Component = defineComponent({
       components: { Primitive },
       template: `
         <Primitive as="template" data-parent-attr="">
           <!-- this is a comment -->
-          <div data-child-attr>Child class</div>
+          <view data-child-attr>Child class</view>
         </Primitive>
       `,
     })
     const { container } = render(Component)
-    const element = container.querySelector('div')!
+    const element = container.querySelector('view')!
     expect(element.getAttribute('data-parent-attr')).toBe('')
     expect(element.getAttribute('data-child-attr')).toBe('')
   })
@@ -51,20 +54,24 @@ describe('test Primitive functionalities', () => {
     it('should not throw error when multiple child elements exists', () => {
       const Component = defineComponent({
         components: { Primitive },
-        template: `<Primitive as="template"><div>1</div><div>2</div><div>3</div></Primitive>`,
+        template: `<Primitive as="template"><view>1</view><view>2</view><view>3</view></Primitive>`,
       })
       expect(() => render(Component)).not.toThrowError(/invalid children/)
       const { container } = render(Component)
-      expect(container.querySelectorAll('div').length).toBe(3)
+      // Lynx wraps the page root in its own `<view>`; assert only on the
+      // rendered fragment children (the three siblings the Slot returned).
+      const views = Array.from(container.querySelectorAll('view'))
+      expect(views.filter(v => /^[123]$/.test(v.textContent ?? '')).length).toBe(3)
     })
 
     it('should pass custom attribute to first element', () => {
       const Component = defineComponent({
         components: { Primitive },
-        template: `<Primitive as="template" type="button"><div>1</div><div>2</div><div>3</div></Primitive>`,
+        template: `<Primitive as="template" type="button"><view>1</view><view>2</view><view>3</view></Primitive>`,
       })
       const { container } = render(Component)
-      const elements = container.querySelectorAll('div')
+      const elements = Array.from(container.querySelectorAll('view'))
+        .filter(v => /^[123]$/.test(v.textContent ?? ''))
       expect(elements[0].getAttribute('type')).toBe('button')
       expect(elements[1].getAttribute('type')).toBeNull()
       expect(elements[2].getAttribute('type')).toBeNull()
@@ -73,10 +80,10 @@ describe('test Primitive functionalities', () => {
     it('should merge child\'s class together', () => {
       const Component = defineComponent({
         components: { Primitive },
-        template: `<Primitive as="template" class="parent-class"><div class="child-class more-child-class">Child class</div></Primitive>`,
+        template: `<Primitive as="template" class="parent-class"><view class="child-class more-child-class">Child class</view></Primitive>`,
       })
       const { container } = render(Component)
-      const element = container.querySelector('div')!
+      const element = container.querySelector('view.child-class')!
       expect(element.getAttribute('class')).toBe('parent-class child-class more-child-class')
     })
 
@@ -89,25 +96,25 @@ describe('test Primitive functionalities', () => {
         },
         components: { Primitive },
         template: `
-          <view :data-active="isActive" @tap="toggleActive">
+          <view data-testid="root" :data-active="isActive" @tap="toggleActive">
             <Primitive as="template" class="parent-class">
-              <div class="child-class more-child-class">
+              <view class="child-class more-child-class">
                 Child
-              </div>
+              </view>
             </Primitive>
           </view>
         `,
       })
 
       const { container } = render(Component)
-      const element = container.querySelector('div')!
+      const element = container.querySelector('view.child-class')!
       expect(element.getAttribute('class')).toBe('parent-class child-class more-child-class')
 
-      fireEvent.tap(container.querySelector('view')!)
+      fireEvent.tap(container.querySelector('[data-testid="root"]')!)
       await waitForUpdate()
       expect(element.getAttribute('class')).toBe('parent-class child-class more-child-class')
 
-      fireEvent.tap(container.querySelector('view')!)
+      fireEvent.tap(container.querySelector('[data-testid="root"]')!)
       await waitForUpdate()
       expect(element.getAttribute('class')).toBe('parent-class child-class more-child-class')
     })
@@ -155,10 +162,10 @@ describe('test Primitive functionalities', () => {
     it('should inherit parent attributes and the child attributes', () => {
       const Component = defineComponent({
         components: { Primitive },
-        template: `<Primitive as="template" data-parent-attr=""><div data-child-attr>Child class</div></Primitive>`,
+        template: `<Primitive as="template" data-parent-attr=""><view data-child-attr>Child class</view></Primitive>`,
       })
       const { container } = render(Component)
-      const element = container.querySelector('div')!
+      const element = container.querySelector('view[data-child-attr]')!
       expect(element.getAttribute('data-parent-attr')).toBe('')
       expect(element.getAttribute('data-child-attr')).toBe('')
     })
@@ -166,10 +173,10 @@ describe('test Primitive functionalities', () => {
     it('should replace parent attributes with child\'s attributes', () => {
       const Component = defineComponent({
         components: { Primitive },
-        template: `<Primitive as="template" id="parent" data-type="button"><div id="child" data-type="primary">Child class</div></Primitive>`,
+        template: `<Primitive as="template" id="parent" data-type="button"><view id="child" data-type="primary">Child class</view></Primitive>`,
       })
       const { container } = render(Component)
-      const element = container.querySelector('div')!
+      const element = container.querySelector('#child')!
       expect(element.getAttribute('data-type')).toBe('primary')
       expect(element.getAttribute('id')).toBe('child')
     })

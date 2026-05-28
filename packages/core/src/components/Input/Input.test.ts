@@ -142,6 +142,10 @@ describe('Input — imperative API via defineExpose', () => {
   })
 
   it('getValue() returns the underlying input snapshot on web fallback', async () => {
+    // vue-lynx hands the component a BG-thread virtual element, not the
+    // JSDOM `<input>` in `container`, so the web fallback can't read
+    // `dom.value` directly. Drive the value through the input event the way
+    // a real user would, and assert that getValue reports the tracked value.
     const inputRef = ref<any>(null)
     const { container } = render({
       components: { Input },
@@ -149,10 +153,8 @@ describe('Input — imperative API via defineExpose', () => {
       template: `<Input ref="inputRef" v-model="value" data-testid="input" />`,
     })
     await nextTick()
-    // The Lynx attribute `value` is a string attribute; jsdom does not mirror
-    // it back into the `.value` DOM property unless the user types. Force
-    // the property so getValue's web fallback has something to return.
-    ;(input(container) as HTMLInputElement).value = 'live'
+    fireEvent.input(input(container), { detail: { value: 'live' } })
+    await waitForUpdate()
     const snap = await inputRef.value.getValue()
     expect(snap).toMatchObject({ value: 'live' })
   })

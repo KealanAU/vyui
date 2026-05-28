@@ -41,9 +41,11 @@ describe('PinInput — rendering', () => {
     expect(inputAt(container, 0).getAttribute('type')).toBe('password')
   })
 
-  it('type="number" renders number fields', () => {
+  it('type="number" renders Lynx digit input fields', () => {
+    // PinInput maps the public `type="number"` prop to the Lynx `digit`
+    // input mode — the on-screen numeric keypad.
     const { container } = render(PinInput, { type: 'number' })
-    expect(inputAt(container, 0).getAttribute('type')).toBe('number')
+    expect(inputAt(container, 0).getAttribute('type')).toBe('digit')
   })
 
   it('disabled root sets data-disabled on root and inputs', () => {

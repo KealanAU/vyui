@@ -222,10 +222,21 @@ async function getValue(): Promise<{ value: string, selectionStart: number, sele
   }
   catch {
     const dom = resolveDomEl(currentElement.value)
+    if (dom && 'value' in dom) {
+      return {
+        value: dom.value ?? '',
+        selectionStart: dom.selectionStart ?? 0,
+        selectionEnd: dom.selectionEnd ?? 0,
+      }
+    }
+    // No DOM access (vue-lynx tests expose a virtual element with no `.value`
+    // mirror). Fall back to the last value the component observed — that is
+    // the controlled `renderValue` for v-model users and the latest input
+    // event payload for uncontrolled ones.
     return {
-      value: dom?.value ?? '',
-      selectionStart: dom?.selectionStart ?? 0,
-      selectionEnd: dom?.selectionEnd ?? 0,
+      value: lastNativeValue ?? renderValue.value,
+      selectionStart: 0,
+      selectionEnd: 0,
     }
   }
 }

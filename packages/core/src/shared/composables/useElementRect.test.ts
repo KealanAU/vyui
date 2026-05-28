@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 import { useElementRect } from './useElementRect'
 
-/** Builds a fake Lynx ShadowElement exposing `fields().exec()`. */
+/** Builds a fake Lynx ShadowElement exposing `invoke().exec()`. */
 function makeShadowEl(rectData: any) {
   const exec = vi.fn()
-  const fields = vi.fn((_opts: any, cb: (data: any) => void) => {
-    // Simulate the async cross-thread callback firing on exec().
-    exec.mockImplementation(() => cb(rectData))
+  const invoke = vi.fn((opts: any) => {
+    // Simulate the cross-thread `boundingClientRect` callback firing on exec().
+    exec.mockImplementation(() => opts.success?.(rectData))
     return { exec }
   })
-  return { el: { fields }, fields, exec }
+  return { el: { invoke }, invoke, exec }
 }
 
 describe('useElementRect', () => {
@@ -32,14 +32,24 @@ describe('useElementRect', () => {
     })
   })
 
-  it('uses the native fields() path and resolves the rect', async () => {
-    const { el, fields, exec } = makeShadowEl({
-      rect: { width: 200, height: 50, top: 10, left: 20, right: 220, bottom: 60 },
+  it('uses the native invoke() path and resolves the rect', async () => {
+    const { el, invoke, exec } = makeShadowEl({
+      width: 200,
+      height: 50,
+      top: 10,
+      left: 20,
+      right: 220,
+      bottom: 60,
     })
 
     const rect = await useElementRect(el)
 
-    expect(fields).toHaveBeenCalledWith({ rect: true, size: true }, expect.any(Function))
+    expect(invoke).toHaveBeenCalledWith(expect.objectContaining({
+      method: 'boundingClientRect',
+      params: {},
+      success: expect.any(Function),
+      fail: expect.any(Function),
+    }))
     expect(exec).toHaveBeenCalledTimes(1)
     expect(rect).toEqual({
       width: 200,
@@ -51,19 +61,21 @@ describe('useElementRect', () => {
     })
   })
 
-  it('handles native fields() data without a nested rect key', async () => {
-    const { el } = makeShadowEl({ width: 5, height: 6, top: 0, left: 0, right: 5, bottom: 6 })
-    const rect = await useElementRect(el)
-    expect(rect.width).toBe(5)
-    expect(rect.height).toBe(6)
-  })
-
-  it('derives width/height from edges when fields() omits them', async () => {
-    // `fields({ rect })` returns only edges — no width/height.
+  it('derives width/height from edges when the response omits them', async () => {
     const { el } = makeShadowEl({ top: 10, left: 20, right: 220, bottom: 60 })
     const rect = await useElementRect(el)
     expect(rect.width).toBe(200)
     expect(rect.height).toBe(50)
+  })
+
+  it('resolves a zeroed rect when invoke() reports failure', async () => {
+    const exec = vi.fn()
+    const invoke = vi.fn((opts: any) => {
+      exec.mockImplementation(() => opts.fail?.({ code: 1, data: 'nope' }))
+      return { exec }
+    })
+    const rect = await useElementRect({ invoke })
+    expect(rect).toEqual({ width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0 })
   })
 
   it('falls back to getBoundingClientRect on web/jsdom', async () => {

@@ -99,26 +99,28 @@ describe('useScrollTo', () => {
     })
 
     it('computes a native scrollTo offset from measured rects', async () => {
-      const { el, invoke } = makeNativeScrollView()
-      el.scrollTop = 0
-      el.scrollLeft = 0
-      // scroll-view rect query
-      el.fields = vi.fn((_o: any, cb: (d: any) => void) => ({
-        exec: () => cb({ rect: { width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0 } }),
-      }))
+      // The scroll-view's `invoke` handles both `boundingClientRect` rect
+      // queries (used by useElementRect) and the final `scrollTo` op.
+      const exec = vi.fn()
+      const invoke = vi.fn((opts: any) => {
+        if (opts.method === 'boundingClientRect')
+          return { exec: () => opts.success?.({ top: 0, left: 0, right: 0, bottom: 0 }) }
+        return { exec }
+      })
+      const el: any = { invoke, scrollTop: 0, scrollLeft: 0 }
       const childEl = {
-        fields: vi.fn((_o: any, cb: (d: any) => void) => ({
-          exec: () => cb({ rect: { width: 0, height: 0, top: 200, left: 0, right: 0, bottom: 0 } }),
+        invoke: vi.fn((opts: any) => ({
+          exec: () => opts.success?.({ top: 200, left: 0, right: 0, bottom: 0 }),
         })),
       }
 
       const { scrollIntoView } = useScrollTo(el)
       await scrollIntoView(childEl)
 
-      expect(invoke).toHaveBeenCalledWith({
+      expect(invoke).toHaveBeenCalledWith(expect.objectContaining({
         method: 'scrollTo',
         params: { offset: 200, smooth: true },
-      })
+      }))
     })
   })
 })
