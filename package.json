@@ -1,0 +1,23 @@
+{
+  "name": "@vyui/root",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm -r run dev",
+    "build": "pnpm -r --filter='./packages/*' build",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r exec rm -rf dist .rspeedy node_modules/.cache && rm -rf node_modules/.cache",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish",
+    "new-component": "tsx tools/make-component.ts"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "@svitejs/changesets-changelog-github-compact": "^1.2.0",
+    "pnpm": "^9.0.0",
+    "tsx": "^4.19.2"
+  }
+}

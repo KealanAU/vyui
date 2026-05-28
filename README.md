@@ -1,0 +1,216 @@
+# Vy UI
+
+> Headless, accessible component primitives for [Vue-Lynx](https://lynxjs.org) — ByteDance's cross-platform native framework. Inspired by Reka UI, Radix UI, and the shadcn/ui distribution model.
+
+**Vy UI** brings a Radix-style primitives layer to the Vue-Lynx ecosystem. Build native mobile apps for iOS, Android, and Web from a single Vue codebase, with components you own and can modify.
+
+> ⚠️ **Status: pre-alpha.** Vue-Lynx itself is pre-alpha. APIs will change. Not production-ready.
+
+***
+
+## Why Vy UI
+
+Vue-Lynx is the Vue binding for [Lynx](https://lynxjs.org), ByteDance's open-source native cross-platform framework (the same one powering parts of TikTok). It's a serious alternative to React Native for the 2M+ Vue developer community.
+
+But the Lynx ecosystem currently has no extensive UI component library. There's no Radix, no shadcn/ui, no Vant equivalent for Vue-Lynx. Vy UI fills that gap:
+
+* **Headless primitives** for behavior, accessibility, and composition
+
+* **Native-first** — designed for Lynx's `<view>` and `<text>` rendering model, not retrofitted from web
+
+* **Styled components on top** via `@vyui/kit`, with `@vyui/core` providing the underlying primitive layer
+
+## Architecture
+
+Two packages today, with more planned (see Roadmap):
+
+```text
+@vyui/core    →  Runtime primitives, ship in your app bundle
+@vyui/kit      →  Styled components built on top of @vyui/core
+```
+
+### `@vyui/core` — Primitives
+
+The runtime library. Provides headless, accessible component logic for Vue-Lynx:
+
+* Behavioral primitives: Dialog, Popover, Dropdown, Tooltip, Tabs, Accordion
+
+* Form primitives: Field, Label, Error, Validation
+
+* Composables for focus management, keyboard navigation, and state
+
+* Type-safe APIs designed for Lynx's native rendering model
+
+```sh
+npm install @vyui/core
+```
+
+### `@vyui/kit` — Styled components
+
+A workspace package layering opinionated styled components on top of `@vyui/core`. Today it's consumed inside this monorepo by the demo apps; a public release will follow.
+
+## Quick start
+
+> **Current status:** local workspace install only. The npm-published version
+> (`@vyui/core@0.0.2`) is known to crash on first touch due to a vue-lynx
+> MT-loader trap; an upstream fix is in flight. Until that lands, the
+> dependable path is cloning this repo and working against the workspace
+> packages.
+
+```sh
+git clone https://github.com/KealanAU/vyui.git
+cd vyui
+pnpm install
+
+# Run the broken-component sandbox (Slider + Phase 5 primitives)
+pnpm --filter @vyui/phase5-debug dev
+
+# Or the styled-component showcase
+pnpm --filter @vyui/kit-demo dev
+```
+
+Scan the LAN QR with [Lynx Explorer](https://lynxjs.org/) for on-device preview, or open the printed `main.web.bundle` URL for the web preview.
+
+Inside a Vue-Lynx component you can already write against `@vyui/core` directly — once the upstream worklet-loader fix lands and `@vyui/core` republishes, the workflow below is the public install path:
+
+```vue
+<!-- App.vue -->
+<script setup>
+import { SliderRoot, SliderTrack, SliderRange, SliderThumb } from '@vyui/core'
+import { ref } from 'vue'
+const value = ref(50)
+</script>
+
+<template>
+  <SliderRoot v-model="value" :max="100">
+    <SliderTrack><SliderRange /></SliderTrack>
+    <SliderThumb />
+  </SliderRoot>
+</template>
+```
+
+## Project structure
+
+```text
+vyui/
+├── packages/
+│   ├── core/                  # @vyui/core — runtime primitives (published)
+│   ├── ui/                    # @vyui/kit — styled components on top of core
+│   ├── shared-build-config/   # shared rslib / build config
+│   └── testing-utils/         # shared test helpers
+└── apps/
+    └── examples/
+        ├── phase5-debug/      # broken-component sandbox
+        ├── ui-demo/           # styled-component showcase
+        ├── native-demo/       # broader primitive showcase
+        ├── web-demo/          # web-target preview
+        └── …
+```
+
+## Roadmap
+
+Items below are aspirational — none of these exist today. They describe the
+intended trajectory of the project so contributors and users can see where
+it's headed.
+
+* [x] `@vyui/core` primitives (in progress; published as `^0.0.2` with a known MT-loader regression awaiting an upstream vue-lynx fix)
+* [ ] `@vyui/kit` published to npm as a styled-component package
+* [ ] `@vyui/cli` — shadcn-style CLI for adding individual styled components
+  to a downstream project (`npx @vyui init`, `npx @vyui add button`)
+* [ ] Hosted component registry (`vyui.dev/registry/*` JSON manifests, with
+  source code, dependencies on `@vyui/core`, and file destinations)
+* [ ] `registry/styles/default/*.json` — styled-component templates the CLI
+  fetches at install time
+* [ ] Documentation site (`vyui.dev`) generated from real source files so
+  components stay in sync automatically
+* [ ] Theme system / design tokens
+* [ ] Icon set
+* [ ] Starter templates and examples
+* [ ] Cross-target testing (iOS, Android, Web)
+
+## Contributing
+
+Contributions welcome — especially:
+
+* Primitive implementations and behavioral edge cases
+
+* Lynx-specific platform adjustments (iOS, Android, Web targets)
+
+* Styled component templates for `@vyui/kit` and the future registry
+
+* Documentation, examples, and starter templates
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the local-development workflow
+(including the `VYUI_USE_LOCAL_CORE` flag for editing `@vyui/core` against
+the demo app, the MT-worklet pitfalls list, and the PR checklist).
+
+## Acknowledgements
+
+Vy UI stands on the shoulders of excellent prior work. None of this would exist
+without the projects below — much of the primitive design, theming approach,
+distribution model, and Lynx-specific scaffolding was learned by reading,
+porting, and adapting from them.
+
+### Primary references
+
+* **[Reka UI](https://reka-ui.com)** — Vue port of Radix UI; the closest analog on
+  web Vue and the primary reference for Vy UI's primitive API design. Many
+  `@vyui/core` primitives port behavior and composition directly from Reka UI
+  with Lynx-specific rendering adjustments. MIT.
+
+* **[Radix UI](https://radix-ui.com)** — Pioneered the headless primitives model
+  and the multi-part component pattern (`Root` / `Trigger` / `Content` / etc.)
+  that Vy UI follows. MIT.
+
+* **[Nuxt UI](https://ui.nuxt.com)** — The Tailwind Variants + `createTv` theming
+  model in `@vyui/kit`, the slot-based component theme files under
+  `packages/kit/src/theme/*`, and the `apps/docs` site itself all draw heavily
+  on Nuxt UI's approach. MIT.
+
+* **[shadcn/ui](https://ui.shadcn.com)** — Defined the CLI + registry
+  distribution model that the planned `@vyui/cli` and `vyui.dev/registry/*`
+  manifests are modeled on. MIT.
+
+* **[Lynx UI](https://github.com/lynx-family/lynx-ui)** — ByteDance's reference
+  component set for Lynx. The patterns for working around Lynx's
+  `<view>` / `<text>` constraints, MT-worklet pitfalls, and the rasterized
+  `<svg>` model were learned in part from reading Lynx UI's source. Apache-2.0.
+
+* **[Vue-Lynx](https://github.com/lynx-family/lynx-vue)** — The Vue binding for
+  Lynx that this entire library targets. Without it, Vy UI has nothing to
+  render to. Apache-2.0.
+
+### Honourable mentions
+
+* **[Park UI](https://park-ui.com)** — Proved the layered primitives +
+  styled-on-top + CLI distribution model is portable across primitive
+  libraries.
+
+* **[Headless UI](https://headlessui.com)** and **[Ariakit](https://ariakit.org)** —
+  Earlier explorations of the headless-primitives space that shaped the
+  ecosystem.
+
+* **[Tailwind CSS](https://tailwindcss.com)** and
+  **[Tailwind Variants](https://www.tailwind-variants.org)** — The utility +
+  variants system `@vyui/kit` is built on.
+
+* **[Iconify](https://iconify.design)** and
+  **[icones.js.org](https://icones.js.org)** — The icon ecosystem Vy UI's
+  `<Icon>` primitive resolves against.
+
+### Attribution
+
+Some styled component templates may be ported from or inspired by shadcn/ui,
+Nuxt UI, and Reka UI. Where this is the case, original MIT license terms and
+attribution are preserved in each component file.
+
+## Name
+
+"Vy" is Swedish for *view* — a nod to Vue's French root with the same meaning.
+The library name continues that lineage in the Lynx ecosystem.
+
+## License
+
+MIT © 2026 Kealan Clarke and Vy UI contributors
+
+Built with respect for the open-source ecosystem that made this possible.

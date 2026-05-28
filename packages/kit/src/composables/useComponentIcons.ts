@@ -1,0 +1,69 @@
+import { computed, toValue, type MaybeRefOrGetter } from 'vue'
+import { useAppConfig } from './useAppConfig'
+
+// Ported from nuxt/ui v3.0.2 `src/runtime/composables/useComponentIcons.ts`.
+// The `avatar` prop is typed as `unknown` here — VyAvatar is not yet built;
+// when it lands this type tightens to `AvatarProps`.
+
+export interface UseComponentIconsProps {
+  /**
+   * Display an icon based on the `leading` and `trailing` props.
+   * @IconifyIcon
+   */
+  icon?: string
+  /** Display an avatar on the left side. */
+  avatar?: unknown
+  /** When `true`, the icon will be displayed on the left side. */
+  leading?: boolean
+  /**
+   * Display an icon on the left side.
+   * @IconifyIcon
+   */
+  leadingIcon?: string
+  /** When `true`, the icon will be displayed on the right side. */
+  trailing?: boolean
+  /**
+   * Display an icon on the right side.
+   * @IconifyIcon
+   */
+  trailingIcon?: string
+  /** When `true`, the loading icon will be displayed. */
+  loading?: boolean
+  /**
+   * The icon when the `loading` prop is `true`.
+   * @defaultValue appConfig.ui.icons.loading
+   * @IconifyIcon
+   */
+  loadingIcon?: string
+}
+
+export function useComponentIcons(componentProps: MaybeRefOrGetter<UseComponentIconsProps>) {
+  const appConfig = useAppConfig()
+
+  const props = computed(() => toValue(componentProps))
+
+  const isLeading = computed(() => (props.value.icon && props.value.leading) || (props.value.icon && !props.value.trailing) || (props.value.loading && !props.value.trailing) || !!props.value.leadingIcon)
+  const isTrailing = computed(() => (props.value.icon && props.value.trailing) || (props.value.loading && props.value.trailing) || !!props.value.trailingIcon)
+
+  const leadingIconName = computed(() => {
+    if (props.value.loading) {
+      return props.value.loadingIcon || appConfig.ui.icons?.loading
+    }
+
+    return props.value.leadingIcon || props.value.icon
+  })
+  const trailingIconName = computed(() => {
+    if (props.value.loading && !isLeading.value) {
+      return props.value.loadingIcon || appConfig.ui.icons?.loading
+    }
+
+    return props.value.trailingIcon || props.value.icon
+  })
+
+  return {
+    isLeading,
+    isTrailing,
+    leadingIconName,
+    trailingIconName,
+  }
+}

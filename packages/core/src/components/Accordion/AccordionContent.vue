@@ -1,0 +1,34 @@
+<script lang="ts">
+import type { CollapsibleContentProps } from '../Collapsible'
+
+export interface AccordionContentProps extends CollapsibleContentProps {}
+</script>
+
+<script setup lang="ts">
+import { useForwardExpose } from '@/shared'
+import { CollapsibleContent } from '../Collapsible'
+import { injectAccordionItemContext } from './AccordionItem.vue'
+import { injectAccordionRootContext } from './AccordionRoot.vue'
+
+const props = defineProps<AccordionContentProps>()
+
+const rootContext = injectAccordionRootContext()
+const itemContext = injectAccordionItemContext()
+
+useForwardExpose()
+</script>
+
+<template>
+  <CollapsibleContent
+    role="region"
+    :aria-labelledby="itemContext.triggerId"
+    :as-child="props.asChild"
+    :as="as"
+    :force-mount="props.forceMount"
+    :data-state="itemContext.dataState.value"
+    :data-disabled="itemContext.dataDisabled.value"
+    :data-orientation="rootContext.orientation"
+  >
+    <slot />
+  </CollapsibleContent>
+</template>

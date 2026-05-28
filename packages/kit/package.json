@@ -1,0 +1,63 @@
+{
+  "name": "@vyui/kit",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Styled Vue-Lynx components built on @vyui/core",
+  "license": "MIT",
+  "//sideEffects": "INVARIANT: no `'main thread'` worklets in @vyui/kit — all worklet logic lives in @vyui/core. If you add a worklet here, widen sideEffects to [\"src/**/*.vue\",\"src/**/*.ts\",\"dist/**/*.js\"] and wire pluginVyuiWorklet into rslib.config.ts like packages/core, or rspack will tree-shake the vue-lynx MT side-effect imports and downstream consumers will crash with `bind of undefined`.",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src/style.css",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "pnpm typecheck && pnpm build-only",
+    "build-only": "rslib build && vue-tsc -p tsconfig.build.json",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./theme": {
+      "import": "./dist/theme/index.js",
+      "types": "./dist/theme/index.d.ts"
+    },
+    "./tailwind": {
+      "types": "./dist/tailwind.d.ts",
+      "import": "./dist/tailwind.js",
+      "default": "./dist/tailwind.js"
+    },
+    "./style.css": "./src/style.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "peerDependencies": {
+    "@vyui/core": "workspace:^",
+    "vue": ">= 3.4.0",
+    "vue-lynx": "^0.4.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "defu": "^6.1.5",
+    "tailwind-variants": "^0.3.1"
+  },
+  "devDependencies": {
+    "@vyui/core": "workspace:*",
+    "@vyui/shared-build-config": "workspace:*",
+    "@vyui/testing-utils": "workspace:*",
+    "@rsbuild/plugin-vue": "^1.2.8",
+    "@rslib/core": "^0.7.0",
+    "@vue/tsconfig": "^0.7.0",
+    "@types/node": "^24.0.0",
+    "tailwindcss": "^3.4.0",
+    "vue": "3.5.17",
+    "vue-lynx": "^0.4.0",
+    "vue-tsc": "3.2.6"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
+  "changelog": [
+    "@svitejs/changesets-changelog-github-compact",
+    {
+      "repo": "KealanAU/leka-ui"
+    }
+  ],
+  "commit": false,
+  "fixed": [],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "@vyui/native-demo",
+    "@vyui/kit-demo",
+    "@vyui/phase5-debug",
+    "@vyui/testing-utils"
+  ],
+  "privatePackages": {
+    "tag": false,
+    "version": false
+  }
+}

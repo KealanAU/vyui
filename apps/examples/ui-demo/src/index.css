@@ -1,0 +1,133 @@
+/*
+ * Tailwind entry. `@lynx-js/tailwind-preset` is utility-only for Lynx,
+ * so we only load `base` and `utilities`.
+ */
+@tailwind base;
+@tailwind utilities;
+
+/* @vyui/kit default theme tokens — overrides go below this line. */
+@import '@vyui/kit/style.css';
+
+/*
+ * Live palette swatches for the demo's primary-color picker.
+ * Toggling a `.palette-<name>` class on the root view overrides every
+ * `--ui-color-primary-*` token to that Tailwind palette.
+ */
+.palette-rose {
+  --ui-color-primary-50:  theme('colors.rose.50');
+  --ui-color-primary-100: theme('colors.rose.100');
+  --ui-color-primary-200: theme('colors.rose.200');
+  --ui-color-primary-300: theme('colors.rose.300');
+  --ui-color-primary-400: theme('colors.rose.400');
+  --ui-color-primary-500: theme('colors.rose.500');
+  --ui-color-primary-600: theme('colors.rose.600');
+  --ui-color-primary-700: theme('colors.rose.700');
+  --ui-color-primary-800: theme('colors.rose.800');
+  --ui-color-primary-900: theme('colors.rose.900');
+  --ui-color-primary-950: theme('colors.rose.950');
+}
+
+.palette-blue {
+  --ui-color-primary-50:  theme('colors.blue.50');
+  --ui-color-primary-100: theme('colors.blue.100');
+  --ui-color-primary-200: theme('colors.blue.200');
+  --ui-color-primary-300: theme('colors.blue.300');
+  --ui-color-primary-400: theme('colors.blue.400');
+  --ui-color-primary-500: theme('colors.blue.500');
+  --ui-color-primary-600: theme('colors.blue.600');
+  --ui-color-primary-700: theme('colors.blue.700');
+  --ui-color-primary-800: theme('colors.blue.800');
+  --ui-color-primary-900: theme('colors.blue.900');
+  --ui-color-primary-950: theme('colors.blue.950');
+}
+
+.palette-violet {
+  --ui-color-primary-50:  theme('colors.violet.50');
+  --ui-color-primary-100: theme('colors.violet.100');
+  --ui-color-primary-200: theme('colors.violet.200');
+  --ui-color-primary-300: theme('colors.violet.300');
+  --ui-color-primary-400: theme('colors.violet.400');
+  --ui-color-primary-500: theme('colors.violet.500');
+  --ui-color-primary-600: theme('colors.violet.600');
+  --ui-color-primary-700: theme('colors.violet.700');
+  --ui-color-primary-800: theme('colors.violet.800');
+  --ui-color-primary-900: theme('colors.violet.900');
+  --ui-color-primary-950: theme('colors.violet.950');
+}
+
+.palette-amber {
+  --ui-color-primary-50:  theme('colors.amber.50');
+  --ui-color-primary-100: theme('colors.amber.100');
+  --ui-color-primary-200: theme('colors.amber.200');
+  --ui-color-primary-300: theme('colors.amber.300');
+  --ui-color-primary-400: theme('colors.amber.400');
+  --ui-color-primary-500: theme('colors.amber.500');
+  --ui-color-primary-600: theme('colors.amber.600');
+  --ui-color-primary-700: theme('colors.amber.700');
+  --ui-color-primary-800: theme('colors.amber.800');
+  --ui-color-primary-900: theme('colors.amber.900');
+  --ui-color-primary-950: theme('colors.amber.950');
+}
+
+.palette-teal {
+  --ui-color-primary-50:  theme('colors.teal.50');
+  --ui-color-primary-100: theme('colors.teal.100');
+  --ui-color-primary-200: theme('colors.teal.200');
+  --ui-color-primary-300: theme('colors.teal.300');
+  --ui-color-primary-400: theme('colors.teal.400');
+  --ui-color-primary-500: theme('colors.teal.500');
+  --ui-color-primary-600: theme('colors.teal.600');
+  --ui-color-primary-700: theme('colors.teal.700');
+  --ui-color-primary-800: theme('colors.teal.800');
+  --ui-color-primary-900: theme('colors.teal.900');
+  --ui-color-primary-950: theme('colors.teal.950');
+}
+
+.palette-pink {
+  --ui-color-primary-50:  theme('colors.pink.50');
+  --ui-color-primary-100: theme('colors.pink.100');
+  --ui-color-primary-200: theme('colors.pink.200');
+  --ui-color-primary-300: theme('colors.pink.300');
+  --ui-color-primary-400: theme('colors.pink.400');
+  --ui-color-primary-500: theme('colors.pink.500');
+  --ui-color-primary-600: theme('colors.pink.600');
+  --ui-color-primary-700: theme('colors.pink.700');
+  --ui-color-primary-800: theme('colors.pink.800');
+  --ui-color-primary-900: theme('colors.pink.900');
+  --ui-color-primary-950: theme('colors.pink.950');
+}
+
+.palette-orange {
+  --ui-color-primary-50:  theme('colors.orange.50');
+  --ui-color-primary-100: theme('colors.orange.100');
+  --ui-color-primary-200: theme('colors.orange.200');
+  --ui-color-primary-300: theme('colors.orange.300');
+  --ui-color-primary-400: theme('colors.orange.400');
+  --ui-color-primary-500: theme('colors.orange.500');
+  --ui-color-primary-600: theme('colors.orange.600');
+  --ui-color-primary-700: theme('colors.orange.700');
+  --ui-color-primary-800: theme('colors.orange.800');
+  --ui-color-primary-900: theme('colors.orange.900');
+  --ui-color-primary-950: theme('colors.orange.950');
+}
+
+/*
+ * Secondary palette overrides — same Tailwind palettes as primary.
+ * Class names are prefixed `secondary-` so they don't collide with primary.
+ */
+.secondary-green   { --ui-color-secondary-50: theme('colors.green.50');  --ui-color-secondary-100: theme('colors.green.100');  --ui-color-secondary-200: theme('colors.green.200');  --ui-color-secondary-300: theme('colors.green.300');  --ui-color-secondary-400: theme('colors.green.400');  --ui-color-secondary-500: theme('colors.green.500');  --ui-color-secondary-600: theme('colors.green.600');  --ui-color-secondary-700: theme('colors.green.700');  --ui-color-secondary-800: theme('colors.green.800');  --ui-color-secondary-900: theme('colors.green.900');  --ui-color-secondary-950: theme('colors.green.950'); }
+.secondary-rose    { --ui-color-secondary-50: theme('colors.rose.50');   --ui-color-secondary-100: theme('colors.rose.100');   --ui-color-secondary-200: theme('colors.rose.200');   --ui-color-secondary-300: theme('colors.rose.300');   --ui-color-secondary-400: theme('colors.rose.400');   --ui-color-secondary-500: theme('colors.rose.500');   --ui-color-secondary-600: theme('colors.rose.600');   --ui-color-secondary-700: theme('colors.rose.700');   --ui-color-secondary-800: theme('colors.rose.800');   --ui-color-secondary-900: theme('colors.rose.900');   --ui-color-secondary-950: theme('colors.rose.950'); }
+.secondary-violet  { --ui-color-secondary-50: theme('colors.violet.50'); --ui-color-secondary-100: theme('colors.violet.100'); --ui-color-secondary-200: theme('colors.violet.200'); --ui-color-secondary-300: theme('colors.violet.300'); --ui-color-secondary-400: theme('colors.violet.400'); --ui-color-secondary-500: theme('colors.violet.500'); --ui-color-secondary-600: theme('colors.violet.600'); --ui-color-secondary-700: theme('colors.violet.700'); --ui-color-secondary-800: theme('colors.violet.800'); --ui-color-secondary-900: theme('colors.violet.900'); --ui-color-secondary-950: theme('colors.violet.950'); }
+.secondary-amber   { --ui-color-secondary-50: theme('colors.amber.50');  --ui-color-secondary-100: theme('colors.amber.100');  --ui-color-secondary-200: theme('colors.amber.200');  --ui-color-secondary-300: theme('colors.amber.300');  --ui-color-secondary-400: theme('colors.amber.400');  --ui-color-secondary-500: theme('colors.amber.500');  --ui-color-secondary-600: theme('colors.amber.600');  --ui-color-secondary-700: theme('colors.amber.700');  --ui-color-secondary-800: theme('colors.amber.800');  --ui-color-secondary-900: theme('colors.amber.900');  --ui-color-secondary-950: theme('colors.amber.950'); }
+.secondary-teal    { --ui-color-secondary-50: theme('colors.teal.50');   --ui-color-secondary-100: theme('colors.teal.100');   --ui-color-secondary-200: theme('colors.teal.200');   --ui-color-secondary-300: theme('colors.teal.300');   --ui-color-secondary-400: theme('colors.teal.400');   --ui-color-secondary-500: theme('colors.teal.500');   --ui-color-secondary-600: theme('colors.teal.600');   --ui-color-secondary-700: theme('colors.teal.700');   --ui-color-secondary-800: theme('colors.teal.800');   --ui-color-secondary-900: theme('colors.teal.900');   --ui-color-secondary-950: theme('colors.teal.950'); }
+.secondary-pink    { --ui-color-secondary-50: theme('colors.pink.50');   --ui-color-secondary-100: theme('colors.pink.100');   --ui-color-secondary-200: theme('colors.pink.200');   --ui-color-secondary-300: theme('colors.pink.300');   --ui-color-secondary-400: theme('colors.pink.400');   --ui-color-secondary-500: theme('colors.pink.500');   --ui-color-secondary-600: theme('colors.pink.600');   --ui-color-secondary-700: theme('colors.pink.700');   --ui-color-secondary-800: theme('colors.pink.800');   --ui-color-secondary-900: theme('colors.pink.900');   --ui-color-secondary-950: theme('colors.pink.950'); }
+.secondary-orange  { --ui-color-secondary-50: theme('colors.orange.50'); --ui-color-secondary-100: theme('colors.orange.100'); --ui-color-secondary-200: theme('colors.orange.200'); --ui-color-secondary-300: theme('colors.orange.300'); --ui-color-secondary-400: theme('colors.orange.400'); --ui-color-secondary-500: theme('colors.orange.500'); --ui-color-secondary-600: theme('colors.orange.600'); --ui-color-secondary-700: theme('colors.orange.700'); --ui-color-secondary-800: theme('colors.orange.800'); --ui-color-secondary-900: theme('colors.orange.900'); --ui-color-secondary-950: theme('colors.orange.950'); }
+
+/*
+ * Neutral palette overrides — Tailwind's five gray families.
+ * `slate` is the package default, the others swap the entire `--ui-color-neutral-*` scale.
+ */
+.neutral-gray    { --ui-color-neutral-50: theme('colors.gray.50');    --ui-color-neutral-100: theme('colors.gray.100');    --ui-color-neutral-200: theme('colors.gray.200');    --ui-color-neutral-300: theme('colors.gray.300');    --ui-color-neutral-400: theme('colors.gray.400');    --ui-color-neutral-500: theme('colors.gray.500');    --ui-color-neutral-600: theme('colors.gray.600');    --ui-color-neutral-700: theme('colors.gray.700');    --ui-color-neutral-800: theme('colors.gray.800');    --ui-color-neutral-900: theme('colors.gray.900');    --ui-color-neutral-950: theme('colors.gray.950'); }
+.neutral-zinc    { --ui-color-neutral-50: theme('colors.zinc.50');    --ui-color-neutral-100: theme('colors.zinc.100');    --ui-color-neutral-200: theme('colors.zinc.200');    --ui-color-neutral-300: theme('colors.zinc.300');    --ui-color-neutral-400: theme('colors.zinc.400');    --ui-color-neutral-500: theme('colors.zinc.500');    --ui-color-neutral-600: theme('colors.zinc.600');    --ui-color-neutral-700: theme('colors.zinc.700');    --ui-color-neutral-800: theme('colors.zinc.800');    --ui-color-neutral-900: theme('colors.zinc.900');    --ui-color-neutral-950: theme('colors.zinc.950'); }
+.neutral-neutral { --ui-color-neutral-50: theme('colors.neutral.50'); --ui-color-neutral-100: theme('colors.neutral.100'); --ui-color-neutral-200: theme('colors.neutral.200'); --ui-color-neutral-300: theme('colors.neutral.300'); --ui-color-neutral-400: theme('colors.neutral.400'); --ui-color-neutral-500: theme('colors.neutral.500'); --ui-color-neutral-600: theme('colors.neutral.600'); --ui-color-neutral-700: theme('colors.neutral.700'); --ui-color-neutral-800: theme('colors.neutral.800'); --ui-color-neutral-900: theme('colors.neutral.900'); --ui-color-neutral-950: theme('colors.neutral.950'); }
+.neutral-stone   { --ui-color-neutral-50: theme('colors.stone.50');   --ui-color-neutral-100: theme('colors.stone.100');   --ui-color-neutral-200: theme('colors.stone.200');   --ui-color-neutral-300: theme('colors.stone.300');   --ui-color-neutral-400: theme('colors.stone.400');   --ui-color-neutral-500: theme('colors.stone.500');   --ui-color-neutral-600: theme('colors.stone.600');   --ui-color-neutral-700: theme('colors.stone.700');   --ui-color-neutral-800: theme('colors.stone.800');   --ui-color-neutral-900: theme('colors.stone.900');   --ui-color-neutral-950: theme('colors.stone.950'); }

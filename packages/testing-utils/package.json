@@ -1,0 +1,35 @@
+{
+  "name": "@vyui/testing-utils",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Shared test helpers for vyui — LynxTestingEnv setup + render utilities",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./setup": {
+      "import": "./src/setup.ts",
+      "types": "./src/setup.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lynx-js/testing-environment": "^0.1.11",
+    "@testing-library/dom": "^10.4.1",
+    "jsdom": "^26.1.0",
+    "vue-lynx": "^0.4.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^28.0.3",
+    "@vue/runtime-core": "^3.5.0",
+    "typescript": "^5.0.0",
+    "vue": "3.5.17"
+  },
+  "peerDependencies": {
+    "vitest": ">=3.0.0"
+  }
+}

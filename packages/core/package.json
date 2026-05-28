@@ -1,0 +1,99 @@
+{
+  "name": "@vyui/core",
+  "type": "module",
+  "version": "0.0.3",
+  "description": "Lynx-native component primitives, ported from reka-ui",
+  "license": "MIT",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.vue.js",
+    "src/**/*.vue",
+    "src/**/*.ts",
+    "dist/**/*.js"
+  ],
+  "scripts": {
+    "build": "pnpm build-only && pnpm build-types",
+    "build-only": "rslib build",
+    "build-types": "vue-tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm build",
+    "dev": "rslib build --watch",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest",
+    "test-update": "vitest -u",
+    "lint": "eslint src"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./internal": {
+      "types": "./dist/internal.d.ts",
+      "import": "./dist/internal.js"
+    },
+    "./date": {
+      "types": "./dist/date/index.d.ts",
+      "import": "./dist/date/index.js"
+    },
+    "./shared": {
+      "types": "./dist/shared/index.d.ts",
+      "import": "./dist/shared/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "peerDependencies": {
+    "@lynx-js/react": "^0.116.5",
+    "vue": ">= 3.4.0",
+    "vue-lynx": "^0.4.0"
+  },
+  "dependencies": {
+    "@floating-ui/dom": "^1.6.13",
+    "@floating-ui/vue": "^1.1.6",
+    "@iconify-json/lucide": "^1.2.108",
+    "@iconify/types": "^2.0.0",
+    "@iconify/utils": "^3.1.3",
+    "@internationalized/date": "^3.5.0",
+    "@internationalized/number": "^3.5.0",
+    "@vueuse/core": "^14.1.0",
+    "@vueuse/shared": "^14.1.0",
+    "aria-hidden": "^1.2.6",
+    "defu": "^6.1.5",
+    "ohash": "^2.0.11",
+    "tailwind-merge": "^2.5.4"
+  },
+  "devDependencies": {
+    "@iconify/vue": "^5.0.1",
+    "@vyui/shared-build-config": "workspace:*",
+    "@vyui/testing-utils": "workspace:*",
+    "@lynx-js/react": "^0.116.5",
+    "@lynx-js/testing-environment": "^0.1.11",
+    "@lynx-js/types": "^3.8.0",
+    "@rsbuild/plugin-vue": "^1.2.8",
+    "@rslib/core": "^0.7.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@testing-library/vue": "^8.1.0",
+    "@types/node": "^24.0.0",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/compiler-sfc": "^3.5.17",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.7.0",
+    "jsdom": "^26.1.0",
+    "vitest": "^3.2.4",
+    "vitest-axe": "0.1.0",
+    "vitest-canvas-mock": "^0.3.3",
+    "vue": "3.5.17",
+    "vue-component-type-helpers": "^3.3.1",
+    "vue-lynx": "^0.4.0",
+    "vue-tsc": "3.2.6"
+  }
+}

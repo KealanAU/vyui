@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# build outputs
+dist/
+*.bundle
+*.lynx.bundle
+*.web.bundle
+
+# env
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# cache
+.cache/
+.turbo/
+
+# Claude Code harness — agent worktrees + local scratch
+.claude/worktrees/
+.claude/local-cache/
