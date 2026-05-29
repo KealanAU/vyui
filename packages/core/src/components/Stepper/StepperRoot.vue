@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { Ref } from 'vue'
-import type { DataOrientation, Direction } from '@/shared/types'
+import type { DataOrientation, Direction, ElementHandle } from '@/shared/types'
 import type { PrimitiveProps } from '@/components/Primitive'
 import { computed, nextTick, ref, toRefs, watch } from 'vue'
 import { Primitive } from '@/components/Primitive'
@@ -13,7 +13,7 @@ export interface StepperRootContext {
   orientation: Ref<DataOrientation>
   dir: Ref<Direction>
   linear: Ref<boolean>
-  totalStepperItems: Ref<Set<HTMLElement>>
+  totalStepperItems: Ref<Set<ElementHandle>>
 }
 
 export interface StepperRootProps extends PrimitiveProps {
@@ -84,7 +84,7 @@ defineSlots<{
 const { dir: propDir, orientation: propOrientation, linear } = toRefs(props)
 const dir = useDirection(propDir)
 
-const totalStepperItems = ref<Set<HTMLElement>>(new Set())
+const totalStepperItems = ref<Set<ElementHandle>>(new Set())
 
 const modelValue = useStandardVModel<number | undefined>(props, emits)
 

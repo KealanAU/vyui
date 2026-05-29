@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { ComputedRef, VNodeRef } from 'vue'
 import type { CollapsibleRootProps } from '../Collapsible'
+import type { ElementHandle } from '@/shared/types'
 import { createContext, useForwardExpose } from '@/shared'
 import { injectAccordionRootContext } from './AccordionRoot.vue'
 
@@ -31,7 +32,7 @@ interface AccordionItemContext {
   dataDisabled: ComputedRef<'' | undefined>
   triggerId: string
   currentRef: VNodeRef
-  currentElement: ComputedRef<HTMLElement | undefined>
+  currentElement: ComputedRef<ElementHandle | undefined>
   value: ComputedRef<string>
 }
 

@@ -1,10 +1,11 @@
 import type { Ref } from 'vue'
+import type { ElementHandle } from '@/shared/types'
 import { computed, defineComponent, h, inject, markRaw, provide, ref, watch, watchEffect } from 'vue'
 import { Slot, usePrimitiveElement } from '@/components/Primitive'
 
 interface CollectionContext<ItemData = {}> {
-  collectionRef: Ref<HTMLElement | undefined>
-  itemMap: Ref<Map<HTMLElement, { ref: HTMLElement, value?: any } & ItemData>>
+  collectionRef: Ref<ElementHandle | undefined>
+  itemMap: Ref<Map<ElementHandle, { ref: ElementHandle, value?: any } & ItemData>>
 }
 
 const ITEM_DATA_ATTR = 'data-vy-collection-item'
@@ -15,7 +16,7 @@ export function useCollection<ItemData = {}>(options: { key?: string, isProvider
   let context: CollectionContext<ItemData>
 
   if (isProvider) {
-    const itemMap = ref<Map<HTMLElement, { ref: HTMLElement } & ItemData>>(new Map())
+    const itemMap = ref<Map<ElementHandle, { ref: ElementHandle } & ItemData>>(new Map())
     const collectionRef = ref<any>()
 
     context = {
