@@ -1,6 +1,7 @@
 {
   "name": "@vyui/root",
   "private": true,
+  "license": "MIT AND Apache-2.0",
   "type": "module",
   "scripts": {
     "dev": "pnpm -r run dev",

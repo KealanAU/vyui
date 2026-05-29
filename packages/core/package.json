@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.3",
   "description": "Lynx-native component primitives, ported from reka-ui",
-  "license": "MIT",
+  "license": "MIT AND Apache-2.0",
   "sideEffects": [
     "**/*.css",
     "**/*.vue.js",
