@@ -27,6 +27,18 @@ interface SingleOrMultipleProps<T = AcceptableValue | AcceptableValue[]> {
   defaultValue?: T
 }
 
+/**
+ * A painted element handle returned by ref forwarding. On Lynx native this is a
+ * `ShadowElement`-like handle; in web preview it's a DOM element. The two
+ * runtimes expose different APIs, so this is intentionally loose — call sites
+ * feature-detect (e.g. `typeof el.focus === 'function'`) before reaching for
+ * runtime-specific members.
+ *
+ * Used in place of bare `HTMLElement` / `Element`, which don't exist in Lynx's
+ * `lib` and would leak DOM types into consumers' emitted `.d.ts`.
+ */
+type ElementHandle = Record<string, any>
+
 // Exclude `boolean` type to prevent type casting
 // reference: https://vuejs.org/guide/components/props.html#boolean-casting
 type AcceptableValue = string | number | bigint | Record<string, any> | null
@@ -61,4 +73,4 @@ interface FormFieldProps {
  */
 type VyStyle = Exclude<NonNullable<IntrinsicElements['view']['style']>, string>
 
-export type { AcceptableValue, ArrayOrWrapped, DataOrientation, Direction, FormFieldProps, GenericComponentInstance, VyStyle, SingleOrMultipleProps, SingleOrMultipleType, StringOrNumber }
+export type { AcceptableValue, ArrayOrWrapped, DataOrientation, Direction, ElementHandle, FormFieldProps, GenericComponentInstance, VyStyle, SingleOrMultipleProps, SingleOrMultipleType, StringOrNumber }

@@ -31,7 +31,7 @@ const { CollectionItem } = useCollection()
 const value = computed(() => rootContext.currentModelValue.value[props.index])
 const percent = computed(() => value.value === undefined ? 0 : convertValueToPercentage(value.value, rootContext.min.value ?? 0, rootContext.max.value ?? 100))
 const label = computed(() => getLabel(props.index, rootContext.currentModelValue.value.length))
-const size = useSize(thumbElement)
+const size = useSize(thumbElement as any)
 const orientationSize = computed(() => size[orientation!.size].value)
 const thumbInBoundsOffset = computed(() => {
   if (rootContext.thumbAlignment.value === 'overflow' || !orientationSize.value) {

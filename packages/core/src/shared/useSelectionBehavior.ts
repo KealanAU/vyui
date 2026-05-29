@@ -1,4 +1,5 @@
 import type { Ref, UnwrapNestedRefs } from 'vue'
+import type { ElementHandle } from './types'
 import { ref } from 'vue'
 import { findValuesBetween } from './arrays'
 
@@ -38,7 +39,7 @@ export function useSelectionBehavior<T>(
     return modelValue.value
   }
 
-  function handleMultipleReplace(intent: 'first' | 'last' | 'prev' | 'next', currentElement: HTMLElement | Element | null, getItems: () => { ref: HTMLElement, value?: any }[], options: any[]) {
+  function handleMultipleReplace(intent: 'first' | 'last' | 'prev' | 'next', currentElement: ElementHandle | null, getItems: () => { ref: ElementHandle, value?: any }[], options: any[]) {
     if (!firstValue?.value || !props.multiple || !Array.isArray(modelValue.value))
       return
 

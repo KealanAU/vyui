@@ -1,10 +1,22 @@
+/**
+ * Synthetic custom-event shape passed to handlers. On Lynx there is no DOM
+ * `CustomEvent`; this mirrors the subset call sites read (`detail`,
+ * `defaultPrevented`, `preventDefault`). Typed locally so the public signature
+ * doesn't leak DOM `CustomEvent` / `Event` into consumers' `.d.ts`.
+ */
+export interface VyCustomEvent<D = any> {
+  detail: D
+  defaultPrevented?: boolean
+  preventDefault?: () => void
+}
+
 export function handleAndDispatchCustomEvent<
-  E extends CustomEvent,
-  OriginalEvent extends Event,
+  E extends VyCustomEvent,
+  OriginalEvent = any,
 >(
   name: string,
   handler: ((event: E) => void) | undefined,
-  detail: { originalEvent: OriginalEvent } & (E extends CustomEvent<infer D>
+  detail: { originalEvent: OriginalEvent } & (E extends VyCustomEvent<infer D>
     ? D
     : never),
 ) {
@@ -48,7 +60,7 @@ export function handleAndDispatchCustomEvent<
     detail,
   })
   if (handler)
-    target.addEventListener(name, handler as EventListener, { once: true })
+    target.addEventListener(name, handler as unknown as EventListener, { once: true })
 
   target.dispatchEvent(event)
 }

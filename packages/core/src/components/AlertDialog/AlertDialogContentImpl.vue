@@ -9,9 +9,9 @@ import type { PrimitiveProps } from '@/components/Primitive'
  */
 export type AlertDialogContentImplEmits = {
   /** Auto-focus on open. Inert on Lynx — kept so call sites mirror reka-ui. */
-  openAutoFocus: [event: Event]
+  openAutoFocus: [event: any]
   /** Auto-focus on close. Inert on Lynx — kept so call sites mirror reka-ui. */
-  closeAutoFocus: [event: Event]
+  closeAutoFocus: [event: any]
 }
 
 export interface AlertDialogContentImplProps extends PrimitiveProps {

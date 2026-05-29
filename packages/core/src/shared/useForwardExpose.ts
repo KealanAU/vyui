@@ -1,5 +1,6 @@
 import type { MaybeElement } from '@vueuse/core'
 import type { ComponentPublicInstance } from 'vue'
+import type { ElementHandle } from './types'
 // reference: https://github.com/vuejs/rfcs/issues/258#issuecomment-1068697672
 import { unrefElement } from '@vueuse/core'
 import { computed, getCurrentInstance, onUpdated, ref, triggerRef } from 'vue'
@@ -13,7 +14,7 @@ function isRawElement(ref: any): boolean {
 export function useForwardExpose<T extends ComponentPublicInstance>() {
   const instance = getCurrentInstance()!
 
-  const currentRef = ref<Element | T | null>()
+  const currentRef = ref<ElementHandle | T | null>()
   const currentElement = computed(() => resolveCurrentElement())
 
   // When using as-child with conditional rendering (v-if/v-else), the underlying
@@ -26,7 +27,7 @@ export function useForwardExpose<T extends ComponentPublicInstance>() {
   })
 
   function resolveCurrentElement() {
-    return unrefElement(currentRef as unknown as MaybeElement) as HTMLElement
+    return unrefElement(currentRef as unknown as MaybeElement) as ElementHandle
   }
 
   // Do give us credit if you reference our code :D
@@ -62,7 +63,7 @@ export function useForwardExpose<T extends ComponentPublicInstance>() {
   })
   instance.exposed = ret
 
-  function forwardRef(ref: Element | T | null) {
+  function forwardRef(ref: ElementHandle | T | null) {
     currentRef.value = ref
 
     if (!ref)

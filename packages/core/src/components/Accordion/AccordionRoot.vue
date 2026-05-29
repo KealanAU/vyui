@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { ComputedRef, Ref } from 'vue'
 import type { PrimitiveProps } from '@/components/Primitive'
-import type { AcceptableValue, DataOrientation, Direction, SingleOrMultipleProps, SingleOrMultipleType } from '@/shared/types'
+import type { AcceptableValue, DataOrientation, Direction, ElementHandle, SingleOrMultipleProps, SingleOrMultipleType } from '@/shared/types'
 import { createContext, useDirection, useForwardExpose } from '@/shared'
 
 export interface AccordionRootProps<T = string | string[]>
@@ -54,7 +54,7 @@ export type AccordionRootContext<P extends AccordionRootProps> = {
   disabled: Ref<P['disabled']>
   direction: Ref<P['dir']>
   orientation: P['orientation']
-  parentElement: Ref<HTMLElement | undefined>
+  parentElement: Ref<ElementHandle | undefined>
   changeModelValue: (value: string) => void
   isSingle: ComputedRef<boolean>
   modelValue: Ref<AcceptableValue | AcceptableValue[] | undefined>

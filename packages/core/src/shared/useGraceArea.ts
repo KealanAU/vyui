@@ -11,9 +11,10 @@
  * when web / mobile-browser support lands.
  */
 import type { Ref } from 'vue'
+import type { ElementHandle } from './types'
 import { ref } from 'vue'
 
-export function useGraceArea(_triggerElement: Ref<HTMLElement | undefined>, _containerElement: Ref<HTMLElement | undefined>) {
+export function useGraceArea(_triggerElement: Ref<ElementHandle | undefined>, _containerElement: Ref<ElementHandle | undefined>) {
   const isPointerInTransit = ref(false)
 
   function onPointerExit(_fn: () => void) {

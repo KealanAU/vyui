@@ -11,9 +11,9 @@ export type SliderOrientationPrivateEmits = {
   slideEnd: []
   slideStart: [value: number]
   slideMove: [value: number]
-  homeKeyDown: [event: KeyboardEvent]
-  endKeyDown: [event: KeyboardEvent]
-  stepKeyDown: [event: KeyboardEvent, direction: number]
+  homeKeyDown: [event: any]
+  endKeyDown: [event: any]
+  stepKeyDown: [event: any, direction: number]
 }
 
 export function getNextSortedValues(prevValues: number[] = [], nextValue: number, atIndex: number) {

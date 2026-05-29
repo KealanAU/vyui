@@ -7,12 +7,12 @@ export type DialogContentImplEmits = DismissableLayerEmits & {
    * Event handler called when auto-focusing on open. Can be prevented.
    * Inert on Lynx (no focus model) — kept so call sites mirror reka-ui.
    */
-  openAutoFocus: [event: Event]
+  openAutoFocus: [event: any]
   /**
    * Event handler called when auto-focusing on close. Can be prevented.
    * Inert on Lynx (no focus model) — kept so call sites mirror reka-ui.
    */
-  closeAutoFocus: [event: Event]
+  closeAutoFocus: [event: any]
 }
 
 export interface DialogContentImplProps extends PrimitiveProps {

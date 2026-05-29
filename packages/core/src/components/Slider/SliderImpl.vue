@@ -11,9 +11,9 @@ export type SliderImplEmits = {
   slideMove: [event: any, kind: 'touch' | 'mouse']
   /** Touch ended / cancelled / mouse released. */
   slideEnd: []
-  homeKeyDown: [event: KeyboardEvent]
-  endKeyDown: [event: KeyboardEvent]
-  stepKeyDown: [event: KeyboardEvent]
+  homeKeyDown: [event: any]
+  endKeyDown: [event: any]
+  stepKeyDown: [event: any]
 }
 
 export interface SliderImplProps extends PrimitiveProps {}

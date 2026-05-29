@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { ComputedRef, Ref } from 'vue'
 import type { MainThreadRef } from 'vue-lynx'
-import type { DataOrientation, Direction, FormFieldProps } from '@/shared/types'
+import type { DataOrientation, Direction, ElementHandle, FormFieldProps } from '@/shared/types'
 import type { PrimitiveProps } from '@/components/Primitive'
 import { useCollection } from '@/components/Collection'
 import { clamp, createContext, useDirection, useForwardExpose } from '@/shared'
@@ -93,7 +93,7 @@ export interface SliderRootContext {
   modelValue?: Readonly<Ref<number | number[] | null | undefined>>
   currentModelValue: ComputedRef<number[]>
   valueIndexToChangeRef: Ref<number>
-  thumbElements: Ref<HTMLElement[]>
+  thumbElements: Ref<ElementHandle[]>
   thumbAlignment: Ref<ThumbAlignment>
   /** True when the MT touch pipeline owns drag paint. Set per-mount. */
   mtsEnabled: ComputedRef<boolean>
