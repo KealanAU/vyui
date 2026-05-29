@@ -2,6 +2,7 @@
   "name": "@vyui/root",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.4.0",
   "scripts": {
     "dev": "pnpm -r run dev",
     "build": "pnpm -r --filter='./packages/*' build",
@@ -19,22 +20,5 @@
     "@svitejs/changesets-changelog-github-compact": "^1.2.0",
     "pnpm": "^11.0.0",
     "tsx": "^4.19.2"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "better-sqlite3",
-      "core-js",
-      "sharp",
-      "vue-demi"
-    ],
-    "overrides": {
-      "vue": "3.5.34",
-      "@vue/runtime-core": "3.5.34",
-      "@vue/runtime-dom": "3.5.34",
-      "@vue/compiler-core": "3.5.34",
-      "@vue/compiler-dom": "3.5.34",
-      "@vue/compiler-sfc": "3.5.34",
-      "@vue/server-renderer": "3.5.34"
-    }
   }
 }
