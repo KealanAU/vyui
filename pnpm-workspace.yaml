@@ -5,5 +5,7 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   better-sqlite3: true
+  core-js: set this to true or false
   esbuild: true
   sharp: true
+  vue-demi: set this to true or false
