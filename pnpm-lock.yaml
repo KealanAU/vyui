@@ -1,5 +1,11 @@
 lockfileVersion: '9.0'
 
+onlyBuiltDependencies:
+  - better-sqlite3
+  - core-js
+  - sharp
+  - vue-demi
+
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
@@ -15,8 +21,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       pnpm:
-        specifier: ^9.0.0
-        version: 9.15.9
+        specifier: ^11.0.0
+        version: 11.4.0
       tsx:
         specifier: ^4.19.2
         version: 4.22.3
@@ -6279,9 +6285,9 @@ packages:
   pkg-types@2.3.1:
     resolution: {integrity: sha512-y+ichcgc2LrADuhLNAx8DFjVfgz91pRxfZdI3UDhxHvcVEZsenLO+7XaU5vOp0u/7V/wZ+plyuQxtrDlZJ+yeg==}
 
-  pnpm@9.15.9:
-    resolution: {integrity: sha512-aARhQYk8ZvrQHAeSMRKOmvuJ74fiaR1p5NQO7iKJiClf1GghgbrlW1hBjDolO95lpQXsfF+UA+zlzDzTfc8lMQ==}
-    engines: {node: '>=18.12'}
+  pnpm@11.4.0:
+    resolution: {integrity: sha512-8P68fjdVKrSFSUqRQkGzOOCzWAuT1UzjHwCTMBWICGMSkDihtK5OQUoO5jrDW/IRl+mQFyxKaCVkULVjYxCWjw==}
+    engines: {node: '>=22.13'}
     hasBin: true
 
   possible-typed-array-names@1.1.0:
@@ -15424,7 +15430,7 @@ snapshots:
       exsolve: 1.0.8
       pathe: 2.0.3
 
-  pnpm@9.15.9: {}
+  pnpm@11.4.0: {}
 
   possible-typed-array-names@1.1.0: {}
 

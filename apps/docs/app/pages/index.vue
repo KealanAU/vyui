@@ -1,27 +1,20 @@
 <script setup lang="ts">
-const { data: page } = await useAsyncData('index', () => queryCollection('landing').path('/').first())
-if (!page.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
-}
-
-const title = page.value.seo?.title || page.value.title
-const description = page.value.seo?.description || page.value.description
-
 useSeoMeta({
   titleTemplate: '',
-  title,
-  ogTitle: title,
-  description,
-  ogDescription: description,
+  title: 'Vy UI — Headless components for Vue-Lynx',
+  ogTitle: 'Vy UI — Headless components for Vue-Lynx',
+  description: 'The component library for Vue-Lynx. Behavioral primitives, a styled kit, and native rendering across iOS, Android, and web — all from one Vue codebase.',
+  ogDescription: 'The component library for Vue-Lynx. Behavioral primitives, a styled kit, and native rendering across iOS, Android, and web — all from one Vue codebase.',
 })
 
 useHead({ bodyAttrs: { class: 'landing-page' } })
 </script>
 
 <template>
-  <ContentRenderer
-    v-if="page"
-    :value="page"
-    :prose="false"
-  />
+  <div>
+    <LandingHero />
+    <LandingFeatures />
+    <LandingTargets />
+    <LandingCta />
+  </div>
 </template>
