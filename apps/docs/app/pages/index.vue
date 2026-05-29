@@ -14,6 +14,8 @@ useSeoMeta({
   description,
   ogDescription: description,
 })
+
+useHead({ bodyAttrs: { class: 'landing-page' } })
 </script>
 
 <template>

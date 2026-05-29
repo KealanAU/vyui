@@ -8,19 +8,19 @@
   --font-sans: 'Haskoy', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display: 'Haskoy', ui-sans-serif, system-ui, sans-serif;
 
-  /* Steep — Warm Crisp Canvas tokens */
+  /* Vue/Nuxt-aligned canvas tokens */
   --color-canvas: #ffffff;
   --color-ink: #17191c;
   --color-graphite: #000000;
-  --color-warm-mist: #fbe1d1;
-  --color-terracotta: #5d2a1a;
+  --color-vue-mint: #dcfce7;
+  --color-vue: #059669;
   --color-fog: #f7f7f8;
   --color-muted-stone: #4c4c4c;
   --color-light-steel: #777b86;
   --color-hint-of-grey: #a3a6af;
   --color-dusk-link: #8b8c8d;
-  --color-peach: #ffdcd2;
-  --color-lilac: #e2d4e4;
+  --color-sage: #bbf7d0;
+  --color-jade: #6ee7b7;
 
   /* Ink palette — primary anchor, ramped around #17191c */
   --color-ink-50: #f6f6f7;
@@ -35,18 +35,18 @@
   --color-ink-900: #17191c;
   --color-ink-950: #0a0b0d;
 
-  /* Terracotta palette — accent */
-  --color-terracotta-50: #fdf4ef;
-  --color-terracotta-100: #fbe1d1;
-  --color-terracotta-200: #f5c1a1;
-  --color-terracotta-300: #ec9a73;
-  --color-terracotta-400: #d97247;
-  --color-terracotta-500: #b85432;
-  --color-terracotta-600: #8d3a22;
-  --color-terracotta-700: #5d2a1a;
-  --color-terracotta-800: #3f1d12;
-  --color-terracotta-900: #2a130c;
-  --color-terracotta-950: #190a06;
+  /* Vue palette — accent, anchored at #42b883 (Vue green) */
+  --color-vue-50: #f0fdf9;
+  --color-vue-100: #dcfce7;
+  --color-vue-200: #bbf7d0;
+  --color-vue-300: #6ee7b7;
+  --color-vue-400: #34d399;
+  --color-vue-500: #42b883;
+  --color-vue-600: #059669;
+  --color-vue-700: #047857;
+  --color-vue-800: #065f46;
+  --color-vue-900: #064e3b;
+  --color-vue-950: #022c22;
 
   /* Layout + shapes */
   --radius-card: 24px;
@@ -56,19 +56,108 @@
 
 body {
   background-color: var(--ui-bg);
-  background-image: linear-gradient(to bottom, var(--color-warm-mist) 0, transparent 12rem);
+}
+
+/*
+  Landing-page ambient background.
+  Three fixed blobs (violet, sky, rose) sit at the viewport edges,
+  over a barely-there green base — the "Vue green behind everything."
+  background-attachment: fixed keeps them anchored as the page scrolls.
+  The .landing-page class is added only on the home route (index.vue).
+*/
+body.landing-page {
+  background-color: #f0fdf9;
+  background-image:
+    radial-gradient(ellipse 55vw 65vh at -5vw -5vh,
+      color-mix(in srgb, #ddd6fe 55%, transparent),
+      transparent 70%),
+    radial-gradient(ellipse 50vw 55vh at 105vw 50vh,
+      color-mix(in srgb, #bae6fd 50%, transparent),
+      transparent 70%),
+    radial-gradient(ellipse 55vw 55vh at 45vw 105vh,
+      color-mix(in srgb, #fecdd3 48%, transparent),
+      transparent 70%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.dark body.landing-page {
+  background-color: var(--ui-bg);
+  background-image: none;
+}
+
+/*
+  Hero blob gradient variations — switch between A, B, C in index.md.
+  Each mimics the steep.app multi-radial soft-blob technique:
+  overlapping elliptical gradients that melt into the white canvas.
+
+  A: Vue Green  — mint + emerald + warm cream  (active)
+  B: Sage Drift — jade + sage + soft yellow
+  C: Vivid Haze — violet + rose + amber  (more saturated, punchier)
+*/
+
+/* A: Vue Green — soft mint + emerald + warm cream */
+.hero-gradient-a {
+  background-image:
+    radial-gradient(ellipse 55% 45% at 38% 32%,
+      color-mix(in srgb, #bbf7d0 60%, transparent) 0%,
+      transparent 70%),
+    radial-gradient(ellipse 65% 52% at 63% 36%,
+      color-mix(in srgb, #6ee7b7 50%, transparent) 0%,
+      transparent 70%),
+    radial-gradient(ellipse 48% 42% at 54% 70%,
+      color-mix(in srgb, #fefce8 45%, transparent) 0%,
+      transparent 70%);
   background-repeat: no-repeat;
   background-attachment: scroll;
 }
 
-.dark body {
-  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--color-warm-mist) 10%, transparent) 0, transparent 12rem);
+.hero-full-height {
+  min-height: calc(100svh - var(--ui-header-height, 56px));
+}
+
+/* B: Sage Drift */
+.hero-gradient-b {
+  background-image:
+    radial-gradient(ellipse 52% 48% at 36% 30%,
+      color-mix(in srgb, #6ee7b7 55%, transparent) 0%,
+      transparent 70%),
+    radial-gradient(ellipse 68% 54% at 64% 38%,
+      color-mix(in srgb, #bbf7d0 50%, transparent) 0%,
+      transparent 70%),
+    radial-gradient(ellipse 44% 40% at 52% 72%,
+      color-mix(in srgb, #fefce8 40%, transparent) 0%,
+      transparent 70%);
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+
+/* C: Vivid Haze */
+.hero-gradient-c {
+  background-image:
+    radial-gradient(ellipse 58% 50% at 35% 28%,
+      color-mix(in srgb, #ddd6fe 65%, transparent) 0%,
+      transparent 70%),
+    radial-gradient(ellipse 70% 55% at 65% 35%,
+      color-mix(in srgb, #fecaca 55%, transparent) 0%,
+      transparent 70%),
+    radial-gradient(ellipse 50% 44% at 55% 72%,
+      color-mix(in srgb, #fde68a 45%, transparent) 0%,
+      transparent 70%);
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+
+.dark .hero-gradient-a,
+.dark .hero-gradient-b,
+.dark .hero-gradient-c {
+  background-image: none;
 }
 
 :root {
   --ui-container: 80rem;
 
-  /* Map UI tokens to Steep palette */
+  /* Map UI tokens to palette */
   --ui-bg: var(--color-canvas);
   --ui-bg-muted: var(--color-fog);
   --ui-bg-elevated: var(--color-fog);
@@ -105,6 +194,18 @@ body {
   --ui-border: var(--color-ink-700);
   --ui-border-muted: var(--color-ink-800);
   --ui-border-accented: var(--color-ink-600);
+}
+
+/* Aurora pill — violet → sky → rose, matches the landing page blobs */
+.badge-aurora {
+  background: linear-gradient(120deg, #ddd6fe 0%, #bae6fd 50%, #fecdd3 100%);
+}
+
+.dark .badge-aurora {
+  background: linear-gradient(120deg,
+    color-mix(in srgb, #ddd6fe 20%, transparent) 0%,
+    color-mix(in srgb, #bae6fd 20%, transparent) 50%,
+    color-mix(in srgb, #fecdd3 20%, transparent) 100%);
 }
 
 /* Display weight for prominent headings + hero typography */

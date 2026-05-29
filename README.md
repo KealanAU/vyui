@@ -51,12 +51,6 @@ A workspace package layering opinionated styled components on top of `@vyui/core
 
 ## Quick start
 
-> **Current status:** local workspace install only. The npm-published version
-> (`@vyui/core@0.0.2`) is known to crash on first touch due to a vue-lynx
-> MT-loader trap; an upstream fix is in flight. Until that lands, the
-> dependable path is cloning this repo and working against the workspace
-> packages.
-
 ```sh
 git clone https://github.com/KealanAU/vyui.git
 cd vyui
@@ -71,7 +65,7 @@ pnpm --filter @vyui/kit-demo dev
 
 Scan the LAN QR with [Lynx Explorer](https://lynxjs.org/) for on-device preview, or open the printed `main.web.bundle` URL for the web preview.
 
-Inside a Vue-Lynx component you can already write against `@vyui/core` directly — once the upstream worklet-loader fix lands and `@vyui/core` republishes, the workflow below is the public install path:
+Inside a Vue-Lynx component you can already write against `@vyui/core` directly:
 
 ```vue
 <!-- App.vue -->
@@ -100,7 +94,6 @@ vyui/
 │   └── testing-utils/         # shared test helpers
 └── apps/
     └── examples/
-        ├── phase5-debug/      # broken-component sandbox
         ├── ui-demo/           # styled-component showcase
         ├── native-demo/       # broader primitive showcase
         ├── web-demo/          # web-target preview
@@ -113,7 +106,7 @@ Items below are aspirational — none of these exist today. They describe the
 intended trajectory of the project so contributors and users can see where
 it's headed.
 
-* [x] `@vyui/core` primitives (in progress; published as `^0.0.2` with a known MT-loader regression awaiting an upstream vue-lynx fix)
+* [x] `@vyui/core` primitives (in progress; published on npm)
 * [ ] `@vyui/kit` published to npm as a styled-component package
 * [ ] `@vyui/cli` — shadcn-style CLI for adding individual styled components
   to a downstream project (`npx @vyui init`, `npx @vyui add button`)

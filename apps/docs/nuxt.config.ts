@@ -3,6 +3,12 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   devtools: { enabled: true },
 
+  runtimeConfig: {
+    public: {
+      siteUrl: 'https://vyui.dev',
+    },
+  },
+
   content: {
     build: {
       markdown: {
@@ -24,6 +30,12 @@ export default defineNuxtConfig({
     },
   },
 
+  vite: {
+    optimizeDeps: {
+      include: ['@vueuse/core'],
+    },
+  },
+
   compatibilityDate: '2024-07-11',
 
   icon: {
@@ -32,15 +44,20 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Vy UI — Headless components for Vue-Lynx',
+      title: 'Vy UI',
+      templateParams: {
+        separator: '—',
+        siteName: 'Vy UI',
+      },
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         {
           name: 'description',
-          content:
-            'Vy UI is a headless, accessible component library for Vue-Lynx — bring Radix-style primitives and a styled kit to ByteDance’s native cross-platform framework.',
+          content: 'The component library for Vue-Lynx. Behavioral primitives and a styled kit for native iOS, Android, and web — from one Vue codebase.',
         },
+        { name: 'theme-color', content: '#42b883' },
+        { name: 'robots', content: 'index, follow' },
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },

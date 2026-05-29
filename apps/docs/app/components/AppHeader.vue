@@ -35,7 +35,7 @@ const headerStyle = computed(() => {
       <span class="inline-flex items-center gap-2">
         <AppLogo />
         <span
-          class="bg-(--color-warm-mist) text-(--color-ink) inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium tracking-tight"
+          class="badge-aurora text-(--color-ink) inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium tracking-tight"
         >
           pre-alpha
         </span>

@@ -1,15 +1,15 @@
 ---
 seo:
   title: Vy UI — Headless components for Vue-Lynx
-  description: Radix-style primitives and an opinionated styled kit for ByteDance's Vue-Lynx. Pre-alpha.
+  description: The component library for Vue-Lynx. Behavioral primitives and a styled kit for native iOS, Android, and web — from one Vue codebase.
 ---
 
-::u-page-hero{class="bg-gradient-to-b from-(--color-warm-mist)/40 to-canvas dark:bg-none"}
+::u-page-hero{class="hero-full-height"}
 ---
 orientation: vertical
 ---
 #headline
-  :::div{class="inline-flex items-center gap-2 rounded-full bg-(--color-warm-mist) text-(--color-terracotta) px-3 py-1 text-xs font-medium tracking-tight"}
+  :::div{class="inline-flex items-center gap-2 rounded-full badge-aurora text-(--color-ink) px-3 py-1 text-xs font-medium tracking-tight"}
   :u-icon{name="i-lucide-flask-conical" class="size-3.5"}
   Pre-alpha — expect breaking changes
   :::
@@ -18,35 +18,10 @@ orientation: vertical
 Headless components for Vue-Lynx.
 
 #description
-Vy UI brings Radix-style primitives and an opinionated styled kit to ByteDance's native cross-platform framework. The packages exist, the demos run, and most things are still broken. This page is a preview of what's being built.
-
-#links
-  :::u-button
-  ---
-  to: /getting-started
-  size: xl
-  trailing-icon: i-lucide-arrow-right
-  ---
-  Get started
-  :::
-
-  :::u-button
-  ---
-  icon: i-simple-icons-github
-  color: neutral
-  variant: outline
-  size: xl
-  to: https://github.com/KealanAU/vyui
-  target: _blank
-  ---
-  Star on GitHub
-  :::
+The component library for Vue-Lynx. Behavioral primitives, a styled kit, and native rendering across iOS, Android, and web — all from one Vue codebase. Pre-alpha. Shipping fast.
 ::
 
 ::u-page-section{class="border-t border-default"}
-#headline
-Packages
-
 #title
 Two layers, one ecosystem
 
@@ -88,10 +63,7 @@ Pick the level of opinion you want. Drop down to primitives whenever you need to
   :::
 ::
 
-::u-page-section{class="border-t border-default bg-(--color-fog)"}
-#headline
-Targets
-
+::u-page-section{class="border-t border-default"}
 #title
 One codebase, three targets
 
