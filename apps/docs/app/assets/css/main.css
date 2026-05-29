@@ -60,30 +60,46 @@ body {
 
 /*
   Landing-page ambient background.
-  Three fixed blobs (violet, sky, rose) sit at the viewport edges,
-  over a barely-there green base — the "Vue green behind everything."
-  background-attachment: fixed keeps them anchored as the page scrolls.
+  Three blobs — green (upper-left), indigo (right), fuchsia (lower) —
+  spread across the first viewport over a barely-there green base, the
+  "Vue green behind everything."
+  background-attachment: scroll anchors them to the top of the page so
+  the aurora lives on the first (hero) panel and scrolls away with it.
   The .landing-page class is added only on the home route (index.vue).
 */
 body.landing-page {
   background-color: #f0fdf9;
   background-image:
-    radial-gradient(ellipse 55vw 65vh at -5vw -5vh,
-      color-mix(in srgb, #ddd6fe 55%, transparent),
+    radial-gradient(ellipse 55vw 65vh at 15vw 14vh,
+      color-mix(in srgb, #bbf7d0 55%, transparent),
       transparent 70%),
-    radial-gradient(ellipse 50vw 55vh at 105vw 50vh,
-      color-mix(in srgb, #bae6fd 50%, transparent),
+    radial-gradient(ellipse 50vw 55vh at 80vw 47vh,
+      color-mix(in srgb, #c7d2fe 50%, transparent),
       transparent 70%),
-    radial-gradient(ellipse 55vw 55vh at 45vw 105vh,
-      color-mix(in srgb, #fecdd3 48%, transparent),
+    radial-gradient(ellipse 55vw 55vh at 47vw 84vh,
+      color-mix(in srgb, #f5d0fe 48%, transparent),
       transparent 70%);
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll;
 }
 
+/* Dark: same trio and positions, nudged just one tone up (300-step) and
+   kept at low opacity so they stay soft against the dark canvas rather
+   than reading as bright saturated blobs. */
 .dark body.landing-page {
   background-color: var(--ui-bg);
-  background-image: none;
+  background-image:
+    radial-gradient(ellipse 55vw 65vh at 15vw 14vh,
+      color-mix(in srgb, #6ee7b7 20%, transparent),
+      transparent 70%),
+    radial-gradient(ellipse 50vw 55vh at 80vw 47vh,
+      color-mix(in srgb, #a5b4fc 18%, transparent),
+      transparent 70%),
+    radial-gradient(ellipse 55vw 55vh at 47vw 84vh,
+      color-mix(in srgb, #f0abfc 16%, transparent),
+      transparent 70%);
+  background-repeat: no-repeat;
+  background-attachment: scroll;
 }
 
 /*
@@ -196,16 +212,15 @@ body.landing-page {
   --ui-border-accented: var(--color-ink-600);
 }
 
-/* Aurora pill — violet → sky → rose, matches the landing page blobs */
+/* Aurora pill — violet → indigo → fuchsia, matches the landing page blobs */
 .badge-aurora {
-  background: linear-gradient(120deg, #ddd6fe 0%, #bae6fd 50%, #fecdd3 100%);
+  background: linear-gradient(120deg, #ddd6fe 0%, #c7d2fe 50%, #f5d0fe 100%);
 }
 
+/* Dark: same pastel scheme, nudged just one tone up (300-step). Stays
+   light enough that the dark ink text still reads on top. */
 .dark .badge-aurora {
-  background: linear-gradient(120deg,
-    color-mix(in srgb, #ddd6fe 20%, transparent) 0%,
-    color-mix(in srgb, #bae6fd 20%, transparent) 50%,
-    color-mix(in srgb, #fecdd3 20%, transparent) 100%);
+  background: linear-gradient(120deg, #c4b5fd 0%, #a5b4fc 50%, #f0abfc 100%);
 }
 
 /* Display weight for prominent headings + hero typography */

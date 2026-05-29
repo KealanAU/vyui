@@ -4,6 +4,8 @@
 
 **Vy UI** brings a Radix-style primitives layer to the Vue-Lynx ecosystem. Build native mobile apps for iOS, Android, and Web from a single Vue codebase, with components you own and can modify.
 
+> **Vy** is Swedish for **view** — a triple nod to Lynx's `<view>`-based rendering model, to Vue itself (French for *view*), and to the **vy** sitting inside Vue + Lynx.
+
 > ⚠️ **Status: pre-alpha.** Vue-Lynx itself is pre-alpha. APIs will change. Not production-ready.
 
 ***
