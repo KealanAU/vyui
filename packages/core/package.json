@@ -25,7 +25,9 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "LICENSE-Apache-2.0.txt",
+    "NOTICE"
   ],
   "exports": {
     ".": {

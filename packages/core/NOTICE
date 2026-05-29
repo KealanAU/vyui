@@ -1,0 +1,61 @@
+vyui
+Copyright (c) 2026 Kealan Clarke
+
+This product includes software developed by third parties.
+
+------------------------------------------------------------------------------
+Portions adapted from lynx-family/lynx-ui (https://github.com/lynx-family/lynx-ui)
+Licensed under the Apache License, Version 2.0.
+
+  Lynx Project
+  Copyright (c) 2018-2026 ByteDance Inc.
+  Copyright (c) 2026 TikTok Inc.
+  All rights reserved.
+
+Apache-2.0 license text: see LICENSES/Apache-2.0.txt
+Adapted files carry an "Adapted from lynx-family/lynx-ui (Apache-2.0)" header
+and have been modified for the Vue + Lynx runtime.
+
+Affected paths:
+  packages/core/src/shared/utils/*
+  packages/core/src/components/Button/*
+  packages/core/src/components/Dialog/dialogContentContext.ts
+  packages/core/src/components/Draggable/*
+  packages/core/src/components/FeedList/*
+  packages/core/src/components/Form/*
+  packages/core/src/components/Input/* (incl. KeyboardAware family, Textarea)
+  packages/core/src/components/LazyComponent/*
+  packages/core/src/components/List/*
+  packages/core/src/components/Navigation/*
+  packages/core/src/components/Presence/*
+  packages/core/src/components/ScrollView/*
+  packages/core/src/components/Sheet/*
+  packages/core/src/components/Slider/SliderImplMTS.vue
+  packages/core/src/components/Sortable/*
+  packages/core/src/components/SwipeAction/*
+  packages/core/src/components/Swiper/*
+
+------------------------------------------------------------------------------
+Portions adapted from unovue/reka-ui (https://github.com/unovue/reka-ui)
+Licensed under the MIT License.
+Adapted files carry an "Adapted from reka-ui (MIT)" header.
+
+------------------------------------------------------------------------------
+Portions adapted from melt-ui/melt-ui (https://github.com/melt-ui/melt-ui)
+Licensed under the MIT License.
+Affected paths:
+  packages/core/src/date/calendar.ts
+  packages/core/src/date/types.ts
+  packages/core/src/shared/useDateFormatter.ts
+
+------------------------------------------------------------------------------
+Portions adapted from huxpro/vue-lynx (https://github.com/Huxpro/vue-lynx)
+Licensed under the MIT License.
+Affected paths:
+  packages/core/src/shared/composables/useAnimate.ts
+
+------------------------------------------------------------------------------
+Portions adapted from lynx-family/lynx-stack @lynx-js/react-use
+(https://github.com/lynx-family/lynx-stack) — Apache-2.0.
+Affected paths:
+  packages/core/src/shared/composables/useTouchEmulation.ts
