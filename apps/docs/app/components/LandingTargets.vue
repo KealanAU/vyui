@@ -13,7 +13,7 @@ const features = [
   {
     icon: 'i-lucide-globe',
     title: 'Web',
-    description: 'Lynx Web target compiles to a browser bundle for previews and progressive rollouts.',
+    description: 'Lynx Web target compiles to a browser bundle. Full event parity with native (tap/hover vs click) is on the roadmap.',
   },
 ]
 </script>

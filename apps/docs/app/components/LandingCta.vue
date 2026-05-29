@@ -17,7 +17,7 @@ const links = [
 </script>
 
 <template>
-  <UPageCta
+  <UPageCTA
     class="border-t border-default"
     title="Component docs are on the way"
     description="A per-component reference with props, slots, events, and live demos is the next thing being built. Until then, the source is the documentation."
