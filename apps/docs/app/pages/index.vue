@@ -1,10 +1,10 @@
 <script setup lang="ts">
 useSeoMeta({
   titleTemplate: '',
-  title: 'Vy UI — Headless components for Vue-Lynx',
-  ogTitle: 'Vy UI — Headless components for Vue-Lynx',
-  description: 'The component library for Vue-Lynx. Behavioral primitives, a styled kit, and native rendering across iOS, Android, and web — all from one Vue codebase.',
-  ogDescription: 'The component library for Vue-Lynx. Behavioral primitives, a styled kit, and native rendering across iOS, Android, and web — all from one Vue codebase.',
+  title: 'Vy UI — Styled & headless components for Vue-Lynx',
+  ogTitle: 'Vy UI — Styled & headless components for Vue-Lynx',
+  description: 'The component library for Vue-Lynx. A styled kit on headless, accessible primitives, with native rendering across iOS, Android, and web — all from one Vue codebase.',
+  ogDescription: 'The component library for Vue-Lynx. A styled kit on headless, accessible primitives, with native rendering across iOS, Android, and web — all from one Vue codebase.',
 })
 
 useHead({ bodyAttrs: { class: 'landing-page' } })

@@ -223,6 +223,21 @@ body.landing-page {
   background: linear-gradient(120deg, #c4b5fd 0%, #a5b4fc 50%, #f0abfc 100%);
 }
 
+/* Aurora gradient text — reuses the badge palette as a clipped text fill */
+.text-aurora {
+  background: linear-gradient(120deg, #8b5cf6 0%, #6366f1 50%, #d946ef 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dark .text-aurora {
+  background: linear-gradient(120deg, #c4b5fd 0%, #a5b4fc 50%, #f0abfc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 /* Display weight for prominent headings + hero typography */
 .font-display,
 .u-page-hero h1,

@@ -1,3 +1,58 @@
+<script setup lang="ts">
+const words = ['Headless', 'Styled']
+
+const display = ref(words[0])
+const cursor = ref(true)
+
+let timer: ReturnType<typeof setTimeout> | undefined
+let blink: ReturnType<typeof setInterval> | undefined
+
+onMounted(() => {
+  let wordIndex = 0
+  let charIndex = words[0]!.length
+  let deleting = false
+
+  const tick = () => {
+    const current = words[wordIndex]!
+
+    if (deleting) {
+      charIndex--
+      display.value = current.slice(0, charIndex)
+      if (charIndex === 0) {
+        deleting = false
+        wordIndex = (wordIndex + 1) % words.length
+      }
+    } else {
+      charIndex++
+      display.value = current.slice(0, charIndex)
+      if (charIndex === current.length) {
+        deleting = true
+        // Pause on the full word before deleting again.
+        timer = setTimeout(tick, 1800)
+        return
+      }
+    }
+
+    timer = setTimeout(tick, deleting ? 60 : 110)
+  }
+
+  // Hold the initial word briefly, then start the loop.
+  timer = setTimeout(() => {
+    deleting = true
+    tick()
+  }, 1800)
+
+  blink = setInterval(() => {
+    cursor.value = !cursor.value
+  }, 530)
+})
+
+onBeforeUnmount(() => {
+  if (timer) clearTimeout(timer)
+  if (blink) clearInterval(blink)
+})
+</script>
+
 <template>
   <UPageHero orientation="vertical" class="hero-full-height">
     <template #headline>
@@ -8,11 +63,16 @@
     </template>
 
     <template #title>
-      Headless components for Vue-Lynx.
+      <span class="text-aurora" aria-hidden="true">{{ display }}</span><span
+        class="text-aurora font-light"
+        :class="cursor ? 'opacity-100' : 'opacity-0'"
+        aria-hidden="true"
+      >|</span>
+      <span class="sr-only">Headless and styled</span> components for Vue-Lynx.
     </template>
 
     <template #description>
-      The component library for Vue-Lynx. Behavioral primitives, a styled kit, and native rendering across iOS, Android, and web — all from one Vue codebase. Pre-alpha. Shipping fast.
+      The component library for Vue-Lynx. A styled kit on headless, accessible primitives, with native rendering across iOS, Android, and web — all from one Vue codebase. Pre-alpha. Shipping fast.
     </template>
   </UPageHero>
 </template>
