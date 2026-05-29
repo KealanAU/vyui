@@ -18,6 +18,15 @@ import { getIconData, iconToHTML, iconToSVG } from '@iconify/utils'
 const sets = new Map<string, IconifyJSON>()
 
 /**
+ * Memoizes resolved SVG strings keyed on `name|size|color`. Resolution is pure
+ * for a given registered set, and a list of repeated icons (e.g. a `check` per
+ * row) would otherwise re-run `parseName` + `iconToSVG` + the `currentColor`
+ * regex for every instance. Cleared on `registerIconSet` so a name that
+ * resolved to `null` before its set was registered re-resolves afterwards.
+ */
+const svgCache = new Map<string, string | null>()
+
+/**
  * Register an Iconify icon set so `<Icon>` can resolve names under its prefix.
  *
  * @example
@@ -35,6 +44,9 @@ const sets = new Map<string, IconifyJSON>()
  */
 export function registerIconSet(prefix: string, data: IconifyJSON): void {
   sets.set(prefix, data)
+  // A newly registered set can change what previously-cached names resolve to
+  // (including cached `null`s), so drop the memo.
+  svgCache.clear()
 }
 
 export interface ResolveIconOptions {
@@ -68,6 +80,17 @@ function parseName(name: string): [string, string] | null {
  * prefix isn't registered / the icon doesn't exist.
  */
 export function resolveIconSvg(name: string, opts: ResolveIconOptions = {}): string | null {
+  const cacheKey = `${name}|${opts.size ?? ''}|${opts.color ?? ''}`
+  const cached = svgCache.get(cacheKey)
+  if (cached !== undefined)
+    return cached
+
+  const svg = computeIconSvg(name, opts)
+  svgCache.set(cacheKey, svg)
+  return svg
+}
+
+function computeIconSvg(name: string, opts: ResolveIconOptions): string | null {
   const parsed = parseName(name)
   if (!parsed)
     return null

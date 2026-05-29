@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { render } from '@vyui/testing-utils'
 import Icon, { type IconProps } from './Icon.vue'
-import { registerIconSet } from './resolve'
+import { registerIconSet, resolveIconSvg } from './resolve'
 
 // `resolve.ts` no longer eagerly registers `lucide`, so the test owns its
 // fixture. A single-icon hand-crafted set keeps the test isolated from the
@@ -63,6 +63,33 @@ describe('Icon (string name)', () => {
     const { container } = mountWith({ name: 'lucide:check', size: 'banana' })
     const style = container.querySelector('svg')?.getAttribute('style') ?? ''
     expect(style).toContain('width: 16px')
+  })
+})
+
+describe('resolveIconSvg (cache)', () => {
+  it('returns identical results for repeated calls with the same key', () => {
+    const a = resolveIconSvg('lucide:check', { size: 16 })
+    const b = resolveIconSvg('lucide:check', { size: 16 })
+    expect(a).not.toBeNull()
+    expect(b).toBe(a)
+  })
+
+  it('keys on size and color so variants do not collide', () => {
+    const red = resolveIconSvg('lucide:check', { size: 16, color: '#ff0000' })
+    const blue = resolveIconSvg('lucide:check', { size: 16, color: '#0000ff' })
+    expect(red).toContain('#ff0000')
+    expect(blue).toContain('#0000ff')
+  })
+
+  it('re-resolves a name after its set is registered (clears cached null)', () => {
+    expect(resolveIconSvg('mdi:account', { size: 16 })).toBeNull()
+    registerIconSet('mdi', {
+      prefix: 'mdi',
+      width: 24,
+      height: 24,
+      icons: { account: { body: '<path d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8"/>' } },
+    })
+    expect(resolveIconSvg('mdi:account', { size: 16 })).not.toBeNull()
   })
 })
 
