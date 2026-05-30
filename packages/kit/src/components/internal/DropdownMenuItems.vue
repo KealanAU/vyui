@@ -1,9 +1,8 @@
 <script lang="ts">
 /**
- * Internal — renders the items list for `VyDropdownMenu`. Extracted so both
- * presentation modes (anchor + sheet) mount the same items without
- * duplicating the v-for. Per-item slots are forwarded from the parent via
- * `useSlots()` and indexed by the item's `slot` field.
+ * Internal — renders the items list for `VyDropdownMenu`. Per-item slots are
+ * forwarded from the parent via `useSlots()` and indexed by the item's `slot`
+ * field.
  *
  * Not exported from the package — its only consumer is `DropdownMenu.vue`.
  */

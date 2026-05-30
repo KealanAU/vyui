@@ -35,7 +35,7 @@ export interface SliderRootProps extends PrimitiveProps, FormFieldProps {
   disabled?: boolean
   /** The orientation of the slider. */
   orientation?: DataOrientation
-  /** The reading direction of the combobox when applicable. <br> If omitted, inherits globally from `ConfigProvider` or assumes LTR (left-to-right) reading mode. */
+  /** The reading direction of the slider when applicable. <br> If omitted, inherits globally from `ConfigProvider` or assumes LTR (left-to-right) reading mode. */
   dir?: Direction
   /** Whether the slider is visually inverted. */
   inverted?: boolean

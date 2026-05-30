@@ -2,8 +2,8 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useAppConfig } from './useAppConfig'
 
 // Ported from nuxt/ui v3.0.2 `src/runtime/composables/useComponentIcons.ts`.
-// The `avatar` prop is typed as `unknown` here — VyAvatar is not yet built;
-// when it lands this type tightens to `AvatarProps`.
+// The `avatar` prop is left loosely typed as `unknown` here to avoid a hard
+// dependency on `Avatar`'s props.
 
 export interface UseComponentIconsProps {
   /**

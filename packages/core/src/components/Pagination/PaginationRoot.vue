@@ -13,7 +13,7 @@ type PaginationRootContext = {
 }
 
 export interface PaginationRootProps extends PrimitiveProps {
-  /** The controlled value of the current page. Can be binded as `v-model:page`. */
+  /** The controlled value of the current page. Can be bound as `v-model:page`. */
   page?: number
   /**
    * The value of the page that should be active when initially rendered.

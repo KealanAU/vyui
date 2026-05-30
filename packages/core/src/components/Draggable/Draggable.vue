@@ -68,7 +68,7 @@ export type DraggableEmits = {
 </script>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 const props = withDefaults(defineProps<DraggableProps>(), {
@@ -310,10 +310,6 @@ function _emitEnd(x: number, y: number, dx: number, dy: number, vx: number, vy: 
 }
 
 // --- Lifecycle -----------------------------------------------------------
-
-onMounted(() => {
-  // Origin = (0,0); no initial transform needed.
-})
 
 onUnmounted(() => {
   xQueueRef.current = []

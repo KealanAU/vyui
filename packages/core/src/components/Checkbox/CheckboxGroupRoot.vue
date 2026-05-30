@@ -10,7 +10,7 @@ import { useStandardVModel } from '@/shared/composables'
 export interface CheckboxGroupRootProps<T = AcceptableValue> extends PrimitiveProps, FormFieldProps {
   /** The value of the checkbox when it is initially rendered. Use when you do not need to control its value. */
   defaultValue?: T[]
-  /** The controlled value of the checkbox. Can be binded with v-model. */
+  /** The controlled value of the checkbox. Can be bound with v-model. */
   modelValue?: T[]
   /** When `true`, prevents the user from interacting with the checkboxes */
   disabled?: boolean

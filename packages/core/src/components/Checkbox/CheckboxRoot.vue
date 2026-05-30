@@ -9,7 +9,7 @@ import { injectCheckboxGroupRootContext } from './CheckboxGroupRoot.vue'
 export interface CheckboxRootProps<T = boolean> extends PrimitiveProps, FormFieldProps {
   /** The value of the checkbox when it is initially rendered. Use when you do not need to control its value. */
   defaultValue?: T | 'indeterminate'
-  /** The controlled value of the checkbox. Can be binded with v-model. */
+  /** The controlled value of the checkbox. Can be bound with v-model. */
   modelValue?: T | 'indeterminate' | null
   /** When `true`, prevents the user from interacting with the checkbox */
   disabled?: boolean
