@@ -60,6 +60,14 @@ export interface A11yDescriptor {
    */
   state?: string | false | null
   /**
+   * Selection state for tabs/options. `true` announces `'selected'` via
+   * `accessibility-value`; `false`/`undefined` announces nothing (an
+   * unselected item should carry no annotation, not the word "unselected").
+   * Keeps the role trait intact — unlike a `selected` trait, which Lynx's
+   * one-trait limit would force to replace `tab`/`button`.
+   */
+  selected?: boolean
+  /**
    * Range value for slider/progress → `accessibility-value`. `text` wins;
    * otherwise composed as `"{now} of {max}"`.
    */
@@ -113,7 +121,7 @@ const ROLE_MAP: Record<A11yRole, RoleMapping> = {
   checkbox: { trait: 'button', roleDescription: 'checkbox' },
   radio: { trait: 'button', roleDescription: 'radio' },
   switch: { trait: 'button', roleDescription: 'switch' },
-  tab: { trait: 'button', roleDescription: 'tab' },
+  tab: { trait: 'tabbar', roleDescription: 'tab' },
   option: { trait: 'button' },
   menuitem: { trait: 'button' },
   slider: { trait: 'adjustable' },
@@ -125,13 +133,15 @@ const ROLE_MAP: Record<A11yRole, RoleMapping> = {
   text: { trait: 'text' },
   dialog: { trait: 'none', roleDescription: 'dialog', container: true },
   alertdialog: { trait: 'none', roleDescription: 'alert dialog', container: true },
-  alert: { trait: 'updating', roleDescription: 'alert' },
+  alert: { trait: 'none', roleDescription: 'alert' },
   menu: { trait: 'none', roleDescription: 'menu', container: true },
   summary: { trait: 'summary' },
   none: { trait: 'none' },
 }
 
 function resolveValue(d: A11yDescriptor): string | undefined {
+  if (d.selected !== undefined)
+    return d.selected ? 'selected' : undefined
   if (d.value) {
     if (d.value.text)
       return d.value.text

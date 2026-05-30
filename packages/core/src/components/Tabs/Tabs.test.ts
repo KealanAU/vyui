@@ -16,7 +16,7 @@ describe('given default Tabs', () => {
 
   describe('after tapping the second tab trigger', () => {
     beforeEach(async () => {
-      const triggers = container.querySelectorAll('[accessibility-traits="button"]')
+      const triggers = container.querySelectorAll('[accessibility-traits="tabbar"]')
       fireEvent.tap(triggers[1])
       await waitForUpdate()
     })

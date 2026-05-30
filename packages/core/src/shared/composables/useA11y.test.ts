@@ -53,6 +53,25 @@ describe('useA11y', () => {
     expect(a11y.value).toEqual({ 'accessibility-elements-hidden': true })
   })
 
+  it('maps tab to the tabbar trait', () => {
+    const a11y = useA11y({ role: 'tab' })
+    expect(a11y.value['accessibility-traits']).toBe('tabbar')
+    expect(a11y.value['accessibility-role-description']).toBe('tab')
+  })
+
+  it('maps alert to a valid trait (not the announce-suppressing "updating")', () => {
+    const a11y = useA11y({ role: 'alert', label: 'Saved' })
+    expect(a11y.value['accessibility-traits']).toBe('none')
+    expect(a11y.value['accessibility-role-description']).toBe('alert')
+  })
+
+  it('announces "selected" only when selected, never "unselected"', () => {
+    expect(useA11y({ role: 'tab', selected: true }).value['accessibility-value']).toBe('selected')
+    expect(useA11y({ role: 'tab', selected: false }).value['accessibility-value']).toBeUndefined()
+    // role trait is kept (not replaced by a selected trait)
+    expect(useA11y({ role: 'tab', selected: true }).value['accessibility-traits']).toBe('tabbar')
+  })
+
   it('sets exclusive focus for modal subtrees', () => {
     const a11y = useA11y({ role: 'dialog', exclusiveFocus: true })
     expect(a11y.value).toMatchObject({

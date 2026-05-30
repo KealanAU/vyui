@@ -25,8 +25,10 @@ describe('Toast a11y', () => {
     await waitForUpdate()
     const toast = container.querySelector('[data-testid="toast"]')!
     expect(toast).not.toBeNull()
-    // role 'alert' → valid trait 'updating' + role-description 'alert'.
-    expect(toast.getAttribute('accessibility-traits')).toBe('updating')
+    // role 'alert' → trait 'none' + role-description 'alert'. (Live announcing
+    // a foreground toast needs the runtime accessibilityAnnounce API, tracked
+    // separately — the 'updating' trait suppresses re-announcement, so it's wrong.)
+    expect(toast.getAttribute('accessibility-traits')).toBe('none')
     expect(toast.getAttribute('accessibility-role-description')).toBe('alert')
     expect(toast.getAttribute('accessibility-element')).toBe('true')
   })
