@@ -1,0 +1,29 @@
+diff --git a/plugin/dist/loaders/worklet-loader-mt.js b/plugin/dist/loaders/worklet-loader-mt.js
+index 2201679cff292214a49d6db18cc00627f31431a6..049a6456f82a9c0c1b39006528926a1ea8b6454f 100644
+--- a/plugin/dist/loaders/worklet-loader-mt.js
++++ b/plugin/dist/loaders/worklet-loader-mt.js
+@@ -1,7 +1,14 @@
++// [vyui local patch — REMOVE WHEN UPSTREAM FIXED]
++// vue-lynx's MT worklet loader only followed relative imports, so '@/…'
++// alias-imported worklets never registered on MT (TypeError: cannot read
++// property 'bind' of undefined). This widens extractLocalImports to also
++// follow '@/…'. Track: docs/upstream/vue-lynx-mt-worklet-import-issue.md.
++// To undo: delete patches/vue-lynx@0.4.0.patch + its pnpm.patchedDependencies
++// entry in the root package.json, then `pnpm install`.
+ import * as __WEBPACK_EXTERNAL_MODULE__lynx_js_react_transform_7b1e07c1__ from "@lynx-js/react/transform";
+ function extractLocalImports(source) {
+     const specifiers = new Set();
+-    const fromRe = /from\s+['"](\.[^'"]+)['"]/g;
++    const fromRe = /from\s+['"]((?:\.|@\/)[^'"]+)['"]/g;
+     let match;
+     while(null !== (match = fromRe.exec(source))){
+         const lineStart = source.lastIndexOf('\n', match.index) + 1;
+@@ -10,7 +17,7 @@ function extractLocalImports(source) {
+         if (/with\s*\{/.test(line)) continue;
+         specifiers.add(match[1]);
+     }
+-    const bareRe = /import\s+['"](\.[^'"]+)['"]/g;
++    const bareRe = /import\s+['"]((?:\.|@\/)[^'"]+)['"]/g;
+     while(null !== (match = bareRe.exec(source)))specifiers.add(match[1]);
+     if (0 === specifiers.size) return '';
+     return [
