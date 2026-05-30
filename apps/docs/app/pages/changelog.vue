@@ -55,7 +55,7 @@ useSeoMeta({
           <div class="size-3" />
           <div class="flex items-center gap-2">
             <UIcon
-              name="i-lucide-palette"
+              name="i-lucide-layers"
               class="text-info size-4"
             />
             <code class="text-highlighted">@vyui/kit</code>
