@@ -37,7 +37,11 @@ export interface ButtonProps {
    * core button renders a `<view>`, so this is currently a no-op forward.
    */
   type?: 'button' | 'submit' | 'reset'
-  /** Focus the underlying button on mount. */
+  /**
+   * Focus the button on mount. Kept for API parity with Nuxt UI v4 — the
+   * Vue-Lynx core button renders a non-focusable `<view>`, so this is
+   * currently a no-op.
+   */
   autofocus?: boolean
   /** Text label. Overridden by the default slot if provided. */
   label?: string

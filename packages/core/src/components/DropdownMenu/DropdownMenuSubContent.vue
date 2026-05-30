@@ -34,9 +34,8 @@ const emitAsProps = useEmitAsProps(emit)
 // inject DropdownMenuSubContext — DropdownMenuSub is an ancestor of this tree.
 const capturedProvides = captureProvides()
 
-// BUG FIX: the old SubContent used `<Teleport to="#overlay-root">`, but Lynx
-// has no DOM and no element with that id, so sub-menus never rendered. It now
-// registers with the same `overlayStore` portal as DropdownMenuContent.
+// Lynx has no DOM and no `#overlay-root` element to `<Teleport>` into, so
+// register with the same `overlayStore` portal as DropdownMenuContent.
 const PortalRegistration = defineComponent({
   name: 'DropdownMenuSubContentPortal',
   setup() {

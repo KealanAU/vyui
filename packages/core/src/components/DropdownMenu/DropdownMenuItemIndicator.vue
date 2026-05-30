@@ -14,7 +14,6 @@ withDefaults(defineProps<DropdownMenuItemIndicatorProps>(), {
   as: 'view',
 })
 
-// Attempt to resolve from checkbox or radio context
 const checkboxContext = injectDropdownMenuCheckboxItemContext(null)
 const radioContext = injectDropdownMenuRadioItemContext(null)
 

@@ -7,7 +7,7 @@ import { createContext, useForwardExpose } from '@/shared'
 export interface CollapsibleRootProps extends PrimitiveProps {
   /** The open state of the collapsible when it is initially rendered. <br> Use when you do not need to control its open state. */
   defaultOpen?: boolean
-  /** The controlled open state of the collapsible. Can be binded with `v-model`. */
+  /** The controlled open state of the collapsible. Can be bound with `v-model`. */
   open?: boolean
   /** When `true`, prevents the user from interacting with the collapsible. */
   disabled?: boolean

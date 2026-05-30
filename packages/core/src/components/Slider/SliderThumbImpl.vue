@@ -127,10 +127,9 @@ onUnmounted(() => {
         position: 'absolute',
         [orientation!.startEdge.value]: `calc(${percent}% + ${thumbInBoundsOffset}px)`,
         /**
-         * There will be no value on initial render while we work out the index so we hide thumbs
-         * without a value, otherwise SSR will render them in the wrong position before they
-         * snap into the correct position during hydration which would be visually jarring for
-         * slower connections.
+         * There is no value on the initial render while we resolve the thumb's
+         * index, so hide value-less thumbs to avoid a flash at the wrong
+         * position before they snap into place once the index is known.
          */
         display: !isMounted && value === undefined ? 'none' : undefined,
       }"

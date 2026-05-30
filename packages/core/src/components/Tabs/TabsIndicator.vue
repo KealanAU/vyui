@@ -101,7 +101,7 @@ watch(
 
 // Lynx native ignores `var()` references that point at custom properties set
 // via inline `:style` — see the canonical write-up in
-// `core/src/components/Slider/SliderThumbImpl.vue` (~L45). Keep size +
+// `core/src/components/Slider/SliderThumbImpl.vue`. Keep size +
 // transform as concrete pixel values so the indicator actually paints.
 const indicatorInlineStyle = computed(() => {
   const { size, position } = indicatorStyle.value

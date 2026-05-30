@@ -27,10 +27,6 @@ import { Primitive } from '@/components/Primitive'
 import { useA11y } from '@/shared/composables'
 import { injectSelectRootContext } from './SelectRoot.vue'
 
-if (__DEV__) {
-  // value must not be empty string
-}
-
 const props = withDefaults(defineProps<SelectItemProps>(), {
   as: 'view',
   disabled: false,

@@ -4,7 +4,7 @@ import { createContext } from '@/shared'
 import { PresenceState } from '@/components/Presence'
 
 export interface DialogRootProps {
-  /** The controlled open state of the dialog. Can be binded as `v-model:open`. */
+  /** The controlled open state of the dialog. Can be bound as `v-model:open`. */
   open?: boolean
   /** The open state of the dialog when it is initially rendered. Use when you do not need to control its open state. */
   defaultOpen?: boolean
