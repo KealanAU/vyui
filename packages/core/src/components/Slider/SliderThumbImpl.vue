@@ -8,11 +8,12 @@ export interface SliderThumbImplProps extends PrimitiveProps {
 
 <script setup lang="ts">
 import { useMounted } from '@vueuse/core'
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, useAttrs } from 'vue'
 import { useMainThreadRef } from 'vue-lynx'
 import { useCollection } from '@/components/Collection'
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose, useSize } from '@/shared'
+import { useA11y } from '@/shared/composables'
 import { injectSliderRootContext } from './SliderRoot.vue'
 import { convertValueToPercentage, getLabel, getThumbInBoundsOffset, injectSliderOrientationContext } from './utils'
 
@@ -31,6 +32,13 @@ const { CollectionItem } = useCollection()
 const value = computed(() => rootContext.currentModelValue.value[props.index])
 const percent = computed(() => value.value === undefined ? 0 : convertValueToPercentage(value.value, rootContext.min.value ?? 0, rootContext.max.value ?? 100))
 const label = computed(() => getLabel(props.index, rootContext.currentModelValue.value.length))
+
+const attrs = useAttrs()
+const a11y = useA11y(() => ({
+  role: 'slider',
+  value: { now: value.value ?? null, max: rootContext.max.value ?? 100 },
+  label: (attrs['accessibility-label'] as string | undefined) || label.value,
+}))
 const size = useSize(thumbElement as any)
 const orientationSize = computed(() => size[orientation!.size].value)
 const thumbInBoundsOffset = computed(() => {
@@ -107,11 +115,9 @@ onUnmounted(() => {
 <template>
   <CollectionItem>
     <Primitive
-      v-bind="$attrs"
+      v-bind="{ ...$attrs, ...a11y }"
       :ref="forwardRef"
       :main-thread-ref="rootContext.mtsEnabled.value ? thumbMTRef : undefined"
-      accessibility-traits="adjustable"
-      :accessibility-label="$attrs['accessibility-label'] || label"
       :data-disabled="rootContext.disabled.value ? '' : undefined"
       :data-orientation="rootContext.orientation.value"
       :as-child="asChild"

@@ -8,6 +8,7 @@ export interface DialogTriggerProps extends PrimitiveProps {}
 import { computed } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
+import { useA11y } from '@/shared/composables'
 import { injectDialogRootContext } from './DialogRoot.vue'
 import { resolveBusyState } from '@/components/Presence'
 
@@ -27,13 +28,18 @@ function onTap() {
   if (busy.value) return
   rootContext.onOpenToggle()
 }
+
+const a11y = useA11y(() => ({
+  role: 'button',
+  state: rootContext.open.value ? 'expanded' : 'collapsed',
+}))
 </script>
 
 <template>
   <Primitive
     :as="props.as"
     :as-child="props.asChild"
-    accessibility-traits="button"
+    v-bind="a11y"
     :data-state="rootContext.open.value ? 'open' : 'closed'"
     :data-busy="busy ? '' : undefined"
     @tap="onTap"

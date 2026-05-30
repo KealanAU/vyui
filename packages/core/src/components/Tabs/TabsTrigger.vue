@@ -14,6 +14,7 @@ export interface TabsTriggerProps extends PrimitiveProps {
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectTabsRootContext } from './TabsRoot.vue'
 import { makeContentId, makeTriggerId } from './utils'
 
@@ -52,13 +53,19 @@ onMounted(() => {
 onBeforeUnmount(() => {
   rootContext.unregisterTrigger(props.value)
 })
+
+const a11y = useA11y(() => ({
+  role: 'tab',
+  state: isSelected.value ? 'selected' : 'unselected',
+  disabled: props.disabled,
+}))
 </script>
 
 <template>
   <Primitive
+    v-bind="a11y"
     :id="triggerId"
     :ref="forwardRef"
-    accessibility-traits="button"
     :as="as"
     :as-child="asChild"
     :data-state="isSelected ? 'active' : 'inactive'"

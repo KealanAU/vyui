@@ -80,6 +80,7 @@ function validateMax(max: number): number {
 import { useVModel } from '@vueuse/core'
 import { computed, nextTick, watch } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 
 const props = withDefaults(defineProps<ProgressRootProps>(), {
   max: DEFAULT_MAX,
@@ -142,13 +143,20 @@ provideProgressRootContext({
   max,
   progressState,
 })
+
+const a11y = useA11y(() => ({
+  role: 'progressbar',
+  value: {
+    now: modelValue.value ?? null,
+    max: max.value,
+    text: props.getValueText?.(modelValue.value, max.value) ?? props.getValueLabel(modelValue.value, max.value),
+  },
+}))
 </script>
 
 <template>
-  <!-- TODO(a11y #13): native a11y deferred. reka-ui's aria-value*/role removed
-       (inert on Lynx). Proper pass maps to accessibility-value="$now of $max" —
-       see docs/plans/lynx-compat.md. getValueLabel/getValueText props kept for it. -->
   <Primitive
+    v-bind="a11y"
     :as-child="asChild"
     :as="as"
     :data-state="progressState"

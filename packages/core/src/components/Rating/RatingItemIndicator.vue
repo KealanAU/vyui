@@ -12,6 +12,9 @@ export interface RatingItemIndicatorProps extends PrimitiveProps {
 </script>
 
 <script setup lang="ts">
+import { useAttrs } from 'vue'
+import { useA11y } from '@/shared/composables'
+
 defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<RatingItemIndicatorProps>(), { as: 'view' })
@@ -40,6 +43,14 @@ function onTap() {
     return
   rootContext.changeModelValue(props.step)
 }
+
+const attrs = useAttrs()
+const a11y = useA11y(() => ({
+  role: 'option',
+  disabled: rootContext.disabled.value,
+  state: isActive.value ? 'selected' : 'unselected',
+  label: attrs['accessibility-label'] as string | undefined,
+}))
 </script>
 
 <template>
@@ -47,8 +58,7 @@ function onTap() {
     :ref="forwardRef"
     :as="as"
     :as-child="asChild"
-    accessibility-traits="button"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     :data-state="isActive ? 'active' : undefined"
     :data-disabled="rootContext.disabled.value ? '' : undefined"
     :disabled="rootContext.disabled.value ? '' : undefined"

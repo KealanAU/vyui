@@ -11,7 +11,7 @@ describe('given default Toggle', () => {
 
   beforeEach(() => {
     ;({ container } = render(ToggleStory))
-    toggle = container.querySelector('[accessibility-traits="button"]')!
+    toggle = container.querySelector('[data-state]')!
   })
 
   it('should not be toggled yet', () => {
@@ -34,7 +34,7 @@ describe('given default Toggle', () => {
         },
         template: `<Toggle @update:model-value="onUpdate">Label</Toggle>`,
       })
-      const t = c.querySelector('[accessibility-traits="button"]')!
+      const t = c.querySelector('[data-state]')!
       fireEvent.tap(t)
       await waitForUpdate()
       expect(updates).toEqual([true])
@@ -67,7 +67,7 @@ describe('given default Toggle', () => {
         },
         template: `<Toggle :model-value="value" @update:model-value="onUpdate">Label</Toggle>`,
       })
-      const t = c.querySelector('[accessibility-traits="button"]')!
+      const t = c.querySelector('[data-state]')!
       fireEvent.tap(t)
       await waitForUpdate()
       fireEvent.tap(t)
@@ -83,7 +83,7 @@ describe('given disabled Toggle', () => {
 
   beforeEach(() => {
     ;({ container } = render(ToggleStory, { disabled: true }))
-    toggle = container.querySelector('[accessibility-traits="button"]')!
+    toggle = container.querySelector('[data-state]')!
   })
 
   it('should not be toggled yet', () => {
@@ -109,7 +109,7 @@ describe('given disabled Toggle', () => {
         },
         template: `<Toggle disabled @update:model-value="onUpdate">Label</Toggle>`,
       })
-      const t = c.querySelector('[accessibility-traits="button"]')!
+      const t = c.querySelector('[data-state]')!
       fireEvent.tap(t)
       await waitForUpdate()
       expect(updates).toEqual([])

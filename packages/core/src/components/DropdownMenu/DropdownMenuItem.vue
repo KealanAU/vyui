@@ -16,6 +16,7 @@ export type DropdownMenuItemEmits = {
 
 <script setup lang="ts">
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectDropdownMenuRootContext } from './DropdownMenuRoot.vue'
 
 const props = withDefaults(defineProps<DropdownMenuItemProps>(), {
@@ -26,6 +27,11 @@ const emit = defineEmits<DropdownMenuItemEmits>()
 
 const rootContext = injectDropdownMenuRootContext()
 
+const a11y = useA11y(() => ({
+  role: 'menuitem',
+  disabled: props.disabled,
+}))
+
 function handleSelect() {
   emit('select')
   rootContext.onOpenChange(false)
@@ -35,10 +41,9 @@ function handleSelect() {
 <template>
   <Primitive
     :as="as"
-    :accessibility-traits="disabled ? 'disabled' : 'button'"
     :data-disabled="disabled ? '' : undefined"
     :data-value="textValue"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     @tap="!disabled && handleSelect()"
   >
     <slot />

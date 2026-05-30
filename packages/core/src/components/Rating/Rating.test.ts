@@ -27,7 +27,10 @@ describe('given disabled Rating', () => {
 
   beforeEach(() => {
     ;({ container } = render(Rating, { defaultValue: 1, disabled: true, length: 3 }))
-    items = container.querySelectorAll('[accessibility-traits="button"]')
+    // useA11y flips the trait to `disabled` when disabled, so select items by
+    // their bare `disabled` attribute (only the item indicators carry it; the
+    // RatingRoot sets data-disabled but not disabled).
+    items = container.querySelectorAll('[disabled=""]')
   })
 
   it('should have first item in active state', () => {

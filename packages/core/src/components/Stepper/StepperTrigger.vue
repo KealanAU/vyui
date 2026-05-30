@@ -9,6 +9,7 @@ export interface StepperTriggerProps extends PrimitiveProps {
 
 <script setup lang="ts">
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectStepperItemContext } from './StepperItem.vue'
 import { injectStepperRootContext } from './StepperRoot.vue'
 
@@ -34,6 +35,12 @@ function handleTap() {
 
 const { forwardRef, currentElement } = useForwardExpose()
 
+const a11y = useA11y(() => ({
+  role: 'button',
+  disabled: itemContext.disabled.value || !itemContext.isFocusable.value,
+  state: itemContext.state.value,
+}))
+
 onMounted(() => {
   rootContext.totalStepperItems.value.add(currentElement.value)
 })
@@ -46,7 +53,7 @@ onUnmounted(() => {
 <template>
   <Primitive
     :ref="forwardRef"
-    accessibility-traits="button"
+    v-bind="a11y"
     :as="as"
     :as-child="asChild"
     :data-state="itemContext.state.value"

@@ -9,7 +9,7 @@ describe('given a default RadioGroup', () => {
 
   beforeEach(() => {
     ;({ container } = render(RadioGroup))
-    radios = container.querySelectorAll('[accessibility-traits="button"]')
+    radios = container.querySelectorAll('[accessibility-role-description="radio"]')
   })
 
   it('should have default selected', () => {
@@ -27,7 +27,7 @@ describe('given disabled RadioGroup', () => {
 
   beforeEach(() => {
     ;({ container } = render(RadioGroup, { disabled: true }))
-    radios = container.querySelectorAll('[accessibility-traits="button"]')
+    radios = container.querySelectorAll('[accessibility-role-description="radio"]')
   })
 
   it('should have default selected', () => {

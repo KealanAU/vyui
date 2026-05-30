@@ -4,7 +4,7 @@ import Combobox from './story/_Combobox.vue'
 import ComboboxObject from './story/_ComboboxObject.vue'
 
 function getTrigger(container: Element) {
-  return container.querySelector('[accessibility-traits="button"][accessibility-label="Show options"]')!
+  return container.querySelector('[accessibility-label="Show options"]')!
 }
 
 function getInput(container: Element) {

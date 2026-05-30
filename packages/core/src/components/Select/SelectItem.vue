@@ -24,6 +24,7 @@ export const [injectSelectItemContext, provideSelectItemContext]
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, toRefs } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectSelectRootContext } from './SelectRoot.vue'
 
 if (__DEV__) {
@@ -40,6 +41,12 @@ const { disabled } = toRefs(props)
 const rootContext = injectSelectRootContext()
 
 const isSelected = computed(() => rootContext.modelValue.value === props.value)
+
+const a11y = useA11y(() => ({
+  role: 'option',
+  disabled: disabled.value,
+  state: isSelected.value ? 'selected' : 'unselected',
+}))
 
 const itemText = ref('')
 
@@ -73,10 +80,9 @@ provideSelectItemContext({
   <Primitive
     :as="as"
     :as-child="asChild"
-    accessibility-traits="button"
     :data-state="isSelected ? 'checked' : 'unchecked'"
     :data-disabled="disabled ? '' : undefined"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     @tap="handleSelect"
   >
     <slot />

@@ -24,6 +24,7 @@ import { useVModel } from '@vueuse/core'
 import { computed, toRefs } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
+import { useA11y } from '@/shared/composables'
 import { handleSelect } from './utils'
 
 const props = withDefaults(defineProps<RadioProps>(), {
@@ -58,15 +59,21 @@ function handleClick(event: MouseEvent) {
     checked.value = true
   })
 }
+
+// TODO(a11y #13): rename ariaLabel prop -> accessibility-label per plan
+const a11y = useA11y(() => ({
+  role: 'radio',
+  state: checked.value ? 'checked' : 'unchecked',
+  disabled: props.disabled,
+  label: props.ariaLabel,
+}))
 </script>
 
 <template>
   <Primitive
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     :id="id"
     :ref="forwardRef"
-    accessibility-traits="button"
-    :accessibility-label="ariaLabel"
     :as="as"
     :as-child="asChild"
     :disabled="disabled ? '' : undefined"

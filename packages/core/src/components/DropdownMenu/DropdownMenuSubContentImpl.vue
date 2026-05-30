@@ -16,7 +16,7 @@ export type DropdownMenuSubContentImplEmits = DismissableLayerEmits
 <script setup lang="ts">
 import { OverlayBackdrop } from '@/components/OverlayRoot'
 import { Primitive } from '@/components/Primitive'
-import { useDismissableLayer } from '@/shared/composables'
+import { useA11y, useDismissableLayer } from '@/shared/composables'
 import { injectDropdownMenuSubContext } from './DropdownMenuSub.vue'
 
 defineOptions({ inheritAttrs: false })
@@ -25,6 +25,8 @@ const props = withDefaults(defineProps<DropdownMenuSubContentImplProps>(), { as:
 const emit = defineEmits<DropdownMenuSubContentImplEmits>()
 
 const subContext = injectDropdownMenuSubContext()
+
+const a11y = useA11y(() => ({ role: 'menu' }))
 
 const { onInteractOutside } = useDismissableLayer({
   emit,
@@ -45,9 +47,8 @@ function stopTap(event: any) {
   >
     <Primitive
       :as="as"
-      accessibility-traits="menu"
       :data-state="subContext.open.value ? 'open' : 'closed'"
-      v-bind="$attrs"
+      v-bind="{ ...$attrs, ...a11y }"
       @tap="stopTap"
     >
       <slot />

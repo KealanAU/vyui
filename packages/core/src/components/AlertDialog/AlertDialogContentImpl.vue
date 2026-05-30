@@ -46,6 +46,7 @@ import {
   resolveAnimationStatus,
 } from '@/components/Presence'
 import { useForwardExpose, useId } from '@/shared'
+import { useA11y } from '@/shared/composables'
 import { injectAlertDialogRootContext } from './AlertDialogRoot.vue'
 
 defineOptions({ inheritAttrs: false })
@@ -57,6 +58,14 @@ defineEmits<AlertDialogContentImplEmits>()
 
 const rootContext = injectAlertDialogRootContext()
 const { forwardRef } = useForwardExpose()
+
+// Modal alert-dialog semantics for the panel: a valid `alertdialog` role (via
+// role-description) plus an a11y focus trap so the overlay is announced as a
+// self-contained modal.
+const a11y = useA11y(() => ({
+  role: 'alertdialog',
+  exclusiveFocus: true,
+}))
 
 rootContext.titleId ||= useId(undefined, 'vy-alert-dialog-title')
 rootContext.descriptionId ||= useId(undefined, 'vy-alert-dialog-description')
@@ -142,10 +151,9 @@ const handleTransitionCancel
       :ref="forwardRef"
       :as="props.as"
       :as-child="props.asChild"
-      accessibility-traits="alert"
       :class="panelClass"
       :data-state="status.open ? 'open' : 'closed'"
-      v-bind="$attrs"
+      v-bind="{ ...$attrs, ...a11y }"
       @tap.stop
       @animationstart="handleKFStart"
       @animationend="handleKFEnd"
