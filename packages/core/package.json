@@ -4,6 +4,28 @@
   "version": "0.0.3",
   "description": "Lynx-native component primitives, ported from reka-ui",
   "license": "MIT AND Apache-2.0",
+  "author": "Kealan Clarke",
+  "homepage": "https://vyui.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KealanAU/vyui.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/KealanAU/vyui/issues"
+  },
+  "keywords": [
+    "vue",
+    "lynx",
+    "vue-lynx",
+    "headless",
+    "ui",
+    "components",
+    "primitives",
+    "accessibility",
+    "a11y",
+    "reka-ui"
+  ],
   "sideEffects": [
     "**/*.css",
     "**/*.vue.js",

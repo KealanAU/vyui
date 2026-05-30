@@ -1,9 +1,9 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  # Manual-only: publishing never happens on a merge to main. Trigger from the
+  # Actions tab (Release -> Run workflow) when you explicitly want to ship.
+  workflow_dispatch:
 
 # Default to minimum permissions; raise per-job as needed.
 permissions: {}
@@ -17,7 +17,12 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: github.repository == 'KealanAU/leka-ui'
+    if: github.repository == 'KealanAU/vyui'
+    # Gate publishing behind a protected environment. Configure `npm-publish`
+    # under Settings -> Environments with required reviewers (admins only) and
+    # store NPM_TOKEN as an environment secret. The job pauses for approval
+    # before any publish step runs, and the token is unavailable otherwise.
+    environment: npm-publish
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: false
@@ -29,20 +34,25 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
 
+      # No `cache: 'pnpm'` here: the publish job runs with privileged secrets and
+      # must not consume a store cache that a lower-privilege job could poison.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
-          cache: 'pnpm'
+
+      # OIDC trusted publishing needs npm >= 11.5.1; Node 22 ships npm 10.
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm i -g npm@latest
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -50,8 +60,12 @@ jobs:
       - name: Build packages
         run: pnpm -r build
 
+      # Tokenless publish via npm OIDC Trusted Publishing — no NPM_TOKEN exists to
+      # be harvested or cached. `id-token: write` (above) mints a short-lived,
+      # per-run credential; npmjs.com must have a Trusted Publisher configured for
+      # each package pointing at this repo + workflow. See SECURITY notes / README.
       - name: Create Release PR or Publish
-        uses: changesets/action@v1
+        uses: changesets/action@e0145edc7d9d8679003495b11f87bd8ef63c0cba # v1.5.3
         with:
           version: pnpm version-packages
           publish: pnpm release
@@ -59,4 +73,3 @@ jobs:
           commit: 'chore: release packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

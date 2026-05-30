@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Keep SHA-pinned GitHub Actions current. Dependabot bumps the pinned commit
+  # SHAs (and the trailing `# vX.Y.Z` comment) via PRs, so pinning never goes
+  # stale — you review and merge instead of trusting a mutable tag.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

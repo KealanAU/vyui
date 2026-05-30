@@ -4,6 +4,26 @@
   "version": "0.0.1",
   "description": "Styled Vue-Lynx components built on @vyui/core",
   "license": "MIT",
+  "author": "Kealan Clarke",
+  "homepage": "https://vyui.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KealanAU/vyui.git",
+    "directory": "packages/kit"
+  },
+  "bugs": {
+    "url": "https://github.com/KealanAU/vyui/issues"
+  },
+  "keywords": [
+    "vue",
+    "lynx",
+    "vue-lynx",
+    "ui",
+    "components",
+    "design-system",
+    "tailwind",
+    "tailwind-variants"
+  ],
   "//sideEffects": "INVARIANT: no `'main thread'` worklets in @vyui/kit — all worklet logic lives in @vyui/core. If you add a worklet here, widen sideEffects to [\"src/**/*.vue\",\"src/**/*.ts\",\"dist/**/*.js\"] and wire pluginVyuiWorklet into rslib.config.ts like packages/core, or rspack will tree-shake the vue-lynx MT side-effect imports and downstream consumers will crash with `bind of undefined`.",
   "sideEffects": false,
   "files": [
