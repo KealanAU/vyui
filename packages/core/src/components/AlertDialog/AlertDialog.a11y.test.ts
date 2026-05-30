@@ -45,4 +45,26 @@ describe('AlertDialog a11y', () => {
     expect(content.getAttribute('accessibility-traits')).not.toBe('dialog')
     expect(content.getAttribute('accessibility-traits')).not.toBe('alert')
   })
+
+  it('exposes the action and cancel controls as focusable buttons', async () => {
+    const { container } = render(AlertDialog)
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    const action = q(container, 'action')!
+    const cancel = q(container, 'cancel')!
+    expect(action).not.toBeNull()
+    expect(cancel).not.toBeNull()
+    expect(action.getAttribute('accessibility-traits')).toBe('button')
+    expect(cancel.getAttribute('accessibility-traits')).toBe('button')
+  })
+
+  it('announces the title as a heading', async () => {
+    const { container } = render(AlertDialog)
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    const title = q(container, 'title')!
+    expect(title).not.toBeNull()
+    expect(title.getAttribute('accessibility-traits')).toBe('header')
+    expect(title.getAttribute('accessibility-heading')).toBe('true')
+  })
 })

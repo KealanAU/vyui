@@ -12,7 +12,7 @@ const forwarded = useForwardPropsEmits(props, emits)
   <CollapsibleRoot
     v-bind="forwarded"
   >
-    <CollapsibleTrigger>Trigger</CollapsibleTrigger>
+    <CollapsibleTrigger data-testid="trigger">Trigger</CollapsibleTrigger>
     <CollapsibleContent>Content</CollapsibleContent>
   </CollapsibleRoot>
 </template>

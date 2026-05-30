@@ -7,8 +7,8 @@ const props = defineProps<ToggleGroupRootProps>()
 
 <template>
   <ToggleGroupRoot v-bind="props">
-    <ToggleGroupItem value="left" accessibility-label="Toggle left" />
-    <ToggleGroupItem value="center" accessibility-label="Toggle center" />
-    <ToggleGroupItem value="right" accessibility-label="Toggle right" />
+    <ToggleGroupItem value="left" accessibility-label="Toggle left" data-testid="toggle-item" />
+    <ToggleGroupItem value="center" accessibility-label="Toggle center" data-testid="toggle-item" />
+    <ToggleGroupItem value="right" accessibility-label="Toggle right" data-testid="toggle-item" />
   </ToggleGroupRoot>
 </template>

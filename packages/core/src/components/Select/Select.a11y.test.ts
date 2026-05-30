@@ -28,7 +28,7 @@ describe('Select a11y', () => {
   it('announces item selected/unselected via accessibility-value', () => {
     const { container } = render(Select, { modelValue: 'Cherry', defaultOpen: true })
     expect(q(container, 'item-Cherry')!.getAttribute('accessibility-value')).toBe('selected')
-    expect(q(container, 'item-Apple')!.getAttribute('accessibility-value')).toBe('unselected')
+    expect(q(container, 'item-Apple')!.getAttribute('accessibility-value')).toBeNull()
     expect(q(container, 'item-Cherry')!.getAttribute('accessibility-element')).toBe('true')
   })
 
@@ -36,7 +36,7 @@ describe('Select a11y', () => {
     const { container } = render(Select)
     fireEvent.tap(q(container, 'trigger')!)
     await waitForUpdate()
-    expect(q(container, 'item-Banana')!.getAttribute('accessibility-value')).toBe('unselected')
+    expect(q(container, 'item-Banana')!.getAttribute('accessibility-value')).toBeNull()
     fireEvent.tap(q(container, 'item-Banana')!)
     await waitForUpdate()
     fireEvent.tap(q(container, 'trigger')!)

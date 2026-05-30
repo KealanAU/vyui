@@ -5,8 +5,6 @@ import type { PrimitiveProps } from '@/components/Primitive'
 export interface ComboboxTriggerProps extends PrimitiveProps {
   /** When `true`, prevents the user from interacting with the trigger. */
   disabled?: boolean
-  /** Accessibility label announced by assistive tech. Localize as needed. */
-  accessibilityLabel?: string
 }
 </script>
 
@@ -30,7 +28,7 @@ const a11y = useA11y(() => ({
   role: 'button',
   disabled: isDisabled.value,
   state: rootContext.open.value ? 'expanded' : 'collapsed',
-  label: props.accessibilityLabel ?? (attrs['accessibility-label'] as string | undefined),
+  label: attrs['accessibility-label'] as string | undefined,
 }))
 
 function handleTap() {

@@ -11,7 +11,7 @@ const items = [{ name: 'jack' }, { name: 'john' }, { name: 'mike' }]
 <template>
   <CheckboxGroupRoot v-bind="props" v-model="modelValue">
     <view v-for="item in items" :key="item.name">
-      <CheckboxRoot :value="item" :accessibility-label="item.name">
+      <CheckboxRoot :value="item" :accessibility-label="item.name" data-testid="checkbox">
         <CheckboxIndicator />
       </CheckboxRoot>
       <text>{{ item.name }}</text>

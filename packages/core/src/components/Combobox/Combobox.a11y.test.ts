@@ -44,7 +44,7 @@ describe('Combobox a11y', () => {
     fireEvent.tap(getTrigger(container))
     await waitForUpdate()
     const items = getItems(container)
-    expect(items[1]!.getAttribute('accessibility-value')).toBe('unselected')
+    expect(items[1]!.getAttribute('accessibility-value')).toBeNull()
     expect(items[1]!.getAttribute('accessibility-element')).toBe('true')
     fireEvent.tap(items[1]!)
     await waitForUpdate()

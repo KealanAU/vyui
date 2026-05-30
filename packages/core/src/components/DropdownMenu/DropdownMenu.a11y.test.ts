@@ -52,6 +52,30 @@ describe('DropdownMenu a11y', () => {
     expect(subContent.getAttribute('accessibility-role-description')).toBe('menu')
   })
 
+  it('falls back to accessibility-label for icon-only menu items', async () => {
+    const { container } = render(DropdownMenu)
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    const icon = q(container, 'item-icon')!
+    expect(icon.getAttribute('accessibility-traits')).toBe('button')
+    expect(icon.getAttribute('accessibility-label')).toBe('Settings')
+    expect(icon.getAttribute('accessibility-element')).toBe('true')
+  })
+
+  it('hides the decorative item indicator from the a11y tree', async () => {
+    const { container } = render(DropdownMenu)
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    // The checkbox starts unchecked; check it so the indicator renders.
+    fireEvent.tap(q(container, 'checkbox-item')!)
+    await waitForUpdate()
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    expect(q(container, 'checkbox-indicator-root')!.getAttribute('accessibility-element')).toBe('false')
+  })
+
   it('announces the checkbox item via role-description "checkbox" and accessibility-value', async () => {
     const { container } = render(DropdownMenu)
     fireEvent.tap(q(container, 'trigger')!)

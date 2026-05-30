@@ -43,4 +43,14 @@ describe('Popover a11y', () => {
     // `dialog` is not a valid Lynx trait — it must only live in role-description.
     expect(content.getAttribute('accessibility-traits')).not.toBe('dialog')
   })
+
+  it('exposes the close button as a focusable button labelled "Close"', async () => {
+    const { container } = render(Popover)
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    const close = q(container, 'close')!
+    expect(close).not.toBeNull()
+    expect(close.getAttribute('accessibility-traits')).toBe('button')
+    expect(close.getAttribute('accessibility-label')).toBe('Close')
+  })
 })

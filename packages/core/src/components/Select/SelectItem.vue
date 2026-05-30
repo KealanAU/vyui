@@ -45,7 +45,7 @@ const isSelected = computed(() => rootContext.modelValue.value === props.value)
 const a11y = useA11y(() => ({
   role: 'option',
   disabled: disabled.value,
-  state: isSelected.value ? 'selected' : 'unselected',
+  selected: isSelected.value,
 }))
 
 const itemText = ref('')

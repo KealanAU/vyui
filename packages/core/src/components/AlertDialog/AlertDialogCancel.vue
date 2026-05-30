@@ -5,9 +5,10 @@ export interface AlertDialogCancelProps extends PrimitiveProps {}
 </script>
 
 <script setup lang="ts">
-import { inject } from 'vue'
+import { inject, useAttrs } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { PresenceContextKey, PresenceState, resolveBusyState } from '@/components/Presence'
+import { useA11y } from '@/shared/composables'
 import { injectAlertDialogRootContext } from './AlertDialogRoot.vue'
 
 const props = withDefaults(defineProps<AlertDialogCancelProps>(), {
@@ -15,6 +16,12 @@ const props = withDefaults(defineProps<AlertDialogCancelProps>(), {
 })
 
 const rootContext = injectAlertDialogRootContext()
+
+const attrs = useAttrs()
+const a11y = useA11y(() => ({
+  role: 'button',
+  label: attrs['accessibility-label'] as string | undefined,
+}))
 
 // See `AlertDialogAction.vue` — same busy-gate so taps during entering /
 // leaving don't double-trigger close.
@@ -31,7 +38,7 @@ function handleTap() {
   <Primitive
     :as="as"
     :as-child="props.asChild"
-    accessibility-traits="button"
+    v-bind="a11y"
     @tap="handleTap"
   >
     <slot />

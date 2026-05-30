@@ -55,7 +55,7 @@ const isDisabled = computed(() => props.disabled || rootContext.disabled.value)
 const a11y = useA11y(() => ({
   role: 'option',
   disabled: isDisabled.value,
-  state: isSelected.value ? 'selected' : 'unselected',
+  selected: isSelected.value,
 }))
 
 const isRender = computed(() => {

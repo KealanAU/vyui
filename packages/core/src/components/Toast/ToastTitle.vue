@@ -5,17 +5,20 @@ import type { PrimitiveProps } from '@/components/Primitive'
 
 <script setup lang="ts">
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 
 withDefaults(defineProps<PrimitiveProps>(), {
   as: 'text',
 })
+
+const a11y = useA11y(() => ({ role: 'heading' }))
 </script>
 
 <template>
   <Primitive
     :as="as"
     :as-child="asChild"
-    accessibility-traits="header"
+    v-bind="a11y"
   >
     <slot />
   </Primitive>

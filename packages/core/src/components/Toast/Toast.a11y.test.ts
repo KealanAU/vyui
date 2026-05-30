@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { render, waitForUpdate } from '@vyui/testing-utils'
-import { ToastProvider, ToastRoot } from '.'
+import Toast from './story/_Toast.vue'
+import { ToastProvider, ToastRoot, ToastTitle } from '.'
 
 // The story's _Toast.vue does not forward `type` to ToastRoot, so render the
 // provider + root directly to exercise both importance levels.
@@ -39,5 +40,32 @@ describe('Toast a11y', () => {
     const toast = container.querySelector('[data-testid="toast"]')!
     expect(toast.getAttribute('accessibility-traits')).toBe('summary')
     expect(toast.getAttribute('accessibility-role-description')).toBeNull()
+  })
+
+  it('exposes the title as a heading', async () => {
+    const { container } = render({
+      components: { ToastProvider, ToastRoot, ToastTitle },
+      template: `
+        <ToastProvider>
+          <ToastRoot>
+            <ToastTitle data-testid="title">Saved</ToastTitle>
+          </ToastRoot>
+        </ToastProvider>
+      `,
+    })
+    await waitForUpdate()
+    const title = container.querySelector('[data-testid="title"]')!
+    expect(title).not.toBeNull()
+    expect(title.getAttribute('accessibility-traits')).toBe('header')
+    expect(title.getAttribute('accessibility-heading')).toBe('true')
+  })
+
+  it('labels the action from altText and exposes it as a button', async () => {
+    const { container } = render(Toast)
+    await waitForUpdate()
+    const action = container.querySelector('[data-testid="action"]')!
+    expect(action).not.toBeNull()
+    expect(action.getAttribute('accessibility-label')).toBe('Undo')
+    expect(action.getAttribute('accessibility-traits')).toBe('button')
   })
 })

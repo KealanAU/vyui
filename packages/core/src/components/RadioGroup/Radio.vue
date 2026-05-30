@@ -15,13 +15,12 @@ export interface RadioProps extends PrimitiveProps, FormFieldProps {
   /** When `true`, prevents the user from interacting with the radio item. */
   disabled?: boolean
   checked?: boolean
-  ariaLabel?: string
 }
 </script>
 
 <script setup lang="ts">
 import { useVModel } from '@vueuse/core'
-import { computed, toRefs } from 'vue'
+import { toRefs, useAttrs } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
 import { useA11y } from '@/shared/composables'
@@ -60,12 +59,12 @@ function handleClick(event: MouseEvent) {
   })
 }
 
-// TODO(a11y #13): rename ariaLabel prop -> accessibility-label per plan
+const attrs = useAttrs()
 const a11y = useA11y(() => ({
   role: 'radio',
   state: checked.value ? 'checked' : 'unchecked',
   disabled: props.disabled,
-  label: props.ariaLabel,
+  label: attrs['accessibility-label'] as string | undefined,
 }))
 </script>
 

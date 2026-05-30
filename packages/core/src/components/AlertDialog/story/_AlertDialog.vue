@@ -6,6 +6,7 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   AlertDialogRoot,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from '..'
 
@@ -33,6 +34,9 @@ const emit = defineEmits<{
         data-testid="content"
         :force-mount="forceMount"
       >
+        <AlertDialogTitle data-testid="title">
+          <text>Are you sure?</text>
+        </AlertDialogTitle>
         <text>Are you sure?</text>
         <AlertDialogAction data-testid="action" @click="emit('click')">
           <text>Confirm</text>

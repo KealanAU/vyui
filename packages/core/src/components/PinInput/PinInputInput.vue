@@ -13,6 +13,7 @@ export interface PinInputInputProps extends PrimitiveProps {
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue'
 import { Primitive, usePrimitiveElement } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectPinInputRootContext } from './PinInputRoot.vue'
 
 const props = withDefaults(defineProps<PinInputInputProps>(), {
@@ -24,6 +25,19 @@ const { primitiveElement, currentElement } = usePrimitiveElement()
 
 const currentValue = computed(() => context.modelValue.value?.[props.index] ?? '')
 const disabled = computed(() => props.disabled || context.disabled.value)
+
+// Per-cell a11y label. The total count comes from the root's registry of
+// mounted input elements; until that registry is populated (first render),
+// fall back to a label without the total.
+const a11y = useA11y(() => {
+  const count = context.inputElements.value.size
+  return {
+    role: 'textbox',
+    label: count > 0
+      ? `Digit ${props.index + 1} of ${count}`
+      : `Digit ${props.index + 1}`,
+  }
+})
 
 /**
  * Lynx `<input>` emits `input` with the value on `event.detail.value`.
@@ -74,6 +88,7 @@ onUnmounted(() => context.onInputElementRemove(currentElement.value))
 <template>
   <Primitive
     ref="primitiveElement"
+    v-bind="a11y"
     :as="as"
     :as-child="asChild"
     :value="currentValue"

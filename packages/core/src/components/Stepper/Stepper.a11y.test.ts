@@ -18,6 +18,14 @@ describe('Stepper a11y', () => {
     expect(container.querySelector('[data-testid="stepper-item-trigger-2"]')?.getAttribute('accessibility-value')).toBe('inactive')
   })
 
+  it('exposes the step title as a heading', () => {
+    const { container } = render(Stepper)
+    const title = container.querySelector('[data-testid="stepper-item-title-1"]')!
+    expect(title).not.toBeNull()
+    expect(title.getAttribute('accessibility-traits')).toBe('header')
+    expect(title.getAttribute('accessibility-heading')).toBe('true')
+  })
+
   it('flips the trait to "disabled" for a non-focusable step', () => {
     // Linear mode makes future steps non-focusable, which useA11y maps to the
     // disabled trait.

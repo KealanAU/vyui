@@ -56,7 +56,7 @@ onBeforeUnmount(() => {
 
 const a11y = useA11y(() => ({
   role: 'tab',
-  state: isSelected.value ? 'selected' : 'unselected',
+  selected: isSelected.value,
   disabled: props.disabled,
 }))
 </script>

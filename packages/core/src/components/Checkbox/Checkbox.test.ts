@@ -21,7 +21,7 @@ describe('given a default Checkbox', () => {
 
     beforeEach(async () => {
       ;({ container } = render(Checkbox))
-      checkbox = container.querySelector('[accessibility-traits="button"]')!
+      checkbox = container.querySelector('[data-testid="checkbox"]')!
       fireEvent.tap(checkbox)
       await waitForUpdate()
     })
@@ -54,7 +54,7 @@ describe('given CheckboxGroup', () => {
 
     beforeEach(async () => {
       ;({ container } = render(CheckboxGroup))
-      checkboxes = container.querySelectorAll('[accessibility-traits="button"]')
+      checkboxes = container.querySelectorAll('[data-testid="checkbox"]')
       fireEvent.tap(checkboxes[0])
       await waitForUpdate()
     })
@@ -116,7 +116,7 @@ describe('given value as "indeterminate"', () => {
 
   beforeEach(() => {
     ;({ container } = render(Checkbox, { modelValue: 'indeterminate' }))
-    checkbox = container.querySelector('[accessibility-traits="button"]')!
+    checkbox = container.querySelector('[data-testid="checkbox"]')!
   })
 
   it('should have data-state of "indeterminate"', () => {
@@ -133,7 +133,7 @@ describe('given value as "indeterminate"', () => {
 describe('given checkbox v-model', () => {
   it('should reflect modelValue changes', async () => {
     const { container } = render(Checkbox)
-    const checkbox = container.querySelector('[accessibility-traits="button"]')!
+    const checkbox = container.querySelector('[data-testid="checkbox"]')!
     expect(checkbox.getAttribute('data-state')).toBe('unchecked')
     fireEvent.tap(checkbox)
     await waitForUpdate()

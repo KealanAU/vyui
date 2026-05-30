@@ -25,7 +25,7 @@ const disabled = computed((): boolean => rootContext.disabled.value)
 const a11y = useA11y(() => ({
   role: 'button',
   disabled: disabled.value,
-  state: isSelected.value ? 'selected' : 'unselected',
+  selected: isSelected.value,
   label: `Page ${props.value}`,
 }))
 </script>
