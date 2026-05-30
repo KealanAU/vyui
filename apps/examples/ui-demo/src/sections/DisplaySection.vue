@@ -16,6 +16,7 @@ import {
   VyProgress,
   VySeparator,
   VySkeleton,
+  VySwiper,
   VyTabs,
   VyToast,
 } from '@vyui/kit'
@@ -29,6 +30,16 @@ const accordionItems = [
   { value: 'q2', label: 'Which engine does it run?', content: 'Lynx runs PrimJS natively and renders via a Vue-Lynx bridge.' },
   { value: 'q3', label: 'Does it support theming?',  content: 'Yes — semantic colors are wired through CSS variables.' },
 ]
+// Swiper — exercises the shared `useDragGesture` controller (drag / snap /
+// velocity flick). The index text + dots let you confirm settle behaviour.
+const swiperIndex = ref(0)
+const swiperSlides = [
+  { label: 'Slide 1', tint: 'bg-sky-500' },
+  { label: 'Slide 2', tint: 'bg-violet-500' },
+  { label: 'Slide 3', tint: 'bg-emerald-500' },
+  { label: 'Slide 4', tint: 'bg-amber-500' },
+]
+
 const innerTab = ref<string | number>('overview')
 const innerTabItems = [
   { value: 'overview', label: 'Overview', icon: 'icon-park-outline:list-view',  slot: 'overview' },
@@ -144,6 +155,27 @@ const inboxIssues = [
         <VyProgress :model-value="55" color="success" />
         <VyProgress :model-value="85" color="warning" />
       </view>
+    </view>
+
+    <!-- Swiper (shared useDragGesture) -->
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+      <view class="flex flex-row items-center justify-between">
+        <text class="text-slate-900 text-base font-semibold">Swiper</text>
+        <text class="text-slate-500 text-xs">Active: {{ swiperIndex + 1 }} / {{ swiperSlides.length }}</text>
+      </view>
+      <VySwiper
+        v-model="swiperIndex"
+        :items="swiperSlides"
+        :item-width="280"
+        show-indicators
+      >
+        <template #item="{ item }">
+          <view :class="['h-32 rounded-lg flex items-center justify-center', item.tint]" :style="{ width: '264px' }">
+            <text class="text-white text-lg font-bold">{{ item.label }}</text>
+          </view>
+        </template>
+      </VySwiper>
+      <text class="text-slate-500 text-xs">Drag to swipe · flick to advance · dots reflect settle.</text>
     </view>
 
     <!-- Separator -->
