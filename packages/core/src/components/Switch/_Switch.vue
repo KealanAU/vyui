@@ -12,7 +12,7 @@ const checked = ref(false)
   <SwitchRoot
     id="airplane-mode"
     v-model="checked"
-    aria-label="Airplane mode"
+    accessibility-label="Airplane mode"
     data-testId="root"
     name="test"
     value="true"

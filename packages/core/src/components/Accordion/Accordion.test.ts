@@ -3,7 +3,9 @@ import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
 import Accordion from './story/_Accordion.vue'
 
 function triggers(container: Element) {
-  return container.querySelectorAll('[accessibility-traits="button"]')
+  // Stable hook: a disabled trigger's accessibility-traits flips to "disabled",
+  // so select the collection-item marker instead of the trait value.
+  return container.querySelectorAll('[data-vy-collection-item]')
 }
 
 function stateOf(el: Element | undefined) {

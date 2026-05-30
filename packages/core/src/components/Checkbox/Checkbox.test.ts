@@ -94,7 +94,9 @@ describe('given a disabled Checkbox', () => {
 
   beforeEach(() => {
     ;({ container } = render(Checkbox, { disabled: true }))
-    checkbox = container.querySelector('[accessibility-traits="button"]')!
+    // A disabled checkbox's accessibility-traits is "disabled", not "button";
+    // select by the stable data-disabled marker instead.
+    checkbox = container.querySelector('[data-disabled]')!
   })
 
   describe('when tapping', () => {

@@ -46,9 +46,9 @@ export const [injectCheckboxRootContext, provideCheckboxRootContext]
 
 <script setup lang="ts" generic="T = boolean">
 import { isEqual } from 'ohash'
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 import { Primitive } from '@/components/Primitive'
-import { useStandardVModel } from '@/shared/composables'
+import { useA11y, useStandardVModel } from '@/shared/composables'
 import { getState } from './utils'
 
 defineOptions({
@@ -122,15 +122,23 @@ provideCheckboxRootContext({
   disabled,
   state: checkboxState,
 })
+
+const attrs = useAttrs()
+const a11y = useA11y(() => ({
+  role: 'checkbox',
+  disabled: disabled.value,
+  state: checkboxState.value === 'indeterminate'
+    ? 'mixed'
+    : checkboxState.value ? 'checked' : 'unchecked',
+  label: attrs['accessibility-label'] as string | undefined,
+}))
 </script>
 
 <template>
   <Primitive
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     :id="id"
     :ref="forwardRef"
-    accessibility-traits="button"
-    :accessibility-label="$attrs['accessibility-label']"
     :as-child="asChild"
     :as="as"
     :data-state="getState(checkboxState)"
