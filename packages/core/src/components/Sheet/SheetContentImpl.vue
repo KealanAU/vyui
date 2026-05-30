@@ -41,6 +41,7 @@ import {
   PresenceState,
   presenceClassVariants,
 } from '@/components/Presence'
+import { useA11y } from '@/shared/composables'
 import { injectSheetRootContext, provideSheetDragContext } from './sheetContext'
 
 const props = withDefaults(defineProps<SheetContentImplProps>(), {
@@ -231,12 +232,20 @@ provideSheetDragContext({
 })
 
 const handlers = presence?.animationHandlers
+
+// Modal panel: announce as a dialog and trap a11y focus to the sheet. Container
+// role keeps it non-element so the children inside stay reachable.
+const a11y = useA11y(() => ({
+  role: 'dialog',
+  exclusiveFocus: true,
+}))
 </script>
 
 <template>
   <view
     class="vyui-sheet__content"
     :class="presenceClass"
+    v-bind="a11y"
     :data-state="dataState"
     data-vyui-sheet-content
     :main-thread-ref="containerRef"

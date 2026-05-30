@@ -9,6 +9,7 @@ export interface SheetTriggerProps {
 </script>
 
 <script setup lang="ts">
+import { useA11y } from '@/shared/composables'
 import { Primitive } from '../Primitive'
 import { injectSheetRootContext } from './sheetContext'
 
@@ -19,12 +20,18 @@ const ctx = injectSheetRootContext()
 function onTap() {
   ctx.setOpen(true)
 }
+
+const a11y = useA11y(() => ({
+  role: 'button',
+  state: ctx.open.value ? 'expanded' : 'collapsed',
+}))
 </script>
 
 <template>
   <Primitive
     :as="as"
     :as-child="asChild"
+    v-bind="a11y"
     :data-state="ctx.open.value ? 'open' : 'closed'"
     @tap="onTap"
   >

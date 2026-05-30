@@ -94,6 +94,12 @@ interface RoleMapping {
   trait: A11yTrait
   roleDescription?: string
   heading?: boolean
+  /**
+   * Grouping/landmark roles (dialog, menu) that wrap focusable children.
+   * They must NOT become a single `accessibility-element`, which would
+   * collapse the subtree into one focus node and hide the children.
+   */
+  container?: boolean
 }
 
 /**
@@ -117,10 +123,10 @@ const ROLE_MAP: Record<A11yRole, RoleMapping> = {
   heading: { trait: 'header', heading: true },
   image: { trait: 'image' },
   text: { trait: 'text' },
-  dialog: { trait: 'none', roleDescription: 'dialog' },
-  alertdialog: { trait: 'none', roleDescription: 'alert dialog' },
+  dialog: { trait: 'none', roleDescription: 'dialog', container: true },
+  alertdialog: { trait: 'none', roleDescription: 'alert dialog', container: true },
   alert: { trait: 'updating', roleDescription: 'alert' },
-  menu: { trait: 'none', roleDescription: 'menu' },
+  menu: { trait: 'none', roleDescription: 'menu', container: true },
   summary: { trait: 'summary' },
   none: { trait: 'none' },
 }
@@ -162,8 +168,11 @@ function buildNative(d: A11yDescriptor): A11yProps {
   if (value != null)
     props['accessibility-value'] = value
 
-  // Expose as a focusable node when it carries semantics, unless told otherwise.
-  const element = d.element ?? (d.role != null || d.label != null || value != null)
+  // Expose as a focusable node when it carries semantics, unless told
+  // otherwise. Container roles (dialog/menu) stay non-element so their
+  // focusable children remain reachable.
+  const element = d.element
+    ?? (!map?.container && (d.role != null || d.label != null || value != null))
   if (element)
     props['accessibility-element'] = true
 

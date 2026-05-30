@@ -28,6 +28,7 @@ export type ButtonEmits = {
 import { computed, ref, toRef } from 'vue'
 
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { useTouchEmulation } from '@/shared/composables/useTouchEmulation'
 
 import { provideButtonContext } from './buttonContext'
@@ -70,6 +71,11 @@ provideButtonContext({
   active,
   disabled: toRef(props, 'disabled'),
 })
+
+const a11y = useA11y(() => ({
+  role: 'button',
+  disabled: props.disabled,
+}))
 </script>
 
 <template>
@@ -79,7 +85,7 @@ provideButtonContext({
     :data-state="active ? 'active' : 'inactive'"
     :data-disabled="disabled ? '' : undefined"
     :event-through="false"
-    v-bind="touchHandlers"
+    v-bind="{ ...touchHandlers, ...a11y }"
     @tap="onTap"
   >
     <slot :active="active" :disabled="disabled" />

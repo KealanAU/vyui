@@ -37,7 +37,8 @@ describe('DropdownMenu a11y', () => {
     const content = q(container, 'content')!
     expect(content.getAttribute('accessibility-traits')).toBe('none')
     expect(content.getAttribute('accessibility-role-description')).toBe('menu')
-    expect(content.getAttribute('accessibility-element')).toBe('true')
+    // Container role: NOT a single accessibility-element, so its items stay reachable.
+    expect(content.getAttribute('accessibility-element')).toBeNull()
   })
 
   it('exposes the sub-content with role-description "menu" and trait "none"', async () => {
