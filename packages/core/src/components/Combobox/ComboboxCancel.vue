@@ -2,14 +2,13 @@
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
 
-export interface ComboboxCancelProps extends PrimitiveProps {
-  /** Accessibility label announced by assistive tech. Localize as needed. */
-  accessibilityLabel?: string
-}
+export interface ComboboxCancelProps extends PrimitiveProps {}
 </script>
 
 <script setup lang="ts">
+import { useAttrs } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectComboboxRootContext } from './ComboboxRoot.vue'
 
 withDefaults(defineProps<ComboboxCancelProps>(), {
@@ -17,6 +16,12 @@ withDefaults(defineProps<ComboboxCancelProps>(), {
 })
 
 const rootContext = injectComboboxRootContext()
+
+const attrs = useAttrs()
+const a11y = useA11y(() => ({
+  role: 'button',
+  label: attrs['accessibility-label'] as string | undefined,
+}))
 
 function handleTap() {
   // Reset the search to show all options.
@@ -31,9 +36,7 @@ function handleTap() {
   <Primitive
     :as="as"
     :as-child="asChild"
-    accessibility-traits="button"
-    :accessibility-label="accessibilityLabel"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     @tap="handleTap"
   >
     <slot />

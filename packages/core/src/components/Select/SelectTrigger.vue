@@ -10,6 +10,7 @@ export interface SelectTriggerProps extends PrimitiveProps {
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectSelectRootContext } from './SelectRoot.vue'
 
 const props = withDefaults(defineProps<SelectTriggerProps>(), {
@@ -20,6 +21,12 @@ const props = withDefaults(defineProps<SelectTriggerProps>(), {
 const rootContext = injectSelectRootContext()
 
 const isDisabled = computed(() => rootContext.disabled.value || props.disabled)
+
+const a11y = useA11y(() => ({
+  role: 'button',
+  disabled: isDisabled.value,
+  state: rootContext.open.value ? 'expanded' : 'collapsed',
+}))
 
 function handleTap() {
   if (!isDisabled.value) {
@@ -32,10 +39,9 @@ function handleTap() {
   <Primitive
     :as="as"
     :as-child="asChild"
-    accessibility-traits="button"
     :data-disabled="isDisabled ? '' : undefined"
     :data-state="rootContext.open.value ? 'open' : 'closed'"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     @tap="handleTap"
   >
     <slot />

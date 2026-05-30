@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogOverlay,
   DialogRoot,
+  DialogTitle,
   DialogTrigger,
 } from '..'
 
@@ -38,6 +39,9 @@ function onPointerDownOutside(e: any) { emit('pointerDownOutside', e) }
         @interact-outside="onInteractOutside"
         @pointer-down-outside="onPointerDownOutside"
       >
+        <DialogTitle data-testid="title">
+          <text>Dialog title</text>
+        </DialogTitle>
         <text>Dialog body</text>
         <DialogClose data-testid="close">
           <text>Close</text>

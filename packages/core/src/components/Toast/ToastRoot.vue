@@ -31,7 +31,7 @@ export const [injectToastRootContext, provideToastRootContext]
 import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
-import { useResizeObserver, useStandardVModelOf } from '@/shared/composables'
+import { useA11y, useResizeObserver, useStandardVModelOf } from '@/shared/composables'
 import { injectToastProviderContext } from './ToastProvider.vue'
 
 const props = withDefaults(defineProps<ToastRootProps>(), {
@@ -133,6 +133,10 @@ onUnmounted(() => {
 })
 
 provideToastRootContext({ onClose })
+
+const a11y = useA11y(() => ({
+  role: props.type === 'foreground' ? 'alert' : 'summary',
+}))
 </script>
 
 <template>
@@ -141,7 +145,7 @@ provideToastRootContext({ onClose })
     :ref="forwardRef"
     :as="as"
     :as-child="asChild"
-    :accessibility-traits="type === 'foreground' ? 'alert' : 'summary'"
+    v-bind="a11y"
     :data-state="open ? 'open' : 'closed'"
     :data-type="type"
     :data-front="isFront ? '' : undefined"

@@ -29,6 +29,7 @@ export const [injectComboboxItemContext, provideComboboxItemContext]
 import { computed, onMounted, onUnmounted } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useId } from '@/shared'
+import { useA11y } from '@/shared/composables'
 import { injectComboboxGroupContext } from './ComboboxGroup.vue'
 import { injectComboboxRootContext } from './ComboboxRoot.vue'
 
@@ -50,6 +51,12 @@ const groupContext = injectComboboxGroupContext(null)
 const isSelected = computed(() => rootContext.isValueSelected(props.value))
 
 const isDisabled = computed(() => props.disabled || rootContext.disabled.value)
+
+const a11y = useA11y(() => ({
+  role: 'option',
+  disabled: isDisabled.value,
+  selected: isSelected.value,
+}))
 
 const isRender = computed(() => {
   if (rootContext.ignoreFilter.value || !rootContext.filterSearch.value)
@@ -105,13 +112,11 @@ provideComboboxItemContext({ isSelected })
     :as="as"
     :as-child="asChild"
     :id="id"
-    accessibility-traits="button"
     data-combobox-item=""
     :data-state="isSelected ? 'checked' : 'unchecked'"
     :data-disabled="isDisabled ? '' : undefined"
     :data-highlighted="isSelected ? '' : undefined"
-    :accessibility-value="isSelected ? 'selected' : 'not selected'"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     @tap="handleTap"
   >
     <slot>{{ value }}</slot>

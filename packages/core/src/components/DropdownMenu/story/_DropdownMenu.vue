@@ -59,11 +59,17 @@ const radio = ref('one')
         >
           <text>Disabled</text>
         </DropdownMenuItem>
+        <DropdownMenuItem
+          data-testid="item-icon"
+          accessibility-label="Settings"
+        >
+          <text>⚙</text>
+        </DropdownMenuItem>
         <DropdownMenuCheckboxItem
           v-model:checked="checked"
           data-testid="checkbox-item"
         >
-          <DropdownMenuItemIndicator>
+          <DropdownMenuItemIndicator data-testid="checkbox-indicator-root">
             <text data-testid="checkbox-indicator">x</text>
           </DropdownMenuItemIndicator>
           <text>Toggle</text>

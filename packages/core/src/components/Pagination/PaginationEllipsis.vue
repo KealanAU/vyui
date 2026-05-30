@@ -16,6 +16,7 @@ useForwardExpose()
   <Primitive
     v-bind="props"
     data-type="ellipsis"
+    :accessibility-element="false"
   >
     <slot>&#8230;</slot>
   </Primitive>

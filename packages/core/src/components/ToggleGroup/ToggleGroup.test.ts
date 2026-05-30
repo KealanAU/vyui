@@ -9,7 +9,7 @@ describe('given default Toggle Group', () => {
 
   beforeEach(() => {
     ;({ container } = render(ToggleGroup, { defaultValue: 'center' }))
-    triggers = container.querySelectorAll('[accessibility-traits="button"]')
+    triggers = container.querySelectorAll('[data-testid="toggle-item"]')
   })
 
   it('should have active toggle=center', () => {
@@ -51,7 +51,7 @@ describe('given multiple value Toggle Group', () => {
 
   beforeEach(() => {
     ;({ container } = render(ToggleGroup, { type: 'multiple', defaultValue: ['center', 'right'] }))
-    triggers = container.querySelectorAll('[accessibility-traits="button"]')
+    triggers = container.querySelectorAll('[data-testid="toggle-item"]')
   })
 
   it('should have active toggles for center and right', () => {

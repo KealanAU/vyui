@@ -6,6 +6,22 @@ reka-ui was built for ARIA on the web. Lynx uses a native mobile accessibility m
 
 ---
 
+## Status — implemented via `useA11y`
+
+The strategy below is now realised by a single composable: `packages/core/src/shared/composables/useA11y.ts`. Components pass a semantic descriptor (`{ role, state, label, value, disabled, … }`) and spread the returned native props onto their root `Primitive`:
+
+```ts
+const a11y = useA11y(() => ({ role: 'checkbox', state: checked.value ? 'checked' : 'unchecked', disabled: disabled.value }))
+// <Primitive v-bind="a11y" />   // or v-bind="{ ...$attrs, ...a11y }" if the root already spreads attrs
+```
+
+- **API verified against `@lynx-js/types@3.8.0`** (the version this repo compiles against), not the web docs.
+- Done: inert web `aria-*` removed; `useA11y` added with unit tests; all interactive/stateful components emit `accessibility-traits` + `accessibility-value` (state) + `accessibility-role-description` where useful; invalid traits (`dialog`/`alert`/`menu`) fixed; modal content sets `accessibility-exclusive-focus`. Per-component `*.a11y.test.ts` files cover the output.
+- **Gotcha:** when `disabled`, the single Lynx trait flips to `'disabled'` (Lynx allows only one trait), so tests must not select disabled elements by `[accessibility-traits="button"]` — use `data-*`/`disabled` hooks.
+- **Not done (deferred, see bottom):** web ARIA layer (`appendWebA11y`, currently no-op), live-region announcements via `lynx.accessibilityAnnounce` (Toast), focus/navigation.
+
+---
+
 ## Web ARIA vs Lynx accessibility props
 
 | Web ARIA | Lynx prop | Notes |
@@ -26,7 +42,10 @@ reka-ui was built for ARIA on the web. Lynx uses a native mobile accessibility m
 | `role="separator"` | none | Decorative — skip |
 
 ### Lynx `accessibility-traits` values
-`none` `button` `link` `image` `text` `adjustable` `search` `header` `summary` `selected` `disabled` `plays-sound` `starts-media-session` `allows-direct-interaction` `causes-page-turn`
+The complete enum (single value per element), from `@lynx-js/types@3.8.0`:
+`text` `image` `button` `link` `header` `search` `selected` `playable` `keyboard` `summary` `disabled` `updating` `adjustable` `tabbar` `none`
+
+There is **no** `dialog`, `alert`, `menu`, `checkbox`, `slider`, `progressbar` trait. `useA11y`'s `ROLE_MAP` handles these by mapping to the nearest valid trait plus an `accessibility-role-description` (e.g. `role:'dialog'` → trait `none` + role-description `"dialog"`; `role:'progressbar'` → trait `updating` + role-description `"progressbar"`).
 
 ---
 

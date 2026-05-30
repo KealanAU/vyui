@@ -11,7 +11,7 @@ describe('given a default Collapsible', () => {
 
   beforeEach(() => {
     ;({ container } = render(Collapsible))
-    trigger = container.querySelector('[accessibility-traits="button"]')!
+    trigger = container.querySelector('[data-testid="trigger"]')!
   })
 
   it('should have hidden content', () => {
@@ -47,7 +47,7 @@ describe('given a Collapsible with `unmountOnHide:false`', () => {
 
   beforeEach(() => {
     ;({ container } = render(Collapsible, { unmountOnHide: false }))
-    trigger = container.querySelector('[accessibility-traits="button"]')!
+    trigger = container.querySelector('[data-testid="trigger"]')!
   })
 
   it('should have hidden attribute on the content while closed', () => {
@@ -105,14 +105,14 @@ describe('given an open uncontrolled Collapsible', () => {
     })
 
     it('should close the content on tap', async () => {
-      const trigger = container.querySelector('[accessibility-traits="button"]')!
+      const trigger = container.querySelector('[data-testid="trigger"]')!
       fireEvent.tap(trigger)
       await waitForUpdate()
       expect(container.innerHTML).not.toContain(CONTENT_TEXT)
     })
 
     it('should emit update:open with false on close', async () => {
-      const trigger = container.querySelector('[accessibility-traits="button"]')!
+      const trigger = container.querySelector('[data-testid="trigger"]')!
       fireEvent.tap(trigger)
       await waitForUpdate()
       expect(onUpdateOpen).toHaveBeenCalledWith(false)

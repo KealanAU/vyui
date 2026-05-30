@@ -26,8 +26,6 @@ itemContext.triggerId ||= useId(undefined, 'vy-accordion-trigger')
     data-vy-collection-item
     :as="props.as"
     :as-child="props.asChild"
-    :aria-disabled="itemContext.disabled.value || undefined"
-    :aria-expanded="itemContext.open.value || false"
     :data-disabled="itemContext.dataDisabled.value"
     :data-orientation="rootContext.orientation"
     :data-state="itemContext.dataState.value"

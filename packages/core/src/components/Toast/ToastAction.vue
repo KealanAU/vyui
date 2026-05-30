@@ -14,15 +14,23 @@ export type ToastActionEmits = {
 </script>
 
 <script setup lang="ts">
+import { useAttrs } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectToastRootContext } from './ToastRoot.vue'
 
-withDefaults(defineProps<ToastActionProps>(), {
+const props = withDefaults(defineProps<ToastActionProps>(), {
   as: 'view',
 })
 const emits = defineEmits<ToastActionEmits>()
 
 const context = injectToastRootContext()
+
+const attrs = useAttrs()
+const a11y = useA11y(() => ({
+  role: 'button',
+  label: props.altText || (attrs['accessibility-label'] as string | undefined),
+}))
 
 function handleTap() {
   emits('action')
@@ -34,8 +42,7 @@ function handleTap() {
   <Primitive
     :as="as"
     :as-child="asChild"
-    accessibility-traits="button"
-    :accessibility-label="altText"
+    v-bind="a11y"
     @tap.stop="handleTap"
   >
     <slot />

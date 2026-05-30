@@ -57,7 +57,7 @@ import {
   presenceClassVariants,
 } from '@/components/Presence'
 import { useForwardExpose, useId } from '@/shared'
-import { useDismissableLayer } from '@/shared/composables'
+import { useA11y, useDismissableLayer } from '@/shared/composables'
 import {
   DialogContentPresenceKey,
   type DialogContentPresenceContext,
@@ -100,6 +100,14 @@ const { onInteractOutside } = useDismissableLayer({
   emit: emits,
   onDismiss: () => rootContext.onOpenChange(false),
 })
+
+// Modal dialog semantics for the panel: a valid `dialog` role (via
+// role-description) plus an a11y focus trap so the overlay is announced as a
+// self-contained modal.
+const a11y = useA11y(() => ({
+  role: 'dialog',
+  exclusiveFocus: true,
+}))
 
 // ─────────────────────────────────────────────────────────────────────────
 // DialogContent owns the per-layer Presence state and provides it through
@@ -203,7 +211,6 @@ const PanelLayer = defineComponent({
       {
         'as': p.as,
         'asChild': p.asChild,
-        'accessibility-traits': 'dialog',
         'data-state': p.dataState,
         'class': className.value,
         'bindanimationstart': handlers?.handleKFStart,
@@ -213,6 +220,7 @@ const PanelLayer = defineComponent({
         'bindtransitionend': handlers?.handleTransitionEnd,
         'bindtransitioncancel': handlers?.handleTransitionCancel,
         ...attrs,
+        ...a11y.value,
         // tap.stop is wired on Primitive's root via the Vue event-modifier
         // shim; emulate it here by attaching an explicit handler that
         // doesn't bubble. The DismissableLayer's tap is on OverlayBackdrop;

@@ -28,7 +28,7 @@ export interface ToggleProps extends PrimitiveProps {
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Primitive } from '@/components/Primitive'
-import { useStandardVModel } from '@/shared/composables'
+import { useA11y, useStandardVModel } from '@/shared/composables'
 
 const props = withDefaults(defineProps<ToggleProps>(), {
   modelValue: undefined,
@@ -65,12 +65,18 @@ const dataState = computed<DataState>(() => {
   return modelValue.value ? 'on' : 'off'
 })
 
+const a11y = useA11y(() => ({
+  role: 'button',
+  state: modelValue.value ? 'pressed' : 'not pressed',
+  disabled: props.disabled,
+}))
+
 </script>
 
 <template>
   <Primitive
+    v-bind="a11y"
     :ref="forwardRef"
-    accessibility-traits="button"
     :as-child="props.asChild"
     :as="as"
     :data-state="dataState"

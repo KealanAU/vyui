@@ -40,9 +40,9 @@ export const [injectSwitchRootContext, provideSwitchRootContext]
 </script>
 
 <script setup lang="ts" generic="T = boolean">
-import { computed, toRefs } from 'vue'
+import { computed, toRefs, useAttrs } from 'vue'
 import { Primitive } from '@/components/Primitive'
-import { useStandardVModel } from '@/shared/composables'
+import { useA11y, useStandardVModel } from '@/shared/composables'
 
 const props = withDefaults(defineProps<SwitchRootProps<T>>(), {
   as: 'view',
@@ -82,16 +82,21 @@ provideSwitchRootContext({
   toggleCheck,
   disabled,
 })
+
+const attrs = useAttrs()
+const a11y = useA11y(() => ({
+  role: 'switch',
+  disabled: disabled.value,
+  state: checked.value ? 'on' : 'off',
+  label: attrs['accessibility-label'] as string | undefined,
+}))
 </script>
 
 <template>
   <Primitive
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     :id="id"
     :ref="forwardRef"
-    accessibility-traits="button"
-    accessibility-role-description="switch"
-    :accessibility-label="$attrs['accessibility-label']"
     :data-state="checked ? 'checked' : 'unchecked'"
     :data-disabled="disabled ? '' : undefined"
     :as-child="asChild"

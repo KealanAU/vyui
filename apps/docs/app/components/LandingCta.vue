@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const links = [
+import type { ButtonProps } from '@nuxt/ui'
+
+const links: ButtonProps[] = [
   {
     label: 'Read the docs',
     to: '/getting-started',

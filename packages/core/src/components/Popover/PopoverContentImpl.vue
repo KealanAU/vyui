@@ -25,6 +25,7 @@ export interface PopoverContentImplProps extends PrimitiveProps {
 <script setup lang="ts">
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
+import { useA11y } from '@/shared/composables'
 import { injectPopoverRootContext } from './PopoverRoot.vue'
 
 defineOptions({ inheritAttrs: false })
@@ -37,6 +38,13 @@ defineEmits<PopoverContentImplEmits>()
 const { forwardRef } = useForwardExpose()
 const rootContext = injectPopoverRootContext()
 
+// Modal dialog semantics: a valid `dialog` role (via role-description) plus an
+// a11y focus trap so the overlay is announced as a self-contained modal.
+const a11y = useA11y(() => ({
+  role: 'dialog',
+  exclusiveFocus: true,
+}))
+
 /**
  * A tap inside the content must not bubble to the backdrop view (which
  * dismisses the popover). reka-ui gets this for free from `DismissableLayer`;
@@ -46,7 +54,7 @@ const rootContext = injectPopoverRootContext()
  *   - no `FocusScope` / `useFocusGuards` (no focus model on Lynx)
  *   - no `PopperContent` / `@floating-ui` (anchor positioning dropped — the
  *     content is centred by the OverlayRoot portal)
- *   - `accessibility-traits` instead of ARIA `role`/`aria-labelledby`
+ *   - native Lynx a11y (`useA11y` role:'dialog') instead of ARIA `role`/`aria-labelledby`
  */
 </script>
 
@@ -55,9 +63,8 @@ const rootContext = injectPopoverRootContext()
     :ref="forwardRef"
     :as="as"
     :as-child="props.asChild"
-    accessibility-traits="dialog"
     :data-state="rootContext.open.value ? 'open' : 'closed'"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     @tap.stop
   >
     <slot />

@@ -1,13 +1,18 @@
 <script lang="ts">
-export interface DropdownMenuItemIndicatorProps {}
+import type { PrimitiveProps } from '@/components/Primitive'
+
+export interface DropdownMenuItemIndicatorProps extends PrimitiveProps {}
 </script>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Primitive } from '@/components/Primitive'
 import { injectDropdownMenuCheckboxItemContext } from './DropdownMenuCheckboxItem.vue'
 import { injectDropdownMenuRadioItemContext } from './DropdownMenuRadioItem.vue'
 
-defineProps<DropdownMenuItemIndicatorProps>()
+withDefaults(defineProps<DropdownMenuItemIndicatorProps>(), {
+  as: 'view',
+})
 
 // Attempt to resolve from checkbox or radio context
 const checkboxContext = injectDropdownMenuCheckboxItemContext(null)
@@ -25,5 +30,13 @@ const isActive = computed(() => {
 </script>
 
 <template>
-  <slot v-if="isActive" />
+  <Primitive
+    v-if="isActive"
+    :as="as"
+    :as-child="asChild"
+    :accessibility-element="false"
+    v-bind="$attrs"
+  >
+    <slot />
+  </Primitive>
 </template>

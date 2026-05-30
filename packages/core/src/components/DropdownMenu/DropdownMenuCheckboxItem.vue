@@ -27,6 +27,7 @@ export const [injectDropdownMenuCheckboxItemContext, provideDropdownMenuCheckbox
 <script setup lang="ts">
 import { useVModel } from '@vueuse/core'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 
 const props = withDefaults(defineProps<DropdownMenuCheckboxItemProps>(), {
   as: 'view',
@@ -39,6 +40,14 @@ const checked = useVModel(props, 'checked', emit, { passive: true }) as Ref<bool
 
 provideDropdownMenuCheckboxItemContext({ checked })
 
+const a11y = useA11y(() => ({
+  role: 'checkbox',
+  disabled: props.disabled,
+  state: checked.value === 'indeterminate'
+    ? 'mixed'
+    : checked.value ? 'checked' : 'unchecked',
+}))
+
 function handleTap() {
   if (props.disabled)
     return
@@ -50,10 +59,9 @@ function handleTap() {
 <template>
   <Primitive
     :as="as"
-    :accessibility-traits="disabled ? 'disabled' : 'button'"
     :data-state="checked === 'indeterminate' ? 'indeterminate' : checked ? 'checked' : 'unchecked'"
     :data-disabled="disabled ? '' : undefined"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     @tap="handleTap"
   >
     <slot />

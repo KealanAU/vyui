@@ -8,6 +8,7 @@ export interface PaginationLastProps extends PrimitiveProps {}
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectPaginationRootContext } from './PaginationRoot.vue'
 
 const props = withDefaults(defineProps<PaginationLastProps>(), { as: 'view' })
@@ -16,12 +17,17 @@ const rootContext = injectPaginationRootContext()
 useForwardExpose()
 
 const disabled = computed((): boolean => rootContext.page.value === rootContext.pageCount.value || rootContext.disabled.value)
+
+const a11y = useA11y(() => ({
+  role: 'button',
+  label: 'Last Page',
+  disabled: disabled.value,
+}))
 </script>
 
 <template>
   <Primitive
-    v-bind="props"
-    accessibility-label="Last Page"
+    v-bind="{ ...props, ...a11y }"
     :disabled
     @tap="!disabled && rootContext.onPageChange(rootContext.pageCount.value)"
   >

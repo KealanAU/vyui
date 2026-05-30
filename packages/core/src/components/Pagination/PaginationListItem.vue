@@ -11,6 +11,7 @@ export interface PaginationListItemProps extends PrimitiveProps {
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectPaginationRootContext } from './PaginationRoot.vue'
 
 const props = withDefaults(defineProps<PaginationListItemProps>(), { as: 'view' })
@@ -20,13 +21,19 @@ const rootContext = injectPaginationRootContext()
 const isSelected = computed(() => rootContext.page.value === props.value)
 
 const disabled = computed((): boolean => rootContext.disabled.value)
+
+const a11y = useA11y(() => ({
+  role: 'button',
+  disabled: disabled.value,
+  selected: isSelected.value,
+  label: `Page ${props.value}`,
+}))
 </script>
 
 <template>
   <Primitive
-    v-bind="props"
+    v-bind="{ ...props, ...a11y }"
     data-type="page"
-    :accessibility-label="`Page ${value}`"
     :data-selected="isSelected ? 'true' : undefined"
     :disabled
     @tap="!disabled && rootContext.onPageChange(value)"

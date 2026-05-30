@@ -5,14 +5,13 @@ import type { PrimitiveProps } from '@/components/Primitive'
 export interface ComboboxTriggerProps extends PrimitiveProps {
   /** When `true`, prevents the user from interacting with the trigger. */
   disabled?: boolean
-  /** Accessibility label announced by assistive tech. Localize as needed. */
-  accessibilityLabel?: string
 }
 </script>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectComboboxRootContext } from './ComboboxRoot.vue'
 
 const props = withDefaults(defineProps<ComboboxTriggerProps>(), {
@@ -24,6 +23,14 @@ const rootContext = injectComboboxRootContext()
 
 const isDisabled = computed(() => props.disabled || rootContext.disabled.value)
 
+const attrs = useAttrs()
+const a11y = useA11y(() => ({
+  role: 'button',
+  disabled: isDisabled.value,
+  state: rootContext.open.value ? 'expanded' : 'collapsed',
+  label: attrs['accessibility-label'] as string | undefined,
+}))
+
 function handleTap() {
   if (!isDisabled.value)
     rootContext.onOpenChange(!rootContext.open.value)
@@ -34,12 +41,9 @@ function handleTap() {
   <Primitive
     :as="as"
     :as-child="asChild"
-    accessibility-traits="button"
-    :accessibility-label="accessibilityLabel"
     :data-state="rootContext.open.value ? 'open' : 'closed'"
     :data-disabled="isDisabled ? '' : undefined"
-    :accessibility-value="rootContext.open.value ? 'expanded' : 'collapsed'"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     @tap="handleTap"
   >
     <slot />

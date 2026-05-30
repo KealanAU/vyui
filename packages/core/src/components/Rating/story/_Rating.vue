@@ -8,7 +8,7 @@ const props = defineProps<RatingRootProps>()
 <template>
   <RatingRoot v-slot="{ items }" v-bind="props">
     <RatingItem v-for="item in items" :key="item" v-slot="{ steps }" :item="item">
-      <RatingItemIndicator v-for="step in steps" :key="step" :step="step" />
+      <RatingItemIndicator v-for="step in steps" :key="step" :step="step" data-testid="rating-item" />
     </RatingItem>
   </RatingRoot>
 </template>

@@ -29,6 +29,9 @@ export type { UseTouchEmulationOptions, UseTouchEmulationReturn } from './useTou
 
 export { useStandardVModel, useStandardVModelOf } from './useStandardVModel.js'
 
+export { useA11y } from './useA11y.js'
+export type { A11yDescriptor, A11yProps, A11yRole, A11yTrait } from './useA11y.js'
+
 export {
   directionAxis,
   directionCloseSign,

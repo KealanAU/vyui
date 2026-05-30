@@ -26,6 +26,7 @@ export const [injectDropdownMenuRadioItemContext, provideDropdownMenuRadioItemCo
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Primitive } from '@/components/Primitive'
+import { useA11y } from '@/shared/composables'
 import { injectDropdownMenuRadioGroupContext } from './DropdownMenuRadioGroup.vue'
 
 const props = withDefaults(defineProps<DropdownMenuRadioItemProps>(), {
@@ -40,6 +41,12 @@ const isChecked = computed(() => radioGroupContext.modelValue.value === props.va
 
 provideDropdownMenuRadioItemContext({ isChecked })
 
+const a11y = useA11y(() => ({
+  role: 'radio',
+  disabled: props.disabled,
+  state: isChecked.value ? 'checked' : 'unchecked',
+}))
+
 function handleTap() {
   if (props.disabled)
     return
@@ -51,10 +58,9 @@ function handleTap() {
 <template>
   <Primitive
     :as="as"
-    :accessibility-traits="disabled ? 'disabled' : 'button'"
     :data-state="isChecked ? 'checked' : 'unchecked'"
     :data-disabled="disabled ? '' : undefined"
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...a11y }"
     @tap="handleTap"
   >
     <slot />
