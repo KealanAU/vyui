@@ -1,11 +1,5 @@
 lockfileVersion: '9.0'
 
-onlyBuiltDependencies:
-  - better-sqlite3
-  - core-js
-  - sharp
-  - vue-demi
-
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
@@ -8328,6 +8322,12 @@ packages:
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
+
+onlyBuiltDependencies:
+  - better-sqlite3
+  - core-js
+  - sharp
+  - vue-demi
 
 snapshots:
 

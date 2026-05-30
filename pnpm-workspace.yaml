@@ -2,11 +2,17 @@ packages:
   - 'packages/*'
   - 'apps/examples/*'
   - 'apps/docs'
-# Allowlist of dependencies permitted to run install/build (lifecycle) scripts.
-# Everything else is blocked by default (pnpm 10+), so a poisoned dependency
-# cannot auto-execute a postinstall to harvest secrets. Keep this list minimal.
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - better-sqlite3
-  - esbuild
-  - sharp
+# Per-dependency allowlist for install/build (lifecycle) scripts. Everything is
+# blocked by default (pnpm 10+) so a poisoned dependency cannot auto-execute a
+# postinstall to harvest secrets. Only the native packages that genuinely need a
+# build step are `true`; everything else is explicitly `false`. Every package
+# with a build script must appear here, otherwise pnpm fails install with
+# ERR_PNPM_IGNORED_BUILDS. core-js' postinstall is only a donation notice and
+# vue-demi's switch is a no-op under Vue 3, so both are denied. Keep this minimal.
+allowBuilds:
+  '@parcel/watcher': true
+  better-sqlite3: true
+  core-js: false
+  esbuild: true
+  sharp: true
+  vue-demi: false
