@@ -1,7 +1,15 @@
 export default defineNuxtConfig({
-  modules: ['@nuxt/ui', '@nuxt/content', '@nuxt/image', '@nuxtjs/mdc'],
+  modules: ['@nuxt/ui', '@nuxt/content', '@nuxt/image', '@nuxtjs/mdc', 'nuxt-llms'],
   css: ['~/assets/css/main.css'],
   devtools: { enabled: true },
+
+  // Generates /llms.txt only. Sections are auto-populated from @nuxt/content
+  // via its llms:generate hook; omitting `full` skips /llms-full.txt.
+  llms: {
+    domain: 'https://vyui.dev',
+    title: 'Vy UI',
+    description: 'Headless, accessible component primitives for Vue-Lynx — plus a styled kit (@vyui/kit) built on top. Native iOS, Android, and web from one Vue codebase.',
+  },
 
   runtimeConfig: {
     public: {
