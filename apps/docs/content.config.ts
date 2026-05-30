@@ -10,7 +10,7 @@ export default defineContentConfig({
       type: 'page',
       source: {
         include: '**',
-        exclude: ['index.md'],
+        exclude: ['index.md', 'changelog/**'],
       },
       schema: z.object({
         links: z.array(z.object({
@@ -19,6 +19,18 @@ export default defineContentConfig({
           to: z.string(),
           target: z.string().optional(),
         })).optional(),
+      }),
+    }),
+    changelog: defineCollection({
+      type: 'page',
+      source: 'changelog/**',
+      schema: z.object({
+        // 'core' renders on the left rail, 'kit' on the right.
+        package: z.enum(['core', 'kit']),
+        // ISO date (YYYY-MM-DD) — drives the interleaved timeline order.
+        date: z.string(),
+        // Release badge label, e.g. 'v0.0.3', 'Workspace'.
+        version: z.string(),
       }),
     }),
   },

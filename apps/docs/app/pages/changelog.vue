@@ -1,120 +1,133 @@
 <script setup lang="ts">
-const appConfig = useAppConfig()
+const { data: entries } = await useAsyncData('changelog', () =>
+  queryCollection('changelog').order('date', 'DESC').all(),
+)
 
-interface UnghRelease {
-  name?: string
-  tag: string
-  publishedAt: string
-  markdown: string
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+})
+
+function formatDate(date: string) {
+  // Parse as UTC so the displayed day doesn't drift across timezones.
+  return dateFormatter.format(new Date(`${date}T00:00:00Z`))
 }
-
-// Post-alpha gate: once we ship 0.1.0 the 0.0.x pre-alpha releases stop being
-// relevant. Uncomment MIN_VERSION + the `.filter` below to only show the
-// changelog from 0.1.0 onward.
-// const MIN_VERSION = [0, 1, 0]
-// function gteMinVersion(version: string) {
-//   const parts = version.split('.').map(n => Number.parseInt(n, 10) || 0)
-//   for (let i = 0; i < MIN_VERSION.length; i++) {
-//     if ((parts[i] ?? 0) > MIN_VERSION[i]) return true
-//     if ((parts[i] ?? 0) < MIN_VERSION[i]) return false
-//   }
-//   return true
-// }
-
-const PACKAGES = [
-  { key: 'core', label: '@vyui/core', prefix: '@vyui/core@' },
-  { key: 'kit', label: '@vyui/kit', prefix: '@vyui/kit@' },
-] as const
-
-const { data: releases } = await useFetch(
-  computed(() => `https://ungh.cc/repos/${appConfig.repository}/releases`),
-  {
-    transform: (data: { releases: UnghRelease[] }) => data.releases,
-  },
-)
-
-const columns = computed(() =>
-  PACKAGES.map(pkg => ({
-    ...pkg,
-    versions: (releases.value ?? [])
-      .filter(release => release.tag.startsWith(pkg.prefix))
-      // .filter(release => gteMinVersion(release.tag.slice(pkg.prefix.length)))
-      .map(release => ({
-        tag: release.tag,
-        title: release.tag.slice(pkg.prefix.length),
-        date: release.publishedAt,
-        markdown: release.markdown,
-      })),
-  })),
-)
 
 useSeoMeta({
   title: 'Changelog',
-  description: 'Release notes for Vy UI — @vyui/core and @vyui/kit.',
+  description: 'Release notes for Vy UI — @vyui/core and @vyui/kit, side by side as the project evolves.',
 })
 </script>
 
 <template>
   <UContainer>
     <div class="py-12 sm:py-16">
-      <div class="mb-12 max-w-2xl">
+      <div class="mx-auto mb-12 max-w-2xl text-center">
         <h1 class="text-highlighted text-4xl font-semibold tracking-tight sm:text-5xl">
           Changelog
         </h1>
         <p class="text-muted mt-3 text-base sm:text-lg">
-          Release notes for <code class="text-highlighted">@vyui/core</code> and <code class="text-highlighted">@vyui/kit</code>, pulled directly from GitHub releases.
+          What's shipping across <code class="text-highlighted">@vyui/core</code> and
+          <code class="text-highlighted">@vyui/kit</code> — one rolling timeline, newest first.
         </p>
       </div>
 
-      <div class="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
-        <section
-          v-for="column in columns"
-          :key="column.key"
-        >
-          <h2 class="text-highlighted mb-6 font-mono text-lg font-semibold">
-            {{ column.label }}
-          </h2>
+      <UAlert
+        v-if="!entries?.length"
+        icon="i-lucide-flask-conical"
+        color="warning"
+        variant="subtle"
+        title="No entries yet"
+        description="Vy UI is pre-alpha. This page fills in as core and kit evolve."
+      />
 
-          <UAlert
-            v-if="!column.versions.length"
-            icon="i-lucide-flask-conical"
-            color="warning"
-            variant="subtle"
-            title="No releases yet"
-            :description="`No ${column.label} releases have been cut yet.`"
-          />
+      <template v-else>
+        <!-- Rail headers (desktop only) -->
+        <div class="text-muted mb-6 hidden grid-cols-[1fr_auto_1fr] items-center gap-x-12 text-sm font-medium md:grid">
+          <div class="flex items-center justify-end gap-2">
+            <UIcon
+              name="i-lucide-box"
+              class="text-primary size-4"
+            />
+            <code class="text-highlighted">@vyui/core</code>
+          </div>
+          <div class="size-3" />
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-lucide-palette"
+              class="text-info size-4"
+            />
+            <code class="text-highlighted">@vyui/kit</code>
+          </div>
+        </div>
 
-          <UChangelogVersions
-            v-else
-            :indicator-motion="false"
-            :ui="{
-              root: 'pb-8',
-              indicator: 'inset-y-0',
-            }"
-          >
-            <UChangelogVersion
-              v-for="version in column.versions"
-              :key="version.tag"
-              v-bind="version"
-              :ui="{
-                root: 'flex items-start',
-                container: 'max-w-2xl min-w-0',
-                header: 'border-b border-default pb-4',
-                title: 'text-3xl',
-                date: 'text-xs/9 text-highlighted font-mono',
-                indicator: 'sticky top-16 pt-8 -mt-8',
-              }"
+        <div class="relative">
+          <!-- Center spine -->
+          <div class="bg-border absolute inset-y-0 left-[7px] w-px md:left-1/2 md:-translate-x-1/2" />
+
+          <ul class="space-y-10">
+            <li
+              v-for="entry in entries"
+              :key="entry.path"
+              class="relative md:grid md:grid-cols-2 md:gap-x-12"
             >
-              <template #body>
-                <MDC
-                  v-if="version.markdown"
-                  :value="version.markdown"
-                />
-              </template>
-            </UChangelogVersion>
-          </UChangelogVersions>
-        </section>
-      </div>
+              <!-- Node on the spine -->
+              <span
+                class="ring-bg absolute top-2 left-[7px] z-10 size-3.5 -translate-x-1/2 rounded-full ring-4 md:left-1/2"
+                :class="entry.package === 'core' ? 'bg-primary' : 'bg-info'"
+              />
+
+              <div
+                :class="[
+                  'pl-8 md:pl-0',
+                  entry.package === 'core'
+                    ? 'md:col-start-1 md:pr-2 md:text-right'
+                    : 'md:col-start-2 md:pl-2',
+                ]"
+              >
+                <UCard
+                  variant="subtle"
+                  :ui="{ body: 'sm:p-5' }"
+                >
+                  <div
+                    class="flex items-center gap-2"
+                    :class="entry.package === 'core' && 'md:flex-row-reverse'"
+                  >
+                    <UBadge
+                      :color="entry.package === 'core' ? 'primary' : 'info'"
+                      variant="subtle"
+                      size="sm"
+                    >
+                      @vyui/{{ entry.package }}
+                    </UBadge>
+                    <UBadge
+                      color="neutral"
+                      variant="outline"
+                      size="sm"
+                      class="font-mono"
+                    >
+                      {{ entry.version }}
+                    </UBadge>
+                  </div>
+
+                  <time class="text-dimmed mt-3 block font-mono text-xs">
+                    {{ formatDate(entry.date) }}
+                  </time>
+
+                  <h2 class="text-highlighted mt-1 text-lg font-semibold">
+                    {{ entry.title }}
+                  </h2>
+
+                  <div class="text-muted mt-2 text-sm [&_a]:text-primary [&_code]:text-highlighted">
+                    <ContentRenderer :value="entry" />
+                  </div>
+                </UCard>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </template>
     </div>
   </UContainer>
 </template>
