@@ -1,14 +1,17 @@
 // Copyright 2026 The Lynx Authors. All rights reserved.
 // Licensed under the Apache License Version 2.0.
 //
-// Pure swiper physics. Extracted from `SwiperRoot.vue` so the math can be
-// unit-tested without the `:main-thread-bind*` MT worklet pipeline (which
-// crashes under vitest — see `Swiper.test.ts`). Adapted from
+// Shared, pure gesture physics — the unit-tested spec mirrored by the
+// `'main thread'` worklets that drive drag components (Swiper, Sheet, …).
+// Extracted so the math can be tested without the `:main-thread-bind*` MT
+// worklet pipeline (which crashes under vitest — see #6). Adapted from
 // `lynx-family/lynx-ui` `packages/lynx-ui-swiper` (Apache 2.0); see
 // `src/hooks/useOffset.ts`, `src/hooks/useVelocity.ts`, `src/hooks/useAxisLock.ts`,
 // `src/utils/index.ts`.
 //
-// Worklets in `SwiperRoot.vue` orchestrate; logic here is platform-agnostic.
+// `decideSnapTarget` is the uniform-paging (carousel) specialization;
+// `pickSnap` is the generic candidate-based form that also serves
+// arbitrary snap points + dismiss (Sheet/drawer). See #37.
 
 /** Gospel: `const/index.ts` — slop before axis lock engages. */
 export const GESTURE_THRESHOLD = 8
@@ -288,6 +291,48 @@ export function decideSnapTarget(opts: SnapTargetOpts): number {
   if (target > count - 1)
     return count - 1
   return target
+}
+
+export interface PickSnapOpts {
+  /** Absolute velocity (px/s) above which a flick advances one candidate. */
+  velocityThreshold: number
+}
+
+/**
+ * Generic candidate-based snap. Picks the resting offset nearest the release
+ * `position`; a flick (`|velocity| >= velocityThreshold`) advances one
+ * candidate in the direction of travel instead. Velocity sign is in offset
+ * space (positive = offset increasing).
+ *
+ * This is the policy-agnostic generalization of `decideSnapTarget`: the
+ * caller supplies the allowed resting offsets, so it serves both a carousel
+ * (uniform item offsets) and a Sheet/drawer (arbitrary snap-point offsets,
+ * with "dismiss" expressed as just another candidate). Returns the chosen
+ * offset — the caller maps it back to an index / open-state in `onSettle`.
+ */
+export function pickSnap(
+  position: number,
+  velocity: number,
+  candidates: number[],
+  { velocityThreshold }: PickSnapOpts,
+): number {
+  'main thread'
+  if (candidates.length === 0)
+    return position
+
+  let nearest = candidates[0]
+  for (let i = 1; i < candidates.length; i++) {
+    if (Math.abs(candidates[i] - position) < Math.abs(nearest - position))
+      nearest = candidates[i]
+  }
+
+  if (Math.abs(velocity) < velocityThreshold)
+    return nearest
+
+  // Flick: step one candidate in the direction of travel.
+  const sorted = candidates.slice().sort((a, b) => a - b)
+  const next = sorted[sorted.indexOf(nearest) + (velocity > 0 ? 1 : -1)]
+  return next === undefined ? nearest : next
 }
 
 /** Gospel: `utils/index.ts:7` — cubic ease-out for snap animation. */
