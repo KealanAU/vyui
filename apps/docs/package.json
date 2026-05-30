@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "better-sqlite3": "^12.10.0",
+    "nuxt-llms": "^0.2.0",
     "vue-tsc": "3.2.6"
   }
 }
