@@ -1,6 +1,12 @@
 <script setup lang="ts">
 const words = ['Headless', 'Styled']
 
+// Typewriter timings (ms).
+const TYPE_DELAY = 180
+const DELETE_DELAY = 110
+const WORD_PAUSE = 3000
+const CURSOR_BLINK = 530
+
 const display = ref(words[0])
 const cursor = ref(true)
 
@@ -28,23 +34,23 @@ onMounted(() => {
       if (charIndex === current.length) {
         deleting = true
         // Pause on the full word before deleting again.
-        timer = setTimeout(tick, 1800)
+        timer = setTimeout(tick, WORD_PAUSE)
         return
       }
     }
 
-    timer = setTimeout(tick, deleting ? 60 : 110)
+    timer = setTimeout(tick, deleting ? DELETE_DELAY : TYPE_DELAY)
   }
 
   // Hold the initial word briefly, then start the loop.
   timer = setTimeout(() => {
     deleting = true
     tick()
-  }, 1800)
+  }, WORD_PAUSE)
 
   blink = setInterval(() => {
     cursor.value = !cursor.value
-  }, 530)
+  }, CURSOR_BLINK)
 })
 
 onBeforeUnmount(() => {
