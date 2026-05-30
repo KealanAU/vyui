@@ -192,15 +192,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@floating-ui/dom':
-        specifier: ^1.6.13
-        version: 1.7.6
-      '@floating-ui/vue':
-        specifier: ^1.1.6
-        version: 1.1.11(vue@3.5.34(typescript@5.9.3))
-      '@iconify-json/lucide':
-        specifier: ^1.2.108
-        version: 1.2.108
       '@iconify/types':
         specifier: ^2.0.0
         version: 2.0.0
@@ -210,21 +201,12 @@ importers:
       '@internationalized/date':
         specifier: ^3.5.0
         version: 3.12.1
-      '@internationalized/number':
-        specifier: ^3.5.0
-        version: 3.6.6
       '@vueuse/core':
         specifier: ^14.1.0
         version: 14.3.0(vue@3.5.34(typescript@5.9.3))
       '@vueuse/shared':
         specifier: ^14.1.0
         version: 14.3.0(vue@3.5.34(typescript@5.9.3))
-      aria-hidden:
-        specifier: ^1.2.6
-        version: 1.2.6
-      defu:
-        specifier: ^6.1.5
-        version: 6.1.7
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -9018,15 +9000,6 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
-  '@floating-ui/vue@1.1.11(vue@3.5.34(typescript@5.9.3))':
-    dependencies:
-      '@floating-ui/dom': 1.7.6
-      '@floating-ui/utils': 0.2.11
-      vue-demi: 0.14.10(vue@3.5.34(typescript@5.9.3))
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-
   '@hongzhiyuan/preact@10.28.0-fc4af453': {}
 
   '@iconify-json/icon-park-outline@1.2.4':
@@ -17313,10 +17286,6 @@ snapshots:
   vue-demi@0.14.10(vue@3.5.17(typescript@5.9.3)):
     dependencies:
       vue: 3.5.17(typescript@5.9.3)
-
-  vue-demi@0.14.10(vue@3.5.34(typescript@5.9.3)):
-    dependencies:
-      vue: 3.5.34(typescript@5.9.3)
 
   vue-devtools-stub@0.1.0: {}
 
