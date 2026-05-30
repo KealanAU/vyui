@@ -2,10 +2,11 @@ packages:
   - 'packages/*'
   - 'apps/examples/*'
   - 'apps/docs'
-allowBuilds:
-  '@parcel/watcher': true
-  better-sqlite3: true
-  core-js: false
-  esbuild: true
-  sharp: true
-  vue-demi: false
+# Allowlist of dependencies permitted to run install/build (lifecycle) scripts.
+# Everything else is blocked by default (pnpm 10+), so a poisoned dependency
+# cannot auto-execute a postinstall to harvest secrets. Keep this list minimal.
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - better-sqlite3
+  - esbuild
+  - sharp

@@ -1,6 +1,7 @@
 {
   "name": "@vyui/testing-utils",
   "type": "module",
+  "private": true,
   "version": "0.1.0",
   "description": "Shared test helpers for vyui — LynxTestingEnv setup + render utilities",
   "license": "MIT",
