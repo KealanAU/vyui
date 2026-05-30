@@ -64,22 +64,18 @@ function render() {
   )
 }
 
-// Keep the painted node in sync when the consumer mutates `props` / `attrs`
-// while the overlay is mounted. We don't toggle the registration here — the
-// Registrant child below owns that — we just re-push the latest render fn
-// when something the painted node depends on changes.
+// Intentionally inert: the Registrant child below owns register / unregister.
+// The `render` closure is re-created on every render of this component, so the
+// next `registerOverlay` call from the Registrant already picks up the latest
+// props — there's nothing to re-push here. Kept as a watch so the dependency
+// list documents what the painted node tracks.
 watch(
   [
     () => ({ ...props }),
     () => ({ ...attrs }),
     () => rootContext.open.value,
   ],
-  () => {
-    // No-op: register on mount via Registrant covers the painted lifetime.
-    // (The `render` closure is re-created on every render of this component
-    // so the next `registerOverlay` call from the Registrant will already
-    // pick up the latest props.)
-  },
+  () => {},
 )
 
 onUnmounted(() => unregisterOverlay(id))

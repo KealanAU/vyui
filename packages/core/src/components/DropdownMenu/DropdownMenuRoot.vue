@@ -6,11 +6,11 @@ import { createContext } from '@/shared'
 export interface DropdownMenuRootProps {
   /** The open state of the dropdown menu when it is initially rendered. */
   defaultOpen?: boolean
-  /** The controlled open state of the dropdown menu. Can be binded with `v-model:open`. */
+  /** The controlled open state of the dropdown menu. Can be bound with `v-model:open`. */
   open?: boolean
   /** When `true`, interaction with outside elements will be disabled and only menu content will be visible to screen readers. */
   modal?: boolean
-  /** The reading direction of the combobox when applicable. */
+  /** The reading direction of the dropdown menu when applicable. */
   dir?: Direction
 }
 

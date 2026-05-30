@@ -27,11 +27,10 @@ const ctx = injectNavigationStackContext()
 const isCurrent = computed(() => ctx.currentKey.value === props.pageKey)
 
 /**
- * Slide direction class — picks an enter / leave animation keyed by the
- * stack's last navigation direction. Lynx's preset ships the named
- * keyframes `slide-in` / `slide-out` (used by Sheet / Toast); we reuse them
- * here. Forward push: new page slides in from the right. Back pop: page
- * slides out to the right.
+ * Slide-in animation class for the current page. Lynx's preset ships the
+ * named `slide-in` keyframe (used by Sheet / Toast) which we reuse here.
+ * Both forward push and back pop currently apply the same slide-in enter
+ * animation; there is no distinct leave/back animation yet.
  *
  * Animations are CSS — no MT worklet — so the page is rendered absolute and
  * the layout engine handles the transform. For more native-feeling physics

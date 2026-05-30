@@ -106,7 +106,7 @@ const max = useVModel(props, 'max', emit, {
   passive: (props.max === undefined) as false,
 })
 
-// ------- Watch for correct values -------
+// Clamp model value and max to their valid ranges.
 watch(
   () => modelValue.value,
   async (value) => {
@@ -128,7 +128,6 @@ watch(
   },
   { immediate: true },
 )
-// ------- End of watch for correct values -------
 
 const progressState = computed<ProgressState>(() => {
   if (isNullish(modelValue.value))

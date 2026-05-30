@@ -15,7 +15,7 @@ interface SingleOrMultipleProps<T = AcceptableValue | AcceptableValue[]> {
   /**
    * The controlled value of the active item(s).
    *
-   * Use this when you need to control the state of the items. Can be binded with `v-model`
+   * Use this when you need to control the state of the items. Can be bound with `v-model`
    */
   modelValue?: T
 

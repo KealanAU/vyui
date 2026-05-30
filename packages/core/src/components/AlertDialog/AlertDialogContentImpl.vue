@@ -130,9 +130,10 @@ const handleTransitionCancel
     the fade-in / fade-out animation hooks so the dim layer animates in step
     with the panel.
 
-    Both views bind the full quintet of animation events
+    Both views bind the full set of animation / transition events
     (`@animationstart` / `@animationend` / `@animationcancel` /
-    `@transitionstart` / `@transitionend`) so whichever the consumer uses, the
+    `@transitionstart` / `@transitionend` / `@transitioncancel`) so whichever
+    the consumer uses, the
     Presence state machine sees a real signal. The 24-frame fallback inside
     `usePresence` covers the no-animation case.
   -->

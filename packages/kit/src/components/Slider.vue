@@ -64,9 +64,8 @@ defineSlots<SliderSlots>()
 
 const appConfig = useAppConfig()
 
-// `SliderRoot` now accepts both shapes natively and emits in whichever shape
-// the consumer is binding with, so no normalization needed here — just
-// forward through.
+// `SliderRoot` accepts both shapes natively and emits in whichever shape the
+// consumer binds with, so forward through without normalizing.
 const thumbsCount = computed(() => {
   const src = props.modelValue ?? props.defaultValue
   if (typeof src === 'number') return 1

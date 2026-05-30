@@ -1,21 +1,16 @@
 <!-- Copyright 2026 The Lynx Authors. All rights reserved.
      Licensed under the Apache License Version 2.0.
 
-     Strategy: pure-CSS slide through the `vyui-sheet-slide-in` /
-     `vyui-sheet-slide-out` keyframes (defined in SheetContentImpl's
-     `<style>` block). The Presence state machine sets `ui-entering` /
-     `ui-leaving` on the panel `<view>`; `@animationend` (BG-thread event)
-     advances Presence into the `Entered` / `Left` terminal states so the
-     panel unmounts only after the slide-out finishes.
-
-     This deliberately ships open/close-only (no drag / snap / fling). A
-     prior MT-rAF based implementation hit a vue-lynx@0.4.0 upstream bug
-     around `useMainThreadRef` / `runOnMainThread` ordering — see the
-     comment block in SheetContentImpl. Once upstream lands the fix,
-     interactivity can be layered back on. -->
+     Presence wrapper around `SheetContentImpl`. Open / close are driven by
+     the `vyui-sheet-slide-in/out` keyframes; the Presence state machine sets
+     `ui-entering` / `ui-leaving` on the panel `<view>` and `@animationend`
+     (BG-thread event) advances Presence into the `Entered` / `Left` terminal
+     states so the panel unmounts only after the slide-out finishes. Drag /
+     snap / fling are implemented in SheetContentImpl via MT touch worklets;
+     pass `dragDisabled` to opt out. -->
 <script lang="ts">
 export interface SheetContentProps {
-  /** Disable dragging. Retained for API parity — no-op in the CSS variant. */
+  /** Disable drag / snap / fling; open and close still animate. */
   dragDisabled?: boolean
 }
 </script>

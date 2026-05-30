@@ -5,7 +5,7 @@ import type { AcceptableValue, DataOrientation, Direction, FormFieldProps } from
 import { createContext, useDirection, useForwardExpose } from '@/shared'
 
 export interface RadioGroupRootProps extends PrimitiveProps, FormFieldProps {
-  /** The controlled value of the radio item to check. Can be binded as `v-model`. */
+  /** The controlled value of the radio item to check. Can be bound as `v-model`. */
   modelValue?: AcceptableValue
   /**
    * The value of the radio item that should be checked when initially rendered.
@@ -17,7 +17,7 @@ export interface RadioGroupRootProps extends PrimitiveProps, FormFieldProps {
   disabled?: boolean
   /** The orientation of the component. */
   orientation?: DataOrientation
-  /** The reading direction of the combobox when applicable. <br> If omitted, inherits globally from `ConfigProvider` or assumes LTR (left-to-right) reading mode. */
+  /** The reading direction of the radio group when applicable. <br> If omitted, inherits globally from `ConfigProvider` or assumes LTR (left-to-right) reading mode. */
   dir?: Direction
   /** When `true`, keyboard navigation will loop from last item to first, and vice versa. */
   loop?: boolean
