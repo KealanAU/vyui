@@ -58,7 +58,6 @@ provideToggleGroupRootContext({
 <template>
   <Primitive
     :ref="forwardRef"
-    role="group"
     :as-child="asChild"
     :as="as"
   >

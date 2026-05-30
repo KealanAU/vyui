@@ -145,15 +145,12 @@ provideProgressRootContext({
 </script>
 
 <template>
+  <!-- TODO(a11y #13): native a11y deferred. reka-ui's aria-value*/role removed
+       (inert on Lynx). Proper pass maps to accessibility-value="$now of $max" —
+       see docs/plans/lynx-compat.md. getValueLabel/getValueText props kept for it. -->
   <Primitive
     :as-child="asChild"
     :as="as"
-    :aria-valuemax="max"
-    :aria-valuemin="0"
-    :aria-valuenow="isNumber(modelValue) ? modelValue : undefined"
-    :aria-valuetext="getValueText?.(modelValue, max)"
-    :aria-label="getValueLabel(modelValue, max)"
-    role="progressbar"
     :data-state="progressState"
     :data-value="modelValue ?? undefined"
     :data-max="max"

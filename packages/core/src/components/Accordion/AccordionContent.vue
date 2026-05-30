@@ -20,8 +20,6 @@ useForwardExpose()
 
 <template>
   <CollapsibleContent
-    role="region"
-    :aria-labelledby="itemContext.triggerId"
     :as-child="props.asChild"
     :as="as"
     :force-mount="props.forceMount"
