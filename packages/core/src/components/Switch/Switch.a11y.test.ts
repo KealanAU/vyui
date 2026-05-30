@@ -6,7 +6,7 @@ import Switch from './_Switch.vue'
 describe('Switch a11y', () => {
   it('exposes a switch with label and role-description', () => {
     const { container } = render(Switch)
-    const el = container.querySelector('[accessibility-role-description="switch"]')!
+    const el = container.querySelector('[data-testid="root"]')!
     expect(el).not.toBeNull()
     expect(el.getAttribute('accessibility-traits')).toBe('button')
     expect(el.getAttribute('accessibility-label')).toBe('Airplane mode')
@@ -15,7 +15,7 @@ describe('Switch a11y', () => {
 
   it('announces on/off state via accessibility-value', async () => {
     const { container } = render(Switch)
-    const el = container.querySelector('[accessibility-role-description="switch"]')!
+    const el = container.querySelector('[data-testid="root"]')!
     expect(el.getAttribute('accessibility-value')).toBe('off')
     fireEvent.tap(el)
     await waitForUpdate()

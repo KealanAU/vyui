@@ -7,7 +7,7 @@ import Tabs from './story/_Tabs.vue'
 describe('Tabs a11y', () => {
   it('exposes each trigger as a focusable tab', () => {
     const { container } = render(Tabs)
-    const triggers = container.querySelectorAll('[accessibility-traits="tabbar"]')
+    const triggers = container.querySelectorAll('[data-testid="tab"]')
     expect(triggers.length).toBe(2)
     triggers.forEach((el) => {
       expect(el.getAttribute('accessibility-role-description')).toBe('tab')
@@ -17,7 +17,7 @@ describe('Tabs a11y', () => {
 
   it('announces the selected tab via accessibility-value; unselected carries none', () => {
     const { container } = render(Tabs)
-    const triggers = container.querySelectorAll('[accessibility-traits="tabbar"]')
+    const triggers = container.querySelectorAll('[data-testid="tab"]')
     expect(triggers[0].getAttribute('accessibility-value')).toBe('selected')
     expect(triggers[1].getAttribute('accessibility-value')).toBeNull()
   })

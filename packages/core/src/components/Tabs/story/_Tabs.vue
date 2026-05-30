@@ -5,8 +5,8 @@ import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '..'
 <template>
   <TabsRoot :default-value="1">
     <TabsList>
-      <TabsTrigger :value="1">Account</TabsTrigger>
-      <TabsTrigger value="tab2">Password</TabsTrigger>
+      <TabsTrigger :value="1" data-testid="tab">Account</TabsTrigger>
+      <TabsTrigger value="tab2" data-testid="tab">Password</TabsTrigger>
     </TabsList>
     <TabsContent :value="1">
       <text>Make changes to your account here.</text>

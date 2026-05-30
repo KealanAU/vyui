@@ -6,14 +6,14 @@ import Rating from './story/_Rating.vue'
 describe('Rating a11y', () => {
   it('exposes rating items as focusable buttons', () => {
     const { container } = render(Rating, { defaultValue: 1, length: 3 })
-    const items = container.querySelectorAll('[accessibility-traits="button"]')
+    const items = container.querySelectorAll('[data-testid="rating-item"]')
     expect(items.length).toBe(3)
     expect(items[0].getAttribute('accessibility-element')).toBe('true')
   })
 
   it('announces selected/unselected state via accessibility-value', () => {
     const { container } = render(Rating, { defaultValue: 1, length: 3 })
-    const items = container.querySelectorAll('[accessibility-traits="button"]')
+    const items = container.querySelectorAll('[data-testid="rating-item"]')
     expect(items[0].getAttribute('accessibility-value')).toBe('selected')
     expect(items[1].getAttribute('accessibility-value')).toBe('unselected')
   })

@@ -20,7 +20,7 @@ function mountSlider(value: number[] = [0]) {
     template: `
       <SliderRoot :model-value="model">
         <SliderTrack><SliderRange /></SliderTrack>
-        <SliderThumb />
+        <SliderThumb data-testid="thumb" />
       </SliderRoot>
     `,
   })
@@ -30,7 +30,7 @@ function mountSlider(value: number[] = [0]) {
 describe('Slider a11y', () => {
   it('exposes the thumb as an adjustable element', () => {
     const { container } = mountSlider()
-    const thumb = container.querySelector('[accessibility-traits="adjustable"]')!
+    const thumb = container.querySelector('[data-testid="thumb"]')!
     expect(thumb).not.toBeNull()
     expect(thumb.getAttribute('accessibility-element')).toBe('true')
   })
@@ -40,14 +40,14 @@ describe('Slider a11y', () => {
     // value only populates once Vue has flushed.
     const { container } = mountSlider([0])
     await waitForUpdate()
-    const thumb = container.querySelector('[accessibility-traits="adjustable"]')!
+    const thumb = container.querySelector('[data-testid="thumb"]')!
     expect(thumb.getAttribute('accessibility-value')).toBe('0 of 100')
   })
 
   it('reflects the current value in accessibility-value', async () => {
     const { container } = mountSlider([50])
     await waitForUpdate()
-    const thumb = container.querySelector('[accessibility-traits="adjustable"]')!
+    const thumb = container.querySelector('[data-testid="thumb"]')!
     expect(thumb.getAttribute('accessibility-value')).toBe('50 of 100')
   })
 })

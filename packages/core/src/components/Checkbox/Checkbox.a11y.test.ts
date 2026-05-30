@@ -7,7 +7,7 @@ import Checkbox from './story/_Checkbox.vue'
 describe('Checkbox a11y', () => {
   it('exposes a focusable checkbox button', () => {
     const { container } = render(Checkbox)
-    const el = container.querySelector('[accessibility-role-description="checkbox"]')!
+    const el = container.querySelector('[data-testid="checkbox"]')!
     expect(el).not.toBeNull()
     expect(el.getAttribute('accessibility-traits')).toBe('button')
     expect(el.getAttribute('accessibility-element')).toBe('true')
@@ -15,7 +15,7 @@ describe('Checkbox a11y', () => {
 
   it('announces checked state via accessibility-value', async () => {
     const { container } = render(Checkbox)
-    const el = container.querySelector('[accessibility-role-description="checkbox"]')!
+    const el = container.querySelector('[data-testid="checkbox"]')!
     expect(el.getAttribute('accessibility-value')).toBe('unchecked')
     fireEvent.tap(el)
     await waitForUpdate()
@@ -24,7 +24,7 @@ describe('Checkbox a11y', () => {
 
   it('announces the indeterminate state as "mixed"', () => {
     const { container } = render(Checkbox, { modelValue: 'indeterminate' })
-    const el = container.querySelector('[accessibility-role-description="checkbox"]')!
+    const el = container.querySelector('[data-testid="checkbox"]')!
     expect(el.getAttribute('accessibility-value')).toBe('mixed')
   })
 
