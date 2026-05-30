@@ -2,17 +2,21 @@
 import { describe, expect, it } from 'vitest'
 import { render } from '@vyui/testing-utils'
 import Separator from './story/_Separator.vue'
+import SeparatorWithSlot from './story/_SeparatorWithSlot.vue'
 
-describe('given a default Separator', () => {
-  it('should render', () => {
+describe('Separator', () => {
+  it('defaults to data-orientation="horizontal"', () => {
     const { container } = render(Separator)
-    expect(container).toBeTruthy()
+    expect(container.querySelector('[data-orientation]')!.getAttribute('data-orientation')).toBe('horizontal')
   })
-})
 
-describe('given a vertical Separator', () => {
-  it('should render', () => {
+  it('reflects a vertical orientation', () => {
     const { container } = render(Separator, { orientation: 'vertical' })
-    expect(container).toBeTruthy()
+    expect(container.querySelector('[data-orientation]')!.getAttribute('data-orientation')).toBe('vertical')
+  })
+
+  it('renders slot content', () => {
+    const { container } = render(SeparatorWithSlot)
+    expect(container.innerHTML).toContain('slot-content')
   })
 })
