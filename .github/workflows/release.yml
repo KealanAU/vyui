@@ -40,7 +40,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       # No `cache: 'pnpm'` here: the publish job runs with privileged secrets and
       # must not consume a store cache that a lower-privilege job could poison.
