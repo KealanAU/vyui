@@ -19,6 +19,9 @@ export { createTv, tv } from './utils/tv'
 export { default as Accordion, default as VyAccordion } from './components/Accordion.vue'
 export { default as ActionSheet, default as VyActionSheet } from './components/ActionSheet.vue'
 export { default as Alert, default as VyAlert } from './components/Alert.vue'
+// AspectRatio is pure layout with nothing to theme, so re-export the core
+// primitive directly under a Vy* alias for discoverability (as with Icon).
+export { AspectRatio, AspectRatio as VyAspectRatio, type AspectRatioProps } from '@vyui/core'
 export { default as Avatar, default as VyAvatar } from './components/Avatar.vue'
 export { default as AvatarGroup, default as VyAvatarGroup } from './components/AvatarGroup.vue'
 export { default as Badge, default as VyBadge } from './components/Badge.vue'
