@@ -55,9 +55,14 @@ export const AVATAR_GROUP_KEY: InjectionKey<AvatarGroupContext> = Symbol('vyui:a
 </script>
 
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue'
+import { computed, inject } from 'vue'
 import { useAppConfig } from '../composables/useAppConfig'
-import { Icon as VyIcon } from '@vyui/core'
+import {
+  AvatarFallback as CoreAvatarFallback,
+  AvatarImage as CoreAvatarImage,
+  AvatarRoot as CoreAvatarRoot,
+  Icon as VyIcon,
+} from '@vyui/core'
 import VyChip from './Chip.vue'
 
 const props = withDefaults(defineProps<AvatarProps>(), {})
@@ -95,36 +100,34 @@ const ui = computed(() => buildAvatar(appConfig)({
   size: resolvedSize.value,
   color: resolvedColor.value,
 }))
-
-// Lynx `<image>` fires `binderror` (bound as `@error`) when the source fails
-// to load. Track it so we fall back to initials/icon instead of a broken
-// image. Reset whenever `src` changes so a new URL gets a fresh attempt.
-const imageLoadError = ref(false)
-watch(() => props.src, () => { imageLoadError.value = false })
-const showImage = computed(() => !!props.src && !imageLoadError.value)
 </script>
 
 <template>
-  <view :class="[ui.root({ class: [props.class, props.ui?.root] }), chip ? 'relative' : '']">
+  <!--
+    Headless behaviour (image load-status + fallback) comes from @vyui/core's
+    Avatar primitives. The Lynx `<image>` `binderror` (`@error`) handling lives
+    in `CoreAvatarImage`; this wrapper only layers theming + chip overlay.
+  -->
+  <CoreAvatarRoot :class="[ui.root({ class: [props.class, props.ui?.root] }), chip ? 'relative' : '']">
     <slot>
-      <image
-        v-if="showImage"
+      <CoreAvatarImage
         :src="src"
         :class="ui.image({ class: props.ui?.image })"
-        @error="imageLoadError = true"
       />
-      <slot v-else name="fallback">
-        <text
-          v-if="fallbackText"
-          :class="ui.text({ class: props.ui?.text })"
-        >{{ fallbackText }}</text>
-        <VyIcon
-          v-else-if="icon"
-          :name="icon"
-          :class="ui.icon({ class: props.ui?.icon })"
-        />
-      </slot>
+      <CoreAvatarFallback>
+        <slot name="fallback">
+          <text
+            v-if="fallbackText"
+            :class="ui.text({ class: props.ui?.text })"
+          >{{ fallbackText }}</text>
+          <VyIcon
+            v-else-if="icon"
+            :name="icon"
+            :class="ui.icon({ class: props.ui?.icon })"
+          />
+        </slot>
+      </CoreAvatarFallback>
     </slot>
     <VyChip v-if="resolvedChipProps" v-bind="resolvedChipProps" />
-  </view>
+  </CoreAvatarRoot>
 </template>

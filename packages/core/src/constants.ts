@@ -36,6 +36,12 @@ export const components = {
     'AspectRatioRoot',
   ] as const,
 
+  avatar: [
+    'AvatarRoot',
+    'AvatarImage',
+    'AvatarFallback',
+  ] as const,
+
   checkbox: [
     'CheckboxGroupRoot',
     'CheckboxRoot',
