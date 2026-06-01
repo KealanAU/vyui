@@ -17,6 +17,12 @@ describe('AspectRatio', () => {
     expect(el.getAttribute('style') ?? '').toContain('aspect-ratio: 1')
   })
 
+  it('defaults to width: 100% so the ratio has a definite dimension to size from', () => {
+    const { container } = render(AspectRatio)
+    const el = container.querySelector('[data-vyui-aspect-ratio]')!
+    expect(el.getAttribute('style') ?? '').toContain('width: 100%')
+  })
+
   it('reflects a custom ratio on the element', () => {
     const { container } = render(AspectRatio, { ratio: 16 / 9 })
     const el = container.querySelector('[data-vyui-aspect-ratio]')!
