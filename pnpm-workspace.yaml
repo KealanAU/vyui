@@ -2,6 +2,17 @@ packages:
   - 'packages/*'
   - 'apps/examples/*'
   - 'apps/docs'
+# Keep Tailwind v4's PostCSS plugin out of the hoisted virtual store. It is
+# pulled in transitively by @nuxt/ui (docs app, legitimately on Tailwind v4),
+# and pnpm otherwise hoists it into node_modules/.pnpm/node_modules where
+# vue-lynx's `require.resolve('@tailwindcss/postcss')` finds it and warns that
+# v4 is incompatible with rsbuild-plugin-tailwindcss / @lynx-js/tailwind-preset.
+# The Lynx demo apps are all on Tailwind v3, so the warning is a false positive.
+# @nuxt/ui still resolves the plugin via its own dependency link, so excluding
+# it from hoisting does not affect the docs build.
+hoistPattern:
+  - '*'
+  - '!@tailwindcss/postcss'
 # Per-dependency allowlist for install/build (lifecycle) scripts. Everything is
 # blocked by default (pnpm 10+) so a poisoned dependency cannot auto-execute a
 # postinstall to harvest secrets. Only the native packages that genuinely need a
