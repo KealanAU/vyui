@@ -122,7 +122,7 @@ export interface IslandSlots {
 </script>
 
 <script setup lang="ts">
-import { computed, ref, toRef, useSlots } from 'vue'
+import { Comment, computed, Fragment, ref, Text, toRef, useSlots, type VNode } from 'vue'
 import { useStyledComponent } from '../composables/useStyledComponent'
 import { provideIslandContext, type IslandSize } from './islandContext'
 
@@ -191,6 +191,27 @@ const activeRowSlot = computed(() => {
   return name
 })
 
+// Count the *renderable* children of a slot — skips comment nodes (e.g. a
+// `v-if` that's false) and whitespace-only text so a single real button still
+// counts as one. Recurses into fragments (a `v-for` or grouped children).
+function countRenderable(nodes: VNode[] | undefined): number {
+  let n = 0
+  for (const node of nodes ?? []) {
+    if (node.type === Comment) continue
+    if (node.type === Text && (typeof node.children !== 'string' || !node.children.trim())) continue
+    if (node.type === Fragment) { n += countRenderable(node.children as VNode[]); continue }
+    n++
+  }
+  return n
+}
+
+// `solo` → the active row renders a single child. Drives the tight symmetric
+// padding (theme `solo` variant) so a lone icon button reads as one circle.
+const isSolo = computed(() => {
+  const fn = slots[activeRowSlot.value]
+  return fn ? countRenderable(fn(slotProps.value)) === 1 : false
+})
+
 const hasExpanded = computed(() => !!slots.expanded)
 const isOpen = computed(() => hasExpanded.value && resolvedOpen.value)
 
@@ -215,6 +236,7 @@ const { ui } = useStyledComponent('island', theme, () => ({
   size: resolvedSize.value,
   expandStyle: props.expandStyle,
   open: isOpen.value,
+  solo: isSolo.value,
 }))
 </script>
 

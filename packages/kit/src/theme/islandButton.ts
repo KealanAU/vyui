@@ -9,10 +9,10 @@
  *   xl → 64px (oversized hero dock)
  *
  * Icons and buttons grow together so the icon-to-button ratio stays around
- * 50–57% — that's the sweet spot where the glyph reads centered without
- * dead space around it. Earlier revisions either kept icons too small (airy
- * vertical padding) or made buttons too tall (same problem); both have been
- * dialed back.
+ * 40–45% — enough presence without crowding the pill. NB: the actual rendered
+ * size comes from the numeric `size` prop `IslandButton.vue` passes to
+ * `<VyIcon>` (`ICON_PX`); the `size-*` classes here mirror those values but
+ * are overridden by the icon's inline width/height, so keep the two in sync.
  *
  * Footprint sizing lives entirely in `compoundVariants` so the icon-only
  * and label-pill branches don't fight over `px-*`. Size flows in from the
@@ -29,10 +29,10 @@ export default {
   },
   variants: {
     size: {
-      sm: { base: 'text-xs', leadingIcon: 'size-5' },
-      md: { base: 'text-sm', leadingIcon: 'size-6' },
-      lg: { base: 'text-base', leadingIcon: 'size-8' },
-      xl: { base: 'text-lg', leadingIcon: 'size-9' },
+      sm: { base: 'text-xs', leadingIcon: 'size-4' },
+      md: { base: 'text-sm', leadingIcon: 'size-5' },
+      lg: { base: 'text-base', leadingIcon: 'size-6' },
+      xl: { base: 'text-lg', leadingIcon: 'size-7' },
     },
     active: {
       true: { base: 'bg-black/10 text-slate-900' },

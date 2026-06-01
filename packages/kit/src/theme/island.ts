@@ -17,9 +17,11 @@
  *     transparent inner sections, gap goes to zero, children stretch
  *     edge-to-edge). Reads as the dock itself growing upward.
  *
- * Asymmetric `px > py` on the row keeps a SINGLE-button island a clear
- * horizontal pill (instead of collapsing to a circle that `rounded-full`
- * would otherwise paint on a square wrapper).
+ * Asymmetric `px > py` on the row gives multi-item rows a clear horizontal
+ * pill shape. A SOLO row (one child) flips this: padding goes symmetric +
+ * tight so the surface hugs the single button — an icon-only button reads as
+ * one clean circle instead of a wide pill with a small circle floating inside
+ * it. See the `solo` variant + compoundVariants below.
  *
  * `size` flows from the wrapper to child `<VyIslandButton>`s via context.
  * `position` covers fixed `top` / `bottom` placement + `inline` for
@@ -88,8 +90,25 @@ export default {
       true: {},
       false: {},
     },
+    // `solo` fires when the row hosts a single child. Tightens row padding to
+    // symmetric (see compoundVariants) AND zeroes the gap: vue-lynx renders
+    // empty `<text>` anchor nodes flanking the slotted button, and a non-zero
+    // `gap` inserts spacing on either side of them — adding horizontal-only
+    // width that warps the would-be circle into a wide pill. Counted in
+    // `Island.vue`.
+    solo: {
+      true: { row: 'gap-0' },
+      false: {},
+    },
   },
   compoundVariants: [
+    // Solo row: collapse the asymmetric px→py to a symmetric ring so the
+    // surface hugs the lone button (icon-only → clean circle). Only the `px`
+    // is overridden; the `py` from the size variant already sets the ring.
+    { solo: true, size: 'sm', class: { row: 'px-1' } },
+    { solo: true, size: 'md', class: { row: 'px-1.5' } },
+    { solo: true, size: 'lg', class: { row: 'px-2' } },
+    { solo: true, size: 'xl', class: { row: 'px-2.5' } },
     // Attached + open: collapse the two surfaces into one. Chrome migrates
     // to root, row + panel become transparent, gap goes to 0, and children
     // stretch edge-to-edge so the visual width is uniform.
@@ -108,5 +127,6 @@ export default {
     size: 'md' as const,
     expandStyle: 'floating' as const,
     open: false as const,
+    solo: false as const,
   },
 }
