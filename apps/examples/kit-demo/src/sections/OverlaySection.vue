@@ -6,14 +6,23 @@ import {
   VyDrawer,
   VyDropdownMenu,
   VyModal,
-  VyPlaceholder,
   VyPopover,
   VySelect,
+  VySwiper,
 } from '@vyui/kit'
 
 const modalOpen = ref(false)
 const drawerOpen = ref(false)
 const dropdownOpen = ref(false)
+
+// Swiper hosted inside the modal — confirms `useDragGesture` works within the
+// overlay layer (gestures aren't swallowed by the backdrop / portal).
+const modalSwiperIndex = ref(0)
+const modalSlides = [
+  { label: 'Slide 1', tint: 'bg-sky-500' },
+  { label: 'Slide 2', tint: 'bg-violet-500' },
+  { label: 'Slide 3', tint: 'bg-emerald-500' },
+]
 
 // Notifications — each entry gets its own popover open state so tapping one
 // reveals its "bit of info" without affecting the others. Replaces the
@@ -76,11 +85,25 @@ const fruitItems = [
   <view class="flex flex-col gap-4 pt-2">
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
       <text class="text-slate-900 text-base font-semibold">Modal</text>
-      <text class="text-slate-500 text-xs">Dialog with overlay backdrop.</text>
-      <VyModal v-model:open="modalOpen" title="Modal title" description="Anchored over OverlayRoot.">
+      <text class="text-slate-500 text-xs">Dialog with overlay backdrop — hosts an interactive Swiper.</text>
+      <VyModal v-model:open="modalOpen" title="Modal title" description="Drag the carousel below — gestures work inside the dialog.">
         <VyButton color="neutral" variant="subtle" label="Open modal" />
         <template #content>
-          <VyPlaceholder class="h-48 m-4" />
+          <view class="flex flex-col gap-3 p-4">
+            <VySwiper
+              v-model="modalSwiperIndex"
+              :items="modalSlides"
+              :item-width="260"
+              show-indicators
+            >
+              <template #item="{ item }">
+                <view :class="['h-32 rounded-lg flex items-center justify-center', item.tint]" :style="{ width: '244px' }">
+                  <text class="text-white text-lg font-bold">{{ item.label }}</text>
+                </view>
+              </template>
+            </VySwiper>
+            <text class="text-slate-500 text-xs">Active: {{ modalSwiperIndex + 1 }} / {{ modalSlides.length }}</text>
+          </view>
         </template>
       </VyModal>
     </view>

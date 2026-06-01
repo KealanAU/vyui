@@ -31,7 +31,15 @@ type IslandGroupVariants = VariantProps<IslandGroupTV>
  */
 export interface IslandGroupProps {
   /**
-   * Placement variant. `inline` lets a parent layout own positioning.
+   * Placement variant.
+   *  - `bottom` / `top` — floats fixed over the viewport (centered by
+   *    default; tweak with `align`). Works on Lynx via an inline `style`,
+   *    so no caller-side positioning workaround is needed.
+   *  - `inline` — opts out of fixed positioning and lets a parent layout
+   *    own placement.
+   *
+   * Override offsets / z-index by passing your own `style`; it merges over
+   * the built-in positioning.
    * @defaultValue `'inline'`
    */
   position?: IslandGroupVariants['position']
@@ -62,6 +70,7 @@ export interface IslandGroupSlots {
 </script>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<IslandGroupProps>(), {})
@@ -73,10 +82,29 @@ const { ui } = useStyledComponent('islandGroup', theme, () => ({
   align: props.align,
   size: props.size,
 }))
+
+// Lynx ignores tailwind `fixed`, so the `top`/`bottom` theme variants alone
+// leave the group baked into document flow. We pin via an inline `style`
+// (which Lynx respects) so `position="bottom"` floats over the viewport with
+// no caller-side workaround. `inline` opts out and lets a parent layout own
+// positioning. Any caller-passed `style` still merges over this via attr
+// fallthrough, so offsets/z-index stay overridable.
+const positionStyle = computed(() => {
+  if (props.position === 'bottom') {
+    return { position: 'fixed', bottom: '16px', left: '0', right: '0', zIndex: 50 } as const
+  }
+  if (props.position === 'top') {
+    return { position: 'fixed', top: '16px', left: '0', right: '0', zIndex: 50 } as const
+  }
+  return undefined
+})
 </script>
 
 <template>
-  <view :class="ui.root({ class: [props.class, props.ui?.root] })">
+  <view
+    :class="ui.root({ class: [props.class, props.ui?.root] })"
+    :style="positionStyle"
+  >
     <slot />
   </view>
 </template>
