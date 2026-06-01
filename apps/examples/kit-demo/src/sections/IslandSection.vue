@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { ToastProvider } from '@vyui/core'
 import {
-  VyAccordion,
   VyButton,
   VyIsland,
   VyIslandButton,
   VyIslandGroup,
   VySeparator,
+  VyToast,
 } from '@vyui/kit'
 
 // Linear-style bottom dock. With the declarative API, the three island state
@@ -18,37 +19,18 @@ const dockMode = ref<string>('default')
 const dockOpen = ref(false)
 const floatingDockVisible = ref(true)
 
-// Mock inbox content — revealed on tap of the Inbox tab in the dock. Each
-// issue is an accordion row that opens to show its detail body. `type="single"`
-// keeps at most one open at a time.
-const inboxOpen = ref<string | number>('iss-431')
-const inboxIssues = [
-  {
-    value: 'iss-431',
-    label: 'iss-431 · API /users returns 500 on limit=0',
-    content: 'Repro: GET /users?limit=0 → 500. Stack trace points to the pagination middleware not guarding against zero. Triaged to backend, ETA today. Owner: api-team. Severity: high. Affects: production EU + US.',
-  },
-  {
-    value: 'iss-428',
-    label: 'iss-428 · Mobile nav misaligned on iOS 17',
-    content: 'Safe-area inset is mis-applied when the keyboard is dismissed. Reproducible on iPhone 14 Pro / iOS 17.4. Workaround: rotate twice. Owner: mobile-team. Severity: medium.',
-  },
-  {
-    value: 'iss-419',
-    label: 'iss-419 · Email digest sending twice',
-    content: 'Two cron entries enqueueing the same job at 09:00 UTC. Removed the duplicate from infra/cron.yaml; backfill not needed (Mailgun dedupe absorbed it). Verified clean run on the 09:00 + 12:00 ticks.',
-  },
-  {
-    value: 'iss-389',
-    label: 'iss-389 · Old caching layer key collisions',
-    content: 'Closed: superseded by the new Redis namespacing rolled out in PR #1204. Verified across all four services; cache hit rate up 3%.',
-  },
-  {
-    value: 'iss-355',
-    label: 'iss-355 · Deprecated auth flow still in mobile',
-    content: 'Closed: shipped v5.2 of the mobile client; deprecated path now returns 410. Server-side route scheduled for removal in v5.4.',
-  },
-]
+// Transient toast — the dock's Inbox / notifications buttons don't navigate in
+// this demo, so tapping them surfaces a small "would take you to…" alert that
+// auto-dismisses. Mirrors how a real app would route off the dock.
+const toastMessage = ref<string | null>(null)
+let toastTimer: ReturnType<typeof setTimeout> | undefined
+function notify(message: string) {
+  toastMessage.value = message
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => {
+    toastMessage.value = null
+  }, 2400)
+}
 </script>
 
 <template>
@@ -66,15 +48,6 @@ const inboxIssues = [
           patterns are inlined here for layout reference.
         </text>
         <text class="text-slate-400 text-[11px] pt-1">value: <text class="font-mono">{{ dockTab }}</text> · mode: <text class="font-mono">{{ dockMode }}</text> · open: <text class="font-mono">{{ dockOpen }}</text></text>
-      </view>
-
-      <!-- Inbox view — revealed when the Inbox tab is active in the dock.
-           Each issue is an accordion row; tap to expand its detail body
-           (replaces the old tooltip-on-hover affordance with a touch one).
-           `type="single"` keeps at most one open at a time. -->
-      <view v-if="dockTab === 'inbox'" class="flex flex-col gap-2">
-        <text class="text-slate-500 text-xs">{{ inboxIssues.length }} issues · tap any row to expand</text>
-        <VyAccordion v-model="inboxOpen" :items="inboxIssues" type="single" />
       </view>
 
       <VySeparator />
@@ -122,6 +95,20 @@ const inboxIssues = [
       </view>
     </view>
 
+    <!-- Transient toast for the dock's Inbox / notifications taps. Pinned to
+         the top of the viewport via an inline style (Lynx ignores tailwind
+         `fixed`), mirroring the Island float pattern. Wrapped in ToastProvider
+         so ToastRoot can inject its context. -->
+    <ToastProvider v-if="toastMessage">
+      <view :style="{ position: 'fixed', top: '16px', left: '0', right: '0', zIndex: 60, alignItems: 'center' }">
+        <VyToast
+          :title="toastMessage"
+          icon="icon-park-outline:navigation-fork"
+          :close="false"
+        />
+      </view>
+    </ToastProvider>
+
     <!-- Anchored Linear-style dock — rendered at the section root so the
          fixed position is relative to the viewport, not a clipped parent.
          Wrapped in <VyIslandGroup> so a separate close pill sits to the
@@ -136,9 +123,9 @@ const inboxIssues = [
         layer="inline"
         size="lg"
       >
-        <VyIslandButton value="inbox" icon="icon-park-outline:inbox-in" />
+        <VyIslandButton value="inbox" icon="icon-park-outline:inbox-in" @tap="notify('Would take you to Inbox')" />
         <VyIslandButton mode="fullisland" icon="icon-park-outline:search" />
-        <VyIslandButton value="bell" icon="icon-park-outline:remind" />
+        <VyIslandButton value="bell" icon="icon-park-outline:remind" @tap="notify('Would take you to Notifications')" />
         <VyIslandButton expand icon="icon-park-outline:expand-text-input" />
 
         <template #fullisland>
