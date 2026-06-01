@@ -3,7 +3,7 @@
  *
  * Classes use semantic color names (`border-primary-500`) which Tailwind
  * resolves via CSS variables defined in the consuming app — see
- * `apps/examples/ui-demo/src/index.css`. The Nuxt UI `avatar` slot is dropped
+ * `apps/examples/kit-demo/src/index.css`. The Nuxt UI `avatar` slot is dropped
  * (Vy UI's Avatar isn't a separator concern); `label` and `icon` are retained.
  */
 const COLORS = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const

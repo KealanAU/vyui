@@ -96,7 +96,7 @@ vyui/
 │   └── testing-utils/         # shared test helpers
 └── apps/
     └── examples/
-        ├── ui-demo/           # styled-component showcase
+        ├── kit-demo/           # styled-component showcase
         ├── native-demo/       # broader primitive showcase
         ├── web-demo/          # web-target preview
         └── …

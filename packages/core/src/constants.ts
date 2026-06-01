@@ -95,6 +95,13 @@ export const components = {
     'Label',
   ] as const,
 
+  numberField: [
+    'NumberFieldRoot',
+    'NumberFieldInput',
+    'NumberFieldIncrement',
+    'NumberFieldDecrement',
+  ] as const,
+
   pagination: [
     'PaginationRoot',
     'PaginationList',

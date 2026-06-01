@@ -8,6 +8,7 @@ import {
   VyIcon,
   VyInput,
   VyLabel,
+  VyNumberField,
   VyPinInput,
   VyRadioGroup,
   VySlider,
@@ -24,6 +25,8 @@ const bluetoothOn = ref(false)
 const agreed = ref<boolean | 'indeterminate'>(false)
 const loading = ref(false)
 const sliderValue = ref(40)
+const quantity = ref<number | null>(1)
+const price = ref<number | null>(9.5)
 const stepperStep = ref(1)
 const pin = ref('')
 const radioPlan = ref('pro')
@@ -192,6 +195,36 @@ function onFormSubmit(values: Record<string, unknown>) {
       <text class="text-slate-900 text-base font-semibold">Slider</text>
       <VySlider v-model="sliderValue" :min="0" :max="100" :step="1" />
       <text class="text-slate-500 text-xs">Value: {{ sliderValue }}</text>
+    </view>
+
+    <!-- NumberField -->
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-slate-900 text-base font-semibold">NumberField</text>
+
+      <view class="flex flex-col gap-2">
+        <VyLabel for="qty-field">Quantity (0–10)</VyLabel>
+        <VyNumberField id="qty-field" v-model="quantity" :min="0" :max="10" :step="1" />
+        <text class="text-slate-500 text-xs">Value: {{ quantity ?? '—' }}</text>
+      </view>
+
+      <view class="flex flex-col gap-2 pt-1">
+        <VyLabel for="price-field">Price (step 0.5)</VyLabel>
+        <VyNumberField
+          id="price-field"
+          v-model="price"
+          :min="0"
+          :step="0.5"
+          color="success"
+          variant="soft"
+          placeholder="0.00"
+        />
+        <text class="text-slate-500 text-xs">Value: {{ price ?? '—' }}</text>
+      </view>
+
+      <view class="flex flex-col gap-2 pt-1">
+        <VyLabel>Disabled</VyLabel>
+        <VyNumberField :model-value="5" disabled />
+      </view>
     </view>
 
     <!-- Stepper -->

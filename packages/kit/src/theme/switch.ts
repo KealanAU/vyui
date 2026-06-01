@@ -3,7 +3,7 @@
  *
  * Classes use semantic color names (`bg-primary-500`) which Tailwind resolves
  * via CSS variables defined in the consuming app — see
- * `apps/examples/ui-demo/src/index.css`.
+ * `apps/examples/kit-demo/src/index.css`.
  */
 export default {
   slots: {

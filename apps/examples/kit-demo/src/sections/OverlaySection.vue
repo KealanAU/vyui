@@ -141,8 +141,8 @@ const fruitItems = [
     </view>
 
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">Combobox</text>
-      <text class="text-slate-500 text-xs">Bottom-sheet picker with in-sheet search.</text>
+      <text class="text-slate-900 text-base font-semibold">Combobox / Autocomplete</text>
+      <text class="text-slate-500 text-xs">Typeahead picker — the in-sheet search filters items as you type. This is the autocomplete pattern (no separate component).</text>
       <VyCombobox v-model="comboboxFruit" :items="fruitItems" placeholder="Pick a fruit" search-placeholder="Search fruits…" />
       <text class="text-slate-500 text-xs">Fruit: {{ comboboxFruit }}</text>
     </view>

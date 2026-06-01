@@ -10,7 +10,7 @@
 // top of a sibling text run.
 //
 // Color palettes resolve via the consuming app's CSS variables — see
-// `apps/examples/ui-demo/src/index.css` for the default semantic mapping.
+// `apps/examples/kit-demo/src/index.css` for the default semantic mapping.
 
 import { COLORS } from './colors'
 

@@ -2,7 +2,7 @@
 //
 // Semantic color names (`primary`, `error`, …) resolve to real palettes via
 // the consuming app's CSS variables and Tailwind config — see
-// `apps/examples/ui-demo/src/index.css` for the default mapping.
+// `apps/examples/kit-demo/src/index.css` for the default mapping.
 //
 // Light-mode-only: dark-mode classes from the upstream theme are dropped.
 

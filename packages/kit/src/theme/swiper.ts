@@ -4,7 +4,7 @@
  * indicator strip below the track.
  *
  * Semantic colors resolve via the consuming app's CSS variables — see
- * `apps/examples/ui-demo/src/index.css`.
+ * `apps/examples/kit-demo/src/index.css`.
  */
 export default {
   slots: {

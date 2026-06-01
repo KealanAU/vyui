@@ -3,7 +3,7 @@
 // Semantic color names (`primary`, `error`, …) resolve to actual palettes via
 // the consuming app's CSS variables and Tailwind config:
 //   --ui-color-primary-500: theme('colors.green.500'); etc.
-// See `apps/examples/ui-demo/src/index.css` for the default mapping.
+// See `apps/examples/kit-demo/src/index.css` for the default mapping.
 //
 // Each builder emits classes against the semantic name directly — Tailwind
 // treats `bg-primary-500` / `ring-error-500/25` as configured colors.

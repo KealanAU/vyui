@@ -112,14 +112,7 @@ export function linearScale(input: readonly [number, number], output: readonly [
   }
 }
 
-export function getDecimalCount(value: number) {
-  return (String(value).split('.')[1] || '').length
-}
-
-export function roundValue(value: number, decimalCount: number) {
-  const rounder = 10 ** decimalCount
-  return Math.round(value * rounder) / rounder
-}
+export { getDecimalCount, roundValue } from '@/shared/clamp'
 
 export const PAGE_KEYS = ['PageUp', 'PageDown']
 export const ARROW_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']

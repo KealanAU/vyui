@@ -12,7 +12,7 @@ packages/
   testing-utils/              — shared test helpers
 apps/examples/
   phase5-debug/   broken-component sandbox (Slider + 8 Phase 5 primitives)
-  ui-demo/        styled-component showcase (exercises @vyui/kit)
+  kit-demo/        styled-component showcase (exercises @vyui/kit)
   native-demo/    broader primitive showcase across @vyui/core
   web-demo/       web-target preview
   …
@@ -56,7 +56,7 @@ which historically crashed MT with
      bisecting MT-worklet crashes; each card mounts independently via
      `v-if`, so a broken component can be isolated by selecting only its
      card. See `apps/examples/phase5-debug/README.md`.
-   - **`ui-demo`** — styled-component showcase. Use this for `@vyui/kit`
+   - **`kit-demo`** — styled-component showcase. Use this for `@vyui/kit`
      work and for verifying styled-component output across targets.
    - **`native-demo`** — broader primitive showcase. Use this when you
      need to exercise multiple `@vyui/core` primitives together.
@@ -66,12 +66,12 @@ which historically crashed MT with
    `source.alias` in `lynx.config.ts`. No `pnpm build` needed for dev
    iteration in those demos.
 
-   The exception is `ui-demo`, which intentionally depends on the published
+   The exception is `kit-demo`, which intentionally depends on the published
    `@vyui/core` (see next section).
 
-## Editing @vyui/core against ui-demo (`dev:local`)
+## Editing @vyui/core against kit-demo (`dev:local`)
 
-When you need to edit `@vyui/core` source and see it live in `ui-demo`, opt
+When you need to edit `@vyui/core` source and see it live in `kit-demo`, opt
 into the local-core alias:
 
 ```bash
@@ -88,7 +88,7 @@ What this does:
   `packages/core/src/**` rebuild into `packages/core/dist/` with worklets
   pre-compiled the same way the npm-published package builds them.
 - `dev:local` sets `VYUI_USE_LOCAL_CORE=1`, which flips an alias in
-  `apps/examples/ui-demo/lynx.config.ts` to resolve `@vyui/core` imports
+  `apps/examples/kit-demo/lynx.config.ts` to resolve `@vyui/core` imports
   against `packages/core/dist/` instead of `node_modules`.
 
 The alias is gated on the env var, so:
