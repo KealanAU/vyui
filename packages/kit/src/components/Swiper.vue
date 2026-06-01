@@ -40,7 +40,7 @@ export interface SwiperProps {
   autoplay?: boolean | number
   direction?: SwiperVariants['direction']
   size?: SwiperVariants['size']
-  /** Show the dot indicator strip. */
+  /** Show the fixed dot indicator strip. Opt-in. */
   showIndicators?: boolean
   class?: any
   ui?: Partial<Record<keyof ReturnType<typeof buildSwiper>['slots'], any>>
@@ -64,7 +64,7 @@ import { useAppConfig } from '../composables/useAppConfig'
 const props = withDefaults(defineProps<SwiperProps>(), {
   itemWidth: 300,
   direction: 'horizontal',
-  showIndicators: true,
+  showIndicators: false,
 })
 const emit = defineEmits<SwiperEmits>()
 defineSlots<SwiperSlots>()
@@ -105,18 +105,17 @@ const itemCount = computed(() => {
     </template>
     <slot v-else />
 
-    <view
-      v-if="showIndicators && items && items.length > 1"
-      :class="ui.indicators({ class: props.ui?.indicators })"
-    >
-      <view
-        v-for="(_, i) in items"
-        :key="i"
-        :class="[
-          ui.indicator({ class: props.ui?.indicator }),
-          modelValue === i && ui.indicatorActive({ class: props.ui?.indicatorActive }),
-        ]"
-      />
-    </view>
+    <template v-if="showIndicators && itemCount > 1" #overlay>
+      <view :class="ui.indicators({ class: props.ui?.indicators })">
+        <view
+          v-for="i in itemCount"
+          :key="i"
+          :class="[
+            ui.indicator({ class: props.ui?.indicator }),
+            modelValue === i - 1 && ui.indicatorActive({ class: props.ui?.indicatorActive }),
+          ]"
+        />
+      </view>
+    </template>
   </SwiperRoot>
 </template>

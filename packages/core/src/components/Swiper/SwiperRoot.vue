@@ -69,7 +69,7 @@ provideSwiperRootContext({
 </script>
 
 <template>
-  <view class="vyui-swiper" data-vyui-swiper-root :style="{ overflow: 'hidden' }">
+  <view class="vyui-swiper" data-vyui-swiper-root :style="{ overflow: 'hidden', position: 'relative' }">
     <view
       class="vyui-swiper__track"
       :main-thread-ref="containerRef"
@@ -81,5 +81,8 @@ provideSwiperRootContext({
     >
       <slot />
     </view>
+    <!-- Overlay content (e.g. indicators) lives outside the track so the
+         track's drag transform doesn't drag it along — it stays fixed. -->
+    <slot name="overlay" />
   </view>
 </template>
