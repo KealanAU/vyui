@@ -112,6 +112,14 @@ const effectiveSize = computed<IslandSize | undefined>(
   () => props.size ?? island?.size.value,
 )
 
+// Icon pixel size per island size. The core `<VyIcon>` bakes width/height as
+// an inline style (overriding any `size-*` utility class), so the glyph size
+// has to be passed as the numeric `size` prop — not via the theme's
+// `leadingIcon` class. Values mirror the `size-*` classes in `islandButton.ts`
+// (sm→16, md→20, lg→24, xl→28) for a ~40–45% icon-to-button ratio.
+const ICON_PX = { sm: 16, md: 20, lg: 24, xl: 28 } as const
+const iconPx = computed(() => ICON_PX[(effectiveSize.value ?? 'md') as IslandSize])
+
 // Auto-active when this button's `value` matches the parent island's value.
 // Explicit `active` prop forces it on regardless.
 const effectiveActive = computed(() => {
@@ -149,6 +157,7 @@ function onTap() {
       <VyIcon
         v-if="icon"
         :name="icon"
+        :size="iconPx"
         :class="ui.leadingIcon({ class: props.ui?.leadingIcon })"
       />
     </slot>

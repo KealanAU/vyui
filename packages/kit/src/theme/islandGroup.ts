@@ -3,20 +3,23 @@
  * main bottom dock + a trailing close pill, or two top islands side-by-side.
  *
  * Owns the fixed positioning (top/bottom of viewport) so each member
- * island can use `position="inline"` and stay focused on its own contents.
+ * island can use `layer="inline"` and stay focused on its own contents.
  *
  * `direction` toggles row vs column stacking. `align` controls which way
  * the group is pinned horizontally (or vertically, in column mode).
  */
 export default {
   slots: {
-    root: 'flex items-end',
+    root: 'flex',
   },
   variants: {
+    // Which viewport edge to float against — only takes effect when
+    // `layer !== 'inline'`. Fixed placement + centering are applied as an
+    // inline `style` in IslandGroup.vue (Lynx ignores tailwind `fixed`/
+    // `justify-*`); these variants just own cross-axis alignment.
     position: {
-      top: 'fixed top-4 inset-x-0 z-50 items-start',
-      bottom: 'fixed bottom-4 inset-x-0 z-50',
-      inline: '',
+      top: 'items-start',
+      bottom: 'items-end',
     },
     direction: {
       row: 'flex-row',
@@ -36,7 +39,7 @@ export default {
     },
   },
   defaultVariants: {
-    position: 'inline' as const,
+    position: 'bottom' as const,
     direction: 'row' as const,
     align: 'center' as const,
     size: 'md' as const,

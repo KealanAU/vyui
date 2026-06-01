@@ -32,6 +32,16 @@ export const components = {
     'AlertDialogDescription',
   ] as const,
 
+  aspectRatio: [
+    'AspectRatioRoot',
+  ] as const,
+
+  avatar: [
+    'AvatarRoot',
+    'AvatarImage',
+    'AvatarFallback',
+  ] as const,
+
   checkbox: [
     'CheckboxGroupRoot',
     'CheckboxRoot',

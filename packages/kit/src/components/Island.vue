@@ -62,11 +62,23 @@ export interface IslandProps {
   /** Initial value when uncontrolled. */
   defaultValue?: string | number | null
   /**
-   * Placement variant. `inline` opts out of fixed positioning for embedded
-   * layouts (e.g. two top islands side-by-side).
+   * Which viewport edge to float against — only relevant when the island is
+   * floating (`layer !== 'inline'`). Works on Lynx via an inline `style`, so a
+   * lone `<VyIsland>` hovers with no wrapper. Also sets the panel growth
+   * direction (panel grows away from the edge).
    * @defaultValue `'bottom'`
    */
   position?: IslandVariants['position']
+  /**
+   * How the island participates in layout / stacking — the primary axis.
+   *  - `overlay` — floats over page content (z-50).
+   *  - `base` — floats at the viewport edge but on a low layer, so
+   *    higher-tier surfaces (drawers, modals) render over it.
+   *  - `inline` — sits in normal flow; a parent layout (or `<VyIslandGroup>`)
+   *    owns placement. `position` is ignored.
+   * @defaultValue `'overlay'`
+   */
+  layer?: 'overlay' | 'base' | 'inline'
   /**
    * How the expanded panel relates visually to the row:
    *  - `floating` — panel and row are independent surfaces with a gap
@@ -122,7 +134,7 @@ export interface IslandSlots {
 </script>
 
 <script setup lang="ts">
-import { computed, ref, toRef, useSlots } from 'vue'
+import { Comment, computed, Fragment, ref, Text, toRef, useSlots, type VNode } from 'vue'
 import { useStyledComponent } from '../composables/useStyledComponent'
 import { provideIslandContext, type IslandSize } from './islandContext'
 
@@ -130,6 +142,7 @@ const props = withDefaults(defineProps<IslandProps>(), {
   defaultOpen: false,
   defaultMode: 'default',
   defaultValue: null,
+  layer: 'overlay',
   as: 'view',
 })
 const emit = defineEmits<IslandEmits>()
@@ -191,12 +204,48 @@ const activeRowSlot = computed(() => {
   return name
 })
 
+// Count the *renderable* children of a slot — skips comment nodes (e.g. a
+// `v-if` that's false) and whitespace-only text so a single real button still
+// counts as one. Recurses into fragments (a `v-for` or grouped children).
+function countRenderable(nodes: VNode[] | undefined): number {
+  let n = 0
+  for (const node of nodes ?? []) {
+    if (node.type === Comment) continue
+    if (node.type === Text && (typeof node.children !== 'string' || !node.children.trim())) continue
+    if (node.type === Fragment) { n += countRenderable(node.children as VNode[]); continue }
+    n++
+  }
+  return n
+}
+
+// `solo` → the active row renders a single child. Drives the tight symmetric
+// padding (theme `solo` variant) so a lone icon button reads as one circle.
+const isSolo = computed(() => {
+  const fn = slots[activeRowSlot.value]
+  return fn ? countRenderable(fn(slotProps.value)) === 1 : false
+})
+
 const hasExpanded = computed(() => !!slots.expanded)
 const isOpen = computed(() => hasExpanded.value && resolvedOpen.value)
 
 // Panel renders ABOVE the row by default (Linear-style growth pattern); only
 // `position="top"` flips it to grow downward.
 const panelAbove = computed(() => props.position !== 'top')
+
+// Lynx ignores tailwind `fixed`, so floating islands are pinned via an inline
+// `style` (which Lynx respects) — a lone island floats with no wrapper. The
+// strip spans full-width; inline `alignItems` centers the pill within it.
+// `layer="inline"` returns no style so a parent layout owns placement; `base`
+// drops the island to a low z so modals/drawers cover it. Any caller-passed
+// `style` merges over this via attr fallthrough.
+const positionStyle = computed(() => {
+  if (props.layer === 'inline') return undefined
+  const zIndex = props.layer === 'base' ? 10 : 50
+  if (props.position === 'top') {
+    return { position: 'fixed', top: '16px', left: '0', right: '0', zIndex, alignItems: 'center' } as const
+  }
+  return { position: 'fixed', bottom: '16px', left: '0', right: '0', zIndex, alignItems: 'center' } as const
+})
 
 const slotProps = computed(() => ({
   open: isOpen.value,
@@ -215,6 +264,7 @@ const { ui } = useStyledComponent('island', theme, () => ({
   size: resolvedSize.value,
   expandStyle: props.expandStyle,
   open: isOpen.value,
+  solo: isSolo.value,
 }))
 </script>
 
@@ -224,6 +274,7 @@ const { ui } = useStyledComponent('island', theme, () => ({
     :data-state="isOpen ? 'open' : 'closed'"
     :data-mode="resolvedMode"
     :class="ui.root({ class: [props.class, props.ui?.root] })"
+    :style="positionStyle"
   >
     <view
       v-if="isOpen && panelAbove"

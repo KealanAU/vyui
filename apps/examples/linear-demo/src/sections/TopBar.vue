@@ -12,7 +12,7 @@ import AccountMenu from '../components/AccountMenu.vue'
        there's only one — pinning the island itself lets us offset it from
        the top-right corner exactly. Adjust `top` / `right` here to nudge. -->
   <VyIsland
-    position="inline"
+    layer="inline"
     size="sm"
     :style="{
       position: 'fixed',
