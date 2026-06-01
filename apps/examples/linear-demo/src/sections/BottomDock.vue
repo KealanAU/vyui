@@ -23,28 +23,20 @@ const isTakeover = computed(() => isSearchMode.value || dockOpen.value)
 </script>
 
 <template>
-  <!-- See TopBar.vue for the inline-style rationale — Lynx ignores tailwind
-       `fixed` on IslandGroup so we pin via inline `style` instead. The `gap-2`
-       :ui override tightens spacing between the main dock and trailing AI
-       pill (default `lg` group gap reads as too airy here). -->
+  <!-- `position="bottom"` floats the group fixed over the viewport (the
+       component owns the Lynx-safe inline positioning). The `gap-2` :ui
+       override tightens spacing between the main dock and trailing AI pill
+       (default `lg` group gap reads as too airy here). -->
   <VyIslandGroup
-    position="inline"
+    position="bottom"
     size="lg"
     :ui="{ root: 'gap-2' }"
-    :style="{
-      position: 'fixed',
-      bottom: '16px',
-      left: '0',
-      right: '0',
-      zIndex: 50,
-      justifyContent: 'center',
-    }"
   >
     <VyIsland
       v-model:mode="dockMode"
       v-model:value="tab"
       v-model:open="dockOpen"
-      position="inline"
+      layer="inline"
       size="lg"
       expand-style="attached"
       :style="isSearchMode
@@ -103,7 +95,7 @@ const isTakeover = computed(() => isSearchMode.value || dockOpen.value)
          focused surface. -->
     <VyIsland
       v-if="!isTakeover"
-      position="inline"
+      layer="inline"
       size="lg"
       :ui="{ row: 'px-0 py-2' }"
     >

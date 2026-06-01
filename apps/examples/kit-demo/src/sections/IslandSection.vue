@@ -83,11 +83,11 @@ const inboxIssues = [
       <view class="flex flex-col items-stretch gap-2">
         <text class="text-slate-500 text-xs">Two top islands side-by-side (left breadcrumb, right actions)</text>
         <view class="flex flex-row items-start justify-between gap-2">
-          <VyIsland position="inline" size="sm">
+          <VyIsland layer="inline" size="sm">
             <VyIslandButton icon="icon-park-outline:left" @tap="() => {}" />
             <VyIslandButton label="Inbox" @tap="() => {}" />
           </VyIsland>
-          <VyIsland position="inline" size="sm">
+          <VyIsland layer="inline" size="sm">
             <VyIslandButton icon="icon-park-outline:share" @tap="() => {}" />
             <VyIslandButton icon="icon-park-outline:more" @tap="() => {}" />
           </VyIsland>
@@ -99,7 +99,7 @@ const inboxIssues = [
       <!-- Single-button island -->
       <view class="flex flex-col items-center gap-2">
         <text class="text-slate-500 text-xs">Single icon, no labels</text>
-        <VyIsland position="inline" size="lg">
+        <VyIsland layer="inline" size="lg">
           <VyIslandButton icon="icon-park-outline:message" @tap="() => {}" />
         </VyIsland>
       </view>
@@ -126,14 +126,14 @@ const inboxIssues = [
          fixed position is relative to the viewport, not a clipped parent.
          Wrapped in <VyIslandGroup> so a separate close pill sits to the
          right of the main dock. Group owns the bottom-of-viewport
-         positioning; member islands stay `position="inline"`.
+         positioning; member islands stay `layer="inline"`.
          Shares state with the inline preview above. -->
     <VyIslandGroup v-if="floatingDockVisible" position="bottom" size="lg">
       <VyIsland
         v-model:open="dockOpen"
         v-model:mode="dockMode"
         v-model:value="dockTab"
-        position="inline"
+        layer="inline"
         size="lg"
       >
         <VyIslandButton value="inbox" icon="icon-park-outline:inbox-in" />
@@ -155,7 +155,7 @@ const inboxIssues = [
 
       <!-- Trailing companion island. Free-form contents — close here, but
            could be a status pill, a chip count, a mini-player, etc. -->
-      <VyIsland position="inline" size="lg">
+      <VyIsland layer="inline" size="lg">
         <VyIslandButton icon="icon-park-outline:close" @tap="floatingDockVisible = false" />
       </VyIsland>
     </VyIslandGroup>

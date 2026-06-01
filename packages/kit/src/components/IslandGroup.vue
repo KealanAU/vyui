@@ -11,15 +11,15 @@ type IslandGroupVariants = VariantProps<IslandGroupTV>
  * close pill on the right; two top islands stacked left/right).
  *
  * Owns the viewport-anchored positioning so member islands can stay
- * `position="inline"` and focus on their own contents. The companion
+ * `layer="inline"` and focus on their own contents. The companion
  * island's contents are free-form — pass any `<VyIslandButton>`s,
  * indicators, mini-pills, etc.
  *
  * Usage:
  * ```vue
  * <VyIslandGroup position="bottom" size="lg">
- *   <VyIsland position="inline" size="lg">…main dock…</VyIsland>
- *   <VyIsland position="inline" size="lg">
+ *   <VyIsland layer="inline" size="lg">…main dock…</VyIsland>
+ *   <VyIsland layer="inline" size="lg">
  *     <VyIslandButton icon="…" @tap="…" />
  *   </VyIsland>
  * </VyIslandGroup>
@@ -31,18 +31,23 @@ type IslandGroupVariants = VariantProps<IslandGroupTV>
  */
 export interface IslandGroupProps {
   /**
-   * Placement variant.
-   *  - `bottom` / `top` — floats fixed over the viewport (centered by
-   *    default; tweak with `align`). Works on Lynx via an inline `style`,
-   *    so no caller-side positioning workaround is needed.
-   *  - `inline` — opts out of fixed positioning and lets a parent layout
-   *    own placement.
-   *
-   * Override offsets / z-index by passing your own `style`; it merges over
-   * the built-in positioning.
-   * @defaultValue `'inline'`
+   * Which viewport edge to float against — only relevant when the group is
+   * floating (`layer !== 'inline'`). Centered along the cross axis by default
+   * (tweak with `align`). Works on Lynx via an inline `style`, so no
+   * caller-side positioning workaround is needed.
+   * @defaultValue `'bottom'`
    */
   position?: IslandGroupVariants['position']
+  /**
+   * How the group participates in layout / stacking — the primary axis.
+   *  - `overlay` — floats over page content (z-50).
+   *  - `base` — floats at the viewport edge but on a low layer, so
+   *    higher-tier surfaces (drawers, modals) render over it.
+   *  - `inline` — sits in normal flow; a parent layout owns placement.
+   *    `position` is ignored.
+   * @defaultValue `'overlay'`
+   */
+  layer?: 'overlay' | 'base' | 'inline'
   /**
    * Stack direction. `'row'` lays members horizontally; `'col'` vertically.
    * @defaultValue `'row'`
@@ -73,7 +78,9 @@ export interface IslandGroupSlots {
 import { computed } from 'vue'
 import { useStyledComponent } from '../composables/useStyledComponent'
 
-const props = withDefaults(defineProps<IslandGroupProps>(), {})
+const props = withDefaults(defineProps<IslandGroupProps>(), {
+  layer: 'overlay',
+})
 defineSlots<IslandGroupSlots>()
 
 const { ui } = useStyledComponent('islandGroup', theme, () => ({
@@ -83,20 +90,31 @@ const { ui } = useStyledComponent('islandGroup', theme, () => ({
   size: props.size,
 }))
 
-// Lynx ignores tailwind `fixed`, so the `top`/`bottom` theme variants alone
-// leave the group baked into document flow. We pin via an inline `style`
-// (which Lynx respects) so `position="bottom"` floats over the viewport with
-// no caller-side workaround. `inline` opts out and lets a parent layout own
-// positioning. Any caller-passed `style` still merges over this via attr
-// fallthrough, so offsets/z-index stay overridable.
+// `align` → main-axis justification, applied inline (Lynx doesn't pick up the
+// tailwind `justify-*` class, so without this the fixed full-width group hugs
+// the left edge instead of centering).
+const ALIGN_JUSTIFY = {
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
+  between: 'space-between',
+} as const satisfies Record<NonNullable<IslandGroupProps['align']>, string>
+
+// Lynx ignores tailwind `fixed`, so a floating group is pinned via an inline
+// `style` (which Lynx respects): the strip spans full-width (left:0/right:0),
+// `justifyContent` auto-centers the islands within it, and `alignItems` pins
+// them to the anchored edge. `layer="inline"` returns no style and lets a
+// parent layout own positioning; `base` drops the group to a low z so
+// modals/drawers cover it. Any caller-passed `style` still merges over this
+// via attr fallthrough, so offsets/z-index stay overridable.
 const positionStyle = computed(() => {
-  if (props.position === 'bottom') {
-    return { position: 'fixed', bottom: '16px', left: '0', right: '0', zIndex: 50 } as const
-  }
+  if (props.layer === 'inline') return undefined
+  const justifyContent = ALIGN_JUSTIFY[(props.align ?? 'center') as keyof typeof ALIGN_JUSTIFY]
+  const zIndex = props.layer === 'base' ? 10 : 50
   if (props.position === 'top') {
-    return { position: 'fixed', top: '16px', left: '0', right: '0', zIndex: 50 } as const
+    return { position: 'fixed', top: '16px', left: '0', right: '0', zIndex, justifyContent, alignItems: 'flex-start' } as const
   }
-  return undefined
+  return { position: 'fixed', bottom: '16px', left: '0', right: '0', zIndex, justifyContent, alignItems: 'flex-end' } as const
 })
 </script>
 

@@ -62,11 +62,23 @@ export interface IslandProps {
   /** Initial value when uncontrolled. */
   defaultValue?: string | number | null
   /**
-   * Placement variant. `inline` opts out of fixed positioning for embedded
-   * layouts (e.g. two top islands side-by-side).
+   * Which viewport edge to float against — only relevant when the island is
+   * floating (`layer !== 'inline'`). Works on Lynx via an inline `style`, so a
+   * lone `<VyIsland>` hovers with no wrapper. Also sets the panel growth
+   * direction (panel grows away from the edge).
    * @defaultValue `'bottom'`
    */
   position?: IslandVariants['position']
+  /**
+   * How the island participates in layout / stacking — the primary axis.
+   *  - `overlay` — floats over page content (z-50).
+   *  - `base` — floats at the viewport edge but on a low layer, so
+   *    higher-tier surfaces (drawers, modals) render over it.
+   *  - `inline` — sits in normal flow; a parent layout (or `<VyIslandGroup>`)
+   *    owns placement. `position` is ignored.
+   * @defaultValue `'overlay'`
+   */
+  layer?: 'overlay' | 'base' | 'inline'
   /**
    * How the expanded panel relates visually to the row:
    *  - `floating` — panel and row are independent surfaces with a gap
@@ -130,6 +142,7 @@ const props = withDefaults(defineProps<IslandProps>(), {
   defaultOpen: false,
   defaultMode: 'default',
   defaultValue: null,
+  layer: 'overlay',
   as: 'view',
 })
 const emit = defineEmits<IslandEmits>()
@@ -219,6 +232,21 @@ const isOpen = computed(() => hasExpanded.value && resolvedOpen.value)
 // `position="top"` flips it to grow downward.
 const panelAbove = computed(() => props.position !== 'top')
 
+// Lynx ignores tailwind `fixed`, so floating islands are pinned via an inline
+// `style` (which Lynx respects) — a lone island floats with no wrapper. The
+// strip spans full-width; inline `alignItems` centers the pill within it.
+// `layer="inline"` returns no style so a parent layout owns placement; `base`
+// drops the island to a low z so modals/drawers cover it. Any caller-passed
+// `style` merges over this via attr fallthrough.
+const positionStyle = computed(() => {
+  if (props.layer === 'inline') return undefined
+  const zIndex = props.layer === 'base' ? 10 : 50
+  if (props.position === 'top') {
+    return { position: 'fixed', top: '16px', left: '0', right: '0', zIndex, alignItems: 'center' } as const
+  }
+  return { position: 'fixed', bottom: '16px', left: '0', right: '0', zIndex, alignItems: 'center' } as const
+})
+
 const slotProps = computed(() => ({
   open: isOpen.value,
   mode: resolvedMode.value,
@@ -246,6 +274,7 @@ const { ui } = useStyledComponent('island', theme, () => ({
     :data-state="isOpen ? 'open' : 'closed'"
     :data-mode="resolvedMode"
     :class="ui.root({ class: [props.class, props.ui?.root] })"
+    :style="positionStyle"
   >
     <view
       v-if="isOpen && panelAbove"

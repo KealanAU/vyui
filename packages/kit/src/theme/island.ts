@@ -24,8 +24,9 @@
  * it. See the `solo` variant + compoundVariants below.
  *
  * `size` flows from the wrapper to child `<VyIslandButton>`s via context.
- * `position` covers fixed `top` / `bottom` placement + `inline` for
- * embedded use. Panel grows away from the anchored edge.
+ * `position` (`top`/`bottom`) picks the viewport edge; `layer`
+ * (`overlay`/`base`/`inline`) controls stacking vs in-flow. Panel grows away
+ * from the anchored edge.
  */
 
 const PILL_SURFACE
@@ -47,10 +48,14 @@ export default {
     panel: `flex flex-col ${PILL_SURFACE} rounded-3xl`,
   },
   variants: {
+    // Which viewport edge to float against — only takes effect when
+    // `layer !== 'inline'`. The actual fixed placement is applied as an inline
+    // `style` in Island.vue (Lynx ignores tailwind `fixed`); these variants
+    // just own cross-axis centering. `inline`-flow vs floating is the `layer`
+    // axis, not this one.
     position: {
-      top: { root: 'fixed top-4 left-1/2 -translate-x-1/2 z-50 items-center' },
-      bottom: { root: 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 items-center' },
-      inline: { root: 'items-center' },
+      top: { root: 'items-center' },
+      bottom: { root: 'items-center' },
     },
     size: {
       sm: {
