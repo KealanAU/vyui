@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
-import { VyBadge, VyDrawer, VyInput, VyIslandButton, VyTextarea } from '@vyui/kit'
+import { VyBadge, VyDrawer, VyInput, VyIslandButton, VyNumberField, VyTextarea } from '@vyui/kit'
 import IssueAttributeChips from './IssueAttributeChips.vue'
 
 // Plain ref instead of `defineModel`. The parent (`TopBar`) never binds
@@ -17,6 +17,7 @@ const status = ref('Backlog')
 const priority = ref('No priority')
 const assignee = ref('Unassigned')
 const label = ref('No label')
+const estimate = ref<number | null>(null)
 
 const titleInputRef = ref<any>(null)
 
@@ -36,6 +37,7 @@ function reset() {
   priority.value = 'No priority'
   assignee.value = 'Unassigned'
   label.value = 'No label'
+  estimate.value = null
 }
 
 function save(close: () => void) {
@@ -80,6 +82,23 @@ function save(close: () => void) {
             placeholder="Add description…"
             class="w-full px-0"
           />
+          <view class="flex flex-row items-center justify-between pt-1">
+            <view class="flex flex-row items-center gap-1.5">
+              <text class="text-slate-500 text-sm">Estimate</text>
+              <text class="text-slate-400 text-xs">points</text>
+            </view>
+            <VyNumberField
+              v-model="estimate"
+              :min="0"
+              :max="21"
+              :step="1"
+              size="sm"
+              variant="soft"
+              color="neutral"
+              placeholder="—"
+              class="w-32"
+            />
+          </view>
         </view>
         <!-- Horizontal scroller: chips overflow off the right edge and
              swipe. Save lives inline (not inside IssueAttributeChips) —

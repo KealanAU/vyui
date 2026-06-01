@@ -46,6 +46,7 @@ export { default as IslandButton, default as VyIslandButton } from './components
 export { default as IslandGroup, default as VyIslandGroup } from './components/IslandGroup.vue'
 export { default as Label, default as VyLabel } from './components/Label.vue'
 export { default as Modal, default as VyModal } from './components/Modal.vue'
+export { default as NumberField, default as VyNumberField } from './components/NumberField.vue'
 export { default as PinInput, default as VyPinInput } from './components/PinInput.vue'
 export { default as Placeholder, default as VyPlaceholder } from './components/Placeholder.vue'
 export { default as Popover, default as VyPopover } from './components/Popover.vue'

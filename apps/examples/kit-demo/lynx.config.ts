@@ -41,6 +41,6 @@ export default defineConfig({
       config: 'tailwind.config.ts',
       exclude: [/[\\/]node_modules[\\/]/],
     }),
-    createLynxFullscreenHintPlugin('ui-demo:lynx-fullscreen-hint'),
+    createLynxFullscreenHintPlugin('kit-demo:lynx-fullscreen-hint'),
   ],
 })

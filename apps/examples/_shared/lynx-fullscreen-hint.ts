@@ -3,7 +3,7 @@ import type { RsbuildPlugin } from '@lynx-js/rspeedy'
 // Appends a "∟ No nav" line under the Lynx bundle URL. Lynx Explorer
 // strips its in-app nav chrome when the bundle URL has ?fullscreen=true.
 //
-// `name` must be unique per demo (e.g. `'ui-demo:lynx-fullscreen-hint'`) so
+// `name` must be unique per demo (e.g. `'kit-demo:lynx-fullscreen-hint'`) so
 // running multiple demos in the same process doesn't collide on plugin id.
 export const createLynxFullscreenHintPlugin = (name: string): RsbuildPlugin => ({
   name,

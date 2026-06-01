@@ -1,6 +1,6 @@
 // Ported from nuxt/ui v3.0.2 `src/theme/input.ts`. Uses semantic color names
 // (`border-primary-500`) which Tailwind resolves via CSS variables defined in
-// the consuming app — see `apps/examples/ui-demo/src/index.css`.
+// the consuming app — see `apps/examples/kit-demo/src/index.css`.
 //
 // Lynx adaptation: `ring-*` → `border-*` (no ringWidth plugin in
 // `@lynx-js/tailwind-preset`), `inline-flex` → `flex` (Lynx strips

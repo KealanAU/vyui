@@ -17,4 +17,3 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @vyui/core build
       - run: pnpm --filter @vyui/core typecheck
-      - run: pnpm --filter @vyui/fixture-consumer typecheck

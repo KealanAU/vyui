@@ -1,7 +1,7 @@
 /**
  * RadioGroup theme — adapted from nuxt/ui v3.0.2 `theme/radio-group.ts` for
  * Vue-Lynx. Semantic color names resolve via the consuming app's CSS variables
- * (see `apps/examples/ui-demo/src/index.css`). Dark-mode / focus-visible /
+ * (see `apps/examples/kit-demo/src/index.css`). Dark-mode / focus-visible /
  * shadow utilities are dropped (light-only, no DOM focus rings in Lynx).
  *
  * Per-color × per-checked compound variants paint the indicator (filled dot)

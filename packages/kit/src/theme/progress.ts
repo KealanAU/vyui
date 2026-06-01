@@ -3,7 +3,7 @@
  *
  * Classes use semantic color names (`bg-primary-500`) which Tailwind resolves
  * via CSS variables defined in the consuming app — see
- * `apps/examples/ui-demo/src/index.css`.
+ * `apps/examples/kit-demo/src/index.css`.
  *
  * Bar variant only — Nuxt UI's circular progress relies on inline SVG which
  * Lynx does not render. The `data-[state=indeterminate]:animate-*` keyframe

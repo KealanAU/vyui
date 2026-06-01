@@ -44,7 +44,7 @@ banner comment at the top, so the change is self-documenting in the diff.
    `import { useDragGesture } from '@/shared/gesture/useDragGesture'`
 2. `pnpm --filter @vyui/kit-demo build`
 3. Audit the MT bundle for referenced-but-unregistered worklets, from
-   `apps/examples/ui-demo/dist`:
+   `apps/examples/kit-demo/dist`:
    ```sh
    node -e '
    const s=require("fs").readFileSync("main.web.bundle","utf8");

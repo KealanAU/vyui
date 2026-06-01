@@ -1,4 +1,14 @@
 <script lang="ts">
+/**
+ * `VyCombobox` — sheet picker with in-sheet typeahead search.
+ *
+ * This also covers the **Autocomplete** use case: with `searchable` (default
+ * `true`) the search input filters `items` by substring as you type, and the
+ * value can only resolve to one of the supplied items. There is no separate
+ * `Autocomplete` component — "autocomplete" is Combobox filtering a fixed set,
+ * "combobox" is the same control where free-form entry would also be kept.
+ * Disable filtering with `:searchable="false"` to get a plain picker.
+ */
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/combobox'
 import type { AppConfig } from '../types'

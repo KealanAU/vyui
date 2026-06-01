@@ -4,7 +4,7 @@
  *
  * Classes use semantic color names (`text-warning-500`) which Tailwind resolves
  * via CSS variables defined in the consuming app — see
- * `apps/examples/ui-demo/src/index.css`.
+ * `apps/examples/kit-demo/src/index.css`.
  *
  * The filled vs. empty state is driven by the `data-state="active"` attribute
  * core emits on each `RatingItemIndicator` — see `RatingItemIndicator.vue`.

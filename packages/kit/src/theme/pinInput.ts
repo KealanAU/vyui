@@ -2,7 +2,7 @@
 //
 // Semantic color names (`primary`, `error`, …) resolve to actual palettes via
 // the consuming app's CSS variables and Tailwind config — see
-// `apps/examples/ui-demo/src/index.css`.
+// `apps/examples/kit-demo/src/index.css`.
 
 const COLORS = [
   'primary',

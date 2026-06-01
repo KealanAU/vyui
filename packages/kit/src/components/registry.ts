@@ -22,6 +22,7 @@ import IslandButton from './IslandButton.vue'
 import IslandGroup from './IslandGroup.vue'
 import Label from './Label.vue'
 import Modal from './Modal.vue'
+import NumberField from './NumberField.vue'
 import PinInput from './PinInput.vue'
 import Popover from './Popover.vue'
 import Progress from './Progress.vue'
@@ -131,6 +132,7 @@ export const REGISTRY: Record<string, Component> = {
   VyIslandGroup: IslandGroup,
   VyLabel: Label,
   VyModal: Modal,
+  VyNumberField: NumberField,
   VyPinInput: PinInput,
   VyPopover: Popover,
   VyProgress: Progress,

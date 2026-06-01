@@ -16,7 +16,7 @@ export const buildAvatar = (appConfig: AppConfig) => {
 type AvatarVariants = VariantProps<ReturnType<typeof buildAvatar>>
 
 export interface AvatarProps {
-  /** Image source URL. When present (and untouched), renders an `<image>`. */
+  /** Image source URL. Renders an `<image>`; on load failure it falls back to initials/icon. */
   src?: string
   /** Accessible alt text — also used to derive initials when `text` is absent. */
   alt?: string
@@ -55,7 +55,7 @@ export const AVATAR_GROUP_KEY: InjectionKey<AvatarGroupContext> = Symbol('vyui:a
 </script>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { useAppConfig } from '../composables/useAppConfig'
 import { Icon as VyIcon } from '@vyui/core'
 import VyChip from './Chip.vue'
@@ -96,17 +96,22 @@ const ui = computed(() => buildAvatar(appConfig)({
   color: resolvedColor.value,
 }))
 
-// TODO: hook Lynx `<image>` `binderror` event to flip to fallback on load
-// failure. v1 renders the image whenever `src` is set.
+// Lynx `<image>` fires `binderror` (bound as `@error`) when the source fails
+// to load. Track it so we fall back to initials/icon instead of a broken
+// image. Reset whenever `src` changes so a new URL gets a fresh attempt.
+const imageLoadError = ref(false)
+watch(() => props.src, () => { imageLoadError.value = false })
+const showImage = computed(() => !!props.src && !imageLoadError.value)
 </script>
 
 <template>
   <view :class="[ui.root({ class: [props.class, props.ui?.root] }), chip ? 'relative' : '']">
     <slot>
       <image
-        v-if="src"
+        v-if="showImage"
         :src="src"
         :class="ui.image({ class: props.ui?.image })"
+        @error="imageLoadError = true"
       />
       <slot v-else name="fallback">
         <text
