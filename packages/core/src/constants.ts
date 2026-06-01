@@ -32,6 +32,12 @@ export const components = {
     'AlertDialogDescription',
   ] as const,
 
+  avatar: [
+    'AvatarRoot',
+    'AvatarImage',
+    'AvatarFallback',
+  ] as const,
+
   checkbox: [
     'CheckboxGroupRoot',
     'CheckboxRoot',

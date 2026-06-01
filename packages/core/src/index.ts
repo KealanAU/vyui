@@ -27,6 +27,7 @@ export * from './components/IslandContainer'
 
 // Disclosure + universal Phase 1 components
 export * from './components/Accordion'
+export * from './components/Avatar'
 export * from './components/Checkbox'
 export * from './components/Collapsible'
 export * from './components/Label'
