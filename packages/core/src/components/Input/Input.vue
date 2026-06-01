@@ -270,6 +270,13 @@ watch(() => props.modelValue, (next) => {
   if (v === lastNativeValue)
     return
   renderValue.value = v
+  // The reactive `:value` binding repaints the field on the web DOM, but a
+  // native Lynx `<input>` treats `value` as initial-only — once rendered, it
+  // ignores prop updates. So programmatic changes (e.g. a stepper button
+  // driving NumberField) must be pushed imperatively too. The `lastNativeValue`
+  // guard above means we never reach here for the user's own keystrokes, so
+  // this can't fight the caret while typing.
+  setValue(v)
 })
 
 // Apply `defaultValue` once for uncontrolled inputs.
