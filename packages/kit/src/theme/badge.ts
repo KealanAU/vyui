@@ -7,24 +7,39 @@
 // Variants restricted to `solid`/`outline`/`soft`/`subtle` (no `ghost`/`link`).
 import type { Color } from './colors'
 
-// Variant = structural treatment only. Use `border-*` (Lynx drops `ring-*`).
+// Variant = structural treatment only. Use `border-*` (Lynx drops `ring-*`;
+// `border-2` → 1px in the kit preset, matching nuxt's 1px ring). Nuxt's
+// translucent rings/fills are mimicked with discrete shades since the preset
+// can't do opacity modifiers: `/25`→`-200`, `/10`→`-50`. Text uses the vibrant
+// `-600` (nuxt's `text-primary`) so colored badges read as colored. See
+// `theme/button.ts` for the full rationale.
+//
+// Surface (`base`: bg/border) is kept separate from the foreground color (`fg`:
+// text-*). CSS inheritance is OFF in the Lynx build (`enableCSSInheritance:
+// false`), so `text-*` on the root <view> never reaches the label <text> or
+// icons — `variantClass` spreads `fg` onto those slots directly.
 const solid = (c: string) =>
-  `text-white bg-${c}-500`
+  ({ base: `bg-${c}-500`, fg: 'text-white' })
 
 const outline = (c: string) =>
-  `text-${c}-700 border-2 border-solid border-${c}-500`
+  ({ base: `border-2 border-solid border-${c}-200`, fg: `text-${c}-600` })
 
 const subtle = (c: string) =>
-  `text-${c}-700 border border-solid border-${c}-500 bg-${c}-100`
+  ({ base: `border-2 border-solid border-${c}-200 bg-${c}-50`, fg: `text-${c}-600` })
 
 const soft = (c: string) =>
-  `text-${c}-700 bg-${c}-100`
+  ({ base: `bg-${c}-50`, fg: `text-${c}-600` })
 
 const VARIANT_BUILDERS = { solid, outline, soft, subtle } as const
 
 type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
+
+const variantClass = (color: string, variant: Variant) => {
+  const { base, fg } = VARIANT_BUILDERS[variant](color)
+  return { base, label: fg, leadingIcon: fg, trailingIcon: fg }
+}
 
 export default (colors: Color[]) => ({
   slots: {
@@ -68,7 +83,7 @@ export default (colors: Color[]) => ({
       VARIANTS.map(variant => ({
         color,
         variant,
-        class: VARIANT_BUILDERS[variant](color),
+        class: variantClass(color, variant),
       })),
     ),
     // square sizing (icon-only badges drop horizontal padding for an even box)
