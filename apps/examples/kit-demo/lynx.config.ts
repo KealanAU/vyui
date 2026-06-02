@@ -36,12 +36,10 @@ export default defineConfig({
   plugins: [
     pluginVueLynx({
       optionsApi: false,
-      // Dark mode via CSS-var flipping needs BOTH on native: inline-variables
-      // makes `--*` in `:style` parse as custom properties and re-propagate to
-      // descendants on change; inheritance lets descendants read ancestor vars
-      // (and non-inheritable props like background-color pick up the new value).
-      // Off by default in Lynx; this is the documented requirement for the
-      // `:style` dark-mode pattern (vue-lynx "Approach A").
+      // Dark mode (CSS-var flip via root `:style`) needs BOTH: inline-variables
+      // alone is unstable (the cascade locks after a few toggles). Cost of
+      // enableCSSInheritance: font-size/line-height become inheritable and bleed
+      // into components (e.g. taller tabs) — see README; scope TBD.
       enableCSSInheritance: true,
       enableCSSInlineVariables: true,
     }),

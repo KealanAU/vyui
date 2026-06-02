@@ -44,7 +44,6 @@ const rootStyle = computed(() => ({
 // component below picks up the swapped ramps.
 const rootClass = computed(() => [
   'w-full h-full bg-default',
-  ...(isDark.value ? ['dark'] : []),
   ...Object.entries(colorPalettes).map(([color, palette]) => `${color}-${palette}`),
   `neutral-${neutralPalette.value}`,
 ].join(' '))

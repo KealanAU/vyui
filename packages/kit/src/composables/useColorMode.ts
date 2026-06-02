@@ -16,7 +16,11 @@ export type ColorMode = 'light' | 'dark'
  *
  * So both maps carry the **same keys** and we only flip the values — the root's
  * `:style` always has every token set; toggling just changes what they resolve
- * to. Mirrors `:root` / `.dark` in `style.css` (kept for web/SSR); keep in sync.
+ * to. Every value is also a `var(--ui-color-neutral-*)` reference, never a bare
+ * literal: on native, updating a custom property TO a literal (e.g. `#fff`)
+ * doesn't re-propagate to consumers, but updating it to a `var()` does — so
+ * "white" routes through `--ui-color-neutral-50`. Mirrors `:root` / `.dark` in
+ * `style.css` (kept for web/SSR); keep in sync.
  */
 export const LIGHT_VARS: Readonly<Record<string, string>> = {
   '--ui-primary': 'var(--ui-color-primary-500)',
@@ -31,9 +35,9 @@ export const LIGHT_VARS: Readonly<Record<string, string>> = {
   '--ui-text-toned': 'var(--ui-color-neutral-600)',
   '--ui-text': 'var(--ui-color-neutral-700)',
   '--ui-text-highlighted': 'var(--ui-color-neutral-900)',
-  '--ui-text-inverted': '#fff',
+  '--ui-text-inverted': 'var(--ui-color-neutral-50)',
 
-  '--ui-bg': '#fff',
+  '--ui-bg': 'var(--ui-color-neutral-50)',
   '--ui-bg-muted': 'var(--ui-color-neutral-50)',
   '--ui-bg-elevated': 'var(--ui-color-neutral-100)',
   '--ui-bg-accented': 'var(--ui-color-neutral-200)',
@@ -56,14 +60,14 @@ export const DARK_VARS: Readonly<Record<string, string>> = {
   '--ui-text-muted': 'var(--ui-color-neutral-400)',
   '--ui-text-toned': 'var(--ui-color-neutral-300)',
   '--ui-text': 'var(--ui-color-neutral-200)',
-  '--ui-text-highlighted': '#fff',
+  '--ui-text-highlighted': 'var(--ui-color-neutral-50)',
   '--ui-text-inverted': 'var(--ui-color-neutral-900)',
 
   '--ui-bg': 'var(--ui-color-neutral-900)',
   '--ui-bg-muted': 'var(--ui-color-neutral-800)',
   '--ui-bg-elevated': 'var(--ui-color-neutral-800)',
   '--ui-bg-accented': 'var(--ui-color-neutral-700)',
-  '--ui-bg-inverted': '#fff',
+  '--ui-bg-inverted': 'var(--ui-color-neutral-50)',
 
   '--ui-border': 'var(--ui-color-neutral-800)',
   '--ui-border-muted': 'var(--ui-color-neutral-700)',
