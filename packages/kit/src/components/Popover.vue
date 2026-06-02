@@ -50,6 +50,10 @@ export interface PopoverProps {
    * @defaultValue `[0.6]`
    */
   snapPoints?: number[]
+  /** Controlled current snap index — bind with `v-model:snapIndex`. Sheet mode only. */
+  snapIndex?: number
+  /** Initial snap index when uncontrolled. Sheet mode only. @defaultValue `0` */
+  defaultSnapIndex?: number
   /** Show the drag-handle pill at the top of the sheet (`presentation: 'sheet'` only). @defaultValue `true` */
   handle?: boolean
   /**
@@ -100,6 +104,8 @@ export interface PopoverProps {
 export interface PopoverEmits {
   (e: 'update:open', value: boolean): void
   (e: 'update:modelValue', value: boolean): void
+  /** Current snap index changed (drag / fling settle). Sheet mode only. */
+  (e: 'update:snapIndex', value: number): void
   /** Fired when `dismissible: false` blocked an outside-tap dismiss. */
   (e: 'close:prevent'): void
 }
@@ -139,6 +145,7 @@ import { useAppConfig } from '../composables/useAppConfig'
 const props = withDefaults(defineProps<PopoverProps>(), {
   presentation: 'sheet',
   snapPoints: () => [0.6],
+  defaultSnapIndex: 0,
   handle: true,
   portal: true,
   mode: 'click',
@@ -245,8 +252,11 @@ function onInteractOutside(event: any) {
     :open="resolvedOpen"
     :default-open="defaultOpen"
     :snap-points="snapPoints"
+    :snap-index="snapIndex"
+    :default-snap-index="defaultSnapIndex"
     :enable-drag-to-close="dismissible"
     @update:open="onUpdateOpen"
+    @update:snap-index="emit('update:snapIndex', $event)"
   >
     <SheetTrigger>
       <slot :open="!!resolvedOpen" />

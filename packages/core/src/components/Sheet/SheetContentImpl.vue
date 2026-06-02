@@ -33,8 +33,8 @@ export interface SheetContentImplProps {
 </script>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
-import { runOnBackground, useMainThreadRef } from 'vue-lynx'
+import { computed, inject, watch } from 'vue'
+import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import {
   PresenceContextKey,
@@ -79,6 +79,17 @@ const panelHeight = computed(() => {
   return `${(maxSnap ?? 1) * 100}vh`
 })
 
+// Resting offset (px, downward) the panel sits at for each snap index. The
+// panel is always rendered at its largest-snap height; smaller snaps are
+// reached by translating it down. Index-aligned with `ctx.snapPoints`
+// (ascending fraction), so the largest snap is offset 0.
+const snapOffsetsPx = computed(() => {
+  const snaps = ctx.snapPoints.value
+  const maxSnap = snaps.length > 0 ? snaps[snaps.length - 1] ?? 1 : 1
+  const vh = ctx.viewportHeight.value
+  return snaps.map(s => Math.max(0, Math.round((maxSnap - s) * vh)))
+})
+
 // Whether the content view should bind touch handlers. `handleOnly` makes
 // `SheetHandle` the only drag surface; props.dragDisabled fully disables drag.
 const isDragEnabled = computed(() =>
@@ -93,6 +104,11 @@ const isDragEnabled = computed(() =>
 const containerRef = useMainThreadRef<any>(null)
 const touchStartYRef = useMainThreadRef<number>(0)
 const isDraggingRef = useMainThreadRef<boolean>(false)
+// Whether the finger moved past the drag threshold this gesture. A tap (or
+// sub-threshold jitter) leaves this false so touchend does NOT change snap —
+// otherwise a tiny fast movement yields a huge spurious velocity that would
+// trip the fling / dismiss logic and "snap" on a plain click.
+const hasDraggedRef = useMainThreadRef<boolean>(false)
 const lastTouchYRef = useMainThreadRef<number>(0)
 // Ring-buffer for velocity. Each entry is `[y, timestampMs]`. We keep the
 // trailing 50ms of touch samples.
@@ -105,6 +121,17 @@ const panelHeightPxRef = useMainThreadRef<number>(
       : 1
   )),
 )
+// Snap rest offsets (px) and the offset the panel currently rests at, so a
+// drag continues from the active snap instead of from fully-open. Plus the
+// tunables the settle worklet reads (mirrored from `ctx` for MT access).
+const snapOffsetsRef = useMainThreadRef<number[]>(snapOffsetsPx.value)
+const currentSnapOffsetRef = useMainThreadRef<number>(
+  snapOffsetsPx.value[ctx.snapIndex.value] ?? 0,
+)
+const velocityThresholdRef = useMainThreadRef<number>(ctx.velocityThreshold.value)
+const dismissVelocityRef = useMainThreadRef<number>(ctx.dismissVelocity.value)
+const settleDurationRef = useMainThreadRef<number>(ctx.duration.value)
+const enableDragToCloseRef = useMainThreadRef<boolean>(ctx.enableDragToClose.value)
 
 // ---- Touch worklets ---------------------------------------------------
 
@@ -133,18 +160,18 @@ function _pruneRing(now: number) {
 function _onTouchStart(e: { detail: { y: number } }) {
   'main thread'
   isDraggingRef.current = true
+  hasDraggedRef.current = false
   const y = e.detail.y
   touchStartYRef.current = y
   lastTouchYRef.current = y
   sampleRingRef.current = [[y, Date.now()]]
-  // Kill any in-flight transition AND reset the panel to a known baseline
-  // (translateY(0) = fully open). Without resetting the transform here,
-  // touching mid-snap-back inherits whatever intermediate transform the
-  // CSS transition was computing — the browser can keep painting from
-  // that interpolated value, fighting our subsequent `touchmove` writes,
-  // which causes drag to "not pick up" the way the user expects.
-  // Snapping to 0 immediately gives the drag a clean origin to work from.
-  _setStyle({ transition: 'none', transform: 'translateY(0)' })
+  // Kill any in-flight transition and pin the panel to its current resting
+  // offset (the active snap). Without freezing the transform here, touching
+  // mid-settle inherits whatever interpolated value the CSS transition was
+  // painting and fights the subsequent `touchmove` writes, so the drag
+  // "doesn't pick up". Pinning to the rest offset gives a clean origin while
+  // keeping the panel visually where it was.
+  _setStyle({ transition: 'none', transform: `translateY(${currentSnapOffsetRef.current}px)` })
 }
 
 function _onTouchMove(e: { detail: { y: number } }) {
@@ -152,11 +179,14 @@ function _onTouchMove(e: { detail: { y: number } }) {
   if (!isDraggingRef.current) return
   const y = e.detail.y
   lastTouchYRef.current = y
-  // Drag only downward (positive delta). Negative deltas (dragging up past
-  // the open position) are clamped to 0 — we don't have a snap above open.
-  let delta = y - touchStartYRef.current
-  if (delta < 0) delta = 0
-  _setStyle({ transform: `translateY(${delta}px)` })
+  // Position = active snap offset + drag delta. Dragging up (negative delta)
+  // moves toward the largest snap; clamp at 0 since there's nothing above it.
+  const delta = y - touchStartYRef.current
+  // Engage drag once past a small threshold so taps / micro-jitter are ignored.
+  if (!hasDraggedRef.current && (delta > 6 || delta < -6)) hasDraggedRef.current = true
+  let pos = currentSnapOffsetRef.current + delta
+  if (pos < 0) pos = 0
+  _setStyle({ transform: `translateY(${pos}px)` })
   const now = Date.now()
   sampleRingRef.current.push([y, now])
   _pruneRing(now)
@@ -166,6 +196,16 @@ function _onTouchEnd() {
   'main thread'
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
+
+  // A tap / sub-threshold touch never became a drag — leave the snap exactly
+  // as it was (settle any micro-offset back to the current rest position).
+  if (!hasDraggedRef.current) {
+    _setStyle({
+      transition: 'transform 200ms ease-out',
+      transform: `translateY(${currentSnapOffsetRef.current}px)`,
+    })
+    return
+  }
 
   const startY = touchStartYRef.current
   const endY = lastTouchYRef.current
@@ -181,12 +221,25 @@ function _onTouchEnd() {
     if (dt > 0) velocity = (last[0] - first[0]) / dt
   }
 
+  const offsets = snapOffsetsRef.current
+  const lastIdx = offsets.length - 1
+  // Smallest snap = largest downward offset. snapPoints are sorted ascending,
+  // so index 0 is the lowest fraction (the furthest-down rest position).
+  const smallestSnapOffset = offsets.length > 0 ? offsets[0] : 0
+
+  // Current rest position, then a momentum projection so a flick carries
+  // toward the next snap in the direction of travel.
+  let pos = currentSnapOffsetRef.current + delta
+  if (pos < 0) pos = 0
+  const projected = pos + velocity * 0.12
+
   const panelHpx = panelHeightPxRef.current
-  // Dismiss if dragged > 40% of panel height OR flicked down hard.
-  const DISMISS_DISTANCE = panelHpx * 0.4
-  const FLING_VELOCITY = 600
-  const shouldDismiss = delta > DISMISS_DISTANCE
-    || (velocity > 0 && velocity > FLING_VELOCITY)
+  // Dismiss when the projected rest sits well below the lowest snap, or on a
+  // hard downward fling at/below it. Only when drag-to-close is enabled.
+  const shouldDismiss = enableDragToCloseRef.current && (
+    projected > smallestSnapOffset + panelHpx * 0.18
+    || (velocity > dismissVelocityRef.current && pos > smallestSnapOffset - 24)
+  )
 
   if (shouldDismiss) {
     // Suppress the `.ui-leaving` keyframe with inline `animation: none` so
@@ -199,15 +252,32 @@ function _onTouchEnd() {
       transform: 'translateY(100%)',
     })
     runOnBackground(_emitClose as any)()
+    return
   }
-  else {
-    // Snap back to open via a quick CSS transition. The .ui-open class
-    // statically holds `translateY(0)` once the inline transform matches.
-    _setStyle({
-      transition: 'transform 280ms ease-out',
-      transform: 'translateY(0)',
-    })
+
+  // Settle to the snap nearest the projected position.
+  let bestIdx = lastIdx
+  let bestDist = -1
+  for (let i = 0; i < offsets.length; i++) {
+    const d = projected - offsets[i]
+    const abs = d < 0 ? -d : d
+    if (bestDist < 0 || abs < bestDist) {
+      bestDist = abs
+      bestIdx = i
+    }
   }
+  // A deliberate fling beyond the snap-velocity threshold steps one snap
+  // further in the direction of travel (down = smaller fraction = +offset).
+  if (velocity > velocityThresholdRef.current && bestIdx > 0) bestIdx -= 1
+  else if (velocity < -velocityThresholdRef.current && bestIdx < lastIdx) bestIdx += 1
+
+  const target = offsets[bestIdx]
+  currentSnapOffsetRef.current = target
+  _setStyle({
+    transition: `transform ${settleDurationRef.current}ms ease-out`,
+    transform: `translateY(${target}px)`,
+  })
+  runOnBackground(_emitSnap as any)(bestIdx)
 }
 
 function _onTouchCancel() {
@@ -216,7 +286,29 @@ function _onTouchCancel() {
   isDraggingRef.current = false
   _setStyle({
     transition: 'transform 200ms ease-out',
-    transform: 'translateY(0)',
+    transform: `translateY(${currentSnapOffsetRef.current}px)`,
+  })
+}
+
+// Animate the panel to a given rest offset — used for the initial open snap
+// and for controlled `snapIndex` / programmatic `setSnap` changes.
+function _settleToOffset(offset: number) {
+  'main thread'
+  currentSnapOffsetRef.current = offset
+  _setStyle({
+    transition: `transform ${settleDurationRef.current}ms ease-out`,
+    transform: `translateY(${offset}px)`,
+  })
+}
+
+// Slide off-screen from wherever the panel currently rests (used on
+// programmatic close so it doesn't jump to fully-open first).
+function _closeFromCurrent() {
+  'main thread'
+  _setStyle({
+    animation: 'none',
+    transition: 'transform 250ms ease-in',
+    transform: 'translateY(100%)',
   })
 }
 
@@ -224,11 +316,37 @@ function _emitClose() {
   ctx.setOpen(false)
 }
 
+function _emitSnap(idx: number) {
+  ctx.setSnap(idx)
+}
+
 // SheetHandle uses the same MT touch handlers when handleOnly is true.
 provideSheetDragContext({
   handleTouchStartMT: _onTouchStart,
   handleTouchMoveMT: _onTouchMove,
   handleTouchEndMT: _onTouchEnd,
+})
+
+// Once the entrance keyframe lands (at fully-open), ease down to the active
+// snap if it isn't the largest one — so a sheet opened at an intermediate
+// `defaultSnapIndex` / controlled `snapIndex` rests there.
+watch(presenceState, (s) => {
+  if (s !== PresenceState.Entered) return
+  const off = snapOffsetsPx.value[ctx.snapIndex.value] ?? 0
+  if (off > 0) runOnMainThread(_settleToOffset as any)(off)
+})
+
+// Follow controlled `snapIndex` / `setSnap` changes while open. The drag
+// settle re-emits the index it just moved to, so this re-applies the same
+// offset (a no-op) in that case.
+watch(() => ctx.snapIndex.value, (idx) => {
+  if (!ctx.open.value || presenceState.value !== PresenceState.Entered) return
+  runOnMainThread(_settleToOffset as any)(snapOffsetsPx.value[idx] ?? 0)
+})
+
+// Smooth programmatic close (e.g. backdrop tap) from any resting offset.
+watch(() => ctx.open.value, (isOpen, was) => {
+  if (was && !isOpen) runOnMainThread(_closeFromCurrent as any)()
 })
 
 const handlers = presence?.animationHandlers
