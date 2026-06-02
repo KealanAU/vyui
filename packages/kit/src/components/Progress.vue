@@ -1,6 +1,7 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/progress'
+import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 
 /**
@@ -8,8 +9,8 @@ import type { AppConfig } from '../types'
  * user overrides pulled from `appConfig.ui.progress`.
  */
 export const buildProgress = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).progress as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
+  const overrides = (appConfig.ui as Record<string, unknown>).progress as Partial<ReturnType<typeof theme>> | undefined
+  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
 }
 
 type ProgressVariants = VariantProps<ReturnType<typeof buildProgress>>

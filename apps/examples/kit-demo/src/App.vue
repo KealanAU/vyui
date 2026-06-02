@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { OverlayRoot } from '@vyui/core'
 import { VyTabs } from '@vyui/kit'
 import ThemeSection from './sections/ThemeSection.vue'
@@ -8,15 +8,31 @@ import DisplaySection from './sections/DisplaySection.vue'
 import IslandSection from './sections/IslandSection.vue'
 import OverlaySection from './sections/OverlaySection.vue'
 
-type PaletteName = 'green' | 'rose' | 'blue' | 'violet' | 'amber' | 'teal' | 'pink' | 'orange'
-type NeutralName = 'slate' | 'gray' | 'zinc' | 'neutral' | 'stone'
-
-// Theme palettes drive the root `<view>` class so they stay lifted here; the
-// `ThemeSection` mutates them via `defineModel`.
-const primaryPalette = ref<PaletteName>('green')
-const secondaryPalette = ref<PaletteName>('blue')
-const neutralPalette = ref<NeutralName>('slate')
+// Each configurable semantic color → the Tailwind palette it currently renders
+// as. Lifted here so they drive the root `<view>` class; `ThemeSection` mutates
+// the entries via its swatch pickers. `tertiary` is a custom color added via
+// the "add a color" flow (see index.ts / tailwind.config.ts / index.css).
+const colorPalettes = reactive<Record<string, string>>({
+  primary: 'green',
+  secondary: 'blue',
+  success: 'teal',
+  info: 'violet',
+  warning: 'amber',
+  error: 'rose',
+  tertiary: 'pink',
+})
+const neutralPalette = ref<string>('slate')
 const radius = ref<number>(0.25)
+
+// One `${color}-${palette}` class per entry (defined in index.css), plus the
+// neutral class — a flat `string[]` so it satisfies the Lynx `<view>` class
+// type (which rejects nested arrays). Applied to the root so every @vyui/kit
+// component below picks up the swapped ramps.
+const rootClass = computed(() => [
+  'w-full h-full bg-slate-50',
+  ...Object.entries(colorPalettes).map(([color, palette]) => `${color}-${palette}`),
+  `neutral-${neutralPalette.value}`,
+].join(' '))
 
 const tab = ref<string | number>('theme')
 const allTabItems = [
@@ -36,12 +52,7 @@ const tabItems = computed(() => allTabItems)
 
 <template>
   <view
-    :class="[
-      'w-full h-full bg-slate-50',
-      primaryPalette !== 'green' && `palette-${primaryPalette}`,
-      secondaryPalette !== 'blue' && `secondary-${secondaryPalette}`,
-      neutralPalette !== 'slate' && `neutral-${neutralPalette}`,
-    ]"
+    :class="rootClass"
     :style="{ '--ui-radius': `${radius}rem` }"
   >
     <OverlayRoot />
@@ -62,8 +73,7 @@ const tabItems = computed(() => allTabItems)
         >
           <template #theme>
             <ThemeSection
-              v-model:primary-palette="primaryPalette"
-              v-model:secondary-palette="secondaryPalette"
+              v-model:color-palettes="colorPalettes"
               v-model:neutral-palette="neutralPalette"
               v-model:radius="radius"
             />

@@ -18,20 +18,9 @@
 //     `translate-x`/`translate-y` (supported by `@lynx-js/tailwind-preset`)
 //
 // Light-mode-only port — semantic colors resolve to `bg-${c}-500`.
+import type { Color } from './colors'
 
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
-
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center justify-center shrink-0',
     // `tabular-nums` keeps single-digit content visually centered (Lynx
@@ -40,7 +29,7 @@ export default {
     base: 'rounded-full flex flex-row items-center justify-center text-white font-medium whitespace-nowrap leading-none tabular-nums border-2 border-white',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     size: {
       'xs': '',
       'sm': '',
@@ -75,7 +64,7 @@ export default {
   },
   compoundVariants: [
     // color -> solid background (flat per spec)
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       class: `bg-${color}-500`,
     })),
@@ -113,4 +102,4 @@ export default {
     position: 'top-right' as const,
     hasContent: false as const,
   },
-}
+})

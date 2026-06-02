@@ -11,6 +11,7 @@
  */
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/combobox'
+import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 
 /**
@@ -18,8 +19,8 @@ import type { AppConfig } from '../types'
  * user overrides pulled from `appConfig.ui.combobox`.
  */
 export const buildCombobox = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).combobox as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
+  const overrides = (appConfig.ui as Record<string, unknown>).combobox as Partial<ReturnType<typeof theme>> | undefined
+  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
 }
 
 type ComboboxVariants = VariantProps<ReturnType<typeof buildCombobox>>

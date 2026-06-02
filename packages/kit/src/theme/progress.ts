@@ -11,11 +11,9 @@
  * `carousel`, `carousel-vertical`, `carousel-inverse`, `swing`, `elastic`
  * keyframes in its Tailwind config (or skip indeterminate animations).
  */
-const COLORS = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
+import type { Color } from './colors'
 
-type SemanticColor = typeof COLORS[number]
-
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'gap-2',
     base: 'relative overflow-hidden rounded-full bg-neutral-100',
@@ -32,7 +30,7 @@ export default {
       'elastic': '',
     },
     color: {
-      ...Object.fromEntries(COLORS.filter(c => c !== 'neutral').map(c => [c, {
+      ...Object.fromEntries(colors.filter(c => c !== 'neutral').map(c => [c, {
         indicator: `bg-${c}-500`,
         steps: `text-${c}-500`,
       }])),
@@ -40,7 +38,7 @@ export default {
         indicator: 'bg-neutral-900',
         steps: 'text-neutral-900',
       },
-    } as Record<SemanticColor, { indicator: string, steps: string }>,
+    } as Record<Color, { indicator: string, steps: string }>,
     size: {
       'xs': { status: 'text-xs', steps: 'text-xs' },
       'sm': { status: 'text-sm', steps: 'text-sm' },
@@ -132,4 +130,4 @@ export default {
     color: 'primary' as const,
     size: 'md' as const,
   },
-}
+})

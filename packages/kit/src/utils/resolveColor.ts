@@ -1,24 +1,6 @@
 import twColors from 'tailwindcss/colors'
 import type { AppConfig } from '../types'
-
-/**
- * Default semantic-color → Tailwind-palette mapping. Mirrors the CSS-variable
- * defaults in `packages/kit/src/style.css` so the JS-resolved hex matches the
- * `--ui-color-*-500` token that Tailwind class utilities would resolve to.
- *
- * Override path: `appConfig.ui.primary` and `appConfig.ui.gray` are already
- * read for `primary` / `neutral`; if a consumer wires up `success`, `error`,
- * etc. as palette names on `appConfig.ui` we'll pick those up too.
- */
-const SEMANTIC_TO_PALETTE_DEFAULT: Record<string, string> = {
-  primary: 'green',
-  secondary: 'blue',
-  success: 'emerald',
-  info: 'sky',
-  warning: 'amber',
-  error: 'red',
-  neutral: 'slate',
-}
+import { SEMANTIC_TO_PALETTE_DEFAULT } from '../theme/color-constants'
 
 const FALLBACK_HEX = '#64748b' // slate-500
 

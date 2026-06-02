@@ -1,5 +1,6 @@
 import { computed, type ComputedRef, type MaybeRefOrGetter, toValue } from 'vue'
 import { tv, type TVReturnType, type VariantProps } from 'tailwind-variants'
+import { resolveColors } from '../theme/colors'
 import { useAppConfig } from './useAppConfig'
 
 /**
@@ -31,10 +32,23 @@ export type TVFactory = ReturnType<typeof tv>
 export type TVInvoked = any
 
 /**
+ * Resolve a theme to its concrete `tv` config. Theme default exports are now
+ * **builder functions** `(colors: string[]) => themeObject` so the configurable
+ * color list (`appConfig.ui.colors`) threads into the emitted variants. Legacy
+ * plain-object themes are passed through unchanged.
+ */
+export type ResolveTheme<T> = T extends (...args: never[]) => infer R ? R : T
+
+/**
  * Build a per-app-config `tv` factory for a styled component. Merges the
  * package default theme with any user override at `appConfig.ui[name]` and
  * returns the invoked slot map (under `ui`) plus the raw factory (under
  * `tvFactory`) for callers that need to invoke it with different variants.
+ *
+ * Accepts either a builder theme (`(colors) => themeObject`, invoked with the
+ * resolved color list) or a plain theme object (used as-is). Builder detection
+ * happens inside the `computed`, so themes track `appConfig.ui.colors`
+ * reactively.
  *
  * Type-wise: the factory return type is `ReturnType<typeof tv>` — same as
  * what the hand-written `buildXxx` helpers produced. That keeps the
@@ -43,7 +57,8 @@ export type TVInvoked = any
  *
  * @param name      Key under `appConfig.ui` where user overrides live (e.g.
  *                  `'button'`, `'switch'`).
- * @param theme     The package default theme — passed directly into `tv`.
+ * @param theme     The package default theme — a builder function or a plain
+ *                  `tv` config object.
  * @param variants  Variant props for the component. Accepts a ref, getter, or
  *                  plain object; re-evaluated on every change.
  */
@@ -57,12 +72,18 @@ export function useStyledComponent<TTheme>(
 } {
   const appConfig = useAppConfig()
   const tvFactory = computed(() => {
-    const overrides = (appConfig.ui as Record<string, unknown>)[name] as Partial<TTheme> | undefined
-    // `extend: tv(theme)` lets app-level overrides win on a key-by-key basis
+    // Builder themes are invoked with the resolved color list; plain-object
+    // themes pass through. `resolveColors` reads `appConfig.ui.colors`, keeping
+    // this reactive to runtime color config.
+    const base = typeof theme === 'function'
+      ? (theme as (colors: string[]) => unknown)(resolveColors(appConfig))
+      : theme
+    const overrides = (appConfig.ui as Record<string, unknown>)[name] as Record<string, unknown> | undefined
+    // `extend: tv(base)` lets app-level overrides win on a key-by-key basis
     // while still inheriting everything from the package default. Cast through
     // `unknown` because `tv`'s parameter type is an overloaded generic that
     // doesn't match a `TTheme` constraint cleanly — see TODO above.
-    return tv({ extend: tv(theme as never), ...(overrides || {}) } as never) as unknown as TVFactory
+    return tv({ extend: tv(base as never), ...(overrides || {}) } as never) as unknown as TVFactory
   })
   const ui = computed(() => tvFactory.value(toValue(variants) as Parameters<TVFactory>[0]))
   return { ui, tvFactory }
@@ -100,12 +121,20 @@ export type StyledSlotsProp<TUI> = Partial<Record<keyof TUI, any>>
 // component public API depends on.
 //
 // eslint-disable @typescript-eslint/no-explicit-any
-export type ThemeTV<TTheme> = TVReturnType<
-  // Variants — extracted from the theme.
-  TTheme extends { variants: infer V } ? (V extends Record<string, any> ? V : any) : any,
-  // Slots — extracted from the theme.
-  TTheme extends { slots: infer S } ? (S extends Record<string, any> ? S : any) : any,
-  any, any, any, any, any
+// `ResolveTheme<TTheme>` unwraps builder themes (`(colors) => themeObject`) to
+// their config object first, so `ThemeTV<typeof theme>` keeps working unchanged
+// for both builder and plain-object themes — zero component-side changes.
+export type ThemeTV<TTheme, R = ResolveTheme<TTheme>> = TVReturnType<
+  // Variants — extracted from the (resolved) theme.
+  R extends { variants: infer V } ? (V extends Record<string, any> ? V : any) : any,
+  // Slots — extracted from the (resolved) theme.
+  R extends { slots: infer S } ? (S extends Record<string, any> ? S : any) : any,
+  // B (base) stays `any`; the rest must NOT be `any`. `TVProps` branches on the
+  // extend-variants param — `any` there widens every variant key to
+  // `PropertyKey` (losing the literal `color` union). `{}` for config/extend
+  // variants and `undefined` for extend slots/extend take the clean branch so
+  // `VariantProps<ThemeTV<…>>` recovers the exact variant unions.
+  any, {}, {}, undefined, undefined
 >
 
 export type { VariantProps }

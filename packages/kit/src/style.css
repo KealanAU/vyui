@@ -15,6 +15,15 @@
  *
  * Override any of these in a downstream CSS file to rebrand without touching
  * @vyui/kit code.
+ *
+ * ── SYNC CONTRACT ──────────────────────────────────────────────────────────
+ * This file ships RAW (never compiled) so it CANNOT import the shared color
+ * source of truth (`src/theme/color-constants.js`). It must be hand-kept in
+ * sync: there is one `--ui-color-{semantic}-{50..950}` block per color in
+ * `ALL_COLORS`, and each block's palette must match
+ * `SEMANTIC_TO_PALETTE_DEFAULT` in color-constants.js. Adding a custom color
+ * (e.g. `tertiary`) requires adding its block here by hand (the consumer
+ * override contract — same as nuxt/ui's CSS-var requirement).
  */
 :root {
   /* primary */

@@ -16,9 +16,9 @@
 // narrow `compoundVariants` entries to the variant union types — matches the
 // convention used by `./switch` and `./button`.
 
-import { COLORS } from './colors'
+import type { Color } from './colors'
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     // Border + bg + radius live on root; base stays transparent so the icon
     // wrappers (siblings) sit *inside* the rounded chrome.
@@ -64,15 +64,7 @@ export default {
       ghost: { root: 'text-neutral-900 bg-transparent active:bg-neutral-100 disabled:bg-transparent' },
       none: { root: 'text-neutral-900 bg-transparent' }
     },
-    color: {
-      primary: '',
-      secondary: '',
-      success: '',
-      info: '',
-      warning: '',
-      error: '',
-      neutral: ''
-    },
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     leading: { true: '' },
     trailing: { true: '' },
     loading: { true: '' },
@@ -80,24 +72,24 @@ export default {
   },
   compoundVariants: [
     // Border colors live on `root` since the chrome moved off `base`.
-    ...COLORS.flatMap(color => [
-      { color, variant: 'outline' as const, class: { root: `border-${color}-500` } },
-      { color, variant: 'subtle' as const, class: { root: `border-${color}-500` } }
+    ...colors.flatMap(c => [
+      { color: c, variant: 'outline' as const, class: { root: `border-${c}-500` } },
+      { color: c, variant: 'subtle' as const, class: { root: `border-${c}-500` } }
     ]),
     // `highlight` paints a static border matching the color (no focus needed).
-    ...COLORS.map(color => ({
-      color,
+    ...colors.map(c => ({
+      color: c,
       highlight: true,
-      class: { root: `border border-${color}-500` }
+      class: { root: `border border-${c}-500` }
     })),
     // Theme-driven icon color class (kept for web/CSS-var palette swap; Lynx
     // SVG fill colors are baked via the `:color` prop on `<VyIcon>` from the
     // component, since Lynx rasterizes SVG XML and can't inherit currentColor).
-    ...COLORS.map(color => ({
-      color,
+    ...colors.map(c => ({
+      color: c,
       class: {
-        leadingIcon: `text-${color}-500`,
-        trailingIcon: `text-${color}-500`
+        leadingIcon: `text-${c}-500`,
+        trailingIcon: `text-${c}-500`
       }
     })),
     // Loading spinner animation lives on the icon slot, not the wrapper.
@@ -109,4 +101,4 @@ export default {
     variant: 'outline' as const,
     color: 'primary' as const
   }
-}
+})

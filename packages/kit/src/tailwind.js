@@ -7,9 +7,11 @@
  * generate via template literals (Tailwind's static scanner cannot see them).
  *
  * Plain `.js` (CJS-compatible) so Tailwind's jiti-based config loader can
- * import it through package `exports` on any Node version.
+ * import it through package `exports` on any Node version. The color list is
+ * shared with the TS/runtime plane via `./theme/color-constants.js` (the single
+ * source of truth).
  *
- * Usage:
+ * Usage (default color set):
  * ```ts
  * import vyuiPreset from '@vyui/kit/tailwind'
  * export default {
@@ -18,35 +20,31 @@
  * }
  * ```
  *
+ * Usage (custom color set — must mirror `appConfig.ui.colors`):
+ * ```ts
+ * import { createVyuiPreset } from '@vyui/kit/tailwind'
+ * export default {
+ *   presets: [lynxPreset, createVyuiPreset({ colors: [...COLORS, 'tertiary'] })],
+ * }
+ * ```
+ *
  * @typedef {import('tailwindcss').Config} TailwindConfig
  */
 
-const SEMANTIC_COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-]
+import { COLORS, NEUTRAL, SHADES } from './theme/color-constants.js'
 
-const buildScale = (name) => ({
-  50: `var(--ui-color-${name}-50)`,
-  100: `var(--ui-color-${name}-100)`,
-  200: `var(--ui-color-${name}-200)`,
-  300: `var(--ui-color-${name}-300)`,
-  400: `var(--ui-color-${name}-400)`,
-  500: `var(--ui-color-${name}-500)`,
-  600: `var(--ui-color-${name}-600)`,
-  700: `var(--ui-color-${name}-700)`,
-  800: `var(--ui-color-${name}-800)`,
-  900: `var(--ui-color-${name}-900)`,
-  950: `var(--ui-color-${name}-950)`,
-  // Mode-aware shorthand. `neutral` has no `--ui-neutral` (matches Nuxt UI),
-  // so skip DEFAULT for it.
-  ...(name === 'neutral' ? {} : { DEFAULT: `var(--ui-${name})` }),
-})
+// Re-exported so a Tailwind config can extend the default set without pulling in
+// the component barrel (`@vyui/kit`) through jiti:
+//   import vyuiPreset, { createVyuiPreset, COLORS } from '@vyui/kit/tailwind'
+export { COLORS, NEUTRAL } from './theme/color-constants.js'
+
+const buildScale = (name, neutral, shades) =>
+  Object.fromEntries([
+    ...shades.map((shade) => [shade, `var(--ui-color-${name}-${shade})`]),
+    // Mode-aware shorthand. `neutral` has no `--ui-neutral` (matches Nuxt UI),
+    // so skip DEFAULT for it.
+    ...(name === neutral ? [] : [['DEFAULT', `var(--ui-${name})`]]),
+  ])
 
 /**
  * Border-radius scale wired to `--ui-radius` (defined in `style.css`).
@@ -64,46 +62,60 @@ const RADIUS_SCALE = {
   '3xl': 'calc(var(--ui-radius) * 6)',
 }
 
-/** @type {Partial<TailwindConfig>} */
-const preset = {
-  theme: {
-    extend: {
-      colors: Object.fromEntries(
-        SEMANTIC_COLORS.map((name) => [name, buildScale(name)]),
-      ),
-      borderRadius: RADIUS_SCALE,
-      // Halve every numeric step of the borderWidth scale. The bare
-      // `border` utility uses `DEFAULT`; `border-2` / `border-4` keep their
-      // names but render at half-pixel widths so the whole project's stroke
-      // weight reads thinner without rewriting every component. `border-0`
-      // and `border-8` are left at their stock values (the former is "off",
-      // the latter is a deliberate fat outline).
-      borderWidth: {
-        DEFAULT: '0.5px',
-        2: '1px',
-        4: '2px',
+/**
+ * Build the @vyui/kit preset for a given color set. Defaults to the package's
+ * standard semantic colors; pass `colors` to add/replace them (keep this in
+ * sync with `appConfig.ui.colors` and the `--ui-color-*` CSS var blocks).
+ *
+ * @param {object} [options]
+ * @param {string[]} [options.colors] Configurable semantic colors (no neutral).
+ * @param {string}   [options.neutral] Neutral color name.
+ * @param {number[]} [options.shades] Tailwind shade steps.
+ * @returns {Partial<TailwindConfig>}
+ */
+export function createVyuiPreset({ colors = COLORS, neutral = NEUTRAL, shades = SHADES } = {}) {
+  const allColors = [...new Set([...colors, neutral])]
+  return {
+    theme: {
+      extend: {
+        colors: Object.fromEntries(
+          allColors.map((name) => [name, buildScale(name, neutral, shades)]),
+        ),
+        borderRadius: RADIUS_SCALE,
+        // Halve every numeric step of the borderWidth scale. The bare
+        // `border` utility uses `DEFAULT`; `border-2` / `border-4` keep their
+        // names but render at half-pixel widths so the whole project's stroke
+        // weight reads thinner without rewriting every component. `border-0`
+        // and `border-8` are left at their stock values (the former is "off",
+        // the latter is a deliberate fat outline).
+        borderWidth: {
+          DEFAULT: '0.5px',
+          2: '1px',
+          4: '2px',
+        },
       },
     },
-  },
-  safelist: [
-    {
-      pattern: new RegExp(
-        `(bg|text|ring|border)-(${SEMANTIC_COLORS.join('|')})-(50|100|200|300|400|500|600|700|800|900|950)`,
-      ),
-      variants: [
-        'hover',
-        'active',
-        'focus',
-        'disabled',
-        'data-[state=on]',
-        'data-[state=open]',
-        'data-[state=checked]',
-        'group-data-[state=active]',
-        'group-data-[state=completed]',
-      ],
-    },
-    'text-white',
-  ],
+    safelist: [
+      {
+        pattern: new RegExp(
+          `(bg|text|ring|border)-(${allColors.join('|')})-(${shades.join('|')})`,
+        ),
+        variants: [
+          'hover',
+          'active',
+          'focus',
+          'disabled',
+          'data-[state=on]',
+          'data-[state=open]',
+          'data-[state=checked]',
+          'group-data-[state=active]',
+          'group-data-[state=completed]',
+        ],
+      },
+      'text-white',
+    ],
+  }
 }
 
-export default preset
+/** Default preset (standard color set). Keeps `presets: [..., vyuiPreset]` working. */
+export default createVyuiPreset()

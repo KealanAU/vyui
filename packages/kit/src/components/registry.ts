@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { Icon } from '@vyui/core'
+import { AspectRatio, Icon } from '@vyui/core'
 import Accordion from './Accordion.vue'
 import ActionSheet from './ActionSheet.vue'
 import Alert from './Alert.vue'
@@ -112,6 +112,9 @@ export const REGISTRY: Record<string, Component> = {
   VyAccordion: Accordion,
   VyActionSheet: ActionSheet,
   VyAlert: Alert,
+  // Pure layout primitive — re-exported from @vyui/core (nothing to theme),
+  // registered here so global usage matches the other Vy* components.
+  VyAspectRatio: AspectRatio,
   VyAvatar: Avatar,
   VyAvatarGroup: AvatarGroup,
   VyBadge: Badge,

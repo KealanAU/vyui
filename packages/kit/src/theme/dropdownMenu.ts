@@ -9,9 +9,9 @@
  * Semantic colors resolve to tailwind palettes via CSS variables, see
  * `packages/kit/src/theme/colors.ts` and the consuming app's CSS layer.
  */
-import { COLORS } from './colors'
+import type { Color } from './colors'
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     content: 'min-w-32 bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 divide-y divide-neutral-200 overflow-y-auto data-[state=open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in]',
     group: 'p-1',
@@ -28,7 +28,7 @@ export default {
     itemDescription: 'truncate text-xs text-neutral-500',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<typeof COLORS[number], ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     active: {
       true: {
         item: 'text-neutral-900 bg-neutral-100',
@@ -72,7 +72,7 @@ export default {
     },
   },
   compoundVariants: [
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       active: false as const,
       class: {
@@ -80,7 +80,7 @@ export default {
         itemLeadingIcon: `text-${color}-500 group-data-[highlighted]:text-${color}-600 group-data-[state=open]:text-${color}-600`,
       },
     })),
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       active: true as const,
       class: {
@@ -92,4 +92,4 @@ export default {
   defaultVariants: {
     size: 'md' as const,
   },
-}
+})

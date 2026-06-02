@@ -1,6 +1,6 @@
 // Theme barrel.
 export { default as icons } from './icons'
-export { COLORS, type Color } from './colors'
+export { ALL_COLORS, COLORS, NEUTRAL, resolveColors, type Color, type VyuiColorRegistry } from './colors'
 
 export { default as accordion } from './accordion'
 export { default as actionSheet } from './actionSheet'

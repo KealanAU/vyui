@@ -11,20 +11,9 @@
 //
 // `flex-row-reverse` keeps the upstream stacking trick: avatars rendered in
 // reverse order so the first child paints on top via natural source order.
+import type { Color } from './colors'
 
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
-
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row-reverse justify-end items-center',
     base: 'relative rounded-full border-white first:me-0',
@@ -39,10 +28,10 @@ export default {
       '2xl': { base: 'border-2 -me-2.5' },
       '3xl': { base: 'border-2 -me-3' },
     },
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
   },
   defaultVariants: {
     size: 'md' as const,
     color: 'neutral' as const,
   },
-}
+})

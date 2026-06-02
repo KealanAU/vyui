@@ -3,20 +3,9 @@
 // Semantic color names (`primary`, `error`, …) resolve to actual palettes via
 // the consuming app's CSS variables and Tailwind config — see
 // `apps/examples/kit-demo/src/index.css`.
+import type { Color } from './colors'
 
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
-
-export default {
+export default (colors: Color[]) => ({
   slots: {
     // `root` + `header` directions are flipped per orientation variant.
     root: 'flex gap-4',
@@ -77,11 +66,11 @@ export default {
         wrapper: 'mt-4',
       },
     },
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
   },
   compoundVariants: [
     // color -> active/completed trigger + completed separator fills
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       class: {
         trigger: `group-data-[state=completed]:bg-${color}-500 group-data-[state=active]:bg-${color}-500`,
@@ -104,4 +93,4 @@ export default {
     color: 'primary' as const,
     orientation: 'horizontal' as const,
   },
-}
+})

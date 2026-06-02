@@ -1,6 +1,7 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/badge'
+import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 import type { AvatarProps } from './Avatar.vue'
 
@@ -9,8 +10,8 @@ import type { AvatarProps } from './Avatar.vue'
  * user overrides pulled from `appConfig.ui.badge`.
  */
 export const buildBadge = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).badge as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
+  const overrides = (appConfig.ui as Record<string, unknown>).badge as Partial<ReturnType<typeof theme>> | undefined
+  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
 }
 
 type BadgeVariants = VariantProps<ReturnType<typeof buildBadge>>

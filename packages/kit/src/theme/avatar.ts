@@ -5,26 +5,15 @@
 // `apps/examples/kit-demo/src/index.css` for the default mapping.
 //
 // Light-mode-only: dark-mode classes from the upstream theme are dropped.
+import type { Color } from './colors'
 
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
-
-const colorVariant = (c: SemanticColor) => ({
+const colorVariant = (c: string) => ({
   root: `bg-${c}-100`,
   text: `text-${c}-600`,
   icon: `text-${c}-600`,
 })
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-center justify-center shrink-0 select-none rounded-full align-middle overflow-hidden',
     image: 'h-full w-full rounded-[inherit] object-cover',
@@ -32,7 +21,7 @@ export default {
     icon: 'shrink-0',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, colorVariant(c)])) as Record<SemanticColor, ReturnType<typeof colorVariant>>,
+    color: Object.fromEntries(colors.map(c => [c, colorVariant(c)])) as Record<Color, ReturnType<typeof colorVariant>>,
     size: {
       'xs': { root: 'size-8 text-base' },
       'sm': { root: 'size-9 text-lg' },
@@ -47,4 +36,4 @@ export default {
     size: 'md' as const,
     color: 'neutral' as const,
   },
-}
+})

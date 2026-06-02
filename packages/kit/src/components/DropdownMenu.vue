@@ -1,6 +1,7 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/dropdownMenu'
+import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 import type { AvatarProps } from './Avatar.vue'
 
@@ -9,8 +10,8 @@ import type { AvatarProps } from './Avatar.vue'
  * user overrides pulled from `appConfig.ui.dropdownMenu`.
  */
 export const buildDropdownMenu = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).dropdownMenu as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
+  const overrides = (appConfig.ui as Record<string, unknown>).dropdownMenu as Partial<ReturnType<typeof theme>> | undefined
+  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
 }
 
 type DropdownMenuVariants = VariantProps<ReturnType<typeof buildDropdownMenu>>

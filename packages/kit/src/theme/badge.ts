@@ -5,30 +5,19 @@
 //
 // Light-mode-only port — `dark:` and `focus-visible:` classes are dropped.
 // Variants restricted to `solid`/`outline`/`soft`/`subtle` (no `ghost`/`link`).
-
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
+import type { Color } from './colors'
 
 // Variant = structural treatment only. Use `border-*` (Lynx drops `ring-*`).
-const solid = (c: SemanticColor) =>
+const solid = (c: string) =>
   `text-white bg-${c}-500`
 
-const outline = (c: SemanticColor) =>
+const outline = (c: string) =>
   `text-${c}-700 border-2 border-solid border-${c}-500`
 
-const subtle = (c: SemanticColor) =>
+const subtle = (c: string) =>
   `text-${c}-700 border border-solid border-${c}-500 bg-${c}-100`
 
-const soft = (c: SemanticColor) =>
+const soft = (c: string) =>
   `text-${c}-700 bg-${c}-100`
 
 const VARIANT_BUILDERS = { solid, outline, soft, subtle } as const
@@ -37,7 +26,7 @@ type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     base: 'font-medium flex flex-row items-center rounded-md',
     label: 'truncate',
@@ -45,7 +34,7 @@ export default {
     trailingIcon: 'shrink-0',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: Object.fromEntries(VARIANTS.map(v => [v, ''])) as Record<Variant, ''>,
     size: {
       sm: {
@@ -75,7 +64,7 @@ export default {
   },
   compoundVariants: [
     // color + variant -> concrete tailwind classes
-    ...COLORS.flatMap(color =>
+    ...colors.flatMap(color =>
       VARIANTS.map(variant => ({
         color,
         variant,
@@ -93,4 +82,4 @@ export default {
     variant: 'solid' as const,
     size: 'md' as const,
   },
-}
+})

@@ -29,12 +29,14 @@
   "files": [
     "dist",
     "src/style.css",
+    "scripts/gen-colors.mjs",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "pnpm typecheck && pnpm build-only",
-    "build-only": "rslib build && vue-tsc -p tsconfig.build.json",
+    "build-only": "rslib build && vue-tsc -p tsconfig.build.json && pnpm copy-dts",
+    "copy-dts": "cp src/tailwind.d.ts dist/tailwind.d.ts && cp src/theme/color-constants.d.ts dist/theme/color-constants.d.ts",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint src"
   },

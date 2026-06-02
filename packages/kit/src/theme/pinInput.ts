@@ -3,20 +3,9 @@
 // Semantic color names (`primary`, `error`, …) resolve to actual palettes via
 // the consuming app's CSS variables and Tailwind config — see
 // `apps/examples/kit-demo/src/index.css`.
+import type { Color } from './colors'
 
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
-
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center gap-1.5',
     base: 'rounded-md placeholder:text-neutral-400 text-center text-neutral-900 disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
@@ -35,20 +24,20 @@ export default {
       ghost: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent',
       none: 'bg-transparent',
     },
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     highlight: {
       true: '',
     },
   },
   compoundVariants: [
     // outline / subtle border colors per semantic color.
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       variant: ['outline' as const, 'subtle' as const],
       class: `border-${color}-300`,
     })),
     // `highlight` paints a static border matching the color (no focus needed).
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       highlight: true,
       class: `border border-${color}-500`,
@@ -59,4 +48,4 @@ export default {
     color: 'primary' as const,
     variant: 'outline' as const,
   },
-}
+})
