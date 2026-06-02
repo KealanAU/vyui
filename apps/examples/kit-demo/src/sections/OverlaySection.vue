@@ -158,7 +158,7 @@ const fruitItems = [
 
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
       <text class="text-slate-900 text-base font-semibold">Select</text>
-      <text class="text-slate-500 text-xs">Bottom-sheet picker — items pop up from below.</text>
+      <text class="text-slate-500 text-xs">Bottom-sheet picker — items pop up from below. This covers the listbox pattern too (no separate Listbox component).</text>
       <VySelect v-model="selectCountry" :items="countryItems" placeholder="Pick a country" />
       <text class="text-slate-500 text-xs">Country: {{ selectCountry }}</text>
     </view>
