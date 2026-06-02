@@ -14,7 +14,12 @@ export default {
     trigger:
       'group flex-1 flex flex-row items-center gap-1.5 font-medium text-sm py-3.5 min-w-0',
     content: 'overflow-hidden',
-    body: 'text-sm pb-3.5 text-neutral-700',
+    // `body` is a wrapping <view>; `enableCSSInheritance: false` means its
+    // `text-*` can't reach the nested content <text>, so the foreground color
+    // moves onto `bodyText` (applied to the string-content <text> in
+    // Accordion.vue). `body` keeps layout/sizing only.
+    body: 'text-sm pb-3.5',
+    bodyText: 'text-sm text-neutral-700',
     leadingIcon: 'shrink-0 size-5 text-neutral-500',
     trailingIcon:
       'shrink-0 size-5 ms-auto text-neutral-500 group-data-[state=open]:rotate-180 transition-transform duration-200',

@@ -17,8 +17,13 @@ import type { Color } from './colors'
 export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center',
-    base: 'w-full rounded-md flex flex-row items-center text-neutral-900 placeholder:text-neutral-400 disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
-    value: 'flex-1 min-w-0 truncate text-start',
+    // `base` is the trigger <view> — surface only. The selected-value text
+    // color lives on the `value` <text> slot and the placeholder color on the
+    // `placeholder` <text> slot: CSS inheritance is OFF in the Lynx build
+    // (`enableCSSInheritance: false`), so a `text-*` on the trigger <view>
+    // never reaches those <text> children.
+    base: 'w-full rounded-md flex flex-row items-center disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
+    value: 'flex-1 min-w-0 truncate text-start text-neutral-900',
     placeholder: 'flex-1 min-w-0 truncate text-start text-neutral-400',
     arrow: 'fill-neutral-200',
     content: 'max-h-60 w-full bg-white rounded-md border border-neutral-200 overflow-hidden pointer-events-auto',
@@ -27,12 +32,16 @@ export default (colors: Color[]) => ({
     empty: 'py-2 text-center text-sm text-neutral-500',
     label: 'font-semibold text-neutral-900',
     separator: '-mx-1 my-1 h-px bg-neutral-200',
-    item: 'group relative w-full flex flex-row items-center select-none rounded-md data-[disabled]:cursor-not-allowed data-[disabled]:opacity-75 text-neutral-700 data-[state=checked]:text-neutral-900 transition-colors',
+    // `item` is the row <view> — surface/layout only. Item label color lives on
+    // `itemLabel` (the SelectItemText <text>): CSS inheritance is OFF in the
+    // Lynx build (`enableCSSInheritance: false`), so a `text-*` on the row
+    // <view> never reaches the label <text>.
+    item: 'group relative w-full flex flex-row items-center select-none rounded-md data-[disabled]:cursor-not-allowed data-[disabled]:opacity-75 transition-colors',
     itemLeadingIcon: 'shrink-0 transition-colors',
     itemLeadingAvatar: 'shrink-0',
     itemTrailing: 'ms-auto flex flex-row gap-1.5 items-center',
     itemTrailingIcon: 'shrink-0',
-    itemLabel: 'truncate',
+    itemLabel: 'truncate text-neutral-700 group-data-[state=checked]:text-neutral-900',
     leading: 'flex flex-row items-center shrink-0',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',

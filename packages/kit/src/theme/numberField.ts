@@ -51,12 +51,16 @@ export default (colors: Color[]) => ({
         decrementIcon: 'size-6',
       },
     },
+    // Surface only (bg/border) on `root`; typed-text color lives on `base`
+    // (the <input>) — CSS inheritance is OFF in the Lynx build
+    // (`enableCSSInheritance: false`), so a `text-*` on the root <view> never
+    // reaches the input element.
     variant: {
-      outline: { root: 'text-neutral-900 bg-white border' },
-      soft: { root: 'text-neutral-900 bg-neutral-100/50 disabled:bg-neutral-100/50 border-transparent' },
-      subtle: { root: 'text-neutral-900 bg-neutral-100 border' },
-      ghost: { root: 'text-neutral-900 bg-transparent disabled:bg-transparent border-transparent' },
-      none: { root: 'text-neutral-900 bg-transparent border-transparent' },
+      outline: { root: 'bg-white border' },
+      soft: { root: 'bg-neutral-100/50 disabled:bg-neutral-100/50 border-transparent' },
+      subtle: { root: 'bg-neutral-100 border' },
+      ghost: { root: 'bg-transparent disabled:bg-transparent border-transparent' },
+      none: { root: 'bg-transparent border-transparent' },
     },
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
   },

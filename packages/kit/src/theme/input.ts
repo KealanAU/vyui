@@ -23,7 +23,10 @@ export default (colors: Color[]) => ({
     // Border + bg + radius live on root; base stays transparent so the icon
     // wrappers (siblings) sit *inside* the rounded chrome.
     root: 'flex flex-row items-center w-full rounded-md transition-colors',
-    base: 'flex-1 min-w-0 bg-transparent placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
+    // Typed-text color sits on `base` (the <input>), not `root`: CSS
+    // inheritance is OFF in the Lynx build (`enableCSSInheritance: false`), so a
+    // `text-*` on the root <view> never reaches the input element.
+    base: 'flex-1 min-w-0 bg-transparent text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
     leading: 'flex flex-row items-center shrink-0',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',
@@ -57,12 +60,14 @@ export default (colors: Color[]) => ({
         trailingIcon: 'size-7'
       }
     },
+    // Surface only (bg/border) on `root`; typed-text color lives on `base`
+    // (the <input>) — see the `slots.base` note re `enableCSSInheritance: false`.
     variant: {
-      outline: { root: 'text-neutral-900 bg-white border' },
-      soft: { root: 'text-neutral-900 bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
-      subtle: { root: 'text-neutral-900 bg-neutral-100 border' },
-      ghost: { root: 'text-neutral-900 bg-transparent active:bg-neutral-100 disabled:bg-transparent' },
-      none: { root: 'text-neutral-900 bg-transparent' }
+      outline: { root: 'bg-white border' },
+      soft: { root: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
+      subtle: { root: 'bg-neutral-100 border' },
+      ghost: { root: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent' },
+      none: { root: 'bg-transparent' }
     },
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     leading: { true: '' },

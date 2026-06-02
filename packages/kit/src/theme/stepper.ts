@@ -12,9 +12,14 @@ export default (colors: Color[]) => ({
     header: 'flex',
     item: 'group text-center relative w-full',
     container: 'relative',
-    trigger: 'rounded-full font-medium text-center align-middle flex flex-row items-center justify-center font-semibold group-data-[state=completed]:text-white group-data-[state=active]:text-white text-neutral-500 bg-neutral-100',
+    // `enableCSSInheritance: false`: the foreground (`text-*`) must sit on the
+    // indicator content (`icon` slot / the step-number <text>), not the
+    // `trigger` <view> — color there never reaches the nested icon/number. The
+    // `item` carries the `group`, so state stays `group-data-[state=…]:`. The
+    // `bg-*` fill stays on `trigger`.
+    trigger: 'rounded-full font-medium text-center align-middle flex flex-row items-center justify-center font-semibold bg-neutral-100',
     indicator: 'flex flex-row items-center justify-center size-full',
-    icon: 'shrink-0',
+    icon: 'shrink-0 group-data-[state=completed]:text-white group-data-[state=active]:text-white text-neutral-500',
     separator: 'absolute rounded-full group-data-[disabled]:opacity-75 bg-neutral-200',
     wrapper: '',
     title: 'font-medium text-neutral-900',

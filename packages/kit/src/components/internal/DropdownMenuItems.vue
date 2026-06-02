@@ -87,7 +87,10 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
       v-else-if="row.kind === 'label'"
       :class="ui.label({ class: uiOverrides?.label })"
     >
-      <text :class="ui.itemLabel({ class: uiOverrides?.itemLabel })">{{ getLabel(row.item) }}</text>
+      <!-- `enableCSSInheritance: false`: the `label` slot's `text-neutral-900`
+           sits on the wrapping <view>, so the heading color must land on this
+           <text> directly. -->
+      <text :class="ui.itemLabel({ class: ['text-neutral-900', uiOverrides?.itemLabel] })">{{ getLabel(row.item) }}</text>
     </DropdownMenuLabel>
 
     <DropdownMenuCheckboxItem
@@ -108,7 +111,7 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
           :class="ui.itemLeadingIcon({ color: row.item?.color, class: uiOverrides?.itemLeadingIcon })"
         />
         <view :class="ui.itemWrapper({ class: uiOverrides?.itemWrapper })">
-          <text :class="ui.itemLabel({ class: uiOverrides?.itemLabel })">{{ getLabel(row.item) }}</text>
+          <text :class="ui.itemLabel({ color: row.item?.color, class: uiOverrides?.itemLabel })">{{ getLabel(row.item) }}</text>
           <text v-if="getDescription(row.item)" :class="ui.itemDescription({ class: uiOverrides?.itemDescription })">{{ getDescription(row.item) }}</text>
         </view>
       </template>
@@ -181,7 +184,7 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
             :index="row.index"
             :ui="ui"
           />
-          <text v-else :class="ui.itemLabel({ class: uiOverrides?.itemLabel })">{{ getLabel(row.item) }}</text>
+          <text v-else :class="ui.itemLabel({ color: row.item?.color, class: uiOverrides?.itemLabel })">{{ getLabel(row.item) }}</text>
 
           <component
             v-if="getItemSlot(row.item, 'description')"
