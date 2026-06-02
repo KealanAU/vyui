@@ -54,8 +54,6 @@ export interface DrawerProps {
    * @defaultValue `[0.75]`
    */
   snapPoints?: number[]
-  /** Controlled current snap index — bind with `v-model:snapIndex`. */
-  snapIndex?: number
   /** Initial snap index when uncontrolled. */
   defaultSnapIndex?: number
   /**
@@ -79,8 +77,6 @@ export interface DrawerProps {
 export interface DrawerEmits {
   (e: 'update:open', value: boolean): void
   (e: 'update:modelValue', value: boolean): void
-  /** Current snap index changed (drag / fling settle). */
-  (e: 'update:snapIndex', value: number): void
 }
 
 export interface DrawerSlots {
@@ -171,11 +167,9 @@ const ui = computed(() => buildDrawer(appConfig)({
     :open="resolvedOpen"
     :default-open="defaultOpen"
     :snap-points="snapPoints"
-    :snap-index="snapIndex"
     :default-snap-index="defaultSnapIndex"
     :enable-drag-to-close="dismissible"
     @update:open="onOpenChange"
-    @update:snap-index="emit('update:snapIndex', $event)"
   >
     <SheetTrigger>
       <slot :open="!!resolvedOpen" />
