@@ -3,20 +3,9 @@
 // Semantic color names (`primary`, `error`, …) resolve to actual palettes via
 // the consuming app's CSS variables and Tailwind config — see
 // `apps/examples/kit-demo/src/index.css`.
+import type { Color } from './colors'
 
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
-
-export default {
+export default (colors: Color[]) => ({
   slots: {
     // `root` direction is set per orientation variant (flex-row default,
     // flex-col vertical).
@@ -26,7 +15,7 @@ export default {
     thumb: 'rounded-full bg-white border-2',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     size: {
       sm: { thumb: 'size-4' },
       md: { thumb: 'size-4.5' },
@@ -49,7 +38,7 @@ export default {
   },
   compoundVariants: [
     // color -> concrete range/thumb classes
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       class: {
         range: `bg-${color}-500`,
@@ -71,4 +60,4 @@ export default {
     color: 'primary' as const,
     orientation: 'horizontal' as const,
   },
-}
+})

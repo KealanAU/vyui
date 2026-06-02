@@ -2,6 +2,7 @@
 import { tv, type VariantProps } from 'tailwind-variants'
 import type { InputConfirmType, InputType } from '@vyui/core'
 import theme from '../theme/input'
+import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 import type { AvatarProps } from './Avatar.vue'
 
@@ -10,8 +11,8 @@ import type { AvatarProps } from './Avatar.vue'
  * user overrides pulled from `appConfig.ui.input`.
  */
 export const buildInput = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).input as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
+  const overrides = (appConfig.ui as Record<string, unknown>).input as Partial<ReturnType<typeof theme>> | undefined
+  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
 }
 
 type InputVariants = VariantProps<ReturnType<typeof buildInput>>

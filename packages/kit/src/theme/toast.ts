@@ -5,10 +5,7 @@
 //   CSS variables in the consuming app — see `colors.ts`.
 // - Progress bar slot kept but rendered conditionally by the SFC; Lynx handles
 //   the `data-[state=...]` animation hooks emitted by core's `ToastRoot`.
-
-const COLORS = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
-
-type SemanticColor = typeof COLORS[number]
+import type { Color } from './colors'
 
 // LYNX NOTE — `var()` in inline `style=""` does NOT resolve on Lynx native
 // (only stylesheet-level `var()` does). The original Reka UI swipe classes
@@ -18,7 +15,7 @@ type SemanticColor = typeof COLORS[number]
 // implying it works. See `core/src/components/Slider/SliderThumbImpl.vue`
 // (~L46) for the canonical write-up; resolve transforms inline as concrete
 // pixel values instead of via custom-property indirection.
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 p-4 flex flex-row gap-2.5 data-[state=open]:animate-[slide-in_200ms_ease-out] data-[state=closed]:animate-[fade-out_100ms_ease-in]',
     wrapper: 'w-0 flex-1 flex flex-col',
@@ -32,10 +29,10 @@ export default {
     close: 'shrink-0'
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, {
+    color: Object.fromEntries(colors.map(c => [c, {
       icon: `text-${c}-500`,
       progress: `bg-${c}-500`
-    }])) as Record<SemanticColor, { icon: string, progress: string }>,
+    }])) as Record<Color, { icon: string, progress: string }>,
     orientation: {
       horizontal: {
         actions: 'items-center'
@@ -54,4 +51,4 @@ export default {
     color: 'primary' as const,
     orientation: 'vertical' as const
   }
-}
+})

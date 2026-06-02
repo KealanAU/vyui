@@ -9,7 +9,7 @@ import '../../../../packages/core/src'
 
 import { installIntlPolyfill, registerIconSet } from '@vyui/core'
 import { createApp } from 'vue-lynx'
-import { VyUI } from '@vyui/kit'
+import { COLORS, VyUI } from '@vyui/kit'
 import iconParkOutline from '@iconify-json/icon-park-outline/icons.json'
 import lucide from '@iconify-json/lucide/icons.json'
 import App from './App.vue'
@@ -27,5 +27,9 @@ registerIconSet('icon-park-outline', iconParkOutline)
 
 
 const app = createApp(App)
-app.use(VyUI)
+// Register a custom semantic color (`tertiary`) alongside the defaults — the
+// runtime half of the "add a color" flow. Paired with the Tailwind preset
+// (tailwind.config.ts), CSS vars (index.css) and the type registry
+// augmentation (vyui-colors.d.ts).
+app.use(VyUI, { ui: { colors: [...COLORS, 'tertiary'] } })
 app.mount()

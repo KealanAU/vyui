@@ -7,40 +7,38 @@
 //
 // Each builder emits classes against the semantic name directly — Tailwind
 // treats `bg-primary-500` / `ring-error-500/25` as configured colors.
-
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
+//
+// ── BUILDER THEME (canonical template) ──────────────────────────────────────
+// The default export is a builder `(colors: Color[]) => themeObject`. The
+// `colors` list (configurable semantic colors + neutral) is threaded in by
+// `useStyledComponent` from `appConfig.ui.colors`, so adding a color at runtime
+// emits its variants without editing this file. Variant builders take a plain
+// `string` color; there is no local `COLORS` const or closed `SemanticColor`
+// union to keep in sync.
 
 // Light-mode-only ports of Nuxt UI v3.0.2 variants. Dark mode + focus-visible
 // classes are dropped (no dark mode plumbed, Lynx doesn't surface focus rings
 // the way the DOM does).
 
 // Variant = structural treatment only. Use `border-*` (Lynx drops `ring-*`).
-const solid = (c: SemanticColor) =>
+import type { Color } from './colors'
+
+const solid = (c: string) =>
   `text-white bg-${c}-500 active:bg-${c}-600 active:bg-${c}-600`
 
-const outline = (c: SemanticColor) =>
+const outline = (c: string) =>
   `text-${c}-700 border-2 border-solid border-${c}-500 active:bg-${c}-50 active:bg-${c}-100`
 
-const subtle = (c: SemanticColor) =>
+const subtle = (c: string) =>
   `text-${c}-700 border border-solid border-${c}-500 bg-${c}-100 active:bg-${c}-200 active:bg-${c}-200`
 
-const soft = (c: SemanticColor) =>
+const soft = (c: string) =>
   `text-${c}-700 bg-${c}-100 active:bg-${c}-200 active:bg-${c}-200`
 
-const ghost = (c: SemanticColor) =>
+const ghost = (c: string) =>
   `text-${c}-700 active:bg-${c}-50 active:bg-${c}-100`
 
-const link = (c: SemanticColor) =>
+const link = (c: string) =>
   `text-${c}-600 active:text-${c}-700 active:text-${c}-800 underline-offset-4 active:underline`
 
 const VARIANT_BUILDERS = { solid, outline, soft, subtle, ghost, link } as const
@@ -49,7 +47,11 @@ type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 
-export default {
+// `import type { Color }` keeps the color record typed to the DEFAULT semantic
+// union, so `color?` props autocomplete + typo-check the standard set without
+// any component edits. The codegen plugin regenerates this file with the
+// consumer's exact configured union when custom colors are added (true parity).
+export default (colors: Color[]) => ({
   slots: {
     base: 'rounded-md font-medium flex flex-row items-center disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
     label: 'truncate',
@@ -58,7 +60,7 @@ export default {
     trailingIcon: 'shrink-0',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: Object.fromEntries(VARIANTS.map(v => [v, ''])) as Record<Variant, ''>,
     size: {
       sm: {
@@ -100,7 +102,7 @@ export default {
   },
   compoundVariants: [
     // color + variant -> concrete tailwind classes
-    ...COLORS.flatMap(color =>
+    ...colors.flatMap(color =>
       VARIANTS.map(variant => ({
         color,
         variant,
@@ -118,4 +120,4 @@ export default {
     variant: 'solid' as const,
     size: 'md' as const,
   },
-}
+})

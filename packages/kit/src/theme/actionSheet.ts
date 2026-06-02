@@ -7,9 +7,9 @@
  * + leading icon in the semantic color (e.g. `color: 'error'` for destructive
  * actions).
  */
-import { COLORS } from './colors'
+import type { Color } from './colors'
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     overlay: 'fixed inset-0 bg-neutral-900/40 data-[state=open]:animate-[fade-in_200ms_ease-out] data-[state=closed]:animate-[fade-out_200ms_ease-in]',
     content: 'flex flex-col',
@@ -28,7 +28,7 @@ export default {
     cancelLabel: 'text-neutral-900 font-medium',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<typeof COLORS[number], ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     size: {
       sm: {
         item: 'py-3 text-base',
@@ -58,7 +58,7 @@ export default {
   compoundVariants: [
     // Per-color row tints — label + leading icon adopt the semantic color,
     // and the active-press state uses the matching 50-tint background.
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       class: {
         item: `active:bg-${color}-50`,
@@ -70,4 +70,4 @@ export default {
   defaultVariants: {
     size: 'md' as const,
   },
-}
+})

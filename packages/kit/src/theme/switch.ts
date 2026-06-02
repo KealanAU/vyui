@@ -5,7 +5,9 @@
  * via CSS variables defined in the consuming app — see
  * `apps/examples/kit-demo/src/index.css`.
  */
-export default {
+import type { Color } from './colors'
+
+export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-center gap-2',
     // `items-center` centers the thumb vertically — without it, the thumb
@@ -18,15 +20,7 @@ export default {
     icon: 'shrink-0',
   },
   variants: {
-    color: {
-      primary: '',
-      secondary: '',
-      success: '',
-      info: '',
-      warning: '',
-      error: '',
-      neutral: '',
-    },
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     size: {
       sm: { base: 'w-9 h-5', thumb: 'w-4 h-4', icon: 'size-3' },
       md: { base: 'w-11 h-6', thumb: 'w-5 h-5', icon: 'size-3.5' },
@@ -48,20 +42,8 @@ export default {
     },
   },
   compoundVariants: [
-    { color: 'primary' as const, checked: true, class: { base: 'bg-primary-500' } },
-    { color: 'secondary' as const, checked: true, class: { base: 'bg-secondary-500' } },
-    { color: 'success' as const, checked: true, class: { base: 'bg-success-500' } },
-    { color: 'info' as const, checked: true, class: { base: 'bg-info-500' } },
-    { color: 'warning' as const, checked: true, class: { base: 'bg-warning-500' } },
-    { color: 'error' as const, checked: true, class: { base: 'bg-error-500' } },
-    { color: 'neutral' as const, checked: true, class: { base: 'bg-neutral-500' } },
-    { color: 'primary' as const, highlight: true, class: { base: 'border-2 border-primary-500' } },
-    { color: 'secondary' as const, highlight: true, class: { base: 'border-2 border-secondary-500' } },
-    { color: 'success' as const, highlight: true, class: { base: 'border-2 border-success-500' } },
-    { color: 'info' as const, highlight: true, class: { base: 'border-2 border-info-500' } },
-    { color: 'warning' as const, highlight: true, class: { base: 'border-2 border-warning-500' } },
-    { color: 'error' as const, highlight: true, class: { base: 'border-2 border-error-500' } },
-    { color: 'neutral' as const, highlight: true, class: { base: 'border-2 border-neutral-500' } },
+    ...colors.map(c => ({ color: c, checked: true, class: { base: `bg-${c}-500` } })),
+    ...colors.map(c => ({ color: c, highlight: true, class: { base: `border-2 border-${c}-500` } })),
     { size: 'sm' as const, checked: true, class: { thumb: 'translate-x-4' } },
     { size: 'md' as const, checked: true, class: { thumb: 'translate-x-5' } },
     { size: 'lg' as const, checked: true, class: { thumb: 'translate-x-5' } },
@@ -71,4 +53,4 @@ export default {
     color: 'primary' as const,
     size: 'md' as const,
   },
-}
+})

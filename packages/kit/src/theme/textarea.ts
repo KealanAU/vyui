@@ -10,9 +10,9 @@
 // overlays — Lynx doesn't reliably overlay absolutely-positioned children
 // on top of a sibling text input).
 
-import { COLORS } from './colors'
+import type { Color } from './colors'
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-start w-full rounded-md transition-colors',
     base: 'flex-1 min-w-0 bg-transparent placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75 align-top',
@@ -56,15 +56,7 @@ export default {
       ghost: { root: 'text-neutral-900 bg-transparent active:bg-neutral-100 disabled:bg-transparent' },
       none: { root: 'text-neutral-900 bg-transparent' }
     },
-    color: {
-      primary: '',
-      secondary: '',
-      success: '',
-      info: '',
-      warning: '',
-      error: '',
-      neutral: ''
-    },
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     leading: { true: '' },
     trailing: { true: '' },
     loading: { true: '' },
@@ -72,22 +64,22 @@ export default {
   },
   compoundVariants: [
     // Border colors land on `root` since the chrome moved off `base`.
-    ...COLORS.flatMap(color => [
-      { color, variant: 'outline' as const, class: { root: `border-${color}-500` } },
-      { color, variant: 'subtle' as const, class: { root: `border-${color}-500` } }
+    ...colors.flatMap(c => [
+      { color: c, variant: 'outline' as const, class: { root: `border-${c}-500` } },
+      { color: c, variant: 'subtle' as const, class: { root: `border-${c}-500` } }
     ]),
-    ...COLORS.map(color => ({
-      color,
+    ...colors.map(c => ({
+      color: c,
       highlight: true,
-      class: { root: `border border-${color}-500` }
+      class: { root: `border border-${c}-500` }
     })),
     // Theme-driven icon color (Lynx SVG can't inherit currentColor; the
     // Textarea component bakes the resolved hex into `<VyIcon :color>` too).
-    ...COLORS.map(color => ({
-      color,
+    ...colors.map(c => ({
+      color: c,
       class: {
-        leadingIcon: `text-${color}-500`,
-        trailingIcon: `text-${color}-500`
+        leadingIcon: `text-${c}-500`,
+        trailingIcon: `text-${c}-500`
       }
     })),
     { loading: true, leading: true, class: { leadingIcon: 'animate-spin' } },
@@ -98,4 +90,4 @@ export default {
     variant: 'outline' as const,
     color: 'primary' as const
   }
-}
+})

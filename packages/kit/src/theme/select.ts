@@ -12,9 +12,9 @@
 // Color palettes resolve via the consuming app's CSS variables — see
 // `apps/examples/kit-demo/src/index.css` for the default semantic mapping.
 
-import { COLORS } from './colors'
+import type { Color } from './colors'
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center',
     base: 'w-full rounded-md flex flex-row items-center text-neutral-900 placeholder:text-neutral-400 disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
@@ -40,7 +40,7 @@ export default {
     trailingIcon: 'shrink-0',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<typeof COLORS[number], ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: {
       outline: { base: 'bg-white border' },
       soft: { base: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
@@ -93,19 +93,19 @@ export default {
   },
   compoundVariants: [
     // outline / subtle border colors per semantic color.
-    ...COLORS.flatMap(color => [
+    ...colors.flatMap(color => [
       { color, variant: 'outline' as const, class: { base: `border-${color}-500` } },
       { color, variant: 'subtle' as const, class: { base: `border-${color}-500` } },
     ]),
     // `highlight` paints a static border matching the color.
-    ...COLORS.map(color => ({ color, highlight: true, class: { base: `border border-${color}-500` } })),
+    ...colors.map(color => ({ color, highlight: true, class: { base: `border border-${color}-500` } })),
     // Loading spinner animation on icon slot.
     { loading: true, leading: true, class: { leadingIcon: 'animate-spin' } },
     { loading: true, leading: false, trailing: true, class: { trailingIcon: 'animate-spin' } },
     // Theme-driven leading/trailing icon color per semantic select color
     // (Lynx SVG can't inherit currentColor — the Select component also bakes
     // the resolved hex into `<VyIcon :color>`).
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       class: {
         leadingIcon: `text-${color}-500`,
@@ -118,4 +118,4 @@ export default {
     variant: 'outline' as const,
     size: 'md' as const,
   },
-}
+})

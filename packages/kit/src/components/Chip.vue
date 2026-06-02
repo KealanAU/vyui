@@ -1,6 +1,7 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/chip'
+import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 
 /**
@@ -8,8 +9,8 @@ import type { AppConfig } from '../types'
  * user overrides pulled from `appConfig.ui.chip`.
  */
 export const buildChip = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).chip as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
+  const overrides = (appConfig.ui as Record<string, unknown>).chip as Partial<ReturnType<typeof theme>> | undefined
+  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
 }
 
 type ChipVariants = VariantProps<ReturnType<typeof buildChip>>

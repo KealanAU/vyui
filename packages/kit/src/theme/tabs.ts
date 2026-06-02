@@ -11,32 +11,21 @@
  *   - Semantic colors mirror `button.ts` — every (color × variant) pair gets
  *     a concrete tailwind class via `compoundVariants`.
  */
-
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
+import type { Color } from './colors'
 
 // `pill`: solid indicator behind the active trigger, light text on top.
-const pillTrigger = (_c: SemanticColor) =>
+const pillTrigger = (_c: string) =>
   `data-[state=active]:text-white data-[state=inactive]:text-neutral-500 active:data-[state=inactive]:text-neutral-900`
 
-const pillIndicator = (c: SemanticColor) => `bg-${c}-500`
+const pillIndicator = (c: string) => `bg-${c}-500`
 
 // `link`: underline indicator + colored active label.
-const linkTrigger = (c: SemanticColor) =>
+const linkTrigger = (c: string) =>
   `data-[state=active]:text-${c}-500 data-[state=inactive]:text-neutral-500 active:data-[state=inactive]:text-neutral-900`
 
-const linkIndicator = (c: SemanticColor) => `bg-${c}-500`
+const linkIndicator = (c: string) => `bg-${c}-500`
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     // Lynx's tailwind preset has no `inline-flex` and `display:flex` defaults
     // to `flex-direction: column` (unlike the web). Every flex container here
@@ -57,7 +46,7 @@ export default {
     label: 'truncate',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: {
       pill: {
         list: 'bg-neutral-100 rounded-lg',
@@ -144,7 +133,7 @@ export default {
       class: { list: 'border-s -ms-px', indicator: '-start-px w-px' },
     },
     // color × variant — concrete tailwind classes per pair
-    ...COLORS.flatMap(color => [
+    ...colors.flatMap(color => [
       {
         color,
         variant: 'pill' as const,
@@ -163,4 +152,4 @@ export default {
     size: 'md' as const,
     direction: 'inline' as const,
   },
-}
+})

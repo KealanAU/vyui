@@ -8,28 +8,18 @@
  * color × variant. Variants supported: `outline`, `soft`, `subtle` (matches
  * what nuxt/ui surfaces for non-solid toggles).
  */
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
-
-type SemanticColor = typeof COLORS[number]
+import type { Color } from './colors'
 
 // Each builder returns the *inactive* + *on-state* classes for an item.
-const outline = (c: SemanticColor) =>
+const outline = (c: string) =>
   `text-neutral-700 border border-neutral-300 bg-white active:bg-${c}-50 active:bg-${c}-100`
     + ` data-[state=on]:text-${c}-600 data-[state=on]:border-${c}-500 data-[state=on]:bg-${c}-50`
 
-const soft = (c: SemanticColor) =>
+const soft = (c: string) =>
   `text-neutral-700 bg-neutral-100 active:bg-${c}-50 active:bg-${c}-100`
     + ` data-[state=on]:text-${c}-600 data-[state=on]:bg-${c}-100`
 
-const subtle = (c: SemanticColor) =>
+const subtle = (c: string) =>
   `text-neutral-700 border border-neutral-200 bg-white active:bg-${c}-50 active:bg-${c}-100`
     + ` data-[state=on]:text-${c}-600 data-[state=on]:border-${c}-300 data-[state=on]:bg-${c}-100`
 
@@ -39,7 +29,7 @@ type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     // `root` direction is set per orientation variant (flex-row/flex-col).
     root: 'flex',
@@ -48,7 +38,7 @@ export default {
     label: 'truncate',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: Object.fromEntries(VARIANTS.map(v => [v, ''])) as Record<Variant, ''>,
     size: {
       sm: { item: 'px-2.5 py-1.5 text-sm gap-1.5', leadingIcon: 'size-5' },
@@ -68,7 +58,7 @@ export default {
     },
   },
   compoundVariants: [
-    ...COLORS.flatMap(color =>
+    ...colors.flatMap(color =>
       VARIANTS.map(variant => ({
         color,
         variant,
@@ -82,4 +72,4 @@ export default {
     size: 'md' as const,
     orientation: 'horizontal' as const,
   },
-}
+})

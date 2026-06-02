@@ -8,9 +8,9 @@
 // Lynx adaptation mirrors `./input.ts`: leading / trailing wrappers are
 // inline flex siblings of the search input, not `absolute` overlays.
 
-import { COLORS } from './colors'
+import type { Color } from './colors'
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center w-full',
     base: 'relative w-full rounded-md flex flex-row items-center text-neutral-900 placeholder:text-neutral-400 disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
@@ -35,7 +35,7 @@ export default {
     trailingIcon: 'shrink-0',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<typeof COLORS[number], ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: {
       outline: { base: 'bg-white border' },
       soft: { base: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
@@ -88,17 +88,17 @@ export default {
     multiple: { true: { root: 'flex-wrap' } },
   },
   compoundVariants: [
-    ...COLORS.flatMap(color => [
+    ...colors.flatMap(color => [
       { color, variant: 'outline' as const, class: { base: `border-${color}-500` } },
       { color, variant: 'subtle' as const, class: { base: `border-${color}-500` } },
     ]),
-    ...COLORS.map(color => ({ color, highlight: true, class: { base: `border border-${color}-500` } })),
+    ...colors.map(color => ({ color, highlight: true, class: { base: `border border-${color}-500` } })),
     { loading: true, leading: true, class: { leadingIcon: 'animate-spin' } },
     { loading: true, leading: false, trailing: true, class: { trailingIcon: 'animate-spin' } },
     // Theme-driven icon color per semantic combobox color (Lynx SVG can't
     // inherit currentColor — the Combobox component also bakes the resolved
     // hex into `<VyIcon :color>`).
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       class: {
         leadingIcon: `text-${color}-500`,
@@ -111,4 +111,4 @@ export default {
     variant: 'outline' as const,
     size: 'md' as const,
   },
-}
+})

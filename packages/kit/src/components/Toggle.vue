@@ -1,15 +1,17 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/toggle'
+import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 
 /**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.toggle`.
+ * Resolve a per-app `tv` factory by merging the package default theme (a color
+ * builder, invoked with the resolved color list) with user overrides pulled
+ * from `appConfig.ui.toggle`.
  */
 export const buildToggle = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).toggle as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
+  const overrides = (appConfig.ui as Record<string, unknown>).toggle as Partial<ReturnType<typeof theme>> | undefined
+  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
 }
 
 type ToggleVariants = VariantProps<ReturnType<typeof buildToggle>>

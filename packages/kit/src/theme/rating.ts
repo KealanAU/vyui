@@ -9,22 +9,16 @@
  * The filled vs. empty state is driven by the `data-state="active"` attribute
  * core emits on each `RatingItemIndicator` — see `RatingItemIndicator.vue`.
  */
-export default {
+import type { Color } from './colors'
+
+export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-center gap-1',
     base: 'shrink-0',
     icon: 'text-neutral-300',
   },
   variants: {
-    color: {
-      primary: '',
-      secondary: '',
-      success: '',
-      info: '',
-      warning: '',
-      error: '',
-      neutral: '',
-    },
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     size: {
       sm: { icon: 'size-5' },
       md: { icon: 'size-6' },
@@ -36,16 +30,10 @@ export default {
     },
   },
   compoundVariants: [
-    { color: 'primary' as const, class: { icon: 'data-[state=active]:text-primary-500' } },
-    { color: 'secondary' as const, class: { icon: 'data-[state=active]:text-secondary-500' } },
-    { color: 'success' as const, class: { icon: 'data-[state=active]:text-success-500' } },
-    { color: 'info' as const, class: { icon: 'data-[state=active]:text-info-500' } },
-    { color: 'warning' as const, class: { icon: 'data-[state=active]:text-warning-500' } },
-    { color: 'error' as const, class: { icon: 'data-[state=active]:text-error-500' } },
-    { color: 'neutral' as const, class: { icon: 'data-[state=active]:text-neutral-500' } },
+    ...colors.map(c => ({ color: c, class: { icon: `data-[state=active]:text-${c}-500` } })),
   ],
   defaultVariants: {
     color: 'warning' as const,
     size: 'md' as const,
   },
-}
+})

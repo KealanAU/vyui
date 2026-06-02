@@ -1,6 +1,7 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/toast'
+import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 import type { ButtonProps } from './Button.vue'
 import type { AvatarProps } from './Avatar.vue'
@@ -10,8 +11,8 @@ import type { AvatarProps } from './Avatar.vue'
  * user overrides pulled from `appConfig.ui.toast`.
  */
 export const buildToast = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).toast as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
+  const overrides = (appConfig.ui as Record<string, unknown>).toast as Partial<ReturnType<typeof theme>> | undefined
+  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
 }
 
 type ToastVariants = VariantProps<ReturnType<typeof buildToast>>

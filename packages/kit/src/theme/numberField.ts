@@ -9,9 +9,9 @@
 // inner `<input>` (`base`) stays transparent and sits between the two stepper
 // buttons. `ring-*` → `border-*` (no ringWidth plugin in the Lynx preset).
 
-import { COLORS } from './colors'
+import type { Color } from './colors'
 
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-center w-full rounded-md border bg-white overflow-hidden',
     base: 'flex-1 min-w-0 bg-transparent text-center text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
@@ -58,11 +58,11 @@ export default {
       ghost: { root: 'text-neutral-900 bg-transparent disabled:bg-transparent border-transparent' },
       none: { root: 'text-neutral-900 bg-transparent border-transparent' },
     },
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<typeof COLORS[number], ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
   },
   compoundVariants: [
     // Border colors live on `root` for the bordered variants.
-    ...COLORS.flatMap(color => [
+    ...colors.flatMap(color => [
       { color, variant: 'outline' as const, class: { root: `border-${color}-500` } },
       { color, variant: 'subtle' as const, class: { root: `border-${color}-500` } },
     ]),
@@ -72,4 +72,4 @@ export default {
     variant: 'outline' as const,
     color: 'primary' as const,
   },
-}
+})

@@ -7,19 +7,9 @@
  * Per-color × per-checked compound variants paint the indicator (filled dot)
  * directly with semantic Tailwind classes (`bg-primary-500`).
  */
-const COLORS = [
-  'primary',
-  'secondary',
-  'success',
-  'info',
-  'warning',
-  'error',
-  'neutral',
-] as const
+import type { Color } from './colors'
 
-type SemanticColor = typeof COLORS[number]
-
-export default {
+export default (colors: Color[]) => ({
   slots: {
     root: 'relative',
     // `fieldset` direction is set per orientation variant (flex-row/flex-col).
@@ -34,7 +24,7 @@ export default {
     description: 'text-neutral-500',
   },
   variants: {
-    color: Object.fromEntries(COLORS.map(c => [c, ''])) as Record<SemanticColor, ''>,
+    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     orientation: {
       horizontal: {
         fieldset: 'flex-row',
@@ -107,7 +97,7 @@ export default {
     // dot stays white so the macOS-style 3-layer look (outline / fill / dot)
     // reads correctly. `border-2` thickens the outline so it remains visible
     // alongside the colored fill.
-    ...COLORS.map(color => ({
+    ...colors.map(color => ({
       color,
       checked: true as const,
       class: {
@@ -120,4 +110,4 @@ export default {
     size: 'md' as const,
     orientation: 'vertical' as const,
   },
-}
+})

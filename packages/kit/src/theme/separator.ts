@@ -6,11 +6,9 @@
  * `apps/examples/kit-demo/src/index.css`. The Nuxt UI `avatar` slot is dropped
  * (Vy UI's Avatar isn't a separator concern); `label` and `icon` are retained.
  */
-const COLORS = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
+import type { Color } from './colors'
 
-type SemanticColor = typeof COLORS[number]
-
-export default {
+export default (colors: Color[]) => ({
   slots: {
     // `root` direction is set per orientation variant (flex-row/flex-col).
     root: 'flex items-center text-center',
@@ -21,9 +19,9 @@ export default {
   },
   variants: {
     color: {
-      ...Object.fromEntries(COLORS.filter(c => c !== 'neutral').map(c => [c, { border: `border-${c}-500` }])),
+      ...Object.fromEntries(colors.filter(c => c !== 'neutral').map(c => [c, { border: `border-${c}-500` }])),
       neutral: { border: 'border-neutral-200' },
-    } as Record<SemanticColor, { border: string }>,
+    } as Record<Color, { border: string }>,
     orientation: {
       horizontal: {
         root: 'w-full flex-row',
@@ -66,4 +64,4 @@ export default {
     type: 'solid' as const,
     orientation: 'horizontal' as const,
   },
-}
+})
