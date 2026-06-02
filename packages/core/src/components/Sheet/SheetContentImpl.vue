@@ -104,6 +104,11 @@ const isDragEnabled = computed(() =>
 const containerRef = useMainThreadRef<any>(null)
 const touchStartYRef = useMainThreadRef<number>(0)
 const isDraggingRef = useMainThreadRef<boolean>(false)
+// Whether the finger moved past the drag threshold this gesture. A tap (or
+// sub-threshold jitter) leaves this false so touchend does NOT change snap —
+// otherwise a tiny fast movement yields a huge spurious velocity that would
+// trip the fling / dismiss logic and "snap" on a plain click.
+const hasDraggedRef = useMainThreadRef<boolean>(false)
 const lastTouchYRef = useMainThreadRef<number>(0)
 // Ring-buffer for velocity. Each entry is `[y, timestampMs]`. We keep the
 // trailing 50ms of touch samples.
@@ -155,6 +160,7 @@ function _pruneRing(now: number) {
 function _onTouchStart(e: { detail: { y: number } }) {
   'main thread'
   isDraggingRef.current = true
+  hasDraggedRef.current = false
   const y = e.detail.y
   touchStartYRef.current = y
   lastTouchYRef.current = y
@@ -176,6 +182,8 @@ function _onTouchMove(e: { detail: { y: number } }) {
   // Position = active snap offset + drag delta. Dragging up (negative delta)
   // moves toward the largest snap; clamp at 0 since there's nothing above it.
   const delta = y - touchStartYRef.current
+  // Engage drag once past a small threshold so taps / micro-jitter are ignored.
+  if (!hasDraggedRef.current && (delta > 6 || delta < -6)) hasDraggedRef.current = true
   let pos = currentSnapOffsetRef.current + delta
   if (pos < 0) pos = 0
   _setStyle({ transform: `translateY(${pos}px)` })
@@ -188,6 +196,16 @@ function _onTouchEnd() {
   'main thread'
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
+
+  // A tap / sub-threshold touch never became a drag — leave the snap exactly
+  // as it was (settle any micro-offset back to the current rest position).
+  if (!hasDraggedRef.current) {
+    _setStyle({
+      transition: 'transform 200ms ease-out',
+      transform: `translateY(${currentSnapOffsetRef.current}px)`,
+    })
+    return
+  }
 
   const startY = touchStartYRef.current
   const endY = lastTouchYRef.current
