@@ -10,18 +10,35 @@
  */
 import type { Color } from './colors'
 
-// Each builder returns the *inactive* + *on-state* classes for an item.
+// Each builder returns the *inactive* + *on-state* surface classes (`base`,
+// applied to the item <view>) separately from the foreground color (`fg`:
+// text-*, incl. the on-state shift). CSS inheritance is OFF in the Lynx build
+// (`enableCSSInheritance: false`), so a `text-*` on the item <view> never
+// reaches the `leadingIcon` / `label` children — `fg` is spread onto those
+// slots directly. The item <view> carries `group` + `data-state`, so the
+// on-state color shift uses `group-data-[state=on]:text-*` on the children
+// (the children don't get `data-state` themselves). Same convention as
+// `dropdownMenu.ts` / `stepper.ts`.
 const outline = (c: string) =>
-  `text-neutral-700 border border-neutral-300 bg-white active:bg-${c}-50 active:bg-${c}-100`
-    + ` data-[state=on]:text-${c}-600 data-[state=on]:border-${c}-500 data-[state=on]:bg-${c}-50`
+  ({
+    base: `border border-neutral-300 bg-white active:bg-${c}-50 active:bg-${c}-100`
+      + ` data-[state=on]:border-${c}-500 data-[state=on]:bg-${c}-50`,
+    fg: `text-neutral-700 group-data-[state=on]:text-${c}-600`,
+  })
 
 const soft = (c: string) =>
-  `text-neutral-700 bg-neutral-100 active:bg-${c}-50 active:bg-${c}-100`
-    + ` data-[state=on]:text-${c}-600 data-[state=on]:bg-${c}-100`
+  ({
+    base: `bg-neutral-100 active:bg-${c}-50 active:bg-${c}-100`
+      + ` data-[state=on]:bg-${c}-100`,
+    fg: `text-neutral-700 group-data-[state=on]:text-${c}-600`,
+  })
 
 const subtle = (c: string) =>
-  `text-neutral-700 border border-neutral-200 bg-white active:bg-${c}-50 active:bg-${c}-100`
-    + ` data-[state=on]:text-${c}-600 data-[state=on]:border-${c}-300 data-[state=on]:bg-${c}-100`
+  ({
+    base: `border border-neutral-200 bg-white active:bg-${c}-50 active:bg-${c}-100`
+      + ` data-[state=on]:border-${c}-300 data-[state=on]:bg-${c}-100`,
+    fg: `text-neutral-700 group-data-[state=on]:text-${c}-600`,
+  })
 
 const VARIANT_BUILDERS = { outline, soft, subtle } as const
 
@@ -33,7 +50,9 @@ export default (colors: Color[]) => ({
   slots: {
     // `root` direction is set per orientation variant (flex-row/flex-col).
     root: 'flex',
-    item: 'flex flex-row items-center justify-center font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+    // `group` so children can read the item's `data-state` via
+    // `group-data-[state=on]:*` (Lynx won't cascade `text-*`).
+    item: 'group flex flex-row items-center justify-center font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
     leadingIcon: 'shrink-0',
     label: 'truncate',
   },
@@ -58,12 +77,18 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
+    // Surface lands on `item`; foreground color (`fg`) on `leadingIcon` +
+    // `label` since the item <view> won't cascade it (`enableCSSInheritance:
+    // false`).
     ...colors.flatMap(color =>
-      VARIANTS.map(variant => ({
-        color,
-        variant,
-        class: { item: VARIANT_BUILDERS[variant](color) },
-      })),
+      VARIANTS.map((variant) => {
+        const { base, fg } = VARIANT_BUILDERS[variant](color)
+        return {
+          color,
+          variant,
+          class: { item: base, leadingIcon: fg, label: fg },
+        }
+      }),
     ),
   ],
   defaultVariants: {

@@ -29,13 +29,20 @@ export default (colors: Color[]) => ({
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
+    // `enableCSSInheritance: false`: foreground text color set on the `item`
+    // <view> (CoreDropdownMenuItem) does NOT reach the nested `itemLabel`
+    // <text>. The label color rides on `itemLabel` (the `item` carries the
+    // `group` class, so its `data-[…]` state drives `group-data-[…]:` here);
+    // only the `bg-*` surface stays on `item`.
     active: {
       true: {
-        item: 'text-neutral-900 bg-neutral-100',
+        item: 'bg-neutral-100',
+        itemLabel: 'text-neutral-900',
         itemLeadingIcon: 'text-neutral-700',
       },
       false: {
-        item: 'text-neutral-700 data-[highlighted]:text-neutral-900 data-[state=open]:text-neutral-900 data-[highlighted]:bg-neutral-100 data-[state=open]:bg-neutral-100',
+        item: 'data-[highlighted]:bg-neutral-100 data-[state=open]:bg-neutral-100',
+        itemLabel: 'text-neutral-700 group-data-[highlighted]:text-neutral-900 group-data-[state=open]:text-neutral-900',
         itemLeadingIcon: 'text-neutral-500 group-data-[highlighted]:text-neutral-700 group-data-[state=open]:text-neutral-700',
       },
     },
@@ -72,11 +79,16 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
+    // Foreground (`text-*`) rides on `itemLabel`/`itemLeadingIcon`, surface
+    // (`bg-*`) on `item` — see the `active` variant note (`enableCSSInheritance`
+    // is off). State selectors become `group-data-[…]:` on the label since the
+    // `item` <view> owns the `group` + `data-[…]` state.
     ...colors.map(color => ({
       color,
       active: false as const,
       class: {
-        item: `text-${color}-500 data-[highlighted]:text-${color}-600 data-[highlighted]:bg-${color}-50 data-[state=open]:bg-${color}-50`,
+        item: `data-[highlighted]:bg-${color}-50 data-[state=open]:bg-${color}-50`,
+        itemLabel: `text-${color}-500 group-data-[highlighted]:text-${color}-600`,
         itemLeadingIcon: `text-${color}-500 group-data-[highlighted]:text-${color}-600 group-data-[state=open]:text-${color}-600`,
       },
     })),
@@ -84,7 +96,8 @@ export default (colors: Color[]) => ({
       color,
       active: true as const,
       class: {
-        item: `text-${color}-600 bg-${color}-50`,
+        item: `bg-${color}-50`,
+        itemLabel: `text-${color}-600`,
         itemLeadingIcon: `text-${color}-600`,
       },
     })),

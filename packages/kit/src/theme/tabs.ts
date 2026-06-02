@@ -13,15 +13,24 @@
  */
 import type { Color } from './colors'
 
-// `pill`: solid indicator behind the active trigger, light text on top.
-const pillTrigger = (_c: string) =>
-  `data-[state=active]:text-white data-[state=inactive]:text-neutral-500 active:data-[state=inactive]:text-neutral-900`
+// `enableCSSInheritance: false`: the active/inactive text color must sit on the
+// `label` <text>, not the `trigger` <view> (color set there never reaches the
+// nested label). The `trigger` carries the `group` class + `data-[state=…]`, so
+// the label uses `group-data-[state=…]:`. Indicator keeps its `bg-*` surface.
+
+// `pill`: solid indicator behind the active trigger, light text on top. The
+// `active:` press-feedback that the original carried on the trigger is dropped
+// here: it relied on the trigger's own `active:` pseudo, which doesn't translate
+// to the child label as a reliable `group-active:` on Lynx. State colors use
+// `group-data-[state=…]:` (the trigger owns the `group` + `data-state`).
+const pillLabel = (_c: string) =>
+  `group-data-[state=active]:text-white group-data-[state=inactive]:text-neutral-500`
 
 const pillIndicator = (c: string) => `bg-${c}-500`
 
 // `link`: underline indicator + colored active label.
-const linkTrigger = (c: string) =>
-  `data-[state=active]:text-${c}-500 data-[state=inactive]:text-neutral-500 active:data-[state=inactive]:text-neutral-900`
+const linkLabel = (c: string) =>
+  `group-data-[state=active]:text-${c}-500 group-data-[state=inactive]:text-neutral-500`
 
 const linkIndicator = (c: string) => `bg-${c}-500`
 
@@ -137,12 +146,12 @@ export default (colors: Color[]) => ({
       {
         color,
         variant: 'pill' as const,
-        class: { indicator: pillIndicator(color), trigger: pillTrigger(color) },
+        class: { indicator: pillIndicator(color), label: pillLabel(color), leadingIcon: pillLabel(color) },
       },
       {
         color,
         variant: 'link' as const,
-        class: { indicator: linkIndicator(color), trigger: linkTrigger(color) },
+        class: { indicator: linkIndicator(color), label: linkLabel(color), leadingIcon: linkLabel(color) },
       },
     ]),
   ],

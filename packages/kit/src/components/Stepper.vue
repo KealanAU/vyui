@@ -116,7 +116,10 @@ const ui = computed(() => buildStepper(appConfig)({
                   :name="item.icon"
                   :class="ui.icon({ class: props.ui?.icon })"
                 />
-                <text v-else>{{ index + 1 }}</text>
+                <!-- `ui.icon` carries the active/completed foreground color;
+                     it must sit on this <text> since color can't inherit from
+                     the trigger <view> (`enableCSSInheritance: false`). -->
+                <text v-else :class="ui.icon({ class: props.ui?.icon })">{{ index + 1 }}</text>
               </slot>
             </StepperIndicator>
           </StepperTrigger>

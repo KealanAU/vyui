@@ -68,7 +68,7 @@ const ui = computed(() => buildChip(appConfig)({
   <template v-if="standalone">
     <view v-if="show" :class="ui.base({ class: [props.class, props.ui?.base] })">
       <slot name="content">
-        <text v-if="hasContent">{{ props.text }}</text>
+        <text v-if="hasContent" :class="ui.text({ class: props.ui?.text })">{{ props.text }}</text>
       </slot>
     </view>
   </template>
@@ -76,7 +76,7 @@ const ui = computed(() => buildChip(appConfig)({
     <slot />
     <view v-if="show" :class="ui.base({ class: props.ui?.base })">
       <slot name="content">
-        <text v-if="hasContent">{{ props.text }}</text>
+        <text v-if="hasContent" :class="ui.text({ class: props.ui?.text })">{{ props.text }}</text>
       </slot>
     </view>
   </view>

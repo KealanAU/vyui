@@ -5,20 +5,26 @@
  *
  * Off state uses a neutral hover/active treatment regardless of color so the
  * pressed state can convey the color × variant emphasis on its own.
+ *
+ * Surface (`base`: bg/border on the root <view>) is kept separate from the
+ * foreground color (`fg`: text-*). CSS inheritance is OFF in the Lynx build
+ * (`enableCSSInheritance: false`), so a `text-*` on the root <view> never
+ * reaches the `icon` <VyIcon> child — `fg` is spread onto the `icon` slot.
+ * Same convention as `button.ts`.
  */
 import type { Color } from './colors'
 
 const solid = (c: string) =>
-  `text-white bg-${c}-500 active:bg-${c}-600 active:bg-${c}-600`
+  ({ base: `bg-${c}-500 active:bg-${c}-600 active:bg-${c}-600`, fg: 'text-white' })
 
 const outline = (c: string) =>
-  `text-${c}-500 border border-${c}-300 active:bg-${c}-50 active:bg-${c}-100`
+  ({ base: `border border-${c}-300 active:bg-${c}-50 active:bg-${c}-100`, fg: `text-${c}-500` })
 
 const soft = (c: string) =>
-  `text-${c}-500 bg-${c}-50 active:bg-${c}-100 active:bg-${c}-200`
+  ({ base: `bg-${c}-50 active:bg-${c}-100 active:bg-${c}-200`, fg: `text-${c}-500` })
 
 const ghost = (c: string) =>
-  `text-${c}-500 active:bg-${c}-50 active:bg-${c}-100`
+  ({ base: `active:bg-${c}-50 active:bg-${c}-100`, fg: `text-${c}-500` })
 
 const VARIANT_BUILDERS = { solid, outline, soft, ghost } as const
 
@@ -42,18 +48,25 @@ export default (colors: Color[]) => ({
     },
     pressed: {
       true: '',
-      false: { base: 'text-neutral-700 active:bg-neutral-100 active:bg-neutral-200' },
+      // `text-*` must sit on the `icon` slot too — the root <view> won't
+      // cascade it to the icon (`enableCSSInheritance: false`).
+      false: { base: 'active:bg-neutral-100 active:bg-neutral-200', icon: 'text-neutral-700' },
     },
   },
   compoundVariants: [
-    // pressed × color × variant -> concrete tailwind classes for the active look
+    // pressed × color × variant -> concrete tailwind classes for the active look.
+    // Surface lands on `base`; foreground color (`fg`) on `icon` since the root
+    // <view> won't cascade it (`enableCSSInheritance: false`).
     ...colors.flatMap(color =>
-      VARIANTS.map(variant => ({
-        pressed: true as const,
-        color,
-        variant,
-        class: { base: VARIANT_BUILDERS[variant](color) },
-      })),
+      VARIANTS.map((variant) => {
+        const { base, fg } = VARIANT_BUILDERS[variant](color)
+        return {
+          pressed: true as const,
+          color,
+          variant,
+          class: { base, icon: fg },
+        }
+      }),
     ),
   ],
   defaultVariants: {

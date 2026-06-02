@@ -18,14 +18,19 @@
  * and label-pill branches don't fight over `px-*`. Size flows in from the
  * parent `<VyIsland>` via context; pass an explicit `size` to override.
  */
+// Foreground color (`text-slate-*`) sits on the `leadingIcon` / `label` slots,
+// NOT the root `base` <view>: CSS inheritance is OFF in the Lynx build
+// (`enableCSSInheritance: false`), so a `text-*` on the root never reaches the
+// icon/label children. Surface (bg/opacity) stays on `base`. Same convention
+// as `button.ts`.
 export default {
   slots: {
     base:
       'flex flex-row items-center justify-center '
-      + 'rounded-full text-slate-700 font-medium '
+      + 'rounded-full font-medium '
       + 'active:bg-black/10 disabled:opacity-40',
-    leadingIcon: 'shrink-0',
-    label: 'truncate',
+    leadingIcon: 'shrink-0 text-slate-700',
+    label: 'truncate text-slate-700',
   },
   variants: {
     size: {
@@ -35,7 +40,8 @@ export default {
       xl: { base: 'text-lg', leadingIcon: 'size-7' },
     },
     active: {
-      true: { base: 'bg-black/10 text-slate-900' },
+      // `text-slate-900` on the text-bearing slots (won't cascade from `base`).
+      true: { base: 'bg-black/10', leadingIcon: 'text-slate-900', label: 'text-slate-900' },
       false: {},
     },
     iconOnly: {

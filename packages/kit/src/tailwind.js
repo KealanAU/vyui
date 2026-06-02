@@ -100,16 +100,28 @@ export function createVyuiPreset({ colors = COLORS, neutral = NEUTRAL, shades = 
         pattern: new RegExp(
           `(bg|text|ring|border)-(${allColors.join('|')})-(${shades.join('|')})`,
         ),
+        // State/attribute variants the kit themes pair with dynamic color
+        // utilities. CSS inheritance is off on Lynx, so state-driven foreground
+        // colors live on child text/icon slots and read the parent's state via
+        // the `group-data-[…]` forms — both the self (`data-[…]`) and group
+        // (`group-data-[…]`) forms must be safelisted or the scanner purges them.
         variants: [
           'hover',
           'active',
           'focus',
           'disabled',
+          'data-[highlighted]',
+          'data-[state=active]',
           'data-[state=on]',
           'data-[state=open]',
           'data-[state=checked]',
+          'group-data-[highlighted]',
           'group-data-[state=active]',
           'group-data-[state=completed]',
+          'group-data-[state=inactive]',
+          'group-data-[state=on]',
+          'group-data-[state=open]',
+          'group-data-[state=checked]',
         ],
       },
       'text-white',

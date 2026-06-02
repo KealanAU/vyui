@@ -149,7 +149,7 @@ const resolveValue = (item: AccordionItem, index: number) =>
         <slot :name="(item.slot || 'content')" :item="item" :index="index" :open="open">
           <view :class="ui.body({ class: props.ui?.body })">
             <slot name="body" :item="item" :index="index" :open="open">
-              <text v-if="item.content">{{ item.content }}</text>
+              <text v-if="item.content" :class="ui.bodyText({ class: props.ui?.bodyText })">{{ item.content }}</text>
             </slot>
           </view>
         </slot>

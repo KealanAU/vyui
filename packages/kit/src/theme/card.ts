@@ -14,7 +14,17 @@ export default {
   variants: {
     variant: {
       solid: {
-        root: 'bg-neutral-900 text-white',
+        // `enableCSSInheritance: false`: a `text-*` on the `root` <view> never
+        // reaches slot content. Card owns no text element (header/body/footer
+        // are containers for user-supplied content), so the foreground rides on
+        // those content slots. Lynx still won't cascade into deeply-nested
+        // <text>, so plain-text children of a solid card should set their own
+        // color (or pass `ui.{header,body,footer}`); the `bg-*` fill stays on
+        // `root`.
+        root: 'bg-neutral-900',
+        header: 'text-white',
+        body: 'text-white',
+        footer: 'text-white',
       },
       outline: {
         root: 'bg-white border border-neutral-200',
