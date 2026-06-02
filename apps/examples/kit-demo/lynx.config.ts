@@ -36,6 +36,14 @@ export default defineConfig({
   plugins: [
     pluginVueLynx({
       optionsApi: false,
+      // Dark mode via CSS-var flipping needs BOTH on native: inline-variables
+      // makes `--*` in `:style` parse as custom properties and re-propagate to
+      // descendants on change; inheritance lets descendants read ancestor vars
+      // (and non-inheritable props like background-color pick up the new value).
+      // Off by default in Lynx; this is the documented requirement for the
+      // `:style` dark-mode pattern (vue-lynx "Approach A").
+      enableCSSInheritance: true,
+      enableCSSInlineVariables: true,
     }),
     pluginTailwindCSS({
       config: 'tailwind.config.ts',

@@ -73,11 +73,45 @@ generation, same as nuxt/ui's build-config requirement.
 
 ## Dark mode
 
-> [!WARNING]
-> **Live dark-mode toggling works on the web target but NOT on Lynx native
-> today.** Components, `useColorMode`, and `VyColorModeSwitch` are shipped, but
-> on native a running app will not flip when the mode changes. See the
-> limitation below before relying on it.
+> [!IMPORTANT]
+> **Dark mode requires two Lynx engine flags in the consuming app's
+> `lynx.config.ts`** (see [Required engine flags](#required-engine-flags)).
+> They are page-level build config, so the kit can't set them for you — same
+> as the Tailwind preset / `style.css` import. With them on, live toggling
+> works on both web and Lynx native.
+
+### Required engine flags
+
+```ts
+// lynx.config.ts
+import { pluginVueLynx } from 'vue-lynx/plugin'
+
+export default defineConfig({
+  plugins: [
+    pluginVueLynx({
+      enableCSSInheritance: true,    // descendants read ancestor CSS vars
+      enableCSSInlineVariables: true, // `--*` in :style parse + re-propagate on change
+    }),
+  ],
+})
+```
+
+Both default **off** in Lynx. Why both are needed (the symptom if you forget):
+with them off, a runtime change to an ancestor's `--ui-*` value only reaches
+descendants for natively-**inheritable** properties (`color` updates), while
+non-inheritable ones (**`background-color`**, `border-color`) stay on their
+first-render value — so surfaces won't flip. `enableCSSInlineVariables` makes
+inline `--*` parse as custom properties and re-propagate to descendants on
+change; `enableCSSInheritance` lets descendants resolve ancestor vars at all.
+This is vue-lynx's documented "Approach A" for theming (see its
+`website/docs/guide/tailwindcss.mdx`).
+
+> [!NOTE]
+> These are per-Lynx-page flags. If you run multiple frameworks on one page
+> (e.g. Sparkling), confirm enabling them is acceptable in that host — TBD.
+
+Light/default mode does **not** need the flags (it renders from `:root` at
+mount); only runtime theme switching does.
 
 ### How it's designed
 
@@ -112,37 +146,13 @@ const rootStyle = computed(() => ({ '--ui-radius': '0.25rem', ...style.value }))
 </template>
 ```
 
-### The Lynx-native limitation
+### Why value-flip (not key add/remove)
 
-`enableCSSInheritance` is kept **off** (it's a per-page flag the kit can't assume
-across multi-framework hosts — see Sparkling). With it off, the Lynx native
-engine does **not** re-propagate a CSS custom-property change from an ancestor to
-its already-mounted descendants at runtime. Empirically:
+`style.value` always carries the **full** token set (`LIGHT_VARS` / `DARK_VARS`,
+same keys, different values). Toggling changes values only — it never adds or
+removes keys. On Lynx native, var **value** updates re-propagate cleanly; adding
+or removing inline keys is less reliable, so keeping every key present and just
+flipping the value is the robust path (and mirrors how `--ui-radius` updates).
 
-- **Stylesheet class swap** (`.dark { … }`): no descendant re-resolution → no flip.
-- **Inline `:style` var swap** on the root: `color` and `border-color` on
-  descendants DO update live, but **`background-color` does not** — surfaces stay
-  on their initial value.
-- **Adding/removing** style keys doesn't re-propagate either (so a value-only
-  flip of an always-present key is required, but still doesn't cover `background`).
-- **Remounting** the subtree on toggle didn't recover `background-color` on native.
-
-On the **web** target CSS vars cascade and update normally, so the whole thing
-works there.
-
-Related upstream: vue-lynx#144 / lynx-family/lynx#5912 address `v-bind()` /
-inline-var propagation, but not stylesheet-class var propagation with inheritance
-off — so they aren't expected to fix this on their own.
-
-### Status / options
-
-- **Web:** fully works (live toggle).
-- **Lynx native:** not working for live toggle. The realistic options are (a)
-  pick the mode at app startup before first render (static — initial mount
-  resolves `:root`/element vars correctly), or (b) revisit live toggle if
-  `enableCSSInheritance` is reconsidered or the engine gains runtime
-  custom-property propagation for `background-color`.
-
-The token migration itself is still worthwhile regardless: light/default mode
-renders from `:root` and is unaffected, and it keeps the theme aligned with
-nuxt/ui.
+The `.dark` class in the example is for the web target / parity; on native the
+inline `:style` map does the work.
