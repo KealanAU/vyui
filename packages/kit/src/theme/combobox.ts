@@ -17,6 +17,7 @@ export default (colors: Color[]) => ({
     input: 'flex-1 min-w-0 bg-transparent outline-none placeholder:text-neutral-400 disabled:cursor-not-allowed disabled:opacity-75',
     arrow: 'fill-neutral-200',
     content: 'max-h-60 w-full bg-white rounded-md border border-neutral-200 overflow-hidden pointer-events-auto',
+    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-2 mb-1',
     viewport: 'divide-y divide-neutral-100 scroll-py-1',
     group: 'p-1',
     empty: 'py-2 text-center text-sm text-neutral-500',

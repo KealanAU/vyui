@@ -10,6 +10,7 @@
 export default {
   slots: {
     content: 'bg-white rounded-md border border-neutral-200 shadow-lg shadow-black/10 data-[state=open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in] pointer-events-auto',
+    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-2 mb-1',
     arrow: 'fill-neutral-200',
   },
 }

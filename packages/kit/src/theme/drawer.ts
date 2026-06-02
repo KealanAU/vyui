@@ -15,6 +15,7 @@ export default {
   slots: {
     overlay: 'fixed inset-0 bg-neutral-900/50 data-[state=open]:animate-[fade-in_200ms_ease-out] data-[state=closed]:animate-[fade-out_200ms_ease-in]',
     content: 'fixed bg-white border border-neutral-200 flex flex-col',
+    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-2 mb-1',
     header: 'flex flex-row items-center gap-1.5 p-4 min-h-16',
     wrapper: 'flex flex-col',
     body: 'flex-1 overflow-y-auto p-4',
