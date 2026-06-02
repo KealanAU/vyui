@@ -3,6 +3,7 @@
 export { VyUI } from './plugin'
 
 export { useAppConfig } from './composables/useAppConfig'
+export { useColorMode, type ColorMode, type UseColorModeReturn } from './composables/useColorMode'
 export { useComponentIcons, type UseComponentIconsProps } from './composables/useComponentIcons'
 
 export {
@@ -41,6 +42,7 @@ export { default as Button, default as VyButton } from './components/Button.vue'
 export { default as Card, default as VyCard } from './components/Card.vue'
 export { default as Checkbox, default as VyCheckbox } from './components/Checkbox.vue'
 export { default as Chip, default as VyChip } from './components/Chip.vue'
+export { default as ColorModeSwitch, default as VyColorModeSwitch, type ColorModeSwitchProps } from './components/ColorModeSwitch.vue'
 export { default as Combobox, default as VyCombobox } from './components/Combobox.vue'
 export { default as Drawer, default as VyDrawer } from './components/Drawer.vue'
 export { default as DropdownMenu, default as VyDropdownMenu } from './components/DropdownMenu.vue'

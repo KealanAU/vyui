@@ -10,6 +10,7 @@ import Button from './Button.vue'
 import Card from './Card.vue'
 import Checkbox from './Checkbox.vue'
 import Chip from './Chip.vue'
+import ColorModeSwitch from './ColorModeSwitch.vue'
 import Combobox from './Combobox.vue'
 import Drawer from './Drawer.vue'
 import DropdownMenu from './DropdownMenu.vue'
@@ -122,6 +123,7 @@ export const REGISTRY: Record<string, Component> = {
   VyCard: Card,
   VyCheckbox: Checkbox,
   VyChip: Chip,
+  VyColorModeSwitch: ColorModeSwitch,
   VyCombobox: Combobox,
   VyDrawer: Drawer,
   VyDropdownMenu: DropdownMenu,

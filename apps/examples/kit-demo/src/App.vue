@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { OverlayRoot } from '@vyui/core'
-import { VyButton, VyTabs } from '@vyui/kit'
+import { useColorMode, VyColorModeSwitch, VyTabs } from '@vyui/kit'
 import ThemeSection from './sections/ThemeSection.vue'
 import FormSection from './sections/FormSection.vue'
 import DisplaySection from './sections/DisplaySection.vue'
@@ -27,8 +27,9 @@ const radius = ref<number>(0.25)
 // Dark mode = toggle the `.dark` class on the root <view>. Every @vyui/kit
 // component reads semantic tokens (`bg-default` / `text-muted` / …) whose CSS
 // vars flip under `.dark` (see @vyui/kit `style.css`), so this one class swaps
-// the whole tree — same mechanism as the palette pickers above.
-const dark = ref<boolean>(false)
+// the whole tree — same mechanism as the palette pickers above. `VyColorModeSwitch`
+// in the header flips this shared store; we bind it to the root class here.
+const { isDark } = useColorMode()
 
 // One `${color}-${palette}` class per entry (defined in index.css), plus the
 // neutral class — a flat `string[]` so it satisfies the Lynx `<view>` class
@@ -36,7 +37,7 @@ const dark = ref<boolean>(false)
 // component below picks up the swapped ramps.
 const rootClass = computed(() => [
   'w-full h-full bg-default',
-  ...(dark.value ? ['dark'] : []),
+  ...(isDark.value ? ['dark'] : []),
   ...Object.entries(colorPalettes).map(([color, palette]) => `${color}-${palette}`),
   `neutral-${neutralPalette.value}`,
 ].join(' '))
@@ -71,14 +72,7 @@ const tabItems = computed(() => allTabItems)
             <text class="text-highlighted text-2xl font-bold">@vyui/kit demo</text>
             <text class="text-muted text-sm">Styled components on top of @vyui/core primitives.</text>
           </view>
-          <VyButton
-            :icon="dark ? 'icon-park-outline:sun-one' : 'icon-park-outline:moon'"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            square
-            @tap="dark = !dark"
-          />
+          <VyColorModeSwitch size="lg" />
         </view>
 
         <VyTabs
