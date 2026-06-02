@@ -3,16 +3,47 @@ import { computed, ref, type ComputedRef, type Ref, type WritableComputedRef } f
 export type ColorMode = 'light' | 'dark'
 
 /**
- * Dark-mode CSS-var overrides, applied **inline** via `:style` on the root.
+ * Color-mode CSS-var maps, applied **inline** via `:style` on the root.
  *
- * On Lynx, a stylesheet class change (`.dark { … }`) does NOT re-propagate CSS
- * custom-property updates to already-mounted descendants (engine limitation,
- * fixed in Lynx 3.8 / lynx-family/lynx#5912) — so toggling a `.dark` class
- * doesn't flip the UI at runtime. The inline `:style` var path DOES propagate
- * live (the same path `--ui-radius` uses), so we ship the dark values as a style
- * object. Mirrors the `.dark` block in `style.css` (kept for web/SSR where the
- * class cascade works); keep the two in sync.
+ * Lynx specifics (with `enableCSSInheritance: false`):
+ *  - A stylesheet class change (`.dark { … }`) does NOT re-propagate CSS
+ *    custom-property updates to mounted descendants — so toggling a `.dark`
+ *    class doesn't flip the UI at runtime.
+ *  - Inline `:style` vars DO propagate, but only as **value updates** of
+ *    already-present keys (the path `--ui-radius` uses). Adding/removing keys
+ *    doesn't re-propagate (that's why "switch back" got stuck when the dark map
+ *    was swapped for `{}`).
+ *
+ * So both maps carry the **same keys** and we only flip the values — the root's
+ * `:style` always has every token set; toggling just changes what they resolve
+ * to. Mirrors `:root` / `.dark` in `style.css` (kept for web/SSR); keep in sync.
  */
+export const LIGHT_VARS: Readonly<Record<string, string>> = {
+  '--ui-primary': 'var(--ui-color-primary-500)',
+  '--ui-secondary': 'var(--ui-color-secondary-500)',
+  '--ui-success': 'var(--ui-color-success-500)',
+  '--ui-info': 'var(--ui-color-info-500)',
+  '--ui-warning': 'var(--ui-color-warning-500)',
+  '--ui-error': 'var(--ui-color-error-500)',
+
+  '--ui-text-dimmed': 'var(--ui-color-neutral-400)',
+  '--ui-text-muted': 'var(--ui-color-neutral-500)',
+  '--ui-text-toned': 'var(--ui-color-neutral-600)',
+  '--ui-text': 'var(--ui-color-neutral-700)',
+  '--ui-text-highlighted': 'var(--ui-color-neutral-900)',
+  '--ui-text-inverted': '#fff',
+
+  '--ui-bg': '#fff',
+  '--ui-bg-muted': 'var(--ui-color-neutral-50)',
+  '--ui-bg-elevated': 'var(--ui-color-neutral-100)',
+  '--ui-bg-accented': 'var(--ui-color-neutral-200)',
+  '--ui-bg-inverted': 'var(--ui-color-neutral-900)',
+
+  '--ui-border': 'var(--ui-color-neutral-200)',
+  '--ui-border-muted': 'var(--ui-color-neutral-200)',
+  '--ui-border-accented': 'var(--ui-color-neutral-300)',
+}
+
 export const DARK_VARS: Readonly<Record<string, string>> = {
   '--ui-primary': 'var(--ui-color-primary-400)',
   '--ui-secondary': 'var(--ui-color-secondary-400)',
@@ -67,9 +98,10 @@ export interface UseColorModeReturn {
   /** Two-way boolean view of `mode` (`true` ⇄ `'dark'`). Handy for `v-model`. */
   isDark: WritableComputedRef<boolean>
   /**
-   * Inline CSS-var overrides to bind on the **root `<view>`** via `:style` —
-   * `{}` in light, {@link DARK_VARS} in dark. This is what actually flips the UI
-   * live on Lynx (the class path doesn't propagate at runtime):
+   * Inline CSS-var map to bind on the **root `<view>`** via `:style` —
+   * {@link LIGHT_VARS} or {@link DARK_VARS} (always the same keys, flipped
+   * values). This is what actually flips the UI live on Lynx (the class path
+   * doesn't propagate, and add/remove of keys doesn't either):
    *
    * ```vue
    * const { style } = useColorMode()
@@ -88,7 +120,7 @@ export function useColorMode(): UseColorModeReturn {
     set: (v) => { mode.value = v ? 'dark' : 'light' },
   })
 
-  const style = computed<Record<string, string>>(() => (isDark.value ? { ...DARK_VARS } : {}))
+  const style = computed<Record<string, string>>(() => ({ ...(isDark.value ? DARK_VARS : LIGHT_VARS) }))
 
   const toggle = () => {
     mode.value = mode.value === 'dark' ? 'light' : 'dark'
