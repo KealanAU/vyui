@@ -85,6 +85,10 @@ export interface ComboboxProps {
    * @defaultValue `[0.9]`
    */
   snapPoints?: number[]
+  /** Controlled current snap index — bind with `v-model:snapIndex`. */
+  snapIndex?: number
+  /** Initial snap index when uncontrolled. @defaultValue `0` */
+  defaultSnapIndex?: number
   /** Show the drag-handle pill at the top of the sheet. @defaultValue `true` */
   handle?: boolean
   /** When `items` are objects, which field to use as the value. */
@@ -139,7 +143,10 @@ const props = withDefaults(defineProps<ComboboxProps>(), {
   snapPoints: () => [0.9],
   handle: true,
 })
-const emit = defineEmits<{ 'update:modelValue': [value: any] }>()
+const emit = defineEmits<{
+  'update:modelValue': [value: any]
+  'update:snapIndex': [value: number]
+}>()
 defineSlots<ComboboxSlots>()
 
 const slots = useSlots()
@@ -218,7 +225,10 @@ const displayLabel = computed(() => {
       <SheetRoot
         :open="localOpen"
         :snap-points="snapPoints"
+        :snap-index="snapIndex"
+        :default-snap-index="defaultSnapIndex"
         @update:open="localOpen = $event"
+        @update:snap-index="emit('update:snapIndex', $event)"
       >
         <ComboboxTrigger :class="ui.base({ class: props.ui?.base })">
           <view v-if="!!slots.leading" :class="ui.leading({ class: props.ui?.leading })">

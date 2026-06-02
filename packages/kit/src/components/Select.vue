@@ -67,6 +67,10 @@ export interface SelectProps {
    * @defaultValue `[0.5]`
    */
   snapPoints?: number[]
+  /** Controlled current snap index — bind with `v-model:snapIndex`. */
+  snapIndex?: number
+  /** Initial snap index when uncontrolled. @defaultValue `0` */
+  defaultSnapIndex?: number
   /** Show the drag-handle pill at the top of the sheet. @defaultValue `true` */
   handle?: boolean
   /** When `items` are objects, which field to use as the value. */
@@ -117,7 +121,10 @@ const props = withDefaults(defineProps<SelectProps>(), {
   snapPoints: () => [0.5],
   handle: true,
 })
-const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+  'update:snapIndex': [value: number]
+}>()
 defineSlots<SelectSlots>()
 
 const slots = useSlots()
@@ -181,7 +188,10 @@ const displayValue = computed(() => {
       <SheetRoot
         :open="localOpen"
         :snap-points="snapPoints"
+        :snap-index="snapIndex"
+        :default-snap-index="defaultSnapIndex"
         @update:open="localOpen = $event"
+        @update:snap-index="emit('update:snapIndex', $event)"
       >
         <SelectTrigger :class="ui.base({ class: [props.class, props.ui?.base] })">
           <view v-if="!!slots.leading" :class="ui.leading({ class: props.ui?.leading })">
