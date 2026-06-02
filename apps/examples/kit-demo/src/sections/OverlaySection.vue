@@ -13,9 +13,11 @@ import {
 
 const modalOpen = ref(false)
 const drawerOpen = ref(false)
-// Multiple snap fractions → the drawer stops at 40% / 70% / 95% as you drag.
+// Multiple snap fractions → the drawer stops at 40% / 70% / 90% as you drag.
 // `v-model:snapIndex` reflects the current stop (drag/fling settle updates it).
-const drawerSnap = ref(0)
+// Opens at the largest snap (index 2 = 90%); drag the handle down to settle at
+// 70% (1) or 40% (0), or below 40% to dismiss.
+const drawerSnap = ref(2)
 const dropdownOpen = ref(false)
 
 // Swiper hosted inside the modal — confirms `useDragGesture` works within the
@@ -145,11 +147,11 @@ const fruitItems = [
 
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
       <text class="text-slate-900 text-base font-semibold">Drawer</text>
-      <text class="text-slate-500 text-xs">Bottom-sheet via SheetRoot. Drag the pill handle at the top — it stops at 40% / 70% / 95%.</text>
+      <text class="text-slate-500 text-xs">Bottom-sheet via SheetRoot. Drag the pill handle at the top — it stops at 40% / 70% / 90%.</text>
       <VyDrawer
         v-model:open="drawerOpen"
         v-model:snap-index="drawerSnap"
-        :snap-points="[0.4, 0.7, 0.95]"
+        :snap-points="[0.4, 0.7, 0.9]"
         title="Drawer title"
         description="Drag the handle to snap between stops."
       >
