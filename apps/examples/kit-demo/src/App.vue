@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { OverlayRoot } from '@vyui/core'
-import { useColorMode, VyColorModeSwitch, VyTabs } from '@vyui/kit'
+import { useColorMode, VyCard, VyColorModeSwitch, VyTabs } from '@vyui/kit'
 import ThemeSection from './sections/ThemeSection.vue'
 import FormSection from './sections/FormSection.vue'
 import DisplaySection from './sections/DisplaySection.vue'
@@ -29,7 +29,14 @@ const radius = ref<number>(0.25)
 // vars flip under `.dark` (see @vyui/kit `style.css`), so this one class swaps
 // the whole tree — same mechanism as the palette pickers above. `VyColorModeSwitch`
 // in the header flips this shared store; we bind it to the root class here.
-const { isDark } = useColorMode()
+const { isDark, style: colorModeStyle } = useColorMode()
+
+// Root inline style: radius var + dark-mode var overrides. On Lynx the dark
+// vars MUST ride inline `:style` (not the `.dark` class) to propagate live.
+const rootStyle = computed(() => ({
+  '--ui-radius': `${radius.value}rem`,
+  ...colorModeStyle.value,
+}))
 
 // One `${color}-${palette}` class per entry (defined in index.css), plus the
 // neutral class — a flat `string[]` so it satisfies the Lynx `<view>` class
@@ -61,7 +68,7 @@ const tabItems = computed(() => allTabItems)
 <template>
   <view
     :class="rootClass"
-    :style="{ '--ui-radius': `${radius}rem` }"
+    :style="rootStyle"
   >
     <OverlayRoot />
 
@@ -73,6 +80,31 @@ const tabItems = computed(() => allTabItems)
             <text class="text-muted text-sm">Styled components on top of @vyui/core primitives.</text>
           </view>
           <VyColorModeSwitch size="lg" />
+        </view>
+
+        <!-- Dark-mode flip check: whole surfaces swap. Outline/soft sit on
+             `bg-default`/`bg-muted` (light→dark); solid is `bg-inverted`
+             (dark→light) — they move in opposite directions, so a working
+             toggle is unmistakable. -->
+        <view class="flex flex-row gap-3">
+          <VyCard variant="outline" class="flex-1">
+            <template #header>
+              <text class="text-highlighted text-sm font-semibold">Outline</text>
+            </template>
+            <text class="text-muted text-xs">bg-default · border-default</text>
+          </VyCard>
+          <VyCard variant="soft" class="flex-1">
+            <template #header>
+              <text class="text-highlighted text-sm font-semibold">Soft</text>
+            </template>
+            <text class="text-muted text-xs">bg-muted surface</text>
+          </VyCard>
+          <VyCard variant="solid" class="flex-1">
+            <template #header>
+              <text class="text-inverted text-sm font-semibold">Solid</text>
+            </template>
+            <text class="text-inverted text-xs">bg-inverted surface</text>
+          </VyCard>
         </view>
 
         <VyTabs

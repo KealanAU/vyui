@@ -3,7 +3,7 @@
 export { VyUI } from './plugin'
 
 export { useAppConfig } from './composables/useAppConfig'
-export { useColorMode, type ColorMode, type UseColorModeReturn } from './composables/useColorMode'
+export { useColorMode, DARK_VARS, type ColorMode, type UseColorModeReturn } from './composables/useColorMode'
 export { useComponentIcons, type UseComponentIconsProps } from './composables/useComponentIcons'
 
 export {
