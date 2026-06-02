@@ -1,5 +1,5 @@
 ---
-"@vyui/kit": minor
+"@vyui/kit": patch
 ---
 
 Configurable semantic colors (nuxt/ui-style), defined once and extensible.

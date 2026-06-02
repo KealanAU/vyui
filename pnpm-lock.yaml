@@ -295,6 +295,9 @@ importers:
 
   packages/kit:
     dependencies:
+      '@vyui/core':
+        specifier: workspace:^
+        version: link:../core
       defu:
         specifier: ^6.1.5
         version: 6.1.7
@@ -314,9 +317,6 @@ importers:
       '@vue/tsconfig':
         specifier: ^0.7.0
         version: 0.7.0(typescript@5.9.3)(vue@3.5.17(typescript@5.9.3))
-      '@vyui/core':
-        specifier: workspace:*
-        version: link:../core
       '@vyui/shared-build-config':
         specifier: workspace:*
         version: link:../shared-build-config
