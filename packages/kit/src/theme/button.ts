@@ -1,4 +1,4 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/button.ts` and adapted for Vue-Lynx.
+// Ported from nuxt/ui v4 `src/theme/button.ts` and adapted for Vue-Lynx.
 //
 // Semantic color names (`primary`, `error`, …) resolve to actual palettes via
 // the consuming app's CSS variables and Tailwind config:
@@ -6,7 +6,18 @@
 // See `apps/examples/kit-demo/src/index.css` for the default mapping.
 //
 // Each builder emits classes against the semantic name directly — Tailwind
-// treats `bg-primary-500` / `ring-error-500/25` as configured colors.
+// treats `bg-primary-500` / `border-error-200` as configured colors.
+//
+// ── DIFFERENCES FROM NUXT (deliberate Lynx adaptations) ─────────────────────
+//   • No `hover:` / `focus-visible:` — Lynx has no hover/focus-ring plumbing, so
+//     interactive feedback uses `active:` only.
+//   • No `ring-*` — Lynx drops ring utilities; use `border-*` instead (the kit
+//     preset maps `border-2` → 1px so it matches nuxt's 1px ring weight).
+//   • No opacity color modifiers — the preset wires colors to raw `var()` hex,
+//     so `bg-primary/10` can't work. Nuxt's translucent fills/rings are mimicked
+//     with discrete shades: `/10`→`-50`, `/15`→`-100`, `/50`→`-300`, `/25`→`-200`.
+//   • No dark mode.
+//   • `flex flex-row` instead of `inline-flex` (Lynx flex defaults differ).
 //
 // ── BUILDER THEME (canonical template) ──────────────────────────────────────
 // The default export is a builder `(colors: Color[]) => themeObject`. The
@@ -15,37 +26,63 @@
 // emits its variants without editing this file. Variant builders take a plain
 // `string` color; there is no local `COLORS` const or closed `SemanticColor`
 // union to keep in sync.
-
-// Light-mode-only ports of Nuxt UI v3.0.2 variants. Dark mode + focus-visible
-// classes are dropped (no dark mode plumbed, Lynx doesn't surface focus rings
-// the way the DOM does).
-
-// Variant = structural treatment only. Use `border-*` (Lynx drops `ring-*`).
 import type { Color } from './colors'
+import { NEUTRAL } from './color-constants'
 
+// Each variant returns the surface classes (`base`: bg/border, applied to the
+// root <view>) separately from the foreground color (`fg`: text-*). CSS
+// inheritance is OFF in the Lynx build (`enableCSSInheritance: false`), so a
+// `text-*` on the root <view> does NOT reach the label <text> or the icons —
+// the color must sit on those slots directly. Same convention as `avatar.ts` /
+// `actionSheet.ts`. `variantClass` spreads `fg` onto the text-bearing slots.
+
+// ── Chromatic colors (primary / secondary / success / info / warning / error) ─
+// Text uses the vibrant `-600` (mimics nuxt's `text-primary` ≈ 500-level) so
+// non-solid buttons read as colored, not muddy. Solid keeps white text.
 const solid = (c: string) =>
-  `text-white bg-${c}-500 active:bg-${c}-600 active:bg-${c}-600`
+  ({ base: `bg-${c}-500 active:bg-${c}-600`, fg: 'text-white' })
 
 const outline = (c: string) =>
-  `text-${c}-700 border-2 border-solid border-${c}-500 active:bg-${c}-50 active:bg-${c}-100`
+  ({ base: `border-2 border-solid border-${c}-300 active:bg-${c}-50`, fg: `text-${c}-600` })
 
 const subtle = (c: string) =>
-  `text-${c}-700 border border-solid border-${c}-500 bg-${c}-100 active:bg-${c}-200 active:bg-${c}-200`
+  ({ base: `border-2 border-solid border-${c}-200 bg-${c}-50 active:bg-${c}-100`, fg: `text-${c}-600` })
 
 const soft = (c: string) =>
-  `text-${c}-700 bg-${c}-100 active:bg-${c}-200 active:bg-${c}-200`
+  ({ base: `bg-${c}-50 active:bg-${c}-100`, fg: `text-${c}-600` })
 
 const ghost = (c: string) =>
-  `text-${c}-700 active:bg-${c}-50 active:bg-${c}-100`
+  ({ base: `active:bg-${c}-50`, fg: `text-${c}-600` })
 
 const link = (c: string) =>
-  `text-${c}-600 active:text-${c}-700 active:text-${c}-800 underline-offset-4 active:underline`
+  ({ base: '', fg: `text-${c}-600 active:text-${c}-700` })
+
+// ── Neutral ─────────────────────────────────────────────────────────────────
+// Nuxt treats neutral specially: solid is near-black (`bg-inverted`), the rest
+// sit on `default`/`elevated`/`accented` surfaces. There are no semantic
+// surface tokens on Lynx, so map onto the neutral ramp: solid → `-900` (white
+// text), outline/subtle → a white/`-100` surface with a faint border, etc.
+const neutralVariants = {
+  solid: { base: 'bg-neutral-900 active:bg-neutral-800', fg: 'text-white' },
+  outline: { base: 'border-2 border-solid border-neutral-300 active:bg-neutral-100', fg: 'text-neutral-700' },
+  subtle: { base: 'border-2 border-solid border-neutral-200 bg-neutral-100 active:bg-neutral-200', fg: 'text-neutral-700' },
+  soft: { base: 'bg-neutral-100 active:bg-neutral-200', fg: 'text-neutral-700' },
+  ghost: { base: 'active:bg-neutral-100', fg: 'text-neutral-700' },
+  link: { base: '', fg: 'text-neutral-500 active:text-neutral-700' },
+} as const
 
 const VARIANT_BUILDERS = { solid, outline, soft, subtle, ghost, link } as const
 
 type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
+
+// Surface on `base`; foreground color spread onto every text-bearing slot
+// (label + icons) since Lynx won't inherit it from the root.
+const variantClass = (color: string, variant: Variant) => {
+  const { base, fg } = color === NEUTRAL ? neutralVariants[variant] : VARIANT_BUILDERS[variant](color)
+  return { base, label: fg, leadingIcon: fg, trailingIcon: fg }
+}
 
 // `import type { Color }` keeps the color record typed to the DEFAULT semantic
 // union, so `color?` props autocomplete + typo-check the standard set without
@@ -57,30 +94,45 @@ export default (colors: Color[]) => ({
     label: 'truncate',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',
+    // Not a class — holds the `<VyAvatar size>` token for the active size (read
+    // by Button.vue, mirrors nuxt's `leadingAvatarSize` slot). Avatar's smallest
+    // size is `xs` (32px), so small buttons can't shrink the avatar further
+    // until `2xs`/`3xs` are added to the Avatar theme.
+    leadingAvatarSize: '',
     trailingIcon: 'shrink-0',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: Object.fromEntries(VARIANTS.map(v => [v, ''])) as Record<Variant, ''>,
     size: {
+      xs: {
+        base: 'px-2 py-1 text-xs gap-1',
+        leadingIcon: 'size-4',
+        leadingAvatarSize: 'xs',
+        trailingIcon: 'size-4',
+      },
       sm: {
         base: 'px-2.5 py-1.5 text-sm gap-1.5',
         leadingIcon: 'size-5',
+        leadingAvatarSize: 'xs',
         trailingIcon: 'size-5',
       },
       md: {
         base: 'px-3 py-2 text-sm gap-2',
         leadingIcon: 'size-5',
+        leadingAvatarSize: 'xs',
         trailingIcon: 'size-5',
       },
       lg: {
         base: 'px-3 py-2 text-base gap-2',
         leadingIcon: 'size-6',
+        leadingAvatarSize: 'sm',
         trailingIcon: 'size-6',
       },
       xl: {
         base: 'px-3.5 py-2.5 text-lg gap-2.5',
         leadingIcon: 'size-7',
+        leadingAvatarSize: 'sm',
         trailingIcon: 'size-7',
       },
     },
@@ -106,10 +158,11 @@ export default (colors: Color[]) => ({
       VARIANTS.map(variant => ({
         color,
         variant,
-        class: VARIANT_BUILDERS[variant](color),
+        class: variantClass(color, variant),
       })),
     ),
     // square sizing (icon-only buttons drop horizontal padding for an even box)
+    { size: 'xs' as const, square: true, class: { base: 'p-1' } },
     { size: 'sm' as const, square: true, class: { base: 'p-1.5' } },
     { size: 'md' as const, square: true, class: { base: 'p-2' } },
     { size: 'lg' as const, square: true, class: { base: 'p-2' } },

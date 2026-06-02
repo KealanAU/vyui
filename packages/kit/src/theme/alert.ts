@@ -17,26 +17,40 @@ import type { Color } from './colors'
 //   soft    = light fill, no border
 //   ghost   = nothing, color text only
 
+// Translucent rings/fills are mimicked with discrete shades (the preset can't
+// do opacity modifiers): nuxt's `ring/25`→`-200`, `bg/10`→`-50`. `border-2` →
+// 1px in the kit preset (matches nuxt's 1px ring). Text uses the vibrant `-600`
+// (nuxt's `text-primary`). See `theme/button.ts` for the full rationale.
+//
+// Surface (`base`: bg/border, applied to `root`) is kept separate from the
+// foreground color (`fg`: text-*). CSS inheritance is OFF in the Lynx build
+// (`enableCSSInheritance: false`), so `text-*` on `root` never reaches the
+// title / description / icon — `variantClass` spreads `fg` onto those slots.
 const solid = (c: string) =>
-  `text-white bg-${c}-500`
+  ({ base: `bg-${c}-500`, fg: 'text-white' })
 
 const outline = (c: string) =>
-  `text-${c}-700 bg-white border-2 border-solid border-${c}-500`
+  ({ base: `bg-white border-2 border-solid border-${c}-200`, fg: `text-${c}-600` })
 
 const subtle = (c: string) =>
-  `text-${c}-700 bg-${c}-100 border border-solid border-${c}-500`
+  ({ base: `bg-${c}-50 border-2 border-solid border-${c}-200`, fg: `text-${c}-600` })
 
 const soft = (c: string) =>
-  `text-${c}-700 bg-${c}-100`
+  ({ base: `bg-${c}-50`, fg: `text-${c}-600` })
 
 const ghost = (c: string) =>
-  `text-${c}-700`
+  ({ base: '', fg: `text-${c}-600` })
 
 const VARIANT_BUILDERS = { solid, outline, subtle, soft, ghost } as const
 
 type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
+
+const variantClass = (color: string, variant: Variant) => {
+  const { base, fg } = VARIANT_BUILDERS[variant](color)
+  return { root: base, title: fg, description: fg, icon: fg }
+}
 
 export default (colors: Color[]) => ({
   slots: {
@@ -72,7 +86,7 @@ export default (colors: Color[]) => ({
       VARIANTS.map(variant => ({
         color,
         variant,
-        class: { root: VARIANT_BUILDERS[variant](color) },
+        class: variantClass(color, variant),
       })),
     ),
   ],

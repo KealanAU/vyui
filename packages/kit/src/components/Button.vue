@@ -110,6 +110,14 @@ const { ui } = useStyledComponent('button', theme, () => ({
   loading: props.loading,
 }))
 
+// `leadingAvatarSize` is a size token (not a class) carried on the theme slot
+// for the active button size. Pass it to `<VyAvatar>` so an avatar shrinks with
+// the button instead of rendering at the Avatar default (`md`/40px). An explicit
+// `avatar.size` from the caller always wins (it's spread after via `v-bind`).
+const resolvedAvatarSize = computed<AvatarProps['size']>(
+  () => (props.avatar?.size ?? ui.value.leadingAvatarSize()) as AvatarProps['size'],
+)
+
 defineExpose({ buttonRef })
 </script>
 
@@ -128,6 +136,7 @@ defineExpose({ buttonRef })
       />
       <VyAvatar
         v-else-if="avatar"
+        :size="resolvedAvatarSize"
         v-bind="avatar"
         :class="ui.leadingAvatar({ class: props.ui?.leadingAvatar })"
       />
