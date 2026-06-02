@@ -59,16 +59,15 @@ const link = (c: string) =>
 
 // ── Neutral ─────────────────────────────────────────────────────────────────
 // Nuxt treats neutral specially: solid is near-black (`bg-inverted`), the rest
-// sit on `default`/`elevated`/`accented` surfaces. There are no semantic
-// surface tokens on Lynx, so map onto the neutral ramp: solid → `-900` (white
-// text), outline/subtle → a white/`-100` surface with a faint border, etc.
+// sit on `default`/`elevated`/`accented` surfaces. These map to the semantic
+// surface/text tokens (see `style.css`), so neutral buttons flip with dark mode.
 const neutralVariants = {
-  solid: { base: 'bg-neutral-900 active:bg-neutral-800', fg: 'text-white' },
-  outline: { base: 'border-2 border-solid border-neutral-300 active:bg-neutral-100', fg: 'text-neutral-700' },
-  subtle: { base: 'border-2 border-solid border-neutral-200 bg-neutral-100 active:bg-neutral-200', fg: 'text-neutral-700' },
-  soft: { base: 'bg-neutral-100 active:bg-neutral-200', fg: 'text-neutral-700' },
-  ghost: { base: 'active:bg-neutral-100', fg: 'text-neutral-700' },
-  link: { base: '', fg: 'text-neutral-500 active:text-neutral-700' },
+  solid: { base: 'bg-inverted', fg: 'text-inverted' },
+  outline: { base: 'border-2 border-solid border-accented active:bg-elevated', fg: 'text-default' },
+  subtle: { base: 'border-2 border-solid border-default bg-elevated active:bg-accented', fg: 'text-default' },
+  soft: { base: 'bg-elevated active:bg-accented', fg: 'text-default' },
+  ghost: { base: 'active:bg-elevated', fg: 'text-default' },
+  link: { base: '', fg: 'text-muted active:text-default' },
 } as const
 
 const VARIANT_BUILDERS = { solid, outline, soft, subtle, ghost, link } as const

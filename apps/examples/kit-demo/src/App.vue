@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { OverlayRoot } from '@vyui/core'
-import { VyTabs } from '@vyui/kit'
+import { VyButton, VyTabs } from '@vyui/kit'
 import ThemeSection from './sections/ThemeSection.vue'
 import FormSection from './sections/FormSection.vue'
 import DisplaySection from './sections/DisplaySection.vue'
@@ -24,12 +24,19 @@ const colorPalettes = reactive<Record<string, string>>({
 const neutralPalette = ref<string>('slate')
 const radius = ref<number>(0.25)
 
+// Dark mode = toggle the `.dark` class on the root <view>. Every @vyui/kit
+// component reads semantic tokens (`bg-default` / `text-muted` / …) whose CSS
+// vars flip under `.dark` (see @vyui/kit `style.css`), so this one class swaps
+// the whole tree — same mechanism as the palette pickers above.
+const dark = ref<boolean>(false)
+
 // One `${color}-${palette}` class per entry (defined in index.css), plus the
 // neutral class — a flat `string[]` so it satisfies the Lynx `<view>` class
 // type (which rejects nested arrays). Applied to the root so every @vyui/kit
 // component below picks up the swapped ramps.
 const rootClass = computed(() => [
-  'w-full h-full bg-slate-50',
+  'w-full h-full bg-default',
+  ...(dark.value ? ['dark'] : []),
   ...Object.entries(colorPalettes).map(([color, palette]) => `${color}-${palette}`),
   `neutral-${neutralPalette.value}`,
 ].join(' '))
@@ -59,9 +66,19 @@ const tabItems = computed(() => allTabItems)
 
     <scroll-view class="w-full h-full" scroll-orientation="vertical">
       <view class="flex flex-col gap-4 px-5 pt-16 pb-10">
-        <view class="flex flex-col gap-1">
-          <text class="text-slate-900 text-2xl font-bold">@vyui/kit demo</text>
-          <text class="text-slate-500 text-sm">Styled components on top of @vyui/core primitives.</text>
+        <view class="flex flex-row items-center justify-between gap-3">
+          <view class="flex flex-col gap-1 min-w-0">
+            <text class="text-highlighted text-2xl font-bold">@vyui/kit demo</text>
+            <text class="text-muted text-sm">Styled components on top of @vyui/core primitives.</text>
+          </view>
+          <VyButton
+            :icon="dark ? 'icon-park-outline:sun-one' : 'icon-park-outline:moon'"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            square
+            @tap="dark = !dark"
+          />
         </view>
 
         <VyTabs
@@ -97,7 +114,7 @@ const tabItems = computed(() => allTabItems)
         </VyTabs>
 
         <view class="flex flex-col items-center pt-4 pb-2">
-          <text class="text-slate-400 text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
+          <text class="text-dimmed text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
         </view>
       </view>
     </scroll-view>

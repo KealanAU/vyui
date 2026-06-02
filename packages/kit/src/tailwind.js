@@ -81,6 +81,33 @@ export function createVyuiPreset({ colors = COLORS, neutral = NEUTRAL, shades = 
         colors: Object.fromEntries(
           allColors.map((name) => [name, buildScale(name, neutral, shades)]),
         ),
+        // Semantic surface / text / border tokens (defined in `style.css`,
+        // flipped under `.dark`). Registered on the per-property scales — not
+        // shared `colors` — so the same token name maps to a different var per
+        // utility prefix (`text-default` → `--ui-text`, `bg-default` →
+        // `--ui-bg`, `border-default` → `--ui-border`). This is how dark mode
+        // works with no Tailwind `dark:` variant: components reference the
+        // token, the var flips. See `style.css` for the value table.
+        textColor: {
+          default: 'var(--ui-text)',
+          muted: 'var(--ui-text-muted)',
+          dimmed: 'var(--ui-text-dimmed)',
+          toned: 'var(--ui-text-toned)',
+          highlighted: 'var(--ui-text-highlighted)',
+          inverted: 'var(--ui-text-inverted)',
+        },
+        backgroundColor: {
+          default: 'var(--ui-bg)',
+          muted: 'var(--ui-bg-muted)',
+          elevated: 'var(--ui-bg-elevated)',
+          accented: 'var(--ui-bg-accented)',
+          inverted: 'var(--ui-bg-inverted)',
+        },
+        borderColor: {
+          default: 'var(--ui-border)',
+          muted: 'var(--ui-border-muted)',
+          accented: 'var(--ui-border-accented)',
+        },
         borderRadius: RADIUS_SCALE,
         // Halve every numeric step of the borderWidth scale. The bare
         // `border` utility uses `DEFAULT`; `border-2` / `border-4` keep their
@@ -123,6 +150,14 @@ export function createVyuiPreset({ colors = COLORS, neutral = NEUTRAL, shades = 
           'group-data-[state=open]',
           'group-data-[state=checked]',
         ],
+      },
+      // Semantic tokens. Static names, but the kit theme source lives in
+      // node_modules (outside the consumer's `content` globs), so safelist them.
+      // Pattern only emits names that exist on a given prefix (e.g. no
+      // `text-elevated`), so the cross-product is self-pruning.
+      {
+        pattern: /(bg|text|border)-(default|muted|dimmed|toned|highlighted|inverted|elevated|accented)/,
+        variants: ['active', 'disabled', 'group-data-[state=on]', 'group-data-[state=active]'],
       },
       'text-white',
     ],

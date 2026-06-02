@@ -20,20 +20,20 @@ export default {
         // those content slots. Lynx still won't cascade into deeply-nested
         // <text>, so plain-text children of a solid card should set their own
         // color (or pass `ui.{header,body,footer}`); the `bg-*` fill stays on
-        // `root`.
-        root: 'bg-neutral-900',
-        header: 'text-white',
-        body: 'text-white',
-        footer: 'text-white',
+        // `root`. `inverted` tokens flip the solid card light↔dark.
+        root: 'bg-inverted',
+        header: 'text-inverted',
+        body: 'text-inverted',
+        footer: 'text-inverted',
       },
       outline: {
-        root: 'bg-white border border-neutral-200',
+        root: 'bg-default border border-default',
       },
       soft: {
-        root: 'bg-neutral-50',
+        root: 'bg-muted',
       },
       subtle: {
-        root: 'bg-neutral-50 border border-neutral-200',
+        root: 'bg-muted border border-default',
       },
     },
   },
