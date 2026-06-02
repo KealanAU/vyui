@@ -142,11 +142,15 @@ useSeoMeta({
                                         {{ entry.title }}
                                     </h2>
 
-                                    <div
-                                        class="text-muted mt-2 text-sm [&_a]:text-primary [&_code]:text-highlighted"
-                                    >
-                                        <ContentRenderer :value="entry" />
-                                    </div>
+                                    <ChangelogBody
+                                        :entry="entry"
+                                        :align="
+                                            entry.package === 'core'
+                                                ? 'right'
+                                                : 'left'
+                                        "
+                                        class="mt-2"
+                                    />
                                 </UCard>
                             </div>
                         </li>

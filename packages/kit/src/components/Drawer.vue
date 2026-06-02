@@ -44,6 +44,8 @@ export interface DrawerProps {
   description?: string
   /** Disable dragging on the underlying SheetContent. */
   dragDisabled?: boolean
+  /** Show the drag-handle pill at the top of the drawer. @defaultValue `true` */
+  handle?: boolean
   /**
    * Snap fractions (0 → 1) forwarded to `SheetRoot`. Defaults to a single
    * three-quarter-height snap so a bottom drawer doesn't take over the entire
@@ -113,12 +115,14 @@ import {
   SheetTrigger,
   SheetBackdrop,
   SheetContent,
+  SheetHandle,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 
 const props = withDefaults(defineProps<DrawerProps>(), {
   defaultOpen: false,
   transition: true,
+  handle: true,
   overlay: true,
   portal: true,
   dismissible: true,
@@ -182,6 +186,8 @@ const ui = computed(() => buildDrawer(appConfig)({
       :data-side="resolvedSide"
       :class="ui.content({ class: props.ui?.content })"
     >
+      <SheetHandle v-if="handle" :class="ui.handle({ class: props.ui?.handle })" />
+
       <slot v-if="hasContentSlot" name="content" :close="close" />
 
       <template v-else>

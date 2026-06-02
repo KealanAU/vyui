@@ -50,6 +50,8 @@ export interface PopoverProps {
    * @defaultValue `[0.6]`
    */
   snapPoints?: number[]
+  /** Show the drag-handle pill at the top of the sheet (`presentation: 'sheet'` only). @defaultValue `true` */
+  handle?: boolean
   /**
    * Display mode. `hover` is accepted for API parity with nuxt/ui but
    * behaves the same as `click` — Lynx has no HoverCard primitive.
@@ -129,6 +131,7 @@ import {
   SheetTrigger,
   SheetBackdrop,
   SheetContent,
+  SheetHandle,
   useElementRect,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
@@ -136,6 +139,7 @@ import { useAppConfig } from '../composables/useAppConfig'
 const props = withDefaults(defineProps<PopoverProps>(), {
   presentation: 'sheet',
   snapPoints: () => [0.6],
+  handle: true,
   portal: true,
   mode: 'click',
   modal: false,
@@ -251,6 +255,8 @@ function onInteractOutside(event: any) {
     <SheetBackdrop :dismiss-on-tap="dismissible" />
 
     <SheetContent :class="ui.content({ class: props.ui?.content })">
+      <SheetHandle v-if="handle" :class="ui.handle({ class: props.ui?.handle })" />
+
       <slot name="content" :close="close" />
     </SheetContent>
   </SheetRoot>

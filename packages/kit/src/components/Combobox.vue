@@ -85,6 +85,8 @@ export interface ComboboxProps {
    * @defaultValue `[0.9]`
    */
   snapPoints?: number[]
+  /** Show the drag-handle pill at the top of the sheet. @defaultValue `true` */
+  handle?: boolean
   /** When `items` are objects, which field to use as the value. */
   valueKey?: string
   /** When `items` are objects, which field to use as the label. */
@@ -123,6 +125,7 @@ import {
   SheetRoot,
   SheetBackdrop,
   SheetContent,
+  SheetHandle,
   Icon as VyIcon,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
@@ -134,6 +137,7 @@ const props = withDefaults(defineProps<ComboboxProps>(), {
   searchable: true,
   presentation: 'sheet',
   snapPoints: () => [0.9],
+  handle: true,
 })
 const emit = defineEmits<{ 'update:modelValue': [value: any] }>()
 defineSlots<ComboboxSlots>()
@@ -239,6 +243,8 @@ const displayLabel = computed(() => {
 
         <SheetBackdrop dismiss-on-tap />
         <SheetContent>
+          <SheetHandle v-if="handle" :class="ui.handle({ class: props.ui?.handle })" />
+
           <view v-if="placeholder" class="px-4 pt-4 pb-2">
             <text class="text-neutral-500 text-xs font-semibold uppercase">{{ placeholder }}</text>
           </view>

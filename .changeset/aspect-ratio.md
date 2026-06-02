@@ -1,5 +1,5 @@
 ---
-"@vyui/core": minor
+"@vyui/core": patch
 ---
 
 Add AspectRatio — headless `@vyui/core` primitive (`AspectRatioRoot`, exported as both `AspectRatio` and `AspectRatioRoot`) that constrains its default slot to a given `ratio` (number, default `1`).
