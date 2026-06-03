@@ -32,7 +32,7 @@ describe('useAnimate', () => {
   })
 
   it('no-ops when elRef.current has no animate() (web fallback)', () => {
-    const { fadeIn, fadeOut, slideIn, slideOut, zoomIn, zoomOut, bounceIn } = useAnimate()
+    const { fadeIn, fadeOut, slideIn, slideOut, zoomIn, zoomOut, bounceIn, captureMorph, morph } = useAnimate()
     expect(() => fadeIn(100)).not.toThrow()
     expect(() => fadeOut(100)).not.toThrow()
     expect(() => slideIn('up', 100)).not.toThrow()
@@ -40,6 +40,57 @@ describe('useAnimate', () => {
     expect(() => zoomIn(100)).not.toThrow()
     expect(() => zoomOut(100, true)).not.toThrow()
     expect(() => bounceIn(100)).not.toThrow()
+    expect(() => { captureMorph(); morph(100) }).not.toThrow()
+  })
+
+  it('morph keyframes width/height from the captured box to the new box', async () => {
+    const animate = vi.fn().mockReturnValue({ finished: Promise.resolve() })
+    const rect = { width: 56, height: 56 }
+    const getBoundingClientRect = () => ({ ...rect })
+    const { elRef, captureMorph, morph } = useAnimate()
+    elRef.current = { animate, getBoundingClientRect }
+
+    captureMorph() // First: 56 x 56
+    rect.width = 320 // layout settles wider + taller (search takeover)
+    rect.height = 56
+    morph(280)
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(animate).toHaveBeenCalledTimes(1)
+    const [keyframes, options] = animate.mock.calls[0]
+    expect(keyframes).toEqual([
+      { width: '56px', height: '56px' },
+      { width: '320px', height: '56px' },
+    ])
+    expect(options).toMatchObject({ duration: 280, fill: 'none' })
+  })
+
+  it('morph skips when the box did not change (e.g. a tab flip)', async () => {
+    const animate = vi.fn()
+    const getBoundingClientRect = () => ({ width: 200, height: 56 })
+    const { elRef, captureMorph, morph } = useAnimate()
+    elRef.current = { animate, getBoundingClientRect }
+
+    captureMorph()
+    morph(280)
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(animate).not.toHaveBeenCalled()
+  })
+
+  it('morph without a prior capture is a no-op', async () => {
+    const animate = vi.fn()
+    const getBoundingClientRect = () => ({ width: 200, height: 56 })
+    const { elRef, morph } = useAnimate()
+    elRef.current = { animate, getBoundingClientRect }
+
+    morph(280)
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(animate).not.toHaveBeenCalled()
   })
 
   it('calls element.animate() when the runtime supports it', async () => {
