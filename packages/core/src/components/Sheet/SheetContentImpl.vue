@@ -42,6 +42,7 @@ import {
   presenceClassVariants,
 } from '@/components/Presence'
 import { useA11y } from '@/shared/composables'
+import { motionAnimationStyle } from '@/shared'
 import { injectSheetRootContext, provideSheetDragContext } from './sheetContext'
 
 const props = withDefaults(defineProps<SheetContentImplProps>(), {
@@ -78,6 +79,16 @@ const panelHeight = computed(() => {
   const maxSnap = snaps.length > 0 ? snaps[snaps.length - 1] : 1
   return `${(maxSnap ?? 1) * 100}vh`
 })
+
+// Panel style = height + live timing override from the process-wide
+// `motionConfig` (inline animation longhands beat the keyframe shorthand, so
+// the slide re-times without touching the keyframe). Drag-time MT inline
+// writes (`transform` / `transition` / `animation: none`) sit on top and win
+// while a gesture is active.
+const contentStyle = computed(() => ({
+  height: panelHeight.value,
+  ...motionAnimationStyle(presenceState.value === PresenceState.Leaving),
+}))
 
 // Whether the content view should bind touch handlers. `handleOnly` makes
 // `SheetHandle` the only drag surface; props.dragDisabled fully disables drag.
@@ -254,7 +265,7 @@ const a11y = useA11y(() => ({
     :main-thread-bindtouchend="isDragEnabled ? _onTouchEnd : undefined"
     :main-thread-bindtouchcancel="isDragEnabled ? _onTouchCancel : undefined"
     :event-through="false"
-    :style="{ height: panelHeight }"
+    :style="contentStyle"
     @animationstart="handlers?.handleKFStart"
     @animationend="handlers?.handleKFEnd"
     @animationcancel="handlers?.handleKFCancel"

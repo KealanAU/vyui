@@ -23,6 +23,7 @@ import {
   presenceClassVariants,
 } from '@/components/Presence'
 import { useA11y, useDismissableLayer } from '@/shared/composables'
+import { motionAnimationStyle } from '@/shared'
 import { injectDropdownMenuRootContext } from './DropdownMenuRoot.vue'
 
 defineOptions({ inheritAttrs: false })
@@ -73,6 +74,14 @@ const dataState = computed(() =>
 
 const handlers = presence?.animationHandlers
 
+// Live timing override — reads the process-wide `motionConfig` so a settings
+// screen / motion playground re-times the menu without prop-drilling through
+// the portal. Inline longhands beat the keyframe's `animation` shorthand, so
+// only the duration + easing change; the keyframe owns name + fill.
+const motionStyle = computed(() =>
+  motionAnimationStyle(presenceState.value === PresenceState.Leaving),
+)
+
 /** Swallow taps on the menu surface so they don't reach the backdrop. */
 function stopTap(event: any) {
   event?.stopPropagation?.()
@@ -89,6 +98,7 @@ function stopTap(event: any) {
       :as="as"
       :data-state="dataState"
       :class="presenceClass"
+      :style="motionStyle"
       v-bind="{ ...$attrs, ...a11y }"
       @tap="stopTap"
       @animationstart="handlers?.handleKFStart"

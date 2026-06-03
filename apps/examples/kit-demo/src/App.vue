@@ -7,6 +7,7 @@ import FormSection from './sections/FormSection.vue'
 import DisplaySection from './sections/DisplaySection.vue'
 import IslandSection from './sections/IslandSection.vue'
 import OverlaySection from './sections/OverlaySection.vue'
+import MotionSection from './sections/MotionSection.vue'
 
 // Each configurable semantic color → the Tailwind palette it currently renders
 // as. Lifted here so they drive the root `<view>` class; `ThemeSection` mutates
@@ -41,6 +42,7 @@ const allTabItems = [
   { value: 'display', label: 'View',  icon: 'icon-park-outline:layers',           slot: 'display' },
   { value: 'island',  label: 'Island', icon: 'icon-park-outline:pill',            slot: 'island' },
   { value: 'overlay', label: 'Modal', icon: 'icon-park-outline:application-menu', slot: 'overlay' },
+  { value: 'motion',  label: 'Motion', icon: 'icon-park-outline:play-one',        slot: 'motion' },
 ]
 const tabItems = computed(() => allTabItems)
 
@@ -93,6 +95,10 @@ const tabItems = computed(() => allTabItems)
 
           <template #overlay>
             <OverlaySection />
+          </template>
+
+          <template #motion>
+            <MotionSection />
           </template>
         </VyTabs>
 
