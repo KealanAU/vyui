@@ -30,16 +30,18 @@ const id = useId()
 const attrs = useAttrs()
 const slots = useSlots()
 const emitAsProps = useEmitAsProps(emit)
-// `provides` is captured from this instance so menu items rendered through the
-// OverlayRoot portal still inject DropdownMenuRootContext — DropdownMenuRoot is
-// an ancestor, so its provided context is already on this chain.
-const capturedProvides = captureProvides()
 
 // Registered with the overlay store while present, unregistered when gone. It
 // is its own component so `Presence` owns the mount/unmount (and exit anim).
 const PortalRegistration = defineComponent({
   name: 'DropdownMenuContentPortal',
   setup() {
+    // Capture provides HERE — inside the `<Presence>` subtree — so the
+    // portaled Impl injects BOTH `DropdownMenuRootContext` (from the ancestor
+    // Root) AND `PresenceContextKey` (provided by the `<Presence>` parent).
+    // The latter is what lets the Impl wire enter/leave animation handlers;
+    // capturing in the outer setup (above Presence) misses that key.
+    const capturedProvides = captureProvides()
     registerOverlay(id, () => h(
       DropdownMenuContentImpl,
       {

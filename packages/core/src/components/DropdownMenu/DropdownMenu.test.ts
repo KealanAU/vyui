@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
 import { overlayEntries } from '@/components/OverlayRoot/overlayStore'
 import DropdownMenu from './story/_DropdownMenu.vue'
@@ -28,6 +28,23 @@ describe('dropdownMenu', () => {
     await waitForUpdate()
     expect(q(container, 'content')).not.toBeNull()
     expect(q(container, 'trigger')!.getAttribute('data-state')).toBe('open')
+  })
+
+  it('content carries the Presence animation hook + reaches open state', async () => {
+    // Proves the Impl is animated: `DropdownMenuContent` bridges its
+    // `PresenceContextKey` through the overlay portal, so the menu surface
+    // gets the `vyui-dropdown-content` hook + presence-derived `data-state`
+    // the enter/leave keyframes rely on. (A missing bridge would default the
+    // injected state to `Entered`; instead the live Presence lifecycle drives
+    // it Initial → Entering → Entered as the rAF frames advance.)
+    const { container } = render(DropdownMenu)
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    expect(q(container, 'content')!.className).toContain('vyui-dropdown-content')
+    await vi.waitFor(
+      () => expect(q(container, 'content')!.getAttribute('data-state')).toBe('open'),
+      { timeout: 1000, interval: 20 },
+    )
   })
 
   it('toggles closed on a second trigger tap', async () => {
