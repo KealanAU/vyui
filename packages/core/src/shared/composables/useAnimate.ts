@@ -58,9 +58,6 @@ export type SlideDirection = 'up' | 'down' | 'left' | 'right'
  */
 export function useAnimate() {
   const elRef = useMainThreadRef<any>(null)
-  // Snapshot of the element's box BEFORE a layout-changing state write, used
-  // by the FLIP `morph`. Read/written only inside MT worklets.
-  const morphFromRef = useMainThreadRef<{ w: number, h: number } | null>(null)
 
   // -- Main-thread worklets ------------------------------------------------
 
@@ -155,56 +152,6 @@ export function useAnimate() {
     }
   }
 
-  // `morph` — Dynamic-Island shape transition. A FLIP (First-Last-Invert-Play)
-  // animation: snapshot the box before the state change (`_captureMorph`), let
-  // the layout settle to its new size, then animate width/height from the old
-  // box to the new one (`_playMorph`). Unlike the fixed enter/leave helpers,
-  // the from/to sizes are *measured* — so the same call morphs a pill into a
-  // wide search bar, a tall panel, or back, with no hard-coded dimensions.
-  //
-  // `getBoundingClientRect()` exists only on the main thread, which is why both
-  // halves are worklets. Reading it inside `_playMorph` forces a synchronous
-  // reflow on web, so the "Last" measurement reflects the patched DOM as long
-  // as the caller plays AFTER `nextTick` (DOM ops flushed to MT).
-  function _captureMorph() {
-    'main thread'
-    const el = elRef.current
-    if (el && typeof el.getBoundingClientRect === 'function') {
-      const r = el.getBoundingClientRect()
-      morphFromRef.current = { w: r.width, h: r.height }
-    }
-    else {
-      morphFromRef.current = null
-    }
-  }
-
-  function _playMorph(duration: number, easing: string) {
-    'main thread'
-    const el = elRef.current
-    const from = morphFromRef.current
-    morphFromRef.current = null
-    if (
-      !from
-      || typeof el?.animate !== 'function'
-      || typeof el.getBoundingClientRect !== 'function'
-    ) {
-      return
-    }
-    const to = el.getBoundingClientRect()
-    // Same box → nothing morphed (e.g. a value/tab flip that doesn't resize);
-    // skip the animation so we don't churn a no-op keyframe.
-    if (from.w === to.width && from.h === to.height) return
-    // `fill: 'none'` releases control back to layout once we land on `to`,
-    // which already equals the element's natural new size.
-    return el.animate(
-      [
-        { width: `${from.w}px`, height: `${from.h}px` },
-        { width: `${to.width}px`, height: `${to.height}px` },
-      ],
-      { duration, fill: 'none', easing },
-    )
-  }
-
   // -- Background-thread wrappers ------------------------------------------
 
   function fadeIn(duration = 300) {
@@ -237,17 +184,6 @@ export function useAnimate() {
     runOnMainThread(_bounceIn as any)(duration)
   }
 
-  // `captureMorph` must be called BEFORE the layout-changing state write;
-  // `morph` AFTER `nextTick` (so the new layout has flushed to MT). The
-  // iOS-spring-ish easing reads as the Dynamic Island settle.
-  function captureMorph() {
-    runOnMainThread(_captureMorph as any)()
-  }
-
-  function morph(duration = 300, easing = 'cubic-bezier(0.32, 0.72, 0, 1)') {
-    runOnMainThread(_playMorph as any)(duration, easing)
-  }
-
   return {
     elRef,
     fadeIn,
@@ -257,8 +193,6 @@ export function useAnimate() {
     zoomIn,
     zoomOut,
     bounceIn,
-    captureMorph,
-    morph,
   }
 }
 

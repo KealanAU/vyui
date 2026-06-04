@@ -24,6 +24,9 @@ export type { SlideDirection } from './useAnimate.js'
 
 export { useMtSmoke } from './useMtSmoke.js'
 
+export { useMtSpring } from './useMtSpring.js'
+export type { MtSpringConfig } from './useMtSpring.js'
+
 export { useTouchEmulation } from './useTouchEmulation.js'
 export type { UseTouchEmulationOptions, UseTouchEmulationReturn } from './useTouchEmulation.js'
 

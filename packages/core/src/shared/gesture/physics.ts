@@ -340,3 +340,63 @@ export function easeOutCubic(progress: number): number {
   'main thread'
   return 1 - (1 - progress) ** 3
 }
+
+// -- Spring integrator -----------------------------------------------------
+//
+// Minimal mass-spring-damper, the physics `@lynx-js/motion` gives lynx-ui for
+// free (it has a React peer dep, so vyui can't consume it under vue-lynx).
+// `springStep` is a single semi-implicit (symplectic) Euler step — stable for
+// the stiffness range we use and trivially unit-testable off the main thread.
+// The `'main thread'` directive lets the same function run inside the MT rAF
+// loop (`useMtSpring`) without a second copy. Pure: no element/IO access.
+
+/** Spring kinematic state: current `value` and `velocity` (units/sec). */
+export interface SpringState {
+  value: number
+  velocity: number
+}
+
+/** Default spring config — an iOS-settle feel (lightly under-damped). */
+export const SPRING_DEFAULT = { stiffness: 220, damping: 26, mass: 1 } as const
+
+/**
+ * Advances a spring one timestep toward `target`.
+ *
+ * Semi-implicit Euler: integrate velocity from the acceleration FIRST, then
+ * position from the new velocity — energy-stable where explicit Euler would
+ * blow up at high stiffness. `dt` is seconds (clamp the caller's frame delta
+ * so a long-frame hitch can't overshoot the integrator).
+ *
+ * Gospel parity: `@lynx-js/motion`'s spring generator (Apache 2.0).
+ */
+export function springStep(
+  state: SpringState,
+  target: number,
+  dt: number,
+  stiffness: number = SPRING_DEFAULT.stiffness,
+  damping: number = SPRING_DEFAULT.damping,
+  mass: number = SPRING_DEFAULT.mass,
+): SpringState {
+  'main thread'
+  const springForce = -stiffness * (state.value - target)
+  const dampingForce = -damping * state.velocity
+  const accel = (springForce + dampingForce) / mass
+  const velocity = state.velocity + accel * dt
+  const value = state.value + velocity * dt
+  return { value, velocity }
+}
+
+/**
+ * True once the spring has effectively reached `target` and stopped — within
+ * `epsilon` of the target AND moving slower than `epsilon`/sec. The MT loop
+ * snaps to `target` and stops scheduling frames when this trips.
+ */
+export function isSpringSettled(
+  state: SpringState,
+  target: number,
+  epsilon = 0.01,
+): boolean {
+  'main thread'
+  return Math.abs(state.value - target) < epsilon
+    && Math.abs(state.velocity) < epsilon
+}

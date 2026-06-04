@@ -61,6 +61,35 @@
 
 ---
 
+## Upstream status
+
+- **Upstream PR: [Huxpro/vue-lynx#190](https://github.com/Huxpro/vue-lynx/pull/190)** — implements both tiers above: makes `worklet-loader-mt` async, resolves non-relative specifiers via `this.getResolve(...)`, follows aliased/tsconfig-path imports, and adds the opt-in `includeWorkletPackages` option for bare/package imports. **Open (not merged) as of 2026-06-04.**
+- Our local `patches/vue-lynx@0.4.0.patch` is the Tier-1 *minimal* precursor (regex widened to `@/` only). It does **not** cover the bare `@vyui/core`/`@vyui/kit` case. A regex extension to `@vyui/` was tried and **reverted** — it followed the specifier string but did not produce the worklet *registration* (regex can't traverse the package barrel + the SFC `?vue&type=script` block the way a resolver can), so the binding reached the MT op stream without its registration → the `bind of undefined` crash (strictly worse than the silent no-op).
+- **Adopt-when-merged plan:** drop `patches/vue-lynx@0.4.0.patch`, bump `vue-lynx`, set `includeWorkletPackages: ['@vyui/core']` on the worklet loader, then a `@vyui/core` worklet can be imported normally and a `@vyui/kit` component can drive it.
+
+---
+
+## Blocked feature: VyIsland panel morph (revisit when #190 lands)
+
+**Goal:** animate `<VyIsland>`'s `#expanded` panel sprouting open (Dynamic-Island reveal).
+
+**Current state (2026-06-04):** the panel **snaps** — no animation. `Island.vue` has a `morph?: boolean` prop kept as the forward-compatible API but it is a **no-op**. `useMtSpring` + the `springStep`/`isSpringSettled` solver remain in `@vyui/core` (unit-tested, in `shared/gesture/physics.ts`), unused by any component.
+
+**Why it's blocked:** the reveal needs a main-thread worklet, and a worklet can't be wired from `@vyui/kit` (where `Island.vue` lives) until #190 — see the crash above. This is the Tier-2 case.
+
+**Attempt log (so this isn't re-walked):**
+- CSS `transition` on `width`/`height` — **no**: can't animate content/`auto` sizes (web or Lynx).
+- CSS `@keyframes` class (`transform`/`opacity`) — **no**: not honored on the target runtime (tried huge + 2.5s, nothing).
+- MT spring in `@vyui/core` (`useMtSpring`), imported via `@vyui/core`, fired via `runOnMainThread(...)` — **no**: cross-package worklet never registers → silent no-op.
+- Inline MT worklet in `Island.vue` (kit) bound via `:main-thread-bindlayoutchange` — **crash** (`bind of undefined`): the MT `layoutchange` op fired (good — trigger works) but the kit-defined worklet wasn't registered.
+- `@vyui/` regex patch extension — **crash**, reverted (see above).
+
+**Confirmed working on the simulator** (so these are NOT the blockers): MT *touch* worklets (the Sheet's drag), Vue reactivity, HMR of aliased workspace source. Lynx BG runtime has **no working `setTimeout`** (use `delayFrames`); `@layoutchange` does not fire on a `v-if`-mounted panel, but the **MT-side** `:main-thread-bindlayoutchange` *does*.
+
+**When #190 lands:** move the reveal worklet into a `@vyui/core` SFC/composable, set `includeWorkletPackages: ['@vyui/core']`, import it from `Island.vue`, and trigger via the MT `layoutchange` binding (proven to fire) — then make `morph` real.
+
+---
+
 ## Environment
 
 - `vue-lynx` 0.4.0

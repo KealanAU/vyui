@@ -16,10 +16,13 @@ import {
   easeOutCubic,
   HORIZONTAL_CONSUME_RANGES,
   isAngleInRanges,
+  isSpringSettled,
   pickSnap,
   pruneQueue,
   resolveAxisLock,
   rubberEffect,
+  SPRING_DEFAULT,
+  springStep,
 } from './physics'
 
 describe('customRound', () => {
@@ -369,5 +372,62 @@ describe('easeOutCubic', () => {
     const c = easeOutCubic(0.75)
     expect(b).toBeGreaterThan(a)
     expect(c).toBeGreaterThan(b)
+  })
+})
+
+describe('springStep / isSpringSettled', () => {
+  function run(target: number, from = 0, maxFrames = 1200) {
+    let state = { value: from, velocity: 0 }
+    let frames = 0
+    while (!isSpringSettled(state, target) && frames < maxFrames) {
+      state = springStep(state, target, 1 / 60)
+      frames++
+    }
+    return { state, frames }
+  }
+
+  it('converges to the target and settles', () => {
+    const { state, frames } = run(1)
+    expect(isSpringSettled(state, 1)).toBe(true)
+    expect(state.value).toBeCloseTo(1, 2)
+    expect(frames).toBeGreaterThan(0)
+    expect(frames).toBeLessThan(1200)
+  })
+
+  it('moves toward the target on the first step (and is not yet settled)', () => {
+    const first = springStep({ value: 0, velocity: 0 }, 1, 1 / 60)
+    expect(first.value).toBeGreaterThan(0)
+    expect(first.value).toBeLessThan(1)
+    expect(isSpringSettled(first, 1)).toBe(false)
+  })
+
+  it('handles a non-zero start and arbitrary target', () => {
+    const { state } = run(50, 12)
+    expect(state.value).toBeCloseTo(50, 1)
+  })
+
+  it('a stiffer spring settles in fewer frames', () => {
+    function framesFor(stiffness: number, damping: number) {
+      let state = { value: 0, velocity: 0 }
+      let n = 0
+      while (!isSpringSettled(state, 1) && n < 5000) {
+        state = springStep(state, 1, 1 / 60, stiffness, damping, 1)
+        n++
+      }
+      return n
+    }
+    expect(framesFor(400, 40)).toBeLessThan(framesFor(120, 20))
+  })
+
+  it('isSpringSettled needs BOTH near-target and near-zero velocity', () => {
+    expect(isSpringSettled({ value: 1, velocity: 5 }, 1)).toBe(false)
+    expect(isSpringSettled({ value: 0.5, velocity: 0 }, 1)).toBe(false)
+    expect(isSpringSettled({ value: 1, velocity: 0 }, 1)).toBe(true)
+  })
+
+  it('exposes a sane default config', () => {
+    expect(SPRING_DEFAULT.stiffness).toBeGreaterThan(0)
+    expect(SPRING_DEFAULT.damping).toBeGreaterThan(0)
+    expect(SPRING_DEFAULT.mass).toBeGreaterThan(0)
   })
 })

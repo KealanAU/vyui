@@ -99,18 +99,13 @@ export interface IslandProps {
    */
   as?: string
   /**
-   * Duration (ms) of the Dynamic-Island morph — the FLIP animation that
-   * tweens the container between sizes when `open` / `mode` change. Web-only
-   * (`element.animate`); native Lynx snaps. Set `0` to disable the morph.
-   * @defaultValue `280`
+   * Reserved: animate the panel sprouting open (the Dynamic-Island reveal).
+   * Currently a **no-op** — the panel snaps. A main-thread reveal worklet can't
+   * be wired from `@vyui/kit` until vue-lynx PR #190 lands (the MT worklet
+   * loader doesn't register worklets reached across a package boundary). Kept
+   * as the forward-compatible API. @defaultValue `true`
    */
-  morphMs?: number
-  /**
-   * Easing curve for the morph. Any CSS easing string (`ease-out`,
-   * `cubic-bezier(…)`, …).
-   * @defaultValue `'cubic-bezier(0.32, 0.72, 0, 1)'`
-   */
-  morphEasing?: string
+  morph?: boolean
   class?: any
   ui?: Partial<Record<keyof IslandTV['slots'], any>>
 }
@@ -147,8 +142,7 @@ export interface IslandSlots {
 </script>
 
 <script setup lang="ts">
-import { Comment, computed, Fragment, nextTick, ref, Text, toRef, useSlots, type VNode } from 'vue'
-import { useAnimate } from '@vyui/core'
+import { Comment, computed, Fragment, ref, Text, useSlots, type VNode } from 'vue'
 import { useStyledComponent } from '../composables/useStyledComponent'
 import { provideIslandContext, type IslandSize } from './islandContext'
 
@@ -180,35 +174,24 @@ const resolvedMode = computed(() => props.mode ?? localMode.value)
 const resolvedValue = computed(() => (props.value !== undefined ? props.value : localValue.value))
 const resolvedSize = computed<IslandSize>(() => (props.size ?? 'md') as IslandSize)
 
-// Dynamic-Island morph: snapshot the box, write the state, then play the
-// FLIP after layout flushes. `open` (panel sprout) and `mode` (row takeover)
-// both resize the container, so both writers drive the morph. Web-only
-// (`element.animate`); native Lynx no-ops and the shape simply snaps.
-const { elRef: morphRef, captureMorph, morph } = useAnimate()
-// Tunable per-instance; `0` opts out so the shape snaps. The motion playground
-// drives this live to dial the morph feel.
-const morphMs = computed(() => props.morphMs ?? 280)
-
-// Run the FLIP only when a non-zero duration is set. `captureMorph` is cheap
-// (one MT rect read) but skipping it when disabled avoids a needless hop.
-function playMorph() {
-  if (morphMs.value > 0) nextTick(() => morph(morphMs.value, props.morphEasing))
-}
+// NOTE: panel-open morph is temporarily NOT animated. A main-thread worklet
+// reveal can't be wired from here yet: vue-lynx's MT worklet loader doesn't
+// register a worklet that lives in (or is reached through) the `@vyui/kit`
+// package boundary — binding one yields `cannot read property 'bind' of
+// undefined` at runtime. Needs the resolver-based loader fix in vue-lynx
+// PR #190 (see docs/upstream/vue-lynx-mt-worklet-import-issue.md). Until then
+// the panel snaps open. The `morph` prop is kept as the forward-compatible API.
 
 function setOpen(v: boolean) {
-  if (morphMs.value > 0) captureMorph()
   localOpen.value = v
   emit('update:open', v)
-  playMorph()
 }
 function toggle() { setOpen(!resolvedOpen.value) }
 function close() { setOpen(false) }
 
 function setMode(m: string) {
-  if (morphMs.value > 0) captureMorph()
   localMode.value = m
   emit('update:mode', m)
-  playMorph()
 }
 function resetMode() { setMode('default') }
 
@@ -308,7 +291,6 @@ const { ui } = useStyledComponent('island', theme, () => ({
     :data-mode="resolvedMode"
     :class="ui.root({ class: [props.class, props.ui?.root] })"
     :style="positionStyle"
-    :main-thread-ref="morphRef"
   >
     <view
       v-if="isOpen && panelAbove"
