@@ -34,11 +34,21 @@ export interface DialogContentImplProps extends PrimitiveProps {
    */
   backdropStyle?: Record<string, any>
   /**
+   * Class merged onto the full-screen backdrop wrapper (the `OverlayBackdrop`
+   * that centers the panel). Core ships no dim or animation of its own — the
+   * styled layer passes the dim colour + a marker class here so the backdrop
+   * fades in step with the panel. The element carries the Presence lifecycle
+   * classes (`ui-entering` / `ui-leaving` / `ui-open` / `ui-closed`) and the
+   * `bindanimation*` hooks, so the styled layer's keyframes (keyed off those
+   * classes) drive the Presence lifecycle just like the panel's.
+   */
+  backdropClass?: string
+  /**
    * Opt the backdrop / panel into the animating-state classes
    * (`ui-entering` / `ui-leaving` / `ui-animating` alongside the static
    * `ui-open` / `ui-closed` pair). Off by default so callers that don't
    * style transitions don't get extra classes; on for any caller wiring up
-   * `vyui-fade-*` / `vyui-zoom-*` keyframes.
+   * keyframes.
    * @defaultValue true
    */
   transition?: boolean
@@ -135,6 +145,7 @@ const BackdropLayer = defineComponent({
   name: 'DialogBackdropLayer',
   props: {
     backdropStyle: { type: Object, default: () => ({}) },
+    backdropClass: { type: String, default: '' },
   },
   emits: ['tap'],
   setup(p, { slots, emit }) {
@@ -158,7 +169,7 @@ const BackdropLayer = defineComponent({
       OverlayBackdrop,
       {
         'backdropStyle': p.backdropStyle,
-        'class': className.value,
+        'class': [className.value, p.backdropClass],
         'data-state': dataState.value,
         'onTap': () => emit('tap'),
         // Lynx animation/transition lifecycle bindings — without these the
@@ -244,6 +255,7 @@ const PanelLayer = defineComponent({
   >
     <BackdropLayer
       :backdrop-style="props.backdropStyle"
+      :backdrop-class="props.backdropClass"
       @tap="onInteractOutside"
     >
       <Presence
@@ -268,27 +280,11 @@ const PanelLayer = defineComponent({
 </template>
 
 <!--
-  Backdrop fade + panel zoom — the `vyui-fade-*` / `vyui-zoom-*` keyframes
-  themselves ship from `components/Presence/presence.css` (side-effect
-  imported via `components/Presence/index.ts`) so they're shared across
-  Dialog / AlertDialog / Sheet. This block just wires the per-class
-  selectors that fire the `ui-entering` / `ui-leaving` animations on the
-  Dialog-specific classes (`vyui-dialog-backdrop` / `vyui-dialog-content`).
-
-  Enter: 250ms, `cubic-bezier(0.16, 1, 0.3, 1)` (decel out).
-  Exit:  200ms, `cubic-bezier(0.5, 0, 0.75, 0)` (accel in).
+  Headless: core ships no animation of its own. `vyui-dialog-backdrop` /
+  `vyui-dialog-content` are stable hook classes carrying `data-state` +
+  `ui-entering` / `ui-leaving` + the `bindanimation*` lifecycle bindings; the
+  styled layer (`@vyui/kit`) supplies the keyframes — keyed off those lifecycle
+  classes — on the backdrop (`backdropClass`) and panel (`class`). With no
+  keyframes the panel simply mounts/unmounts — Presence's 24-frame fallback
+  covers it.
 -->
-<style scoped>
-.vyui-dialog-backdrop.ui-entering {
-  animation: vyui-fade-in 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.vyui-dialog-backdrop.ui-leaving {
-  animation: vyui-fade-out 200ms cubic-bezier(0.5, 0, 0.75, 0) both;
-}
-.vyui-dialog-content.ui-entering {
-  animation: vyui-zoom-in 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.vyui-dialog-content.ui-leaving {
-  animation: vyui-zoom-out 200ms cubic-bezier(0.5, 0, 0.75, 0) both;
-}
-</style>

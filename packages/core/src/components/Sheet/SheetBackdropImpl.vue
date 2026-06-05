@@ -77,6 +77,19 @@ const handlers = presence?.animationHandlers
 </template>
 
 <style>
+/* Hidden at rest AND through Presence's mount→enter gap (the element mounts
+   ~8 frames before the state flips to Entering). Without this the dim paints
+   at full opacity for those frames, then snaps to 0 and fades in — the
+   first-open flash. `ui-open` is the resting-visible state; the keyframes
+   bridge the transitions. */
+.vyui-sheet__backdrop {
+  opacity: 0;
+}
+
+.vyui-sheet__backdrop.ui-open {
+  opacity: 1;
+}
+
 .vyui-sheet__backdrop.ui-entering {
   animation: vyui-fade-in 280ms ease-out both;
 }
