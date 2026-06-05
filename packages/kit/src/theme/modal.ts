@@ -11,7 +11,17 @@
  *
  * Stripped: all `dark:*`, `focus:*`, `focus-visible:*`, `shadow-*`,
  * `transition-shadow`. `ring-*` converted to `border-*` (Lynx preset has no
- * ringWidth plugin). Kept `data-[state=...]:*` animation classes.
+ * ringWidth plugin).
+ *
+ * Motion: core is headless (ships no animation). `overlay` lands on the
+ * Presence-wired backdrop via the Dialog's `backdropClass`; `content` lands on
+ * the panel. Both elements carry the Presence lifecycle classes
+ * (`ui-entering` / `ui-leaving` / `ui-open` / `ui-closed`), so the open/close
+ * choreography is keyed off the `vy-modal-overlay` / `vy-modal-content` marker
+ * classes in `style.css` — NOT `data-[state]`. Lifecycle classes are required
+ * here: they keep the surface hidden during Presence's mount→enter gap (so the
+ * dim doesn't flash full-opacity before fading in) and fire the exit animation
+ * only on a real close.
  */
 export default {
   slots: {
@@ -28,8 +38,8 @@ export default {
   variants: {
     transition: {
       true: {
-        overlay: 'data-[state=open]:animate-[fade-in_200ms_ease-out] data-[state=closed]:animate-[fade-out_200ms_ease-in]',
-        content: 'data-[state=open]:animate-[scale-in_200ms_ease-out] data-[state=closed]:animate-[scale-out_200ms_ease-in]',
+        overlay: 'vy-modal-overlay',
+        content: 'vy-modal-content',
       },
     },
   },

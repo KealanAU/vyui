@@ -106,7 +106,6 @@ import {
   DialogRoot,
   DialogTrigger,
   DialogPortal,
-  DialogOverlay,
   DialogContent,
   DialogTitle,
   DialogDescription,
@@ -165,12 +164,8 @@ const resolvedCloseIcon = computed(() => props.closeIcon || appConfig.ui.icons?.
     </DialogTrigger>
 
     <DialogPortal>
-      <DialogOverlay
-        v-if="overlay"
-        :class="ui.overlay({ class: props.ui?.overlay })"
-      />
-
       <DialogContent
+        :backdrop-class="overlay ? ui.overlay({ class: props.ui?.overlay }) : undefined"
         :class="ui.content({ class: props.ui?.content })"
       >
         <slot v-if="hasContentSlot" name="content" :close="close" />

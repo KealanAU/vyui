@@ -146,3 +146,33 @@
   --ui-warning:   var(--ui-color-warning-400);
   --ui-error:     var(--ui-color-error-400);
 }
+
+/*
+ * ── Modal (Dialog) open/close motion ───────────────────────────────────────
+ * @vyui/core is headless — it ships no animation, only the Presence lifecycle
+ * hook classes (`ui-entering` / `ui-leaving` / `ui-open` / `ui-closed`) on the
+ * backdrop + panel. `VyModal`'s theme tags those elements with the
+ * `vy-modal-overlay` / `vy-modal-content` markers (the `transition` variant);
+ * the choreography lives here.
+ *
+ * Why lifecycle classes and not `data-[state]`: Presence mounts the surface ~8
+ * frames before it flips to `Entering`. The base rule below keeps it at
+ * `opacity: 0` through that mount→enter gap, so the dim never paints
+ * full-opacity before the fade-in (the long-standing first-open flash). And
+ * `ui-leaving` fires the exit ONLY on a real close — `data-[state=closed]`
+ * can't tell "freshly mounted, closed" from "closing", so it would wrongly run
+ * the exit animation on open.
+ *
+ * Keyframes (`vyui-fade-*` / `vyui-zoom-*`) ship from `@vyui/core`'s
+ * `presence.css`. `both` fill-mode holds the start state before and the end
+ * state after each run.
+ */
+.vy-modal-overlay { opacity: 0; }
+.vy-modal-overlay.ui-open { opacity: 1; }
+.vy-modal-overlay.ui-entering { animation: vyui-fade-in 250ms ease-out both; }
+.vy-modal-overlay.ui-leaving  { animation: vyui-fade-out 200ms ease-in both; }
+
+.vy-modal-content { opacity: 0; }
+.vy-modal-content.ui-open { opacity: 1; }
+.vy-modal-content.ui-entering { animation: vyui-zoom-in 250ms ease-out both; }
+.vy-modal-content.ui-leaving  { animation: vyui-zoom-out 200ms ease-in both; }

@@ -39,7 +39,8 @@ function render() {
       ...emitsAsProps,
       ...attrs,
       // Modal: focus would be trapped on the DOM; no-op on Lynx but kept for
-      // API parity. The screen behind is dimmed by `DialogOverlay`, not here.
+      // API parity. The screen behind is dimmed via `backdropClass` on the
+      // Presence-wired backdrop (so the dim fades with the panel).
       trapFocus: rootContext.open.value,
     },
     () => slots.default?.(),
