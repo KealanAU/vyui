@@ -8,7 +8,7 @@ interface CollectionContext<ItemData = {}> {
   itemMap: Ref<Map<ElementHandle, { ref: ElementHandle, value?: any } & ItemData>>
 }
 
-const ITEM_DATA_ATTR = 'data-vy-collection-item'
+const ITEM_DATA_ATTR = 'data-vyui-collection-item'
 
 export function useCollection<ItemData = {}>(options: { key?: string, isProvider?: boolean } = {}) {
   const { key = '', isProvider = false } = options

@@ -79,14 +79,3 @@ describe('SwipeAction — release-snap decision', () => {
     expect(decide({ ...base, endX: -30, velocity: -1400 })).toBe('commit')
   })
 })
-
-describe.skip('SwipeAction — render (blocked on MTS test infra)', () => {
-  it('renders the row content', async () => {
-    const { render, waitForUpdate } = await import('@vyui/testing-utils')
-    const Story = (await import('./story/_SwipeAction.vue')).default
-    const { container } = render(Story, {})
-    await waitForUpdate()
-    const row = container.querySelector('[data-testid="row-text"]') as HTMLElement | null
-    expect(row?.textContent).toBe('Inbox row')
-  })
-})

@@ -121,10 +121,3 @@ describe('List — invoke() web fallback', () => {
     }
   })
 })
-
-describe.skip('List — render (blocked on MTS test infra)', () => {
-  it('renders a <list> element with the configured spanCount', async () => {
-    // see plans/mobile-first-pivot.md §3D for the MT-binding crash that
-    // prevents render-based tests here.
-  })
-})

@@ -45,16 +45,3 @@ describe('Sortable — commitReorder logic', () => {
     expect(move(['a', 'b', 'c', 'd'], 1, 1)).toEqual(['a', 'b', 'c', 'd'])
   })
 })
-
-describe.skip('Sortable — render (blocked on MTS test infra)', () => {
-  it('renders one row per item', async () => {
-    const { render, waitForUpdate } = await import('@vyui/testing-utils')
-    const Sortable = (await import('./story/_Sortable.vue')).default
-    const { container } = render(Sortable, {})
-    await waitForUpdate()
-    expect(container.querySelector('[data-testid="row-a"]')).not.toBeNull()
-    expect(container.querySelector('[data-testid="row-b"]')).not.toBeNull()
-    expect(container.querySelector('[data-testid="row-c"]')).not.toBeNull()
-    expect(container.querySelector('[data-testid="row-d"]')).not.toBeNull()
-  })
-})

@@ -19,9 +19,6 @@ vi.mock('vue-lynx', async () => {
   }
 })
 
-const { render, waitForUpdate } = await import('@vyui/testing-utils')
-const Draggable = (await import('./story/_Draggable.vue')).default
-
 // NOTE: full render coverage of Draggable is blocked on MTS test infra — the
 // `:main-thread-bind*` template attrs crash under vitest even with the mock
 // above. Touch / drag / velocity is verified manually in LynxExplorer. See
@@ -31,14 +28,5 @@ describe('Draggable — exports', () => {
   it('exports Draggable as default and named types', async () => {
     const mod = await import('.')
     expect(mod.Draggable).toBeDefined()
-  })
-})
-
-describe.skip('Draggable — render (blocked on MTS test infra)', () => {
-  it('renders a handle with initial dragging=false', async () => {
-    const { container } = render(Draggable, {})
-    await waitForUpdate()
-    const dragging = container.querySelector('[data-testid="dragging"]') as HTMLElement | null
-    expect(dragging?.textContent).toBe('no')
   })
 })

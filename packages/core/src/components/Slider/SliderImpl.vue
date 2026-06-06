@@ -34,7 +34,7 @@ const emits = defineEmits<SliderImplEmits>()
     Lynx fires `touchstart`/`touchmove`/`touchend` — never DOM pointer events.
   -->
   <Primitive
-    data-slider-impl
+    data-vyui-slider-impl
     v-bind="props"
     @touchstart="(event: any) => emits('slideStart', event)"
     @touchmove="(event: any) => emits('slideMove', event, 'touch')"

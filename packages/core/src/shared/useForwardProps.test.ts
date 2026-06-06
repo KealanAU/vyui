@@ -21,17 +21,17 @@ function setupTestComponent(props: Record<string, any>, options = { computed: fa
 }
 
 describe('useForwardProps', () => {
-  it('should forward nothing as no props provided', () => {
+  it('forwards nothing when no props are provided', () => {
     const wrapper = mount(setupTestComponent({ id: String }))
     expect(wrapper.emitted('log')?.[0][0]).toStrictEqual({})
   })
 
-  it('should forward default props', () => {
+  it('forwards default props', () => {
     const wrapper = mount(setupTestComponent({ id: { type: String, default: 'test' } }))
     expect(wrapper.emitted('log')?.[0][0]).toStrictEqual({ id: 'test' })
   })
 
-  it('should forward provided props instead of default', () => {
+  it('forwards provided props over defaults', () => {
     const props = { id: 'new-test', number: 0, enabled: false }
     const wrapper = mount(setupTestComponent(
       { id: { type: String, default: 'test' }, number: Number, enabled: Boolean },
@@ -39,19 +39,19 @@ describe('useForwardProps', () => {
     expect(wrapper.emitted('log')?.[0][0]).toStrictEqual(props)
   })
 
-  it('should be reactive', async () => {
+  it('is reactive', async () => {
     const wrapper = mount(setupTestComponent({ id: { type: String, default: 'test' } }))
     expect(wrapper.emitted('log')?.[0][0]).toStrictEqual({ id: 'test' })
     await wrapper.setProps({ id: 'new-test' })
     expect(wrapper.emitted('log')?.[1][0]).toStrictEqual({ id: 'new-test' })
   })
 
-  it('should not forwarded not provided props', () => {
+  it('ignores props not declared on the component', () => {
     const wrapper = mount(setupTestComponent({ id: { type: String, default: 'test' } }), { props: { extra: 'not-related' }, attrs: { class: 'custom' } })
     expect(wrapper.emitted('log')?.[0][0]).toStrictEqual({ id: 'test' })
   })
 
-  it('should not forwarded props that is not passed as parameters', async () => {
+  it('forwards only the picked props', async () => {
     const component = defineComponent({
       props: { id: { type: String, default: 'test' }, extra: { type: String, default: 'not-related' } },
       emits: ['log'],
@@ -71,7 +71,7 @@ describe('useForwardProps', () => {
   })
 
   describe('with computedRef', async () => {
-    it('should be reactive', async () => {
+    it('is reactive', async () => {
       const wrapper = mount(setupTestComponent({ id: { type: String, default: 'test' } }, { computed: true }))
       expect(wrapper.emitted('log')?.[0][0]).toStrictEqual({ id: 'test' })
       await wrapper.setProps({ id: 'new-test' })

@@ -92,12 +92,6 @@ describe('popover', () => {
     expect(q(container, 'content')).not.toBeNull()
   })
 
-  // PopoverContentModal/NonModal register the overlay solely on
-  // `rootContext.open.value`; the `forceMount` prop is read by Presence but
-  // never threaded into the overlay-store registration. Until the impl wires
-  // forceMount into the watch, the closed-but-mounted assertion can't pass.
-  it.todo('forceMount renders content while closed (impl gap: forceMount not threaded into overlayStore registration)')
-
   it('selects the modal variant when modal=true', async () => {
     // The variant is module-private. Use the captured story state: modal:true
     // does NOT change semantics on Lynx but the file branches; assert opening

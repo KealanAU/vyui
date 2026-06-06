@@ -40,14 +40,14 @@ describe('getWeekNumber', () => {
   })
 
   describe('firstDayOfWeek override', () => {
-    it('should use locale for ISO detection, not firstDayOfWeek override', () => {
+    it('detects ISO from locale, not the firstDayOfWeek override', () => {
       // en-US with Monday override should still use non-ISO week numbering (Jan 1 in week 1)
       // Jan 1, 2023 is a Sunday. In non-ISO (en-US style), it's week 1.
       // In ISO 8601, Jan 1, 2023 would be week 52 of 2022.
       expect(getWeekNumber(new CalendarDate(2023, 1, 1), 'en-US', 'mon')).toBe(1)
     })
 
-    it('should respect firstDayOfWeek for week boundaries', () => {
+    it('respects firstDayOfWeek for week boundaries', () => {
       // de-DE with Sunday override: week boundaries shift to Sunday
       // Jan 2, 2005 (Sunday) with Sunday start → week is Jan 2-8, contains Jan 4 → week 1
       // Without override (Monday start) → week is Dec 27-Jan 2, no Jan 4 → week 53

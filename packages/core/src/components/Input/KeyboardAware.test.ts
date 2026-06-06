@@ -1,6 +1,6 @@
 // Adapted from lynx-family/lynx-ui (Apache-2.0). Verifies provider/consumer
 // wiring without depending on Lynx's platform keyboard event.
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
 import { defineComponent, h, inject, nextTick, ref } from 'vue'
 import {
@@ -74,6 +74,13 @@ describe('KeyboardAware* — provider / consumer wiring', () => {
 })
 
 describe('KeyboardAware* — focus tracking', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   // When the inner Input fires focus, the surrounding Trigger should report
   // up to the Root and become its `__test_focusedRef()`.
   it('marks the focused trigger after the input fires focus', async () => {
@@ -123,8 +130,9 @@ describe('KeyboardAware* — focus tracking', () => {
     expect(rootRef.value.__test_focusedRef()).not.toBeNull()
 
     fireEvent.blur(container.querySelector('[data-testid="ka-input"]')!, { detail: { value: '' } })
-    // Allow the 30ms blur-debounce in KeyboardAwareRoot to flush.
-    await new Promise(resolve => setTimeout(resolve, 40))
+    // Flush the 30ms blur-debounce in KeyboardAwareRoot deterministically.
+    vi.advanceTimersByTime(30)
+    await waitForUpdate()
     expect(rootRef.value.__test_focusedRef()).toBeNull()
   })
 })

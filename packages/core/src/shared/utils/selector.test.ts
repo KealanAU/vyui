@@ -38,7 +38,7 @@ describe('selector utils', () => {
   })
 
   describe('InvokeRejectError', () => {
-    it('should create error with code and message', () => {
+    it('carries the code and message', () => {
       const error = new InvokeRejectError(404, 'Not Found')
       expect(error.errorCode).toBe(404)
       expect(error.message).toBe('Not Found')
@@ -49,7 +49,7 @@ describe('selector utils', () => {
     const testProps = { style: { color: 'red' } }
 
     describe('setNativePropsByRef', () => {
-      it('should call setNativeProps with ref', () => {
+      it('calls setNativeProps via the ref', () => {
         const mockRef = {
           current: {
             setNativeProps: vi.fn().mockReturnThis(),
@@ -63,7 +63,7 @@ describe('selector utils', () => {
     })
 
     describe('setNativePropsById', () => {
-      it('should call setNativeProps with id', () => {
+      it('calls setNativeProps via the id selector', () => {
         setNativePropsById('test-id', testProps)
         expect(mockSelect).toHaveBeenCalledWith('#test-id')
         expect(mockSetNativeProps).toHaveBeenCalledWith(testProps)
@@ -72,12 +72,12 @@ describe('selector utils', () => {
     })
 
     describe('setNativeProps', () => {
-      it('should use id when available', () => {
+      it('uses the id when available', () => {
         setNativeProps({ id: 'test-id' }, testProps)
         expect(mockSelect).toHaveBeenCalledWith('#test-id')
       })
 
-      it('should use ref when id is not available', () => {
+      it('falls back to the ref when no id', () => {
         const mockRef = {
           current: {
             setNativeProps: vi.fn().mockReturnThis(),
@@ -95,7 +95,7 @@ describe('selector utils', () => {
     const params = { test: true }
 
     describe('invokeByRef', () => {
-      it('should resolve successfully', async () => {
+      it('resolves on success', async () => {
         const successResponse = { data: 'success' }
         const mockRef = {
           current: {
@@ -109,13 +109,13 @@ describe('selector utils', () => {
         expect(result).toBe(successResponse)
       })
 
-      it('should reject when no ref current', async () => {
+      it('rejects when the ref has no current node', async () => {
         await expect(invokeByRef({} as any, method, params)).rejects.toThrow(
           'no node found for the ref',
         )
       })
 
-      it('should reject on failure', async () => {
+      it('rejects on failure', async () => {
         const mockRef = {
           current: {
             invoke: vi.fn().mockImplementation(({ fail }) => ({
@@ -129,7 +129,7 @@ describe('selector utils', () => {
     })
 
     describe('invokeById', () => {
-      it('should resolve successfully', async () => {
+      it('resolves on success', async () => {
         const successResponse = { data: 'success' }
         mockInvoke.mockImplementation(({ success }) => {
           success(successResponse)
@@ -140,7 +140,7 @@ describe('selector utils', () => {
         expect(result).toBe(successResponse)
       })
 
-      it('should reject on failure', async () => {
+      it('rejects on failure', async () => {
         mockInvoke.mockImplementation(({ fail }) => {
           fail({ code: 500, data: 'error' })
           return { exec: mockExec }
@@ -160,7 +160,7 @@ describe('selector utils', () => {
     }
 
     describe('getRectByRef', () => {
-      it('should get rect relative to viewport', async () => {
+      it('gets the rect relative to the viewport', async () => {
         const mockRef = {
           current: {
             invoke: vi.fn().mockImplementation(({ success }) => ({
@@ -173,7 +173,7 @@ describe('selector utils', () => {
         expect(result).toEqual(mockRect)
       })
 
-      it('should get rect relative to screen', async () => {
+      it('gets the rect relative to the screen', async () => {
         const mockRef = {
           current: {
             invoke: vi.fn().mockImplementation(({ success, params }) => ({
@@ -191,7 +191,7 @@ describe('selector utils', () => {
     })
 
     describe('getRectById', () => {
-      it('should get rect by id', async () => {
+      it('gets the rect by id', async () => {
         mockInvoke.mockImplementation(({ success }) => {
           success(mockRect)
           return { exec: mockExec }
@@ -203,7 +203,7 @@ describe('selector utils', () => {
     })
 
     describe('getRect', () => {
-      it('should use id when available', async () => {
+      it('uses the id when available', async () => {
         mockInvoke.mockImplementation(({ success }) => {
           success(mockRect)
           return { exec: mockExec }
@@ -213,7 +213,7 @@ describe('selector utils', () => {
         expect(result).toEqual(mockRect)
       })
 
-      it('should use ref when id is not available', async () => {
+      it('falls back to the ref when no id', async () => {
         const mockRef = {
           current: {
             invoke: vi.fn().mockImplementation(({ success }) => ({

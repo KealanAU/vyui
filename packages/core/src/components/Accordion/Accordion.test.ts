@@ -5,7 +5,7 @@ import Accordion from './story/_Accordion.vue'
 function triggers(container: Element) {
   // Stable hook: a disabled trigger's accessibility-traits flips to "disabled",
   // so select the collection-item marker instead of the trait value.
-  return container.querySelectorAll('[data-vy-collection-item]')
+  return container.querySelectorAll('[data-vyui-collection-item]')
 }
 
 function stateOf(el: Element | undefined) {
@@ -26,7 +26,7 @@ describe('Accordion — single (default)', () => {
     expect(container.innerHTML).not.toContain('Content One')
   })
 
-  it('tapping a trigger opens it and mounts its content', async () => {
+  it('opens a trigger and mounts its content on tap', async () => {
     const { container } = render(Accordion)
     await tap(triggers(container)[0]!)
     expect(stateOf(triggers(container)[0])).toBe('open')
@@ -40,7 +40,7 @@ describe('Accordion — single (default)', () => {
     expect(onUpdate).toHaveBeenCalledWith('One')
   })
 
-  it('tapping the active trigger does not close it (single is collapsible=false)', async () => {
+  it('keeps the active trigger open on re-tap (collapsible=false)', async () => {
     const onUpdate = vi.fn()
     const { container } = render(Accordion, { 'onUpdate:modelValue': onUpdate })
     const first = triggers(container)[0]!
@@ -51,7 +51,7 @@ describe('Accordion — single (default)', () => {
     expect(onUpdate).toHaveBeenCalledTimes(1)
   })
 
-  it('opening another trigger closes the previous one', async () => {
+  it('closes the previous trigger when another opens', async () => {
     const onUpdate = vi.fn()
     const { container } = render(Accordion, { 'onUpdate:modelValue': onUpdate })
     await tap(triggers(container)[0]!)
@@ -66,7 +66,7 @@ describe('Accordion — single (default)', () => {
 })
 
 describe('Accordion — single, collapsible', () => {
-  it('tapping the active trigger closes it', async () => {
+  it('closes the active trigger on re-tap', async () => {
     const onUpdate = vi.fn()
     const { container } = render(Accordion, { collapsible: true, 'onUpdate:modelValue': onUpdate })
     const first = triggers(container)[0]!
@@ -87,7 +87,7 @@ describe('Accordion — multiple', () => {
     expect(container.innerHTML).toContain('Content One')
   })
 
-  it('tapping the active trigger closes it and emits an empty array', async () => {
+  it('closes the active trigger on re-tap and emits an empty array', async () => {
     const onUpdate = vi.fn()
     const { container } = render(Accordion, { type: 'multiple', 'onUpdate:modelValue': onUpdate })
     const first = triggers(container)[0]!
@@ -113,7 +113,7 @@ describe('Accordion — multiple', () => {
 })
 
 describe('Accordion — disabled', () => {
-  it('a disabled root marks triggers disabled and ignores taps', async () => {
+  it('marks triggers disabled and ignores taps', async () => {
     const onUpdate = vi.fn()
     const { container } = render(Accordion, { disabled: true, 'onUpdate:modelValue': onUpdate })
     const first = triggers(container)[0]!

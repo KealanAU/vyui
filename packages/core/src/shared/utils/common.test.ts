@@ -20,36 +20,36 @@ describe('common utils', () => {
       undefinedValue: undefined,
     }
 
-    it('should return value for dot notation path', () => {
+    it('reads a dot-notation path', () => {
       expect(get(testObj, 'a.b.c')).toBe('value')
     })
 
-    it('should return value for bracket notation path', () => {
+    it('reads a bracket-notation path', () => {
       expect(get(testObj, 'a[b][c]')).toBe('value')
     })
 
-    it('should return value for array index path', () => {
+    it('reads an array-index path', () => {
       expect(get(testObj, 'a.arr[0].nested')).toBe('array-value')
       expect(get(testObj, 'a.arr.0.nested')).toBe('array-value')
     })
 
-    it('should return default value when path does not exist', () => {
+    it('returns the default when the path is missing', () => {
       expect(get(testObj, 'a.b.d', 'default')).toBe('default')
       expect(get(testObj, 'x.y.z', 'default')).toBe('default')
     })
 
-    it('should return undefined when no default value is provided and path does not exist', () => {
+    it('returns undefined for a missing path with no default', () => {
       expect(get(testObj, 'a.b.d')).toBeUndefined()
     })
 
-    it('should handle null and undefined values', () => {
+    it('handles null and undefined values along the path', () => {
       expect(get(testObj, 'nullValue.something', 'default')).toBe('default')
       expect(get(testObj, 'undefinedValue.something', 'default')).toBe(
         'default',
       )
     })
 
-    it('should return default value when input is not an object', () => {
+    it('returns the default when input is not an object', () => {
       expect(get(null, 'any.path', 'default')).toBe('default')
       expect(get(undefined, 'any.path', 'default')).toBe('default')
       expect(get('string', 'any.path', 'default')).toBe('default')
@@ -58,7 +58,7 @@ describe('common utils', () => {
   })
 
   describe('noop', () => {
-    it('should be a function that returns undefined', () => {
+    it('is a function that returns undefined', () => {
       expect(typeof noop).toBe('function')
       expect(noop()).toBeUndefined()
     })

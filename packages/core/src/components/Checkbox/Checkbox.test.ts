@@ -5,12 +5,12 @@ import Checkbox from './story/_Checkbox.vue'
 import CheckboxGroup from './story/_CheckboxGroup.vue'
 
 describe('given a default Checkbox', () => {
-  it('should render checkbox', () => {
+  it('renders', () => {
     const { container } = render(Checkbox)
-    expect(container).toBeTruthy()
+    expect(container.querySelector('[data-testid="checkbox"]')).not.toBeNull()
   })
 
-  it('should have accessibility-traits set to button', () => {
+  it('sets accessibility-traits to button', () => {
     const { container } = render(Checkbox)
     expect(container.querySelector('[accessibility-traits="button"]')).not.toBeNull()
   })
@@ -26,7 +26,7 @@ describe('given a default Checkbox', () => {
       await waitForUpdate()
     })
 
-    it('should show checked state', () => {
+    it('shows checked state', () => {
       expect(checkbox.getAttribute('data-state')).toBe('checked')
     })
 
@@ -35,7 +35,7 @@ describe('given a default Checkbox', () => {
         fireEvent.tap(checkbox)
         await waitForUpdate()
       })
-      it('should show unchecked state', () => {
+      it('shows unchecked state', () => {
         expect(checkbox.getAttribute('data-state')).toBe('unchecked')
       })
     })
@@ -43,9 +43,9 @@ describe('given a default Checkbox', () => {
 })
 
 describe('given CheckboxGroup', () => {
-  it('should render checkbox', () => {
+  it('renders', () => {
     const { container } = render(CheckboxGroup)
-    expect(container).toBeTruthy()
+    expect(container.querySelectorAll('[data-testid="checkbox"]').length).toBeGreaterThan(0)
   })
 
   describe('when tapping a checkbox', () => {
@@ -59,7 +59,7 @@ describe('given CheckboxGroup', () => {
       await waitForUpdate()
     })
 
-    it('should mark first checkbox as checked', () => {
+    it('marks the first checkbox checked', () => {
       expect(checkboxes[0].getAttribute('data-state')).toBe('checked')
     })
 
@@ -68,7 +68,7 @@ describe('given CheckboxGroup', () => {
         fireEvent.tap(checkboxes[0])
         await waitForUpdate()
       })
-      it('should uncheck the checkbox', () => {
+      it('unchecks the checkbox', () => {
         expect(checkboxes[0].getAttribute('data-state')).toBe('unchecked')
       })
     })
@@ -79,7 +79,7 @@ describe('given CheckboxGroup', () => {
         await waitForUpdate()
       })
 
-      it('should have two checked checkboxes', () => {
+      it('keeps both checkboxes checked', () => {
         expect(checkboxes[0].getAttribute('data-state')).toBe('checked')
         expect(checkboxes[1].getAttribute('data-state')).toBe('checked')
         expect(checkboxes[2].getAttribute('data-state')).toBe('unchecked')
@@ -104,7 +104,7 @@ describe('given a disabled Checkbox', () => {
       fireEvent.tap(checkbox)
       await waitForUpdate()
     })
-    it('should remain unchecked', () => {
+    it('remains unchecked', () => {
       expect(checkbox.getAttribute('data-state')).toBe('unchecked')
     })
   })
@@ -119,11 +119,11 @@ describe('given value as "indeterminate"', () => {
     checkbox = container.querySelector('[data-testid="checkbox"]')!
   })
 
-  it('should have data-state of "indeterminate"', () => {
+  it('has data-state "indeterminate"', () => {
     expect(checkbox.getAttribute('data-state')).toBe('indeterminate')
   })
 
-  it('should become checked after tap', async () => {
+  it('becomes checked after tap', async () => {
     fireEvent.tap(checkbox)
     await waitForUpdate()
     expect(checkbox.getAttribute('data-state')).toBe('checked')
@@ -131,7 +131,7 @@ describe('given value as "indeterminate"', () => {
 })
 
 describe('given checkbox v-model', () => {
-  it('should reflect modelValue changes', async () => {
+  it('reflects modelValue changes', async () => {
     const { container } = render(Checkbox)
     const checkbox = container.querySelector('[data-testid="checkbox"]')!
     expect(checkbox.getAttribute('data-state')).toBe('unchecked')

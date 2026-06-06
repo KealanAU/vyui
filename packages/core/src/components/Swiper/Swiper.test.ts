@@ -19,13 +19,6 @@ vi.mock('vue-lynx', async () => {
   }
 })
 
-const { render, waitForUpdate } = await import('@vyui/testing-utils')
-const Swiper = (await import('./story/_Swiper.vue')).default
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
-
 // NOTE: full render coverage of SwiperRoot is blocked on MTS test infra —
 // the `:main-thread-bind*` template attrs crash under vitest even with the
 // mock above because the binding itself goes through the MT ops pipeline.
@@ -88,28 +81,5 @@ describe('Swiper — SwiperItem width override', () => {
   it('width 0 still wins (explicit zero is intentional)', () => {
     // `??` semantics — 0 is not nullish, so the override applies.
     expect(itemWidth(0, 240)).toBe(0)
-  })
-})
-
-describe.skip('Swiper — render (blocked on MTS test infra)', () => {
-  it('renders the configured number of items', async () => {
-    const { container } = render(Swiper, { itemCount: 3 })
-    await waitForUpdate()
-    expect(q(container, 'item-0')).not.toBeNull()
-    expect(q(container, 'item-1')).not.toBeNull()
-    expect(q(container, 'item-2')).not.toBeNull()
-  })
-
-  it('starts at defaultValue index', async () => {
-    const { container } = render(Swiper, { defaultValue: 2, itemCount: 4 })
-    await waitForUpdate()
-    expect(q(container, 'index')?.textContent).toBe('2')
-  })
-
-  it('item width is applied as inline style', async () => {
-    const { container } = render(Swiper, { itemCount: 2, itemWidth: 250 })
-    await waitForUpdate()
-    const item = q(container, 'item-0')
-    expect(item?.getAttribute('style') ?? '').toContain('width: 250px')
   })
 })

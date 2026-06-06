@@ -28,7 +28,7 @@ const isRender = computed(() => {
     v-if="isRender"
     :as="as"
     :as-child="asChild"
-    data-combobox-empty=""
+    data-vyui-combobox-empty=""
     v-bind="$attrs"
   >
     <slot />

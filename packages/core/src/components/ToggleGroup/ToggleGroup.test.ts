@@ -12,7 +12,7 @@ describe('given default Toggle Group', () => {
     triggers = container.querySelectorAll('[data-testid="toggle-item"]')
   })
 
-  it('should have active toggle=center', () => {
+  it('activates the center toggle', () => {
     expect(triggers[0].getAttribute('data-state')).toBe('off')
     expect(triggers[1].getAttribute('data-state')).toBe('on')
     expect(triggers[2].getAttribute('data-state')).toBe('off')
@@ -24,7 +24,7 @@ describe('given default Toggle Group', () => {
       await waitForUpdate()
     })
 
-    it('should deselect the pre-existing value', () => {
+    it('deselects the pre-existing value', () => {
       expect(triggers[0].getAttribute('data-state')).toBe('off')
       expect(triggers[1].getAttribute('data-state')).toBe('off')
       expect(triggers[2].getAttribute('data-state')).toBe('off')
@@ -37,7 +37,7 @@ describe('given default Toggle Group', () => {
       await waitForUpdate()
     })
 
-    it('should activate the tapped toggle', () => {
+    it('activates the tapped toggle', () => {
       expect(triggers[0].getAttribute('data-state')).toBe('off')
       expect(triggers[1].getAttribute('data-state')).toBe('off')
       expect(triggers[2].getAttribute('data-state')).toBe('on')
@@ -54,7 +54,7 @@ describe('given multiple value Toggle Group', () => {
     triggers = container.querySelectorAll('[data-testid="toggle-item"]')
   })
 
-  it('should have active toggles for center and right', () => {
+  it('activates the center and right toggles', () => {
     expect(triggers[0].getAttribute('data-state')).toBe('off')
     expect(triggers[1].getAttribute('data-state')).toBe('on')
     expect(triggers[2].getAttribute('data-state')).toBe('on')
@@ -66,7 +66,7 @@ describe('given multiple value Toggle Group', () => {
       await waitForUpdate()
     })
 
-    it('should deactivate that toggle', () => {
+    it('deactivates that toggle', () => {
       expect(triggers[0].getAttribute('data-state')).toBe('off')
       expect(triggers[1].getAttribute('data-state')).toBe('on')
       expect(triggers[2].getAttribute('data-state')).toBe('off')
@@ -79,7 +79,7 @@ describe('given multiple value Toggle Group', () => {
       await waitForUpdate()
     })
 
-    it('should activate that toggle', () => {
+    it('activates that toggle', () => {
       expect(triggers[0].getAttribute('data-state')).toBe('on')
       expect(triggers[1].getAttribute('data-state')).toBe('on')
       expect(triggers[2].getAttribute('data-state')).toBe('on')

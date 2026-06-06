@@ -1,5 +1,5 @@
 import { createEvent } from '@testing-library/dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
 import _Avatar from './story/_Avatar.vue'
 
@@ -36,7 +36,7 @@ describe('Avatar — image / fallback', () => {
     expect(fallback(container)).not.toBeNull()
   })
 
-  it('falls back to the fallback content when the image errors', async () => {
+  it('shows the fallback when the image errors', async () => {
     const { container } = render(_Avatar, { src: 'https://example.com/bad.png', fallback: 'AB' })
     const img = image(container)
     expect(img).not.toBeNull()
@@ -48,6 +48,13 @@ describe('Avatar — image / fallback', () => {
 })
 
 describe('Avatar — delayMs', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('shows the fallback immediately when delayMs is 0', () => {
     const { container } = render(_Avatar, { fallback: 'AB', delayMs: 0 })
     expect(fallback(container)).not.toBeNull()
@@ -57,7 +64,7 @@ describe('Avatar — delayMs', () => {
     const { container } = render(_Avatar, { fallback: 'AB', delayMs: 50 })
     // Not yet visible right after mount.
     expect(fallback(container)).toBeNull()
-    await new Promise(resolve => setTimeout(resolve, 80))
+    vi.advanceTimersByTime(50)
     await waitForUpdate()
     expect(fallback(container)).not.toBeNull()
   })

@@ -54,17 +54,6 @@ describe('FeedList — keyFor', () => {
   })
 })
 
-describe.skip('FeedList — render (blocked on MTS test infra)', () => {
-  it('renders one list-item per items entry', async () => {
-    const { render, waitForUpdate } = await import('@vyui/testing-utils')
-    const Story = (await import('./story/_FeedList.vue')).default
-    const { container } = render(Story, {})
-    await waitForUpdate()
-    expect(container.querySelector('[data-testid="row-r-0"]')).not.toBeNull()
-    expect(container.querySelector('[data-testid="row-r-29"]')).not.toBeNull()
-  })
-})
-
 // Pull-to-refresh: the iOS list runtime requires `<refresh>` wrapping `<list>`
 // with `<refresh-header>` as a sibling — putting `<refresh-header>` inside
 // `<list>` crashes the create-UI pass (`refresh-header ui not found`). The

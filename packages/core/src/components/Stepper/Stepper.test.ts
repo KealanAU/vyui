@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
 import Stepper from './story/_Stepper.vue'
 
-describe('given a Stepper', () => {
-  it('should render', () => {
+describe('Stepper', () => {
+  it('renders', () => {
     const { container } = render(Stepper)
     expect(container.querySelector('[data-testid="stepper"]')).not.toBeNull()
   })
 
-  it('respects a default modelValue if provided', () => {
+  it('respects a provided default modelValue', () => {
     const { container } = render(Stepper, { stepperProps: { modelValue: 2 } })
     expect(container.querySelector('[data-testid="stepper-item-2"]')?.getAttribute('data-state')).toBe('active')
   })

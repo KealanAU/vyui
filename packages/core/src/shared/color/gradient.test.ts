@@ -9,7 +9,7 @@ import { parseColor } from './parse'
 
 describe('getSliderGradient', () => {
   describe('hue channel', () => {
-    it('should return full rainbow spectrum', () => {
+    it('returns the full rainbow spectrum', () => {
       const red = parseColor('#ff0000')
       const gradient = getSliderGradient(red, 'hue', 'hsl')
       expect(gradient).toContain('#ff0000') // red
@@ -20,14 +20,14 @@ describe('getSliderGradient', () => {
       expect(gradient).toContain('#ff00ff') // magenta
     })
 
-    it('should use linear-gradient', () => {
+    it('uses linear-gradient', () => {
       const red = parseColor('#ff0000')
       expect(getSliderGradient(red, 'hue', 'hsl')).toContain('linear-gradient')
     })
   })
 
   describe('saturation channel', () => {
-    it('should return gray-to-color gradient for HSL', () => {
+    it('returns a gray-to-color gradient for HSL', () => {
       const red = parseColor('hsl(0, 100%, 50%)')
       const gradient = getSliderGradient(red, 'saturation', 'hsl')
       expect(gradient).toContain('linear-gradient')
@@ -35,7 +35,7 @@ describe('getSliderGradient', () => {
       expect(gradient).toContain('hsl(0, 100%, 50%)') // full red
     })
 
-    it('should return gray-to-color gradient for HSB', () => {
+    it('returns a gray-to-color gradient for HSB', () => {
       const red = parseColor('hsb(0, 100%, 100%)')
       const gradient = getSliderGradient(red, 'saturation', 'hsb')
       expect(gradient).toContain('linear-gradient')
@@ -45,7 +45,7 @@ describe('getSliderGradient', () => {
   })
 
   describe('lightness channel', () => {
-    it('should span from black through color to white', () => {
+    it('spans black through color to white', () => {
       const red = parseColor('hsl(0, 100%, 50%)')
       const gradient = getSliderGradient(red, 'lightness', 'hsl')
       expect(gradient).toContain('hsl(0, 100%, 0%)') // black
@@ -55,7 +55,7 @@ describe('getSliderGradient', () => {
   })
 
   describe('brightness channel', () => {
-    it('should span from black to full-brightness color', () => {
+    it('spans black to full-brightness color', () => {
       const red = parseColor('hsb(0, 100%, 100%)')
       const gradient = getSliderGradient(red, 'brightness', 'hsb')
       expect(gradient).toContain('rgb(0, 0, 0)') // black at B=0
@@ -64,21 +64,21 @@ describe('getSliderGradient', () => {
   })
 
   describe('rGB channels', () => {
-    it('should return red gradient holding g/b constant', () => {
+    it('returns a red gradient holding g/b constant', () => {
       const color = parseColor('#808080') // rgb(128, 128, 128)
       const gradient = getSliderGradient(color, 'red', 'rgb')
       expect(gradient).toContain('rgb(0, 128, 128)') // r=0
       expect(gradient).toContain('rgb(255, 128, 128)') // r=255
     })
 
-    it('should return green gradient holding r/b constant', () => {
+    it('returns a green gradient holding r/b constant', () => {
       const color = parseColor('#808080')
       const gradient = getSliderGradient(color, 'green', 'rgb')
       expect(gradient).toContain('rgb(128, 0, 128)') // g=0
       expect(gradient).toContain('rgb(128, 255, 128)') // g=255
     })
 
-    it('should return blue gradient holding r/g constant', () => {
+    it('returns a blue gradient holding r/g constant', () => {
       const color = parseColor('#808080')
       const gradient = getSliderGradient(color, 'blue', 'rgb')
       expect(gradient).toContain('rgb(128, 128, 0)') // b=0

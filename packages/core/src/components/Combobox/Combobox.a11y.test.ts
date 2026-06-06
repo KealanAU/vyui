@@ -11,7 +11,7 @@ function getInput(container: Element) {
 }
 
 function getItems(container: Element) {
-  return Array.from(container.querySelectorAll('[data-combobox-item]'))
+  return Array.from(container.querySelectorAll('[data-vyui-combobox-item]'))
 }
 
 // Native Lynx a11y output (via useA11y). Behaviour lives in Combobox.test.ts;

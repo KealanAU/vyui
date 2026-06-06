@@ -14,7 +14,7 @@ describe('given default Toggle', () => {
     toggle = container.querySelector('[data-state]')!
   })
 
-  it('should not be toggled yet', () => {
+  it('starts off', () => {
     expect(toggle.getAttribute('data-state')).toBe('off')
   })
 
@@ -46,7 +46,7 @@ describe('given default Toggle', () => {
         await waitForUpdate()
       })
 
-      it('should be toggled off', () => {
+      it('is off again', () => {
         expect(toggle.getAttribute('data-state')).toBe('off')
       })
     })
@@ -86,7 +86,7 @@ describe('given disabled Toggle', () => {
     toggle = container.querySelector('[data-state]')!
   })
 
-  it('should not be toggled yet', () => {
+  it('starts off', () => {
     expect(toggle.getAttribute('data-state')).toBe('off')
   })
 
@@ -96,7 +96,7 @@ describe('given disabled Toggle', () => {
       await waitForUpdate()
     })
 
-    it('should be toggled off', () => {
+    it('stays off', () => {
       expect(toggle.getAttribute('data-state')).toBe('off')
     })
 
@@ -115,7 +115,7 @@ describe('given disabled Toggle', () => {
       expect(updates).toEqual([])
     })
 
-    it('should render disabled attributes', () => {
+    it('renders disabled attributes', () => {
       expect(toggle.getAttribute('data-disabled')).toBe('')
       expect(toggle.getAttribute('disabled')).toBe('')
     })
