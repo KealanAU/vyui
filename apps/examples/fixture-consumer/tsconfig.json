@@ -1,0 +1,23 @@
+{
+  // Type-lock for `@vyui/core`'s PUBLISHED `.d.ts` surface. Unlike the demo
+  // apps, this package deliberately does NOT path-map `@vyui/core` to its
+  // `src` — it resolves the package through node_modules (`exports` → built
+  // `dist/*.d.ts`). So a regression in core's *emitted* types (the surface npm
+  // consumers actually get) fails this typecheck. Core must be built first.
+  "compilerOptions": {
+    "strict": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "jsx": "preserve",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true
+  },
+  "vueCompilerOptions": {
+    "plugins": ["vue-lynx/types/volar-plugin"]
+  },
+  "include": ["src/**/*"]
+}
