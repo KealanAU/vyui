@@ -7,6 +7,7 @@ export interface SliderRangeProps extends PrimitiveProps {}
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { VyStyle } from '@/shared/types'
 import { Primitive } from '@/components/Primitive'
 import { injectSliderRootContext } from './SliderRoot.vue'
 import { convertValueToPercentage, injectSliderOrientationContext } from './utils'
@@ -22,6 +23,11 @@ const percentages = computed(() => rootContext.currentModelValue.value.map(value
 
 const offsetStart = computed(() => rootContext.currentModelValue.value.length > 1 ? Math.min(...percentages.value!) : 0)
 const offsetEnd = computed(() => 100 - Math.max(...percentages.value, 0))
+
+const rangeStyle = computed<VyStyle>(() => ({
+  [orientation!.startEdge.value]: `${offsetStart.value}%`,
+  [orientation!.endEdge.value]: `${offsetEnd.value}%`,
+}))
 </script>
 
 <template>
@@ -30,10 +36,7 @@ const offsetEnd = computed(() => 100 - Math.max(...percentages.value, 0))
     :data-orientation="rootContext.orientation.value"
     :as-child="asChild"
     :as="as"
-    :style="{
-      [orientation!.startEdge.value]: `${offsetStart}%`,
-      [orientation!.endEdge.value]: `${offsetEnd}%`,
-    }"
+    :style="rangeStyle"
   >
     <slot />
   </Primitive>
