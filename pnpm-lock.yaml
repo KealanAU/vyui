@@ -345,8 +345,8 @@ importers:
   packages/testing-utils:
     dependencies:
       '@lynx-js/testing-environment':
-        specifier: ^0.1.11
-        version: 0.1.12
+        specifier: ^0.2.1
+        version: 0.2.1
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -1385,6 +1385,9 @@ packages:
 
   '@lynx-js/testing-environment@0.1.12':
     resolution: {integrity: sha512-l//JODf9sEM2TBHKN38/KpLtyrecwzSA2AzNADxiG6VCDDCm+78zsZeqvz/3Y9arUImMj3uUGWWx6wS8D8xnaQ==}
+
+  '@lynx-js/testing-environment@0.2.1':
+    resolution: {integrity: sha512-Yndi4PntMeZsjcrJ0ZJg3tlB3yMqIPEqceygv7WVu2tiJUJlEMSLFug7ZDtkvYxH6E7J0wSuirkk4AnuBZ5ZUg==}
 
   '@lynx-js/types@3.8.0':
     resolution: {integrity: sha512-QdO5+G2Fh9/rE3E5HeVN/jOtCFZCFHmDXtMuOI1472grW4PpuG/8aq6iQ+HsK46JkbdI7NjhG4hfa98609WThg==}
@@ -9338,6 +9341,8 @@ snapshots:
       - tslib
 
   '@lynx-js/testing-environment@0.1.12': {}
+
+  '@lynx-js/testing-environment@0.2.1': {}
 
   '@lynx-js/types@3.8.0':
     dependencies:
