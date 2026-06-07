@@ -39,7 +39,6 @@ const { onInteractOutside } = useDismissableLayer({
   onDismiss: () => rootContext.onOpenChange(false),
 })
 
-// --- Enter / leave animation -------------------------------------------
 // `DropdownMenuContent` wraps this Impl in `<Presence>` and captures its
 // provides through the overlay portal, so `PresenceContextKey` resolves here
 // even though we render outside the original tree. Wiring the animation

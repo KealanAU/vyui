@@ -26,7 +26,7 @@ const emits = defineEmits<PopoverContentImplEmits>()
 const rootContext = injectPopoverRootContext()
 useForwardExpose()
 
-// --- Portal registration (Lynx has no Teleport) -----------------------------
+// Portal registration (Lynx has no Teleport).
 // The provides chain is captured once and replayed by OverlayRoot's
 // ContextBridge so slot content (PopoverClose, …) injects normally even though
 // it paints outside this component's tree.

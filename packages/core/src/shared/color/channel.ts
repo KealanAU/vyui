@@ -151,11 +151,9 @@ export function setChannelValues(
     workingColor = convertToRgb(color)
   }
   else if (hasBrightness) {
-    // HSB mode
     workingColor = convertToHsb(color)
   }
   else if (hasLightness) {
-    // HSL mode
     workingColor = convertToHsl(color)
   }
   else {
@@ -163,7 +161,6 @@ export function setChannelValues(
     workingColor = convertToHsl(color)
   }
 
-  // Apply all channel values
   for (const { channel, value } of channels) {
     const range = getChannelRange(channel)
     const clamped = Math.max(range.min, Math.min(range.max, value))

@@ -82,7 +82,6 @@ defineSlots<{
 
 const open = useStandardVModelOf<boolean>(props, 'open', emits)
 
-// --- Main-thread refs ----------------------------------------------------
 const rowRef = useMainThreadRef<any>(null)
 // Current translateX of the row. 0 = closed; -actionWidth = open. Range
 // clamped to [-rowWidth, 0] during drag.
@@ -120,8 +119,6 @@ watch(open, (isOpen, wasOpen) => {
   if (isDraggingRef.current) return
   runOnMainThread(_animateTo as any)(isOpen ? -actionWidthRef.current : 0)
 })
-
-// --- Worklets ------------------------------------------------------------
 
 function _applyTransform(x: number) {
   'main thread'
@@ -235,8 +232,6 @@ function _onTouchEnd() {
   runOnBackground(_emitOpen as any)(false)
 }
 
-// --- BG callbacks --------------------------------------------------------
-
 function _emitOpen(next: boolean) {
   if (open.value !== next) open.value = next
 }
@@ -246,16 +241,12 @@ function _emitCommit() {
   emits('commit')
 }
 
-// --- Public API ----------------------------------------------------------
-
 function close() {
   runOnMainThread(_animateTo as any)(0)
   if (open.value) open.value = false
 }
 
 defineExpose({ close })
-
-// --- Lifecycle -----------------------------------------------------------
 
 onMounted(() => {
   if (props.defaultOpen) {

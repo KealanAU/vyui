@@ -153,7 +153,6 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
-    // color + variant -> concrete tailwind classes
     ...colors.flatMap(color =>
       VARIANTS.map(variant => ({
         color,

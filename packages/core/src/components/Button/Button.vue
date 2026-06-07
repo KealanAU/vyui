@@ -46,7 +46,6 @@ defineSlots<{
 
 const pressed = ref(false)
 
-// Only apply the active state when not disabled.
 const active = computed(() => pressed.value && !props.disabled)
 
 const touchHandlers = useTouchEmulation({

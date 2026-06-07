@@ -26,7 +26,7 @@ const emits = defineEmits<PopoverContentImplEmits>()
 const rootContext = injectPopoverRootContext()
 useForwardExpose()
 
-// --- Portal registration (Lynx has no Teleport) -----------------------------
+// Portal registration (Lynx has no Teleport).
 const slots = useSlots()
 // Undeclared fall-through attrs (`data-testid`, `:style`, …) must reach the
 // rendered `PopoverContentImpl` node — it is the only thing painted.

@@ -110,7 +110,6 @@ function encodeAxis(a: DraggableAxis): 0 | 1 | 2 {
   return 0
 }
 
-// --- Main-thread refs ----------------------------------------------------
 const containerRef = useMainThreadRef<any>(null)
 
 // Position relative to origin. `(0, 0)` = element at its laid-out position.
@@ -142,7 +141,6 @@ const tQueueRef = useMainThreadRef<number[]>([])
 // BG-side mirror so the slot's `dragging` prop is reactive.
 const draggingState = ref(false)
 
-// --- BG → MT sync --------------------------------------------------------
 watch(() => props.axis, (v) => { axisRef.current = encodeAxis(v) })
 watch(() => props.disabled, (v) => { disabledRef.current = v })
 watch(() => props.resetOnEnd, (v) => { resetOnEndRef.current = v })
@@ -152,8 +150,6 @@ watch(() => props.bounds?.left, (v) => { minXRef.current = resolveMin(v) })
 watch(() => props.bounds?.right, (v) => { maxXRef.current = resolveMax(v) })
 watch(() => props.bounds?.top, (v) => { minYRef.current = resolveMin(v) })
 watch(() => props.bounds?.bottom, (v) => { maxYRef.current = resolveMax(v) })
-
-// --- Worklets ------------------------------------------------------------
 
 function _setTransform(x: number, y: number) {
   'main thread'
@@ -293,8 +289,6 @@ function _onTouchEnd() {
   runOnBackground(_emitEnd as any)(endX, endY, dx, dy, vx, vy)
 }
 
-// --- BG callbacks --------------------------------------------------------
-
 function _emitStart(x: number, y: number) {
   draggingState.value = true
   emits('dragStart', { x, y })
@@ -309,15 +303,11 @@ function _emitEnd(x: number, y: number, dx: number, dy: number, vx: number, vy: 
   emits('dragEnd', { x, y, dx, dy, vx, vy })
 }
 
-// --- Lifecycle -----------------------------------------------------------
-
 onUnmounted(() => {
   xQueueRef.current = []
   yQueueRef.current = []
   tQueueRef.current = []
 })
-
-// --- Public API ----------------------------------------------------------
 
 function reset(animate = true) {
   if (animate) {

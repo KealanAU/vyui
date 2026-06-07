@@ -89,7 +89,6 @@ const exposureAttrs = computed<Record<string, unknown>>(() => ({
   'exposure-scene': props.scene,
 }))
 
-// --- Exposure subscription ----------------------------------------------
 // Same pattern as `useGlobalKeyboard` — subscribe via
 // `lynx.getJSModule('GlobalEventEmitter')`. Web / jsdom degrade to no-op.
 

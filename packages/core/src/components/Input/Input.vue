@@ -150,7 +150,6 @@ const controlled = ref(props.modelValue !== undefined)
 function resolveDomEl(el: any): any {
   if (!el)
     return null
-  // Already a DOM element.
   if (typeof el.tagName === 'string')
     return el
   return null
