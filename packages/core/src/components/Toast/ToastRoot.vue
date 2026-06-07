@@ -146,6 +146,7 @@ const a11y = useA11y(() => ({
     :as="as"
     :as-child="asChild"
     v-bind="a11y"
+    :class="{ 'ui-open': open, 'ui-closed': !open }"
     :data-state="open ? 'open' : 'closed'"
     :data-type="type"
     :data-front="isFront ? '' : undefined"

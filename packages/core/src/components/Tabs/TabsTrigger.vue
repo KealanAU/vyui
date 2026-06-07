@@ -68,6 +68,7 @@ const a11y = useA11y(() => ({
     :ref="forwardRef"
     :as="as"
     :as-child="asChild"
+    :class="{ 'ui-active': isSelected, 'ui-inactive': !isSelected, 'ui-disabled': disabled }"
     :data-state="isSelected ? 'active' : 'inactive'"
     :disabled="disabled"
     :data-disabled="disabled ? '' : undefined"

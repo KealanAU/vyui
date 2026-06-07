@@ -76,6 +76,7 @@ provideSelectItemContext({
   <Primitive
     :as="as"
     :as-child="asChild"
+    :class="{ 'ui-checked': isSelected, 'ui-disabled': disabled }"
     :data-state="isSelected ? 'checked' : 'unchecked'"
     :data-disabled="disabled ? '' : undefined"
     v-bind="{ ...$attrs, ...a11y }"

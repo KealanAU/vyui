@@ -19,8 +19,8 @@ export default (colors: Color[]) => ({
     // `bg-*` fill stays on `trigger`.
     trigger: 'rounded-full font-medium text-center align-middle flex flex-row items-center justify-center font-semibold bg-neutral-100',
     indicator: 'flex flex-row items-center justify-center size-full',
-    icon: 'shrink-0 group-data-[state=completed]:text-white group-data-[state=active]:text-white text-neutral-500',
-    separator: 'absolute rounded-full group-data-[disabled]:opacity-75 bg-neutral-200',
+    icon: 'shrink-0 group-ui-completed:text-white group-ui-active:text-white text-neutral-500',
+    separator: 'absolute rounded-full group-ui-disabled:opacity-75 bg-neutral-200',
     wrapper: '',
     title: 'font-medium text-neutral-900',
     description: 'text-neutral-500 text-wrap',
@@ -78,8 +78,8 @@ export default (colors: Color[]) => ({
     ...colors.map(color => ({
       color,
       class: {
-        trigger: `group-data-[state=completed]:bg-${color}-500 group-data-[state=active]:bg-${color}-500`,
-        separator: `group-data-[state=completed]:bg-${color}-500`,
+        trigger: `group-ui-completed:bg-${color}-500 group-ui-active:bg-${color}-500`,
+        separator: `group-ui-completed:bg-${color}-500`,
       },
     })),
     // horizontal separator x-positioning per size

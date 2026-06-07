@@ -6,7 +6,7 @@
  * `apps/examples/kit-demo/src/index.css`.
  *
  * Bar variant only — Nuxt UI's circular progress relies on inline SVG which
- * Lynx does not render. The `data-[state=indeterminate]:animate-*` keyframe
+ * Lynx does not render. The `ui-indeterminate:animate-*` keyframe
  * references are retained; the consuming app must declare matching
  * `carousel`, `carousel-vertical`, `carousel-inverse`, `swing`, `elastic`
  * keyframes in its Tailwind config (or skip indeterminate animations).
@@ -87,42 +87,42 @@ export default (colors: Color[]) => ({
     {
       orientation: 'horizontal' as const,
       animation: 'carousel' as const,
-      class: { indicator: 'data-[state=indeterminate]:animate-[carousel_2s_ease-in-out_infinite]' },
+      class: { indicator: 'ui-indeterminate:animate-[carousel_2s_ease-in-out_infinite]' },
     },
     {
       orientation: 'vertical' as const,
       animation: 'carousel' as const,
-      class: { indicator: 'data-[state=indeterminate]:animate-[carousel-vertical_2s_ease-in-out_infinite]' },
+      class: { indicator: 'ui-indeterminate:animate-[carousel-vertical_2s_ease-in-out_infinite]' },
     },
     {
       orientation: 'horizontal' as const,
       animation: 'carousel-inverse' as const,
-      class: { indicator: 'data-[state=indeterminate]:animate-[carousel-inverse_2s_ease-in-out_infinite]' },
+      class: { indicator: 'ui-indeterminate:animate-[carousel-inverse_2s_ease-in-out_infinite]' },
     },
     {
       orientation: 'vertical' as const,
       animation: 'carousel-inverse' as const,
-      class: { indicator: 'data-[state=indeterminate]:animate-[carousel-inverse-vertical_2s_ease-in-out_infinite]' },
+      class: { indicator: 'ui-indeterminate:animate-[carousel-inverse-vertical_2s_ease-in-out_infinite]' },
     },
     {
       orientation: 'horizontal' as const,
       animation: 'swing' as const,
-      class: { indicator: 'data-[state=indeterminate]:animate-[swing_2s_ease-in-out_infinite]' },
+      class: { indicator: 'ui-indeterminate:animate-[swing_2s_ease-in-out_infinite]' },
     },
     {
       orientation: 'vertical' as const,
       animation: 'swing' as const,
-      class: { indicator: 'data-[state=indeterminate]:animate-[swing-vertical_2s_ease-in-out_infinite]' },
+      class: { indicator: 'ui-indeterminate:animate-[swing-vertical_2s_ease-in-out_infinite]' },
     },
     {
       orientation: 'horizontal' as const,
       animation: 'elastic' as const,
-      class: { indicator: 'data-[state=indeterminate]:animate-[elastic_2s_ease-in-out_infinite]' },
+      class: { indicator: 'ui-indeterminate:animate-[elastic_2s_ease-in-out_infinite]' },
     },
     {
       orientation: 'vertical' as const,
       animation: 'elastic' as const,
-      class: { indicator: 'data-[state=indeterminate]:animate-[elastic-vertical_2s_ease-in-out_infinite]' },
+      class: { indicator: 'ui-indeterminate:animate-[elastic-vertical_2s_ease-in-out_infinite]' },
     },
   ],
   defaultVariants: {

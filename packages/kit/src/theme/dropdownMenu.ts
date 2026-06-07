@@ -2,7 +2,7 @@
  * DropdownMenu theme — adapted from nuxt/ui v3.0.2 `theme/dropdown-menu.ts`
  * for Vue-Lynx. Light-mode only; `dark:*`, `focus:*`, `focus-visible:*`, and
  * `transition-shadow` classes are dropped. Hover/active states keep
- * `data-[state=...]`, `data-[highlighted]`, `data-[disabled]`.
+ * `data-[state=...]`, `ui-highlighted`, `ui-disabled`.
  * `shadow-lg shadow-black/10` matches `IslandContainer` so floating surfaces
  * share one elevation language.
  *
@@ -13,11 +13,11 @@ import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
-    content: 'min-w-32 bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 divide-y divide-neutral-200 overflow-y-auto data-[state=open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in]',
+    content: 'min-w-32 bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 divide-y divide-neutral-200 overflow-y-auto ui-open:animate-[scale-in_100ms_ease-out] ui-closed:animate-[scale-out_100ms_ease-in]',
     group: 'p-1',
     label: 'w-full flex flex-row items-center font-semibold text-neutral-900',
     separator: '-mx-1 my-1 h-px bg-neutral-200',
-    item: 'group relative w-full flex flex-row items-start rounded-md data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed transition-colors',
+    item: 'group relative w-full flex flex-row items-start rounded-md ui-disabled:opacity-50 ui-disabled:cursor-not-allowed transition-colors',
     itemLeadingIcon: 'shrink-0',
     itemLeadingAvatar: 'shrink-0',
     itemLeadingAvatarSize: '',
@@ -41,9 +41,9 @@ export default (colors: Color[]) => ({
         itemLeadingIcon: 'text-neutral-700',
       },
       false: {
-        item: 'data-[highlighted]:bg-neutral-100 data-[state=open]:bg-neutral-100',
-        itemLabel: 'text-neutral-700 group-data-[highlighted]:text-neutral-900 group-data-[state=open]:text-neutral-900',
-        itemLeadingIcon: 'text-neutral-500 group-data-[highlighted]:text-neutral-700 group-data-[state=open]:text-neutral-700',
+        item: 'ui-highlighted:bg-neutral-100 ui-open:bg-neutral-100',
+        itemLabel: 'text-neutral-700 group-ui-highlighted:text-neutral-900 group-ui-open:text-neutral-900',
+        itemLeadingIcon: 'text-neutral-500 group-ui-highlighted:text-neutral-700 group-ui-open:text-neutral-700',
       },
     },
     loading: {
@@ -87,9 +87,9 @@ export default (colors: Color[]) => ({
       color,
       active: false as const,
       class: {
-        item: `data-[highlighted]:bg-${color}-50 data-[state=open]:bg-${color}-50`,
-        itemLabel: `text-${color}-500 group-data-[highlighted]:text-${color}-600`,
-        itemLeadingIcon: `text-${color}-500 group-data-[highlighted]:text-${color}-600 group-data-[state=open]:text-${color}-600`,
+        item: `ui-highlighted:bg-${color}-50 ui-open:bg-${color}-50`,
+        itemLabel: `text-${color}-500 group-ui-highlighted:text-${color}-600`,
+        itemLeadingIcon: `text-${color}-500 group-ui-highlighted:text-${color}-600 group-ui-open:text-${color}-600`,
       },
     })),
     ...colors.map(color => ({

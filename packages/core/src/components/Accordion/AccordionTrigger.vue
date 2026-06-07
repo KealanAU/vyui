@@ -26,6 +26,11 @@ itemContext.triggerId ||= useId(undefined, 'vy-accordion-trigger')
     data-vyui-collection-item
     :as="props.as"
     :as-child="props.asChild"
+    :class="{
+      'ui-open': itemContext.dataState.value === 'open',
+      'ui-closed': itemContext.dataState.value === 'closed',
+      'ui-disabled': itemContext.disabled.value,
+    }"
     :data-disabled="itemContext.dataDisabled.value"
     :data-orientation="rootContext.orientation"
     :data-state="itemContext.dataState.value"

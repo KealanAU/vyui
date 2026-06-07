@@ -1,6 +1,20 @@
 import type { Config } from 'tailwindcss'
-import lynxPreset from '@lynx-js/tailwind-preset'
-import { COLORS, createVyuiPreset } from '@vyui/kit/tailwind'
+import { createLynxPreset } from '@lynx-js/tailwind-preset'
+import { COLORS, createVyuiPreset, VYUI_UI_STATES } from '@vyui/kit/tailwind'
+
+// Extend the lynx preset's `uiVariants` with the extra `ui-*` state markers the
+// kit themes use (`ui-on:`, `group-ui-completed:`, …) — the class-based
+// replacements for Lynx-incompatible `data-[state=…]` selectors (issue #9).
+const lynxPreset = createLynxPreset({
+  lynxUIPlugins: {
+    uiVariants: {
+      prefixes: defaults => ({
+        ...defaults,
+        ui: [...defaults.ui, ...VYUI_UI_STATES],
+      }),
+    },
+  },
+})
 
 // Lynx-targeted Tailwind v3 config. Two presets:
 //   - `@lynx-js/tailwind-preset`: utility set + variants Lynx understands.

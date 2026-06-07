@@ -29,6 +29,7 @@ const a11y = useA11y(() => ({
 <template>
   <Primitive
     :as="as"
+    :class="{ 'ui-open': subContext.open.value, 'ui-closed': !subContext.open.value, 'ui-disabled': disabled }"
     :data-state="subContext.open.value ? 'open' : 'closed'"
     :data-disabled="disabled ? '' : undefined"
     v-bind="{ ...$attrs, ...a11y }"

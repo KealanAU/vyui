@@ -42,6 +42,7 @@ const a11y = useA11y(() => ({
 <template>
   <Primitive
     v-bind="{ ...primitiveProps, ...a11y }"
+    :class="{ 'ui-disabled': disabled }"
     :disabled="disabled || undefined"
     :data-disabled="disabled ? '' : undefined"
     @tap="!disabled && context.decrement(multiplier)"

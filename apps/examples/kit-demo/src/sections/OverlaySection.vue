@@ -1,33 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { ToastProvider, ToastViewport } from '@vyui/core'
 import {
   VyButton,
   VyCombobox,
   VyDrawer,
   VyDropdownMenu,
   VyModal,
-  VyPopover,
   VySelect,
-  VySwiper,
+  VyToast,
 } from '@vyui/kit'
 
 const modalOpen = ref(false)
 const drawerOpen = ref(false)
 const dropdownOpen = ref(false)
 
-// Swiper hosted inside the modal — confirms `useDragGesture` works within the
-// overlay layer (gestures aren't swallowed by the backdrop / portal).
-const modalSwiperIndex = ref(0)
-const modalSlides = [
-  { label: 'Slide 1', tint: 'bg-sky-500' },
-  { label: 'Slide 2', tint: 'bg-violet-500' },
-  { label: 'Slide 3', tint: 'bg-emerald-500' },
-]
-
-// Notifications — each entry gets its own popover open state so tapping one
-// reveals its "bit of info" without affecting the others. Replaces the
-// retired Tooltip component (Lynx is touch-first; popover-on-tap is the
-// idiomatic substitute for hover-only tooltip semantics).
+// Notifications — each entry has a "Show" button that surfaces its detail as a
+// transient Toast (one at a time, auto-dismissing).
 const notifications = [
   {
     id: 'n1',
@@ -51,7 +40,18 @@ const notifications = [
     detail: 'Diff: packages/kit/src/components/Island.vue. Open the PR to view the inline thread.',
   },
 ]
-const notificationOpen = ref<string | null>(null)
+// Each notification surfaces its detail as a transient Toast — tapping a row's
+// button shows it, and it auto-dismisses. Only one toast is shown at a time.
+type Notification = (typeof notifications)[number]
+const activeToast = ref<Notification | null>(null)
+let toastTimer: ReturnType<typeof setTimeout> | undefined
+function showNotification(n: Notification) {
+  activeToast.value = n
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => {
+    activeToast.value = null
+  }, 3200)
+}
 const dropdownItems = [
   [
     { label: 'Profile',  icon: 'icon-park-outline:user' },
@@ -85,24 +85,14 @@ const fruitItems = [
   <view class="flex flex-col gap-4 pt-2">
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
       <text class="text-slate-900 text-base font-semibold">Modal</text>
-      <text class="text-slate-500 text-xs">Dialog with overlay backdrop — hosts an interactive Swiper.</text>
-      <VyModal v-model:open="modalOpen" title="Modal title" description="Drag the carousel below — gestures work inside the dialog.">
+      <text class="text-slate-500 text-xs">Dialog with overlay backdrop.</text>
+      <VyModal v-model:open="modalOpen" title="Modal title" description="A centered dialog with an overlay backdrop.">
         <VyButton color="neutral" variant="subtle" label="Open modal" />
         <template #content>
           <view class="flex flex-col gap-3 p-4">
-            <VySwiper
-              v-model="modalSwiperIndex"
-              :items="modalSlides"
-              :item-width="260"
-              show-indicators
-            >
-              <template #item="{ item }">
-                <view :class="['h-32 rounded-lg flex items-center justify-center', item.tint]" :style="{ width: '244px' }">
-                  <text class="text-white text-lg font-bold">{{ item.label }}</text>
-                </view>
-              </template>
-            </VySwiper>
-            <text class="text-slate-500 text-xs">Active: {{ modalSwiperIndex + 1 }} / {{ modalSlides.length }}</text>
+            <text class="text-slate-600 text-sm">
+              Modal content goes here. Tap the backdrop or the close control to dismiss.
+            </text>
           </view>
         </template>
       </VyModal>
@@ -111,32 +101,23 @@ const fruitItems = [
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
       <text class="text-slate-900 text-base font-semibold">Notifications</text>
       <text class="text-slate-500 text-xs">
-        Tap a notification to reveal the full detail in a popover — touch
-        analogue of a hover tooltip.
+        Tap a notification's button to surface its detail as a transient toast.
       </text>
       <view class="flex flex-col gap-2">
-        <VyPopover
+        <view
           v-for="n in notifications"
           :key="n.id"
-          :open="notificationOpen === n.id"
-          @update:open="(v) => { notificationOpen = v ? n.id : null }"
+          class="flex flex-row items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg"
         >
-          <view class="flex flex-row items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-            <view class="w-8 h-8 rounded-full bg-white border border-slate-200 flex flex-row items-center justify-center shrink-0">
-              <text class="text-slate-700 text-base">•</text>
-            </view>
-            <view class="flex flex-col flex-1 min-w-0 gap-0.5">
-              <text class="text-slate-900 text-sm font-medium truncate">{{ n.title }}</text>
-              <text class="text-slate-500 text-xs truncate">{{ n.summary }}</text>
-            </view>
+          <view class="w-8 h-8 rounded-full bg-white border border-slate-200 flex flex-row items-center justify-center shrink-0">
+            <text class="text-slate-700 text-base">•</text>
           </view>
-          <template #content>
-            <view class="flex flex-col gap-1.5 p-3 max-w-72">
-              <text class="text-slate-900 text-sm font-semibold">{{ n.title }}</text>
-              <text class="text-slate-700 text-xs">{{ n.detail }}</text>
-            </view>
-          </template>
-        </VyPopover>
+          <view class="flex flex-col flex-1 min-w-0 gap-0.5">
+            <text class="text-slate-900 text-sm font-medium truncate">{{ n.title }}</text>
+            <text class="text-slate-500 text-xs truncate">{{ n.summary }}</text>
+          </view>
+          <VyButton color="neutral" variant="soft" size="sm" label="Show" @tap="showNotification(n)" />
+        </view>
       </view>
     </view>
 
@@ -170,4 +151,21 @@ const fruitItems = [
       <text class="text-slate-500 text-xs">Fruit: {{ comboboxFruit }}</text>
     </view>
   </view>
+
+  <!-- Transient toast for the tapped notification. Kept OUTSIDE the section's
+       gapped flex column (a second template root) so its placeholder doesn't add
+       a `gap-4` slot. `ToastViewport` paints through the app-root OverlayRoot
+       portal and owns the fixed positioning; `ToastProvider` gives ToastRoot its
+       context. Bindings are null-safe — the portal can re-render the captured
+       slot once `activeToast` flips back to null, before the v-if unmounts. -->
+  <ToastProvider v-if="activeToast">
+    <ToastViewport position="top" :style="{ paddingTop: '16px', zIndex: 60 }">
+      <VyToast
+        :title="activeToast?.title"
+        :description="activeToast?.detail"
+        :icon="activeToast?.icon"
+        :close="false"
+      />
+    </ToastViewport>
+  </ToastProvider>
 </template>

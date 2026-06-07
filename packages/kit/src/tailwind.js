@@ -38,6 +38,26 @@ import { COLORS, NEUTRAL, SHADES } from './theme/color-constants.js'
 //   import vyuiPreset, { createVyuiPreset, COLORS } from '@vyui/kit/tailwind'
 export { COLORS, NEUTRAL } from './theme/color-constants.js'
 
+/**
+ * Extra `ui-*` state markers the kit themes use beyond the lynx preset's
+ * built-in set (`open/closed/active/checked/disabled/...`). These back the
+ * class-based variants (`ui-on:`, `group-ui-completed:`, etc.) that replace
+ * Lynx-incompatible `data-[state=…]` attribute selectors (issue #9). Feed them
+ * into the lynx preset's `uiVariants` plugin so it generates the self/group/
+ * peer/parent forms:
+ *
+ * ```ts
+ * import { createLynxPreset } from '@lynx-js/tailwind-preset'
+ * import { VYUI_UI_STATES } from '@vyui/kit/tailwind'
+ * const lynxPreset = createLynxPreset({
+ *   lynxUIPlugins: {
+ *     uiVariants: { prefixes: (d) => ({ ...d, ui: [...d.ui, ...VYUI_UI_STATES] }) },
+ *   },
+ * })
+ * ```
+ */
+export const VYUI_UI_STATES = ['on', 'off', 'completed', 'highlighted', 'inactive']
+
 const buildScale = (name, neutral, shades) =>
   Object.fromEntries([
     ...shades.map((shade) => [shade, `var(--ui-color-${name}-${shade})`]),
@@ -100,16 +120,30 @@ export function createVyuiPreset({ colors = COLORS, neutral = NEUTRAL, shades = 
         pattern: new RegExp(
           `(bg|text|ring|border)-(${allColors.join('|')})-(${shades.join('|')})`,
         ),
-        // State/attribute variants the kit themes pair with dynamic color
-        // utilities. CSS inheritance is off on Lynx, so state-driven foreground
-        // colors live on child text/icon slots and read the parent's state via
-        // the `group-data-[…]` forms — both the self (`data-[…]`) and group
-        // (`group-data-[…]`) forms must be safelisted or the scanner purges them.
+        // State variants the kit themes pair with dynamic color utilities. CSS
+        // inheritance is off on Lynx, so state-driven foreground colors live on
+        // child text/icon slots and read the parent's state via the `group-*`
+        // forms — both self and group forms must be safelisted or the scanner
+        // purges them. The `ui-*` class variants replace Lynx-incompatible
+        // `data-[state=…]` selectors (issue #9); the `data-[…]` entries remain
+        // only for not-yet-migrated themes and can be dropped once #9 lands.
         variants: [
           'hover',
           'active',
           'focus',
           'disabled',
+          'ui-highlighted',
+          'ui-active',
+          'ui-on',
+          'ui-open',
+          'ui-checked',
+          'group-ui-highlighted',
+          'group-ui-active',
+          'group-ui-completed',
+          'group-ui-inactive',
+          'group-ui-on',
+          'group-ui-open',
+          'group-ui-checked',
           'data-[highlighted]',
           'data-[state=active]',
           'data-[state=on]',

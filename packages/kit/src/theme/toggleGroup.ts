@@ -4,7 +4,7 @@
  * `theme/button-group.ts` orientation rounding). Light-only port for Vue-Lynx.
  *
  * Each item renders a `ToggleGroupItem` styled like a button; the
- * `data-[state=on]` attribute is used to flip into the active appearance per
+ * `ui-on` attribute is used to flip into the active appearance per
  * color × variant. Variants supported: `outline`, `soft`, `subtle` (matches
  * what nuxt/ui surfaces for non-solid toggles).
  */
@@ -16,28 +16,28 @@ import type { Color } from './colors'
 // (`enableCSSInheritance: false`), so a `text-*` on the item <view> never
 // reaches the `leadingIcon` / `label` children — `fg` is spread onto those
 // slots directly. The item <view> carries `group` + `data-state`, so the
-// on-state color shift uses `group-data-[state=on]:text-*` on the children
+// on-state color shift uses `group-ui-on:text-*` on the children
 // (the children don't get `data-state` themselves). Same convention as
 // `dropdownMenu.ts` / `stepper.ts`.
 const outline = (c: string) =>
   ({
     base: `border border-neutral-300 bg-white active:bg-${c}-50 active:bg-${c}-100`
-      + ` data-[state=on]:border-${c}-500 data-[state=on]:bg-${c}-50`,
-    fg: `text-neutral-700 group-data-[state=on]:text-${c}-600`,
+      + ` ui-on:border-${c}-500 ui-on:bg-${c}-50`,
+    fg: `text-neutral-700 group-ui-on:text-${c}-600`,
   })
 
 const soft = (c: string) =>
   ({
     base: `bg-neutral-100 active:bg-${c}-50 active:bg-${c}-100`
-      + ` data-[state=on]:bg-${c}-100`,
-    fg: `text-neutral-700 group-data-[state=on]:text-${c}-600`,
+      + ` ui-on:bg-${c}-100`,
+    fg: `text-neutral-700 group-ui-on:text-${c}-600`,
   })
 
 const subtle = (c: string) =>
   ({
     base: `border border-neutral-200 bg-white active:bg-${c}-50 active:bg-${c}-100`
-      + ` data-[state=on]:border-${c}-300 data-[state=on]:bg-${c}-100`,
-    fg: `text-neutral-700 group-data-[state=on]:text-${c}-600`,
+      + ` ui-on:border-${c}-300 ui-on:bg-${c}-100`,
+    fg: `text-neutral-700 group-ui-on:text-${c}-600`,
   })
 
 const VARIANT_BUILDERS = { outline, soft, subtle } as const
@@ -51,7 +51,7 @@ export default (colors: Color[]) => ({
     // `root` direction is set per orientation variant (flex-row/flex-col).
     root: 'flex',
     // `group` so children can read the item's `data-state` via
-    // `group-data-[state=on]:*` (Lynx won't cascade `text-*`).
+    // `group-ui-on:*` (Lynx won't cascade `text-*`).
     item: 'group flex flex-row items-center justify-center font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
     leadingIcon: 'shrink-0',
     label: 'truncate',

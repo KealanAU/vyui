@@ -57,7 +57,7 @@ export interface DialogContentImplProps extends PrimitiveProps {
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { computed, defineComponent, h, inject } from 'vue'
+import { computed, defineComponent, h, inject, mergeProps } from 'vue'
 import { OverlayBackdrop } from '@/components/OverlayRoot'
 import { Primitive, type AsTag } from '@/components/Primitive'
 import {
@@ -217,28 +217,35 @@ const PanelLayer = defineComponent({
       className: 'vyui-dialog-content',
       transition: props.transition,
     }))
+    // `mergeProps` (not object spread) so the inbound `$attrs` class — the kit
+    // panel class (`vy-modal-content …`) — is CONCATENATED with the Presence
+    // lifecycle classes instead of overwriting them. A plain `{ class, ...attrs }`
+    // lets `attrs.class` clobber `ui-open` / `ui-entering`, leaving the panel
+    // stuck at the `vy-modal-content { opacity: 0 }` base (dialog opens invisible).
     return () => h(
       Primitive,
-      {
-        'as': p.as,
-        'asChild': p.asChild,
-        'data-state': p.dataState,
-        'class': className.value,
-        'bindanimationstart': handlers?.handleKFStart,
-        'bindanimationend': handlers?.handleKFEnd,
-        'bindanimationcancel': handlers?.handleKFCancel,
-        'bindtransitionstart': handlers?.handleTransitionStart,
-        'bindtransitionend': handlers?.handleTransitionEnd,
-        'bindtransitioncancel': handlers?.handleTransitionCancel,
-        ...attrs,
-        ...a11y.value,
-        // tap.stop is wired on Primitive's root via the Vue event-modifier
-        // shim; emulate it here by attaching an explicit handler that
-        // doesn't bubble. The DismissableLayer's tap is on OverlayBackdrop;
-        // we deliberately leave the panel inert so a tap on it doesn't
-        // dismiss.
-        'onTap': (e: any) => e?.stopPropagation?.(),
-      },
+      mergeProps(
+        attrs,
+        {
+          'as': p.as,
+          'asChild': p.asChild,
+          'data-state': p.dataState,
+          'class': className.value,
+          'bindanimationstart': handlers?.handleKFStart,
+          'bindanimationend': handlers?.handleKFEnd,
+          'bindanimationcancel': handlers?.handleKFCancel,
+          'bindtransitionstart': handlers?.handleTransitionStart,
+          'bindtransitionend': handlers?.handleTransitionEnd,
+          'bindtransitioncancel': handlers?.handleTransitionCancel,
+          ...a11y.value,
+          // tap.stop is wired on Primitive's root via the Vue event-modifier
+          // shim; emulate it here by attaching an explicit handler that
+          // doesn't bubble. The DismissableLayer's tap is on OverlayBackdrop;
+          // we deliberately leave the panel inert so a tap on it doesn't
+          // dismiss.
+          'onTap': (e: any) => e?.stopPropagation?.(),
+        },
+      ),
       { default: () => slots.default?.() },
     )
   },

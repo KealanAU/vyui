@@ -58,6 +58,7 @@ function handleTap() {
 <template>
   <Primitive
     :as="as"
+    :class="{ 'ui-checked': isChecked, 'ui-disabled': disabled }"
     :data-state="isChecked ? 'checked' : 'unchecked'"
     :data-disabled="disabled ? '' : undefined"
     v-bind="{ ...$attrs, ...a11y }"
