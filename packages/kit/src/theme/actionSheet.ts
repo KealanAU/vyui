@@ -11,7 +11,7 @@ import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
-    overlay: 'fixed inset-0 bg-neutral-900/40 data-[state=open]:animate-[fade-in_200ms_ease-out] data-[state=closed]:animate-[fade-out_200ms_ease-in]',
+    overlay: 'fixed inset-0 bg-neutral-900/40 ui-open:animate-[fade-in_200ms_ease-out] ui-closed:animate-[fade-out_200ms_ease-in]',
     content: 'flex flex-col',
     handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-2 mb-1',
     header: 'flex flex-col gap-0.5 px-4 pt-2 pb-3',

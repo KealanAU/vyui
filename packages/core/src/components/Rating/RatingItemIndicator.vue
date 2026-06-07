@@ -59,6 +59,7 @@ const a11y = useA11y(() => ({
     :as="as"
     :as-child="asChild"
     v-bind="{ ...$attrs, ...a11y }"
+    :class="{ 'ui-active': isActive, 'ui-disabled': rootContext.disabled.value }"
     :data-state="isActive ? 'active' : undefined"
     :data-disabled="rootContext.disabled.value ? '' : undefined"
     :disabled="rootContext.disabled.value ? '' : undefined"

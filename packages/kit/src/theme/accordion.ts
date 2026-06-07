@@ -22,7 +22,7 @@ export default {
     bodyText: 'text-sm text-neutral-700',
     leadingIcon: 'shrink-0 size-5 text-neutral-500',
     trailingIcon:
-      'shrink-0 size-5 ms-auto text-neutral-500 group-data-[state=open]:rotate-180 transition-transform duration-200',
+      'shrink-0 size-5 ms-auto text-neutral-500 group-ui-open:rotate-180 transition-transform duration-200',
     label: 'text-start break-words text-neutral-900',
   },
   variants: {

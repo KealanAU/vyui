@@ -17,7 +17,7 @@ import type { Color } from './colors'
 // pixel values instead of via custom-property indirection.
 export default (colors: Color[]) => ({
   slots: {
-    root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 p-4 flex flex-row gap-2.5 data-[state=open]:animate-[slide-in_200ms_ease-out] data-[state=closed]:animate-[fade-out_100ms_ease-in]',
+    root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 p-4 flex flex-row gap-2.5 ui-open:animate-[slide-in_200ms_ease-out] ui-closed:animate-[fade-out_100ms_ease-in]',
     wrapper: 'w-0 flex-1 flex flex-col',
     title: 'text-sm font-medium text-neutral-900',
     description: 'text-sm text-neutral-500',

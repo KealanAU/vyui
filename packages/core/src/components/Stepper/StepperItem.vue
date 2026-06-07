@@ -86,6 +86,12 @@ provideStepperItemContext({
     :ref="forwardRef"
     :as="as"
     :as-child="asChild"
+    :class="{
+      'ui-completed': itemState === 'completed',
+      'ui-active': itemState === 'active',
+      'ui-inactive': itemState === 'inactive',
+      'ui-disabled': disabled || !isFocusable,
+    }"
     :data-state="itemState"
     :disabled="disabled || !isFocusable ? '' : undefined"
     :data-disabled="disabled || !isFocusable ? '' : undefined"

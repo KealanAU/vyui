@@ -63,6 +63,7 @@ const a11y = useA11y(() => ({
     :ref="forwardRef"
     :as="as"
     :as-child="props.asChild"
+    :class="{ 'ui-open': rootContext.open.value, 'ui-closed': !rootContext.open.value }"
     :data-state="rootContext.open.value ? 'open' : 'closed'"
     v-bind="{ ...$attrs, ...a11y }"
     @tap.stop

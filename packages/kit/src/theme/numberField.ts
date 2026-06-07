@@ -15,8 +15,8 @@ export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-center w-full rounded-md border bg-white overflow-hidden',
     base: 'flex-1 min-w-0 bg-transparent text-center text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
-    increment: 'shrink-0 flex flex-row items-center justify-center text-neutral-600 active:bg-neutral-100 data-[disabled]:opacity-50',
-    decrement: 'shrink-0 flex flex-row items-center justify-center text-neutral-600 active:bg-neutral-100 data-[disabled]:opacity-50',
+    increment: 'shrink-0 flex flex-row items-center justify-center text-neutral-600 active:bg-neutral-100 ui-disabled:opacity-50',
+    decrement: 'shrink-0 flex flex-row items-center justify-center text-neutral-600 active:bg-neutral-100 ui-disabled:opacity-50',
     incrementIcon: 'shrink-0',
     decrementIcon: 'shrink-0',
   },

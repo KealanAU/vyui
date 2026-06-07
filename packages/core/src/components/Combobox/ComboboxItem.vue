@@ -113,6 +113,7 @@ provideComboboxItemContext({ isSelected })
     :as-child="asChild"
     :id="id"
     data-vyui-combobox-item=""
+    :class="{ 'ui-checked': isSelected, 'ui-disabled': isDisabled, 'ui-highlighted': isSelected }"
     :data-state="isSelected ? 'checked' : 'unchecked'"
     :data-disabled="isDisabled ? '' : undefined"
     :data-highlighted="isSelected ? '' : undefined"

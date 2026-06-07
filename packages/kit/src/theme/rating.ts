@@ -30,7 +30,7 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
-    ...colors.map(c => ({ color: c, class: { icon: `data-[state=active]:text-${c}-500` } })),
+    ...colors.map(c => ({ color: c, class: { icon: `ui-active:text-${c}-500` } })),
   ],
   defaultVariants: {
     color: 'warning' as const,

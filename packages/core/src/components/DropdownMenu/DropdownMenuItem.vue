@@ -44,6 +44,7 @@ function handleSelect() {
 <template>
   <Primitive
     :as="as"
+    :class="{ 'ui-disabled': disabled }"
     :data-disabled="disabled ? '' : undefined"
     :data-value="textValue"
     v-bind="{ ...$attrs, ...a11y }"

@@ -79,6 +79,7 @@ const a11y = useA11y(() => ({
     :ref="forwardRef"
     :as-child="props.asChild"
     :as="as"
+    :class="{ 'ui-on': dataState === 'on', 'ui-off': dataState === 'off', 'ui-disabled': disabled }"
     :data-state="dataState"
     :data-disabled="disabled ? '' : undefined"
     :disabled="disabled ? '' : undefined"

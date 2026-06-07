@@ -31,12 +31,12 @@ export default (colors: Color[]) => ({
     // `itemLabel` (the row's <text>): CSS inheritance is OFF in the Lynx build
     // (`enableCSSInheritance: false`), so a `text-*` on the row <view> never
     // reaches the label <text>.
-    item: 'group relative w-full flex flex-row items-center select-none rounded-md data-[disabled]:cursor-not-allowed data-[disabled]:opacity-75 transition-colors',
+    item: 'group relative w-full flex flex-row items-center select-none rounded-md ui-disabled:cursor-not-allowed ui-disabled:opacity-75 transition-colors',
     itemLeadingIcon: 'shrink-0 transition-colors',
     itemLeadingAvatar: 'shrink-0',
     itemTrailing: 'ms-auto flex flex-row gap-1.5 items-center',
     itemTrailingIcon: 'shrink-0',
-    itemLabel: 'truncate text-neutral-700 group-data-[state=checked]:text-neutral-900',
+    itemLabel: 'truncate text-neutral-700 group-ui-checked:text-neutral-900',
     leading: 'flex flex-row items-center shrink-0',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',

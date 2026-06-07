@@ -24,13 +24,13 @@ import type { Color } from './colors'
 // to the child label as a reliable `group-active:` on Lynx. State colors use
 // `group-data-[state=…]:` (the trigger owns the `group` + `data-state`).
 const pillLabel = (_c: string) =>
-  `group-data-[state=active]:text-white group-data-[state=inactive]:text-neutral-500`
+  `group-ui-active:text-white group-ui-inactive:text-neutral-500`
 
 const pillIndicator = (c: string) => `bg-${c}-500`
 
 // `link`: underline indicator + colored active label.
 const linkLabel = (c: string) =>
-  `group-data-[state=active]:text-${c}-500 group-data-[state=inactive]:text-neutral-500`
+  `group-ui-active:text-${c}-500 group-ui-inactive:text-neutral-500`
 
 const linkIndicator = (c: string) => `bg-${c}-500`
 

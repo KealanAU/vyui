@@ -18,6 +18,7 @@ useForwardExpose()
 <template>
   <Primitive
     v-bind="props"
+    :class="{ 'ui-indeterminate': rootContext.progressState.value === 'indeterminate' }"
     :data-state="rootContext.progressState.value"
     :data-value="rootContext.modelValue?.value ?? undefined"
     :data-max="rootContext.max.value"
