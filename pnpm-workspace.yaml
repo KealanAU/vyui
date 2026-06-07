@@ -2,6 +2,7 @@ packages:
   - 'packages/*'
   - 'apps/examples/*'
   - 'apps/docs'
+  - 'fixtures/*'
 # Keep Tailwind v4's PostCSS plugin out of the hoisted virtual store. It is
 # pulled in transitively by @nuxt/ui (docs app, legitimately on Tailwind v4),
 # and pnpm otherwise hoists it into node_modules/.pnpm/node_modules where
