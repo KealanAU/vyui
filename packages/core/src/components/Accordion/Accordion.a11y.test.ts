@@ -5,7 +5,7 @@ import Accordion from './story/_Accordion.vue'
 // Stable hook: a disabled trigger's accessibility-traits flips to "disabled",
 // so select the collection-item marker instead of the trait value.
 function triggers(container: Element) {
-  return container.querySelectorAll('[data-vy-collection-item]')
+  return container.querySelectorAll('[data-vyui-collection-item]')
 }
 
 // Native Lynx a11y output (via useA11y, through CollapsibleTrigger). Behaviour

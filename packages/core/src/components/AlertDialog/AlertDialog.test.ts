@@ -36,7 +36,7 @@ function fireLeaveAnimations(container: Element) {
 }
 
 describe('alertDialog', () => {
-  it('does not render content while closed', () => {
+  it('does not render the content while closed', () => {
     const { container } = render(AlertDialog)
     expect(q(container, 'content')).toBeNull()
   })
@@ -49,7 +49,7 @@ describe('alertDialog', () => {
     expect(q(container, 'trigger')!.getAttribute('data-state')).toBe('open')
   })
 
-  it('does NOT dismiss when the backdrop is tapped (load-bearing invariant)', async () => {
+  it('does not dismiss on backdrop tap (load-bearing invariant)', async () => {
     const { container } = render(AlertDialog)
     fireEvent.tap(q(container, 'trigger')!)
     await waitForUpdate()
@@ -60,7 +60,7 @@ describe('alertDialog', () => {
     expect(q(container, 'content')).not.toBeNull()
   })
 
-  it('AlertDialogAction closes (after the leaving animation settles) and emits click', async () => {
+  it('Action closes after the leaving animation settles and emits click', async () => {
     const events: string[] = []
     const { container } = render({
       components: { AlertDialog },
@@ -86,7 +86,7 @@ describe('alertDialog', () => {
     expect(events).toEqual(['click'])
   })
 
-  it('AlertDialogCancel closes the dialog after the leaving animation settles', async () => {
+  it('Cancel closes after the leaving animation settles', async () => {
     const { container } = render(AlertDialog)
     fireEvent.tap(q(container, 'trigger')!)
     await frames(40)
@@ -112,7 +112,7 @@ describe('alertDialog', () => {
     expect(q(container, 'content')).toBeNull()
   })
 
-  it('only a single (modal) content variant exists — no NonModal alternative', async () => {
+  it('exposes only the modal content variant, no NonModal', async () => {
     // Negative: passing modal:false to a Dialog story would render a NonModal
     // variant; AlertDialog has only AlertDialogContentModal. We assert by
     // confirming the AlertDialog story exposes no modal prop and the
@@ -128,7 +128,7 @@ describe('alertDialog', () => {
     expect(q(container, 'content')).not.toBeNull()
   })
 
-  it('Action/Cancel inject root context through the captured-provides bridge', async () => {
+  it('injects root context into Action/Cancel via the captured-provides bridge', async () => {
     // Painted Action/Cancel live inside the OverlayRoot portal. They call
     // `rootContext.onOpenChange(false)`, proving the inject succeeded.
     const { container } = render(AlertDialog)
@@ -155,7 +155,7 @@ describe('alertDialog', () => {
     expect(overlayEntries.value.length).toBe(0)
   })
 
-  it('binds animation handlers on the backdrop so firing animationend drives the state machine', async () => {
+  it('binds backdrop animation handlers so animationend drives the state machine', async () => {
     // Open the dialog, then close it. The painted backdrop's
     // `bindanimationend` should map to `handleKFEnd` on the injected Presence
     // context — firing `animationend` on the backdrop alone is sufficient to
@@ -180,7 +180,7 @@ describe('alertDialog', () => {
     expect(q(container, 'content')).toBeNull()
   })
 
-  it('exposes the vyui-alert-dialog-backdrop class on the painted backdrop', async () => {
+  it('paints the vyui-alert-dialog-backdrop class on the backdrop', async () => {
     const { container } = render(AlertDialog)
     fireEvent.tap(q(container, 'trigger')!)
     // Wait long enough for the Entering schedule to fire and the 24-frame

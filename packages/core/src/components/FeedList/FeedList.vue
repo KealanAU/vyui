@@ -49,7 +49,7 @@ export interface FeedListProps<T = unknown> {
   /** Disable scrolling and refresh interactions. */
   disabled?: boolean
 
-  // --- Pull-to-refresh ---------------------------------------------------
+  // Pull-to-refresh
   /** Controlled refreshing state. Bind with `v-model:refreshing`. */
   refreshing?: boolean
   /** Initial refreshing state when uncontrolled. */
@@ -57,7 +57,7 @@ export interface FeedListProps<T = unknown> {
   /** Enable pull-to-refresh. Renders a `<refresh>` wrapper around the list. */
   enableRefresh?: boolean
 
-  // --- Load-more ---------------------------------------------------------
+  // Load-more
   /** Enable load-more on scroll-to-lower. */
   enableLoadMore?: boolean
   /**

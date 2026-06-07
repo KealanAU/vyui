@@ -19,11 +19,10 @@ type WithOptionalBooleans<T> = {
 }
 
 /**
- * The `useForwardProps` function in TypeScript takes in a set of props and returns a computed value
- * that combines default props with assigned props from the current instance.
- * @param {T} props - The `props` parameter is an object that represents the props passed to a
- * component.
- * @returns computed value that combines the default props, preserved props, and assigned props.
+ * Returns a computed value combining default props, preserved props, and the
+ * assigned props from the current instance.
+ * @param props - the props passed to the component.
+ * @returns a computed of the merged props.
  */
 export function useForwardProps<T extends Record<string, any>>(props: MaybeRefOrGetter<T>) {
   const vm = getCurrentInstance()

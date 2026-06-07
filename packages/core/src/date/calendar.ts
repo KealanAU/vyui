@@ -177,7 +177,6 @@ export function createMonths(props: SetMonthProps) {
     }),
   )
 
-  // Create all the months, starting with the current month
   for (let i = 1; i < numberOfMonths; i++) {
     const nextMonth = dateObj.add({ months: i })
     months.push(

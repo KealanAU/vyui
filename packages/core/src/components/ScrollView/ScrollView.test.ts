@@ -14,19 +14,3 @@ describe('ScrollView — exports', () => {
     expect(mod.ScrollView).toBeDefined()
   })
 })
-
-describe.skip('ScrollView — render (blocked on MTS test infra)', () => {
-  it('renders the configured number of items', async () => {
-    // Render via story/_ScrollView.vue once intrinsic elements work under
-    // jsdom (see SwiperRoot.test.ts for the same skip).
-  })
-
-  it('emits refresh when pull-to-refresh fires', async () => {
-    // Requires firing a synthetic `bindstartrefresh` event on the native
-    // `<scroll-view>` — not supported in jsdom.
-  })
-
-  it('calls finishRefresh on the element when refreshing flips to false', async () => {
-    // Requires the Lynx `invoke()` cross-thread bridge.
-  })
-})

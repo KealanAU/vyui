@@ -25,23 +25,23 @@ function createMockSystemInfo(lynxSdkVersion: string) {
 
 describe('version utils', () => {
   describe('lynxSDKVersionStringToNumber', () => {
-    it('should convert version string to number correctly', () => {
+    it('converts a version string to a number', () => {
       expect(lynxSDKVersionStringToNumber('1.2.3')).toBe(10203)
       expect(lynxSDKVersionStringToNumber('2.0.0')).toBe(20000)
       expect(lynxSDKVersionStringToNumber('0.1.0')).toBe(100)
     })
 
-    it('should handle missing version parts', () => {
+    it('handles missing version parts', () => {
       expect(lynxSDKVersionStringToNumber('1')).toBe(10000)
       expect(lynxSDKVersionStringToNumber('1.2')).toBe(10200)
       expect(lynxSDKVersionStringToNumber('')).toBe(0)
     })
 
-    it('should handle version strings with leading zeros', () => {
+    it('handles leading zeros', () => {
       expect(lynxSDKVersionStringToNumber('01.02.03')).toBe(10203)
     })
 
-    it('should handle large version numbers', () => {
+    it('handles large version numbers', () => {
       expect(lynxSDKVersionStringToNumber('99.99.99')).toBe(999999)
     })
   })
@@ -51,17 +51,17 @@ describe('version utils', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.2.3')
     })
 
-    it('should return true when native version is greater', () => {
+    it('returns true when native version is greater', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.2.4')
       expect(nativeLynxSDKVersionGreaterThan('1.2.3')).toBe(true)
     })
 
-    it('should return false when native version is equal', () => {
+    it('returns false when native version is equal', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.2.3')
       expect(nativeLynxSDKVersionGreaterThan('1.2.3')).toBe(false)
     })
 
-    it('should return false when native version is less', () => {
+    it('returns false when native version is less', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.2.2')
       expect(nativeLynxSDKVersionGreaterThan('1.2.3')).toBe(false)
     })
@@ -72,27 +72,27 @@ describe('version utils', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.2.3')
     })
 
-    it('should return true when native version is less', () => {
+    it('returns true when native version is less', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.2.2')
       expect(nativeLynxSDKVersionLessThan('1.2.3')).toBe(true)
     })
 
-    it('should return false when native version is equal', () => {
+    it('returns false when native version is equal', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.2.3')
       expect(nativeLynxSDKVersionLessThan('1.2.3')).toBe(false)
     })
 
-    it('should return false when native version is greater', () => {
+    it('returns false when native version is greater', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.2.4')
       expect(nativeLynxSDKVersionLessThan('1.2.3')).toBe(false)
     })
 
-    it('should handle major version differences', () => {
+    it('handles major version differences', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.0.0')
       expect(nativeLynxSDKVersionLessThan('2.0.0')).toBe(true)
     })
 
-    it('should handle minor version differences', () => {
+    it('handles minor version differences', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.1.0')
       expect(nativeLynxSDKVersionLessThan('1.2.0')).toBe(true)
     })

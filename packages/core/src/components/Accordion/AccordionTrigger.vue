@@ -23,7 +23,7 @@ itemContext.triggerId ||= useId(undefined, 'vy-accordion-trigger')
   <CollapsibleTrigger
     :id="itemContext.triggerId"
     :ref="itemContext.currentRef"
-    data-vy-collection-item
+    data-vyui-collection-item
     :as="props.as"
     :as-child="props.asChild"
     :data-disabled="itemContext.dataDisabled.value"

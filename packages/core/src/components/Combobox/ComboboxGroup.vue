@@ -46,7 +46,7 @@ onUnmounted(() => {
   <Primitive
     :as="as"
     :as-child="asChild"
-    data-combobox-group=""
+    data-vyui-combobox-group=""
     v-bind="$attrs"
   >
     <slot />

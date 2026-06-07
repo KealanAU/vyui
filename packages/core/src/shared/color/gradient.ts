@@ -173,7 +173,6 @@ function getAreaBackgroundColor(
     return colorToString({ space: 'hsb', h: hsb.h, s: 100, b: 100, alpha: 1 }, 'rgb')
   }
 
-  // Default to white
   return '#ffffff'
 }
 

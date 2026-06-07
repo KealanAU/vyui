@@ -4,16 +4,8 @@ import type { AsTag } from '@/components/Primitive'
 
 /**
  * Generic visual + layout wrapper for "island" UI — pill / panel surfaces
- * with a soft border, glassy background, and elevation.
- *
- * Intentionally unopinionated about placement. The parent decides where the
- * island lives (top, bottom, floating, embedded, side-by-side) via the
- * `class` prop; `tailwind-merge` resolves any conflicts so caller utilities
- * win over the baseline.
- *
- * Stack opinionated components (`FloatingTabBar`, `TopActionMenu`, …) on top
- * of this primitive — keep this file free of navigation / state / fixed
- * positioning.
+ * with a soft border, glassy background, and elevation. Intentionally
+ * unopinionated about placement; the parent positions it via the `class` prop.
  *
  * Lynx note: `as` defaults to `view` (Lynx layout tag), not `div`. Pass any
  * Lynx tag (`view`, `scroll-view`, `overlay`, …) or a Vue component to

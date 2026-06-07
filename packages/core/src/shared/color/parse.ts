@@ -14,17 +14,14 @@ const HSB_RE = /hsb[av]?\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*(?:,\s
 export function parseColor(value: string): Color {
   const trimmed = value.trim().toLowerCase()
 
-  // Hex format
   if (trimmed.startsWith('#')) {
     return parseHex(trimmed)
   }
 
-  // rgb() format
   if (trimmed.startsWith('rgb')) {
     return parseRgb(trimmed)
   }
 
-  // hsl() format
   if (trimmed.startsWith('hsl')) {
     return parseHsl(trimmed)
   }
@@ -50,7 +47,6 @@ function parseHex(hex: string): RGBColor {
     normalized = normalized.split('').map(c => c + c).join('')
   }
 
-  // Handle 6-digit hex
   if (normalized.length === 6) {
     const bigint = parseInt(normalized, 16)
     return {

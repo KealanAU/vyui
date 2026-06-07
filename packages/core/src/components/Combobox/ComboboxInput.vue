@@ -96,7 +96,6 @@ function openIfClosed() {
     rootContext.onOpenChange(true)
 }
 
-// The native runtime emits `input` as the user types.
 function handleInput(event: any) {
   const value: string = event?.detail?.value ?? event?.target?.value ?? modelValue.value ?? ''
   lastNativeValue = value
@@ -106,7 +105,6 @@ function handleInput(event: any) {
   rootContext.filterSearch.value = value
 }
 
-// The native runtime emits `confirm` when the user submits the input.
 function handleConfirm() {
   openIfClosed()
 }

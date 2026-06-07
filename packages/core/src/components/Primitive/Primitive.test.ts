@@ -4,18 +4,18 @@ import { defineComponent, h, markRaw, ref } from 'vue'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
 import { Primitive } from '.'
 
-describe('test Primitive functionalities', () => {
-  it('should render view element correctly', () => {
+describe('Primitive', () => {
+  it('renders a view element', () => {
     const { container } = render(Primitive)
     expect(container.querySelector('view')).not.toBeNull()
   })
 
-  it('should render view element when as=view', () => {
+  it('renders a view element when as=view', () => {
     const { container } = render(Primitive, { as: 'view' })
     expect(container.querySelector('view')).not.toBeNull()
   })
 
-  it('should by pass the comment tag', () => {
+  it('bypasses the comment tag', () => {
     // Lynx renders structural `<div>` markup as `<view>` in JSDOM, so we
     // assert on `<view>` here (and below) — the upstream reka-ui port used
     // `<div>` because it was DOM-only.
@@ -34,13 +34,13 @@ describe('test Primitive functionalities', () => {
     expect(element.getAttribute('data-child-attr')).toBe('')
   })
 
-  it('should renders view element with custom attribute', () => {
+  it('renders a view element with a custom attribute', () => {
     const { container } = render(Primitive, { type: 'button' })
     const element = container.querySelector('view')!
     expect(element.getAttribute('type')).toBe('button')
   })
 
-  it('should renders multiple child elements', () => {
+  it('renders multiple child elements', () => {
     const Component = defineComponent({
       components: { Primitive },
       template: `<Primitive><view>1</view><view>2</view><view>3</view></Primitive>`,
@@ -51,7 +51,7 @@ describe('test Primitive functionalities', () => {
   })
 
   describe('render as template (asChild)', () => {
-    it('should not throw error when multiple child elements exists', () => {
+    it('does not throw when multiple child elements exist', () => {
       const Component = defineComponent({
         components: { Primitive },
         template: `<Primitive as="template"><view>1</view><view>2</view><view>3</view></Primitive>`,
@@ -64,7 +64,7 @@ describe('test Primitive functionalities', () => {
       expect(views.filter(v => /^[123]$/.test(v.textContent ?? '')).length).toBe(3)
     })
 
-    it('should pass custom attribute to first element', () => {
+    it('passes a custom attribute to the first element', () => {
       const Component = defineComponent({
         components: { Primitive },
         template: `<Primitive as="template" type="button"><view>1</view><view>2</view><view>3</view></Primitive>`,
@@ -77,7 +77,7 @@ describe('test Primitive functionalities', () => {
       expect(elements[2].getAttribute('type')).toBeNull()
     })
 
-    it('should merge child\'s class together', () => {
+    it('merges the child class', () => {
       const Component = defineComponent({
         components: { Primitive },
         template: `<Primitive as="template" class="parent-class"><view class="child-class more-child-class">Child class</view></Primitive>`,
@@ -87,7 +87,7 @@ describe('test Primitive functionalities', () => {
       expect(element.getAttribute('class')).toBe('parent-class child-class more-child-class')
     })
 
-    it('should merge child\'s class after update', async () => {
+    it('merges the child class after update', async () => {
       const Component = defineComponent({
         setup() {
           const isActive = ref(true)
@@ -119,7 +119,7 @@ describe('test Primitive functionalities', () => {
       expect(element.getAttribute('class')).toBe('parent-class child-class more-child-class')
     })
 
-    it('should render the Component that passed in as', () => {
+    it('renders the component passed via as', () => {
       const Button = markRaw(defineComponent({
         setup(_, { slots }) {
           return () => h('button', { id: 'custom-button' }, slots)
@@ -137,7 +137,7 @@ describe('test Primitive functionalities', () => {
       expect(button.getAttribute('class')).toBe('parent-class')
     })
 
-    it('should render the child class element tag', () => {
+    it('renders the child element tag', () => {
       const Component = defineComponent({
         components: { Primitive },
         template: `<Primitive as="template"><a>Child class</a></Primitive>`,
@@ -146,7 +146,7 @@ describe('test Primitive functionalities', () => {
       expect(container.querySelector('a')).not.toBeNull()
     })
 
-    it('should render the child component', () => {
+    it('renders the child component', () => {
       const ChildComponent = defineComponent({
         template: '<div id="child">Hello world</div>',
       })
@@ -159,7 +159,7 @@ describe('test Primitive functionalities', () => {
       expect(element.textContent).toBe('Hello world')
     })
 
-    it('should inherit parent attributes and the child attributes', () => {
+    it('inherits parent and child attributes', () => {
       const Component = defineComponent({
         components: { Primitive },
         template: `<Primitive as="template" data-parent-attr=""><view data-child-attr>Child class</view></Primitive>`,
@@ -170,7 +170,7 @@ describe('test Primitive functionalities', () => {
       expect(element.getAttribute('data-child-attr')).toBe('')
     })
 
-    it('should replace parent attributes with child\'s attributes', () => {
+    it('child attributes override parent attributes', () => {
       const Component = defineComponent({
         components: { Primitive },
         template: `<Primitive as="template" id="parent" data-type="button"><view id="child" data-type="primary">Child class</view></Primitive>`,
@@ -181,7 +181,7 @@ describe('test Primitive functionalities', () => {
       expect(element.getAttribute('id')).toBe('child')
     })
 
-    it('\'asChild=true\' should work the same as \'as=template\'', () => {
+    it('asChild=true behaves like as=template', () => {
       const Component = defineComponent({
         components: { Primitive },
         template: `<Primitive :asChild="true" class="parent-class"><button class="child-class">Child element</button></Primitive>`,

@@ -282,7 +282,7 @@ function _commit(values: number[]) {
 
 <template>
   <Primitive
-    data-slider-impl
+    data-vyui-slider-impl
     v-bind="props"
     :main-thread-ref="trackRef"
     :main-thread-bindtouchstart="_onTouchStart"

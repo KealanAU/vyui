@@ -193,6 +193,27 @@ importers:
         specifier: 3.5.17
         version: 3.5.17(typescript@5.9.3)
 
+  fixtures/fixture-consumer:
+    devDependencies:
+      '@lynx-js/types':
+        specifier: ^3.8.0
+        version: 3.8.0
+      '@vyui/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vue:
+        specifier: 3.5.17
+        version: 3.5.17(typescript@5.9.3)
+      vue-lynx:
+        specifier: ^0.4.0
+        version: 0.4.0(patch_hash=69428be67bf3493456cf7cc5995604e1a8129500def9961eb23f9998cb371993)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2)
+      vue-tsc:
+        specifier: 3.2.6
+        version: 3.2.6(typescript@5.9.3)
+
   packages/core:
     dependencies:
       '@iconify/types':
@@ -345,8 +366,8 @@ importers:
   packages/testing-utils:
     dependencies:
       '@lynx-js/testing-environment':
-        specifier: ^0.1.11
-        version: 0.1.12
+        specifier: ^0.2.1
+        version: 0.2.1
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -1385,6 +1406,9 @@ packages:
 
   '@lynx-js/testing-environment@0.1.12':
     resolution: {integrity: sha512-l//JODf9sEM2TBHKN38/KpLtyrecwzSA2AzNADxiG6VCDDCm+78zsZeqvz/3Y9arUImMj3uUGWWx6wS8D8xnaQ==}
+
+  '@lynx-js/testing-environment@0.2.1':
+    resolution: {integrity: sha512-Yndi4PntMeZsjcrJ0ZJg3tlB3yMqIPEqceygv7WVu2tiJUJlEMSLFug7ZDtkvYxH6E7J0wSuirkk4AnuBZ5ZUg==}
 
   '@lynx-js/types@3.8.0':
     resolution: {integrity: sha512-QdO5+G2Fh9/rE3E5HeVN/jOtCFZCFHmDXtMuOI1472grW4PpuG/8aq6iQ+HsK46JkbdI7NjhG4hfa98609WThg==}
@@ -9338,6 +9362,8 @@ snapshots:
       - tslib
 
   '@lynx-js/testing-environment@0.1.12': {}
+
+  '@lynx-js/testing-environment@0.2.1': {}
 
   '@lynx-js/types@3.8.0':
     dependencies:

@@ -12,6 +12,7 @@ import { computed, onMounted, onUnmounted, useAttrs } from 'vue'
 import { useMainThreadRef } from 'vue-lynx'
 import { useCollection } from '@/components/Collection'
 import { Primitive } from '@/components/Primitive'
+import type { VyStyle } from '@/shared/types'
 import { useForwardExpose, useSize } from '@/shared'
 import { useA11y } from '@/shared/composables'
 import { injectSliderRootContext } from './SliderRoot.vue'
@@ -82,6 +83,18 @@ const thumbTransform = computed(() => {
 
 const isMounted = useMounted()
 
+const thumbStyle = computed<VyStyle>(() => ({
+  transform: thumbTransform.value,
+  position: 'absolute',
+  [orientation!.startEdge.value]: `calc(${percent.value}% + ${thumbInBoundsOffset.value}px)`,
+  /**
+   * There is no value on the initial render while we resolve the thumb's
+   * index, so hide value-less thumbs to avoid a flash at the wrong position
+   * before they snap into place once the index is known.
+   */
+  display: !isMounted.value && value.value === undefined ? 'none' : undefined,
+}))
+
 // MT-side ref the SliderImplMTS touch worklets paint translate transforms
 // onto. Only meaningful when `rootContext.mtsEnabled.value` is true; bound
 // unconditionally because `useMainThreadRef` is safe in any environment.
@@ -122,17 +135,7 @@ onUnmounted(() => {
       :data-orientation="rootContext.orientation.value"
       :as-child="asChild"
       :as="as"
-      :style="{
-        transform: thumbTransform,
-        position: 'absolute',
-        [orientation!.startEdge.value]: `calc(${percent}% + ${thumbInBoundsOffset}px)`,
-        /**
-         * There is no value on the initial render while we resolve the thumb's
-         * index, so hide value-less thumbs to avoid a flash at the wrong
-         * position before they snap into place once the index is known.
-         */
-        display: !isMounted && value === undefined ? 'none' : undefined,
-      }"
+      :style="thumbStyle"
       @focus="() => {
         rootContext.valueIndexToChangeRef.value = index
       }"

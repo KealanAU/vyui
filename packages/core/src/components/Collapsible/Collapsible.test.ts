@@ -14,7 +14,7 @@ describe('given a default Collapsible', () => {
     trigger = container.querySelector('[data-testid="trigger"]')!
   })
 
-  it('should have hidden content', () => {
+  it('hides the content', () => {
     expect(container.innerHTML).not.toContain(CONTENT_TEXT)
   })
 
@@ -24,7 +24,7 @@ describe('given a default Collapsible', () => {
       await waitForUpdate()
     })
 
-    it('should open the content', () => {
+    it('opens the content', () => {
       expect(container.innerHTML).toContain(CONTENT_TEXT)
     })
 
@@ -34,7 +34,7 @@ describe('given a default Collapsible', () => {
         await waitForUpdate()
       })
 
-      it('should close the content', () => {
+      it('closes the content', () => {
         expect(container.innerHTML).not.toContain(CONTENT_TEXT)
       })
     })
@@ -50,7 +50,7 @@ describe('given a Collapsible with `unmountOnHide:false`', () => {
     trigger = container.querySelector('[data-testid="trigger"]')!
   })
 
-  it('should have hidden attribute on the content while closed', () => {
+  it('sets the hidden attribute on the content while closed', () => {
     // CollapsibleContent now renders with `:hidden=""` when unmountOnHide is
     // false and the collapsible is closed — content stays mounted instead of
     // being v-if'd out.
@@ -67,7 +67,7 @@ describe('given a Collapsible with `unmountOnHide:false`', () => {
       await waitForUpdate()
     })
 
-    it('should open the content', () => {
+    it('opens the content', () => {
       expect(container.innerHTML).toContain(CONTENT_TEXT)
     })
 
@@ -77,7 +77,7 @@ describe('given a Collapsible with `unmountOnHide:false`', () => {
         await waitForUpdate()
       })
 
-      it('should keep the content mounted with data-state=closed + hidden', () => {
+      it('keeps the content mounted with data-state=closed + hidden', () => {
         // Re-query — the content node identity may have changed across the
         // open/close cycle, but a hidden node should be present.
         const content = container.querySelector('[hidden]')
@@ -100,18 +100,18 @@ describe('given an open uncontrolled Collapsible', () => {
       ;({ container } = render(Collapsible, { defaultOpen: true, 'onUpdate:open': onUpdateOpen }))
     })
 
-    it('should show the content by default', () => {
+    it('shows the content by default', () => {
       expect(container.innerHTML).toContain(CONTENT_TEXT)
     })
 
-    it('should close the content on tap', async () => {
+    it('closes the content on tap', async () => {
       const trigger = container.querySelector('[data-testid="trigger"]')!
       fireEvent.tap(trigger)
       await waitForUpdate()
       expect(container.innerHTML).not.toContain(CONTENT_TEXT)
     })
 
-    it('should emit update:open with false on close', async () => {
+    it('emits update:open with false on close', async () => {
       const trigger = container.querySelector('[data-testid="trigger"]')!
       fireEvent.tap(trigger)
       await waitForUpdate()

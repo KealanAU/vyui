@@ -75,20 +75,10 @@ describe('Select — selection', () => {
     const { container } = render(Select, { modelValue: 'Cherry', defaultOpen: true })
     expect(q(container, 'indicator-Cherry')).not.toBeNull()
   })
-
-  // SelectValue resolves the label from `rootContext.itemLabels` registered by
-  // SelectItemText on mount. The label registration runs through the overlay
-  // portal renderFn, so it lands one tick later than the initial render and
-  // isn't observed reliably in the harness — exercised in real stack flows.
-  it.skip('SelectValue shows the selected label once items have mounted', async () => {
-    const { container } = render(Select, { modelValue: 'Cherry', defaultOpen: true })
-    await waitForUpdate()
-    expect(q(container, 'value')?.textContent).toContain('Cherry')
-  })
 })
 
 describe('Select — disabled', () => {
-  it('disabled root will not open on tap', async () => {
+  it('disabled root does not open on tap', async () => {
     const { container } = render(Select, { disabled: true })
     fireEvent.tap(q(container, 'trigger')!)
     await waitForUpdate()

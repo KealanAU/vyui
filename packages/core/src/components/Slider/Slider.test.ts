@@ -76,7 +76,7 @@ describe('SliderRoot rendering & a11y traits', () => {
 describe('SliderRoot touch drag → value', () => {
   it('emits update:modelValue on touchstart at the touched position', async () => {
     const { container, updates } = mountSlider()
-    const slider = container.querySelector('[data-slider-impl]')!
+    const slider = container.querySelector('[data-vyui-slider-impl]')!
 
     fireEvent.touchstart(slider, { touches: [{ clientX: 50, clientY: 10 }] })
     await waitForUpdate()
@@ -86,7 +86,7 @@ describe('SliderRoot touch drag → value', () => {
 
   it('emits another update on touchmove', async () => {
     const { container, updates } = mountSlider()
-    const slider = container.querySelector('[data-slider-impl]')!
+    const slider = container.querySelector('[data-vyui-slider-impl]')!
 
     fireEvent.touchstart(slider, { touches: [{ clientX: 0, clientY: 10 }] })
     await waitForUpdate()
@@ -99,7 +99,7 @@ describe('SliderRoot touch drag → value', () => {
 
   it('emits valueCommit on touchend when the value changed', async () => {
     const { container, commits } = mountSlider()
-    const slider = container.querySelector('[data-slider-impl]')!
+    const slider = container.querySelector('[data-vyui-slider-impl]')!
 
     fireEvent.touchstart(slider, { touches: [{ clientX: 100, clientY: 10 }] })
     await waitForUpdate()
@@ -111,7 +111,7 @@ describe('SliderRoot touch drag → value', () => {
 
   it('does not emit updates while disabled', async () => {
     const { container, updates, commits } = mountSlider({ disabled: true })
-    const slider = container.querySelector('[data-slider-impl]')!
+    const slider = container.querySelector('[data-vyui-slider-impl]')!
 
     fireEvent.touchstart(slider, { touches: [{ clientX: 100, clientY: 10 }] })
     await waitForUpdate()

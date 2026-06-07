@@ -14,7 +14,7 @@ function setupPropsEmits(defaultProps: SingleOrMultipleProps) {
 }
 
 describe('useSingleOrMultipleValue', () => {
-  it('should initialize with correct type and modelValue', () => {
+  it('initializes from type and modelValue', () => {
     const props: SingleOrMultipleProps = {
       type: 'single',
       modelValue: 'test',
@@ -24,7 +24,7 @@ describe('useSingleOrMultipleValue', () => {
     expect(modelValue.value).toBe('test')
   })
 
-  it('should change modelValue for single type', async () => {
+  it('changes modelValue for single type', async () => {
     const { props, emits } = setupPropsEmits({
       type: 'single',
       modelValue: 'test',
@@ -38,7 +38,7 @@ describe('useSingleOrMultipleValue', () => {
     expect(modelValue.value).toBeUndefined()
   })
 
-  it('should change modelValue for multiple type', () => {
+  it('changes modelValue for multiple type', () => {
     const { props, emits } = setupPropsEmits({
       type: 'multiple',
       modelValue: ['test'],
@@ -52,7 +52,7 @@ describe('useSingleOrMultipleValue', () => {
     expect(modelValue.value).toEqual(['newTest'])
   })
 
-  it('should infer type from modelValue given `single`', () => {
+  it('infers single type from a string modelValue', () => {
     const { props, emits } = setupPropsEmits({
       modelValue: 'test',
     })
@@ -65,7 +65,7 @@ describe('useSingleOrMultipleValue', () => {
     expect(modelValue.value).toEqual('')
   })
 
-  it('should infer type from modelValue given `multiple`', () => {
+  it('infers multiple type from an array modelValue', () => {
     const { props, emits } = setupPropsEmits({
       modelValue: ['test'],
     })
@@ -78,7 +78,7 @@ describe('useSingleOrMultipleValue', () => {
     expect(modelValue.value).toEqual(['newTest'])
   })
 
-  it('should overwrite type given `single`', () => {
+  it('lets an explicit `single` type override an array modelValue', () => {
     const { props, emits } = setupPropsEmits({
       modelValue: ['test'],
       type: 'single',
@@ -92,7 +92,7 @@ describe('useSingleOrMultipleValue', () => {
     expect(modelValue.value).toEqual('')
   })
 
-  it('should overwrite type given `multiple`', () => {
+  it('lets an explicit `multiple` type override a string modelValue', () => {
     const { props, emits } = setupPropsEmits({
       modelValue: 'test',
       type: 'multiple',

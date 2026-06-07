@@ -4,12 +4,9 @@ import * as vue from 'vue'
 
 let count = 0
 /**
- * The `useId` function generates a unique identifier using a provided deterministic ID or a default
- * one prefixed with "vy-".
- * @param {string | null | undefined} [deterministicId] - The `useId` function you provided takes an
- * optional parameter `deterministicId`, which can be a string, null, or undefined. If
- * `deterministicId` is provided, the function will return it. Otherwise, it will generate an id using
- * Vue's built-in `useId` (>= 3.5) or an internal counter fallback.
+ * Generates a unique identifier, or returns `deterministicId` when provided.
+ * @param deterministicId - returned verbatim when set; otherwise an id is
+ *   generated via Vue's built-in `useId` (>= 3.5) or an internal counter.
  */
 export function useId(deterministicId?: string | null | undefined, prefix = 'vy') {
   if (deterministicId)

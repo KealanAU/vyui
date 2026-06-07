@@ -55,7 +55,7 @@ export function render(
   cleanup()
 
   env.switchToMainThread()
-  const doc = env.jsdom.window.document
+  const doc = env.env.window.document
   doc.body.innerHTML = ''
 
   const renderPage = (globalThis as any).renderPage

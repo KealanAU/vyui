@@ -43,6 +43,10 @@ The runtime library. Provides headless, accessible component logic for Vue-Lynx:
 
 * Type-safe APIs designed for Lynx's native rendering model
 
+Components expose state attributes (`data-state`, `data-disabled`, …) and
+namespaced structural markers (`data-vyui-*`) you can style and select against —
+see [docs/data-attributes.md](docs/data-attributes.md).
+
 ```sh
 npm install @vyui/core
 ```

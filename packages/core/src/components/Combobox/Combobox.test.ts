@@ -12,26 +12,26 @@ function getInput(container: Element) {
 }
 
 function getItems(container: Element) {
-  return Array.from(container.querySelectorAll('[data-combobox-item]'))
+  return Array.from(container.querySelectorAll('[data-vyui-combobox-item]'))
 }
 
 function getGroup(container: Element) {
-  return container.querySelector('[data-combobox-group]')
+  return container.querySelector('[data-vyui-combobox-group]')
 }
 
 describe('given default Combobox', () => {
-  it('should show placeholder', () => {
+  it('shows the placeholder', () => {
     const { container } = render(Combobox)
     expect(getInput(container).getAttribute('placeholder')).toBe('Placeholder...')
   })
 
-  it('should not show the popup content initially', () => {
+  it('hides the popup content initially', () => {
     const { container } = render(Combobox)
     expect(getGroup(container)).toBeNull()
   })
 
   describe('opening the popup', () => {
-    it('should show the popup content', async () => {
+    it('shows the popup content', async () => {
       const { container } = render(Combobox)
       fireEvent.tap(getTrigger(container))
       await waitForUpdate()
@@ -39,7 +39,7 @@ describe('given default Combobox', () => {
       expect(container.textContent).toContain('Apple')
     })
 
-    it('should mark the trigger as open', async () => {
+    it('marks the trigger open', async () => {
       const { container } = render(Combobox)
       const trigger = getTrigger(container)
       fireEvent.tap(trigger)
@@ -47,14 +47,14 @@ describe('given default Combobox', () => {
       expect(trigger.getAttribute('data-state')).toBe('open')
     })
 
-    it('should render all items', async () => {
+    it('renders all items', async () => {
       const { container } = render(Combobox)
       fireEvent.tap(getTrigger(container))
       await waitForUpdate()
       expect(getItems(container).length).toBe(5)
     })
 
-    it('should close the popup on second trigger tap', async () => {
+    it('closes the popup on a second trigger tap', async () => {
       const { container } = render(Combobox)
       const trigger = getTrigger(container)
       fireEvent.tap(trigger)
@@ -65,7 +65,7 @@ describe('given default Combobox', () => {
     })
 
     describe('after selecting a value', () => {
-      it('should close the popup', async () => {
+      it('closes the popup', async () => {
         const { container } = render(Combobox)
         fireEvent.tap(getTrigger(container))
         await waitForUpdate()
@@ -74,7 +74,7 @@ describe('given default Combobox', () => {
         expect(getGroup(container)).toBeNull()
       })
 
-      it('should reflect the selected value in the input', async () => {
+      it('reflects the selected value in the input', async () => {
         const { container } = render(Combobox)
         fireEvent.tap(getTrigger(container))
         await waitForUpdate()
@@ -83,7 +83,7 @@ describe('given default Combobox', () => {
         expect(getInput(container).getAttribute('value')).toBe('Banana')
       })
 
-      it('should mark the selected item as checked when reopened', async () => {
+      it('marks the selected item checked when reopened', async () => {
         const { container } = render(Combobox)
         fireEvent.tap(getTrigger(container))
         await waitForUpdate()
@@ -97,7 +97,7 @@ describe('given default Combobox', () => {
     })
 
     describe('filtering', () => {
-      it('should filter items by the input value', async () => {
+      it('filters items by the input value', async () => {
         const { container } = render(Combobox)
         fireEvent.tap(getTrigger(container))
         await waitForUpdate()
@@ -109,7 +109,7 @@ describe('given default Combobox', () => {
         expect(items[0]!.textContent).toContain('Banana')
       })
 
-      it('should open the popup when typing while closed', async () => {
+      it('opens the popup when typing while closed', async () => {
         const { container } = render(Combobox)
         const input = getInput(container)
         fireEvent.input(input, { detail: { value: 'Gr' } })
@@ -117,20 +117,20 @@ describe('given default Combobox', () => {
         expect(getGroup(container)).not.toBeNull()
       })
 
-      it('should show ComboboxEmpty when no items match', async () => {
+      it('shows ComboboxEmpty when no items match', async () => {
         const { container } = render(Combobox)
         fireEvent.tap(getTrigger(container))
         await waitForUpdate()
         fireEvent.input(getInput(container), { detail: { value: 'zzz' } })
         await waitForUpdate()
-        expect(container.querySelector('[data-combobox-empty]')).not.toBeNull()
+        expect(container.querySelector('[data-vyui-combobox-empty]')).not.toBeNull()
         expect(getItems(container).length).toBe(0)
       })
     })
   })
 
   describe('disabled', () => {
-    it('should not open when disabled', async () => {
+    it('does not open when disabled', async () => {
       const { container } = render(Combobox, { disabled: true })
       fireEvent.tap(getTrigger(container))
       await waitForUpdate()
@@ -139,7 +139,7 @@ describe('given default Combobox', () => {
   })
 
   describe('ignoreFilter', () => {
-    it('should not filter items when ignoreFilter is true', async () => {
+    it('does not filter items when ignoreFilter is true', async () => {
       const { container } = render(Combobox, { ignoreFilter: true })
       fireEvent.tap(getTrigger(container))
       await waitForUpdate()
@@ -151,7 +151,7 @@ describe('given default Combobox', () => {
 })
 
 describe('given a Combobox with multiple prop', () => {
-  it('should keep the popup open after selecting', async () => {
+  it('keeps the popup open after selecting', async () => {
     const { container } = render(Combobox, { multiple: true })
     fireEvent.tap(getTrigger(container))
     await waitForUpdate()
@@ -160,7 +160,7 @@ describe('given a Combobox with multiple prop', () => {
     expect(getGroup(container)).not.toBeNull()
   })
 
-  it('should mark selected items checked and allow multiple selections', async () => {
+  it('marks selected items checked and allows multiple selections', async () => {
     const { container } = render(Combobox, { multiple: true })
     fireEvent.tap(getTrigger(container))
     await waitForUpdate()
@@ -173,7 +173,7 @@ describe('given a Combobox with multiple prop', () => {
     expect(items[2]!.getAttribute('data-state')).toBe('checked')
   })
 
-  it('should deselect an item when tapped again', async () => {
+  it('deselects an item when tapped again', async () => {
     const { container } = render(Combobox, { multiple: true })
     fireEvent.tap(getTrigger(container))
     await waitForUpdate()
@@ -184,7 +184,7 @@ describe('given a Combobox with multiple prop', () => {
     expect(getItems(container)[0]!.getAttribute('data-state')).toBe('unchecked')
   })
 
-  it('should not reflect a value in the input in multiple mode', async () => {
+  it('does not reflect a value in the input in multiple mode', async () => {
     const { container } = render(Combobox, { multiple: true })
     fireEvent.tap(getTrigger(container))
     await waitForUpdate()
@@ -195,14 +195,14 @@ describe('given a Combobox with multiple prop', () => {
 })
 
 describe('given a Combobox with object values', () => {
-  it('should show the popup content', async () => {
+  it('shows the popup content', async () => {
     const { container } = render(ComboboxObject)
     fireEvent.tap(getTrigger(container))
     await waitForUpdate()
     expect(container.textContent).toContain('Durward Reynolds')
   })
 
-  it('should filter object items by textValue', async () => {
+  it('filters object items by textValue', async () => {
     const { container } = render(ComboboxObject)
     fireEvent.tap(getTrigger(container))
     await waitForUpdate()
@@ -213,7 +213,7 @@ describe('given a Combobox with object values', () => {
     expect(items[0]!.textContent).toContain('Durward')
   })
 
-  it('should close the popup after selecting when no displayValue provided', async () => {
+  it('closes the popup after selecting when no displayValue provided', async () => {
     const { container } = render(ComboboxObject)
     fireEvent.tap(getTrigger(container))
     await waitForUpdate()
@@ -222,7 +222,7 @@ describe('given a Combobox with object values', () => {
     expect(getItems(container).length).toBe(0)
   })
 
-  it('should show the displayValue text in the input when provided', async () => {
+  it('shows the displayValue text in the input when provided', async () => {
     const { container } = render(ComboboxObject, {
       displayValue: (item: any) => (item ? item.name : ''),
     })

@@ -37,7 +37,6 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
-    // color -> concrete range/thumb classes
     ...colors.map(color => ({
       color,
       class: {

@@ -43,7 +43,7 @@ describe('useCollection — registration', () => {
     const { Provider } = makeProvider()
     const { container } = render(Provider, { values: ['a', 'b', 'c'] })
     await waitForUpdate()
-    expect(container.querySelectorAll('[data-vy-collection-item]')).toHaveLength(3)
+    expect(container.querySelectorAll('[data-vyui-collection-item]')).toHaveLength(3)
   })
 
   it('itemMapSize reflects mounted items', async () => {
@@ -63,18 +63,6 @@ describe('useCollection — registration', () => {
 })
 
 describe('useCollection — disabled filter', () => {
-  // `getItems()` filters via `i.ref.dataset?.disabled !== ''`. In the Lynx
-  // dual-thread harness the captured ref is a ShadowElement (no `dataset`),
-  // so the filter is a no-op here. The disabled path is exercised in the
-  // downstream components that own the disabled-state contract.
-  it.skip('getItems() omits items with data-disabled=""', async () => {
-    const { Provider, getApi } = makeProvider()
-    render(Provider, { values: ['a', '__disabled', 'b'] })
-    await waitForUpdate()
-    const enabledValues = getApi().getItems().map(i => (i as any).value)
-    expect(enabledValues).toEqual(['a', 'b'])
-  })
-
   it('getItems(true) includes every registered item', async () => {
     const { Provider, getApi } = makeProvider()
     render(Provider, { values: ['a', '__disabled'] })

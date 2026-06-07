@@ -9,24 +9,27 @@
  *   Main Thread: renderPage, vuePatchUpdate (PAPI ops executor)
  *   BG Thread:   publishEvent, lynx.getNativeApp().callLepusMethod
  *
- * TODO: This manually wires globalThis hooks that @lynx-js/testing-environment
- * doesn't yet expose as public API. Once the following PR merges, replace this
- * with the official hook-based approach:
- * https://github.com/lynx-family/lynx-stack/pull/2564
+ * Built on the public @lynx-js/testing-environment setup hooks documented in
+ * lynx-family/lynx-stack#2564: we install the env, capture vue-lynx's runtime
+ * fns by importing its chunks on the matching thread, then re-apply them through
+ * `onInjectMainThreadGlobals` / `onInjectBackgroundThreadGlobals`. Because those
+ * hooks fire on every inject (incl. `reset()`) and write onto the per-thread
+ * global, the fns survive each `switchTo*Thread()` — no manual re-wiring needed.
  */
 
 import { JSDOM } from 'jsdom'
-import { LynxTestingEnv } from '@lynx-js/testing-environment'
+import { installLynxTestingEnv } from '@lynx-js/testing-environment'
 
 const jsdom = new JSDOM('<!DOCTYPE html><html><body></body></html>')
-const lynxTestingEnv = new LynxTestingEnv(jsdom)
+installLynxTestingEnv(globalThis as any, { window: jsdom.window as any })
+const lynxTestingEnv = (globalThis as any).lynxTestingEnv
 
-;(globalThis as any).lynxTestingEnv = lynxTestingEnv
-
-// --- Main thread ---
+// --- Capture main-thread runtime fns ---
 
 lynxTestingEnv.switchToMainThread()
 
+// vue-lynx/main-thread references registerWorkletInternal at import time; stub it
+// if the worklet-runtime chunk hasn't provided one yet.
 if (typeof (globalThis as any).registerWorkletInternal === 'undefined') {
   ;(globalThis as any).registerWorkletInternal = () => {}
 }
@@ -39,32 +42,49 @@ const mainThreadFns = {
   processData: (globalThis as any).processData,
   updatePage: (globalThis as any).updatePage,
   updateGlobalProps: (globalThis as any).updateGlobalProps,
+  registerWorkletInternal: (globalThis as any).registerWorkletInternal,
 }
 
-const mtGlobal = lynxTestingEnv.mainThread.globalThis as any
-Object.assign(mtGlobal, mainThreadFns)
-
-// --- Background thread ---
+// --- Capture background-thread runtime fns ---
 
 lynxTestingEnv.switchToBackgroundThread()
 
 await import('vue-lynx/entry-background')
 
 const publishEventFn = (globalThis as any).publishEvent
-const bgGlobal = lynxTestingEnv.backgroundThread.globalThis as any
-bgGlobal.publishEvent = publishEventFn
 
-// --- Post-reset re-wiring ---
+// --- Wire via the documented testing-environment hooks (#2564) ---
 
-;(globalThis as any).onSwitchedToMainThread = () => {
-  Object.assign(globalThis, mainThreadFns)
+const prevInjectMain = (globalThis as any).onInjectMainThreadGlobals
+;(globalThis as any).onInjectMainThreadGlobals = (target: any) => {
+  prevInjectMain?.(target)
+  Object.assign(target, mainThreadFns)
 }
 
-;(globalThis as any).onSwitchedToBackgroundThread = () => {
-  if ((globalThis as any).lynxCoreInject?.tt) {
-    ;(globalThis as any).lynxCoreInject.tt.publishEvent = publishEventFn
+const prevInjectBg = (globalThis as any).onInjectBackgroundThreadGlobals
+;(globalThis as any).onInjectBackgroundThreadGlobals = (target: any) => {
+  prevInjectBg?.(target)
+  // vue-lynx routes native events via lynxCoreInject.tt.publishEvent (modern) and
+  // globalThis.publishEvent (older fallback) — wire both onto the thread global.
+  target.publishEvent = publishEventFn
+  if (target.lynxCoreInject?.tt) {
+    target.lynxCoreInject.tt.publishEvent = publishEventFn
   }
-  ;(globalThis as any).publishEvent = publishEventFn
 }
+
+const prevInitWorklet = (globalThis as any).onInitWorkletRuntime
+;(globalThis as any).onInitWorkletRuntime = () => {
+  prevInitWorklet?.()
+  if (typeof (globalThis as any).registerWorkletInternal === 'undefined') {
+    ;(globalThis as any).registerWorkletInternal = () => {}
+  }
+  return true
+}
+
+// Apply the inject hooks once to the already-constructed thread globals; from here
+// on, env.reset() re-fires them automatically.
+;(globalThis as any).onInjectMainThreadGlobals(lynxTestingEnv.mainThread.globalThis)
+;(globalThis as any).onInjectBackgroundThreadGlobals(lynxTestingEnv.backgroundThread.globalThis)
 
 // Stay on background thread — tests start here by default.
+lynxTestingEnv.switchToBackgroundThread()

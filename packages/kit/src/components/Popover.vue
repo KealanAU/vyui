@@ -234,12 +234,9 @@ function onInteractOutside(event: any) {
 </script>
 
 <template>
-  <!-- ============================================================
-       SHEET MODE (default) — uses `SheetRoot` for state + drag.
-       This is the touch-native presentation: tap trigger → sheet
-       slides up from bottom. Drag down to dismiss. Snap physics
-       inherited from `SheetContent`.
-       ============================================================ -->
+  <!-- SHEET MODE (default) — uses `SheetRoot` for state + drag. Touch-native
+       presentation: tap trigger → sheet slides up from bottom, drag down to
+       dismiss. Snap physics inherited from `SheetContent`. -->
   <SheetRoot
     v-if="presentation === 'sheet'"
     :open="resolvedOpen"
@@ -261,11 +258,9 @@ function onInteractOutside(event: any) {
     </SheetContent>
   </SheetRoot>
 
-  <!-- ============================================================
-       ANCHOR MODE — opt-in for tablet / wide-screen surfaces where
-       pointer precision makes a tiny floating panel reasonable.
-       Measures the trigger and docks the content next to it.
-       ============================================================ -->
+  <!-- ANCHOR MODE — opt-in for tablet / wide-screen surfaces where pointer
+       precision makes a tiny floating panel reasonable. Measures the trigger
+       and docks the content next to it. -->
   <PopoverRoot
     v-else
     :open="resolvedOpen"

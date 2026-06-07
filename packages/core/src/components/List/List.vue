@@ -154,7 +154,7 @@ function getVisibleCells(): Promise<unknown> {
   return invoke('getVisibleCells')
 }
 
-// --- scrollIntoId (3-step MT pipeline) ----------------------------------
+// scrollIntoId (3-step MT pipeline).
 // `<list>` is virtualised — off-screen cells aren't rendered, so you can't
 // `boundingClientRect` a child by id until its cell exists. The 3-step
 // chain is:

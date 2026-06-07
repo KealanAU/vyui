@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
 import RadioGroup from './story/_RadioGroup.vue'
 
-describe('given a default RadioGroup', () => {
+describe('default RadioGroup', () => {
   let container: Element
   let radios: NodeListOf<Element>
 
@@ -12,16 +12,16 @@ describe('given a default RadioGroup', () => {
     radios = container.querySelectorAll('[accessibility-role-description="radio"]')
   })
 
-  it('should have default selected', () => {
+  it('checks the first item by default', () => {
     expect(radios[0].getAttribute('data-state')).toBe('checked')
   })
 
-  it('should render indicator inside radio', () => {
+  it('renders an indicator inside the radio', () => {
     expect(radios[0].children.length).toBeGreaterThan(0)
   })
 })
 
-describe('given disabled RadioGroup', () => {
+describe('disabled RadioGroup', () => {
   let container: Element
   let radios: NodeListOf<Element>
 
@@ -30,17 +30,17 @@ describe('given disabled RadioGroup', () => {
     radios = container.querySelectorAll('[accessibility-role-description="radio"]')
   })
 
-  it('should have default selected', () => {
+  it('checks the first item by default', () => {
     expect(radios[0].getAttribute('data-state')).toBe('checked')
   })
 
-  it.each([[0, 'checked'], [1, 'unchecked'], [2, 'unchecked']])('should not change state on tap', async (input, output) => {
+  it.each([[0, 'checked'], [1, 'unchecked'], [2, 'unchecked']])('does not change state on tap', async (input, output) => {
     fireEvent.tap(radios[input as number])
     await waitForUpdate()
     expect(radios[input as number].getAttribute('data-state')).toBe(output)
   })
 
-  it.each([[0], [1], [2]])('should have disabled attribute on item', (input) => {
+  it.each([[0], [1], [2]])('sets the disabled attribute on each item', (input) => {
     expect(radios[input as number].getAttribute('disabled')).toBe('')
     expect(radios[input as number].getAttribute('data-disabled')).toBe('')
   })
