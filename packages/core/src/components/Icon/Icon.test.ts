@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { render } from '@vyui/testing-utils'
 import Icon, { type IconProps } from './Icon.vue'
@@ -90,6 +90,31 @@ describe('resolveIconSvg (cache)', () => {
       icons: { account: { body: '<path d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8"/>' } },
     })
     expect(resolveIconSvg('mdi:account', { size: 16 })).not.toBeNull()
+  })
+})
+
+describe('resolveIconSvg (color sanitisation)', () => {
+  it('accepts the CSS color syntaxes consumers legitimately pass', () => {
+    for (const color of ['red', '#ff0000', 'rgb(255, 0, 0)', 'rgb(255 0 0 / 50%)', 'hsl(210, 50%, 40%)']) {
+      const svg = resolveIconSvg('lucide:check', { size: 16, color })
+      expect(svg).toContain(color)
+      expect(svg).not.toContain('currentColor')
+    }
+  })
+
+  it('ignores a color that would break out of the SVG attribute', () => {
+    const payload = '"><image href="x" onerror="alert(1)"><path fill="'
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const svg = resolveIconSvg('lucide:check', { size: 16, color: payload })
+      expect(svg).not.toContain('onerror')
+      expect(svg).toContain('currentColor')
+      expect(warn).toHaveBeenCalledOnce()
+      expect(warn.mock.calls[0][0]).toContain('[vyui/Icon]')
+    }
+    finally {
+      warn.mockRestore()
+    }
   })
 })
 
