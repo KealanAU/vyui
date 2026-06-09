@@ -49,6 +49,16 @@ export function registerIconSet(prefix: string, data: IconifyJSON): void {
   svgCache.clear()
 }
 
+/**
+ * `color` is spliced verbatim into SVG markup where `currentColor` sits inside
+ * attribute values (`fill="currentColor"`), so a value containing `"` or `<`
+ * could break out of the attribute and inject elements into the XML that
+ * Lynx's `<svg content>` (and the web `x-svg` element) parses. Allow only the
+ * characters CSS color syntaxes need — named colors, `#hex`, `rgb()`/`hsl()`
+ * including modern space/`/`-alpha forms — and ignore anything else.
+ */
+const SAFE_COLOR_RE = /^[\w#(),.%/ -]+$/
+
 export interface ResolveIconOptions {
   /** Pixel size applied to the SVG `width`/`height`. */
   size?: number
@@ -109,5 +119,16 @@ function computeIconSvg(name: string, opts: ResolveIconOptions): string | null {
     width: opts.size,
   })
   const svg = iconToHTML(body, attributes)
-  return opts.color ? svg.replace(/currentColor/g, opts.color) : svg
+  if (!opts.color)
+    return svg
+  if (!SAFE_COLOR_RE.test(opts.color)) {
+    if (__DEV__) {
+      console.warn(
+        `[vyui/Icon] \`color\` value ${JSON.stringify(opts.color)} contains characters `
+        + 'that are invalid in a CSS color; ignoring it so it cannot inject SVG markup.',
+      )
+    }
+    return svg
+  }
+  return svg.replace(/currentColor/g, opts.color)
 }
