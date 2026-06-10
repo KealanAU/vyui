@@ -40,6 +40,7 @@ export {
   resolveSnapPositions,
   resolveSnapToPosition,
   useSheetBehavior,
+  viewportSnapsToPositions,
 } from './useSheetBehavior.js'
 export type {
   PickReleaseOptions,

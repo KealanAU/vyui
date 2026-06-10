@@ -9,9 +9,18 @@ export interface SheetRootProps {
   open?: boolean
   /** Initial open state when uncontrolled. */
   defaultOpen?: boolean
-  /** Controlled current snap index. Bind with `v-model:snapIndex`. */
+  /**
+   * Controlled current snap index. Bind with `v-model:snapIndex`. Indexes
+   * the SORTED `snapPoints` (0 = smallest fraction = most closed). Updated
+   * by drag settles; writing it animates the open sheet to that snap.
+   */
   snapIndex?: number
-  /** Initial snap index when uncontrolled (defaults to 0). */
+  /**
+   * Initial snap index when uncontrolled (defaults to 0). The enter
+   * animation always slides fully in first; when this points below the
+   * largest snap the sheet then settles down to it. The index persists
+   * across close/reopen.
+   */
   defaultSnapIndex?: number
   /**
    * Snap points as fractions of viewport height, low → high. e.g. `[0.25, 0.5, 0.9]`.
@@ -25,13 +34,15 @@ export interface SheetRootProps {
   viewportHeight?: number
   /**
    * Absolute velocity (px/s) above which a fling advances by one snap regardless
-   * of position. Currently unused — reserved for multi-snap drag settle,
-   * which isn't implemented yet.
+   * of position. Currently unused — the release logic (mirroring
+   * `pickRelease`) implements flick-advance via a 100ms coast projection
+   * instead. Reserved.
    * @defaultValue `400`
    */
   velocityThreshold?: number
   /**
-   * Downward velocity (px/s) past the first snap that triggers dismiss.
+   * Downward velocity (px/s) at which a fling dismisses from any position
+   * (when `enableDragToClose`).
    * @defaultValue `600`
    */
   dismissVelocity?: number
@@ -42,7 +53,9 @@ export interface SheetRootProps {
    */
   duration?: number
   /**
-   * Allow drag below the first snap to dismiss.
+   * Allow drag below the most-closed snap to dismiss. When `false` with
+   * multiple snap points, drag between snaps still works — only the
+   * dismiss branch is disabled.
    * @defaultValue `true`
    */
   enableDragToClose?: boolean
@@ -112,10 +125,12 @@ const viewportHeight = computed(() => {
 const progressMTRef = useMainThreadRef<number>(0)
 const backdropElRef = useMainThreadRef<any>(null)
 
+// Close does NOT reset snapIndex: the index persists so reopen restores the
+// last snap (and a settled v-model value isn't silently rewritten mid-close,
+// which would misfire SheetContentImpl's close-time position logic).
 function setOpen(next: boolean) {
   if (open.value === next) return
   open.value = next
-  if (!next) snapIndex.value = 0
 }
 
 function setSnap(idx: number) {

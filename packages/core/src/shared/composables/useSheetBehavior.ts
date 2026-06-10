@@ -84,6 +84,25 @@ export function resolveSnapPositions(
     .sort((a, b) => a - b)
 }
 
+/**
+ * Map `SheetRoot`-style snap fractions (of **viewport** height, any order)
+ * to px-from-open positions along the panel's travel. The panel is sized to
+ * the largest snap (`travel = maxSnap × viewportHeight`), so the largest
+ * fraction always maps to position `0` (fully open) and smaller fractions
+ * to positive offsets. Returns ascending positions (`[0]` = most open),
+ * ready for `pickRelease`.
+ */
+export function viewportSnapsToPositions(
+  snaps: readonly number[],
+  viewportHeight: number,
+  travel: number,
+): number[] {
+  return resolveSnapPositions(
+    snaps.map(s => `${s * viewportHeight}px`),
+    travel,
+  )
+}
+
 /** 0 = closed, 1 = fully open. Clamps out-of-range positions. */
 export function progressFor(position: number, travel: number): number {
   if (travel <= 0) return 0
