@@ -1,0 +1,15 @@
+<!-- Standalone "Vy" mark, dark on transparent — same glyph as
+     apps/docs/public/favicon.svg, kept here so brand assets live in one
+     place. Use logo-white.svg on dark backgrounds. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <text
+    x="16"
+    y="22"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    font-size="22"
+    font-weight="700"
+    text-anchor="middle"
+    fill="#17191c"
+    letter-spacing="-0.5"
+  >Vy</text>
+</svg>

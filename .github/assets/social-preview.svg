@@ -1,0 +1,26 @@
+<!-- GitHub social preview source (render at 1280×640, upload via repo
+     Settings → General → Social preview; there is no API for it). Used as
+     the Open Graph card for repo + release links. Wordmark derives from
+     apps/docs/public/favicon.svg; sky/slate accents match the demo apps. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640">
+  <rect width="1280" height="640" fill="#17191c" />
+  <text
+    x="640"
+    y="340"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    font-size="168"
+    font-weight="700"
+    text-anchor="middle"
+    fill="#ffffff"
+    letter-spacing="-4"
+  >Vy <tspan fill="#38bdf8">UI</tspan></text>
+  <text
+    x="640"
+    y="424"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    font-size="38"
+    font-weight="500"
+    text-anchor="middle"
+    fill="#94a3b8"
+  >Headless, accessible component primitives for Vue-Lynx</text>
+</svg>
