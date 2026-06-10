@@ -1,7 +1,10 @@
 # Brand assets
 
-The "Vy" mark derives from `apps/docs/public/favicon.svg`; accents use the
-demo apps' sky/slate palette on the brand near-black (`#17191c`).
+The "Vy" mark derives from `apps/docs/public/favicon.svg`. The social
+preview matches the docs landing page (`apps/docs/app/assets/css/main.css`):
+mint base `#f0fdf9` with the ambient aurora blobs, ink `#17191c` for "Vy",
+and the hero title's `.text-aurora` gradient for "UI". The avatar tile stays
+ink with a white mark so it reads at small sizes.
 
 | File | Use |
 | --- | --- |

@@ -1,19 +1,49 @@
 <!-- GitHub social preview source (render at 1280×640, upload via repo
      Settings → General → Social preview; there is no API for it). Used as
-     the Open Graph card for repo + release links. Wordmark derives from
-     apps/docs/public/favicon.svg; sky/slate accents match the demo apps. -->
+     the Open Graph card for repo + release links.
+
+     Matches the docs landing page (apps/docs/app/assets/css/main.css):
+     mint base #f0fdf9 with the three ambient aurora blobs (green / indigo /
+     fuchsia, positions scaled from the landing-page vw/vh geometry), "Vy"
+     in ink #17191c, "UI" in the hero title's .text-aurora gradient, tagline
+     in the ui-text-toned grey. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640">
-  <rect width="1280" height="640" fill="#17191c" />
+  <defs>
+    <radialGradient id="blob-green">
+      <stop offset="0" stop-color="#bbf7d0" stop-opacity="0.55" />
+      <stop offset="0.7" stop-color="#bbf7d0" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="blob-indigo">
+      <stop offset="0" stop-color="#c7d2fe" stop-opacity="0.5" />
+      <stop offset="0.7" stop-color="#c7d2fe" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="blob-fuchsia">
+      <stop offset="0" stop-color="#f5d0fe" stop-opacity="0.48" />
+      <stop offset="0.7" stop-color="#f5d0fe" stop-opacity="0" />
+    </radialGradient>
+    <!-- .text-aurora: linear-gradient(120deg, #8b5cf6, #6366f1 50%, #d946ef) -->
+    <linearGradient id="aurora" x1="0" y1="0" x2="1" y2="0.6">
+      <stop offset="0" stop-color="#8b5cf6" />
+      <stop offset="0.5" stop-color="#6366f1" />
+      <stop offset="1" stop-color="#d946ef" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="#f0fdf9" />
+  <ellipse cx="192" cy="90" rx="704" ry="416" fill="url(#blob-green)" />
+  <ellipse cx="1024" cy="300" rx="640" ry="352" fill="url(#blob-indigo)" />
+  <ellipse cx="602" cy="538" rx="704" ry="352" fill="url(#blob-fuchsia)" />
+
   <text
     x="640"
     y="340"
     font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     font-size="168"
-    font-weight="700"
+    font-weight="600"
     text-anchor="middle"
-    fill="#ffffff"
+    fill="#17191c"
     letter-spacing="-4"
-  >Vy <tspan fill="#38bdf8">UI</tspan></text>
+  >Vy <tspan fill="url(#aurora)">UI</tspan></text>
   <text
     x="640"
     y="424"
@@ -21,6 +51,6 @@
     font-size="38"
     font-weight="500"
     text-anchor="middle"
-    fill="#94a3b8"
+    fill="#4c4c4c"
   >Headless, accessible component primitives for Vue-Lynx</text>
 </svg>
