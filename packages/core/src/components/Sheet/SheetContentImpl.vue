@@ -9,6 +9,11 @@
      - Drag is driven by MT touch worklets that paint inline `transform`
        via `setStyleProperty`. On release we either snap back (CSS
        transition) or dismiss (inline transition + `setOpen(false)`).
+     - Drag also paints the backdrop: `touchmove` writes `ctx.progressMTRef`
+       and inline `opacity` on `ctx.backdropElRef` so the dim tracks the
+       panel 1:1; release restores / fades it with a transition matching
+       the panel's. The backdrop unmounts with Presence on close, so the
+       inline opacity can't leak into the next open.
 
      The MT refs (touchStart, dragging flag, velocity ring buffer, etc.)
      are only read INSIDE touch worklets, which fire on user input — long
@@ -19,6 +24,14 @@
      before refs are registered. Touch handlers attached via
      `:main-thread-bindtouchstart` go through `SET_WORKLET_EVENT` which
      flushes in the same batch as `INIT_MT_REF`.
+
+     Config (panel height px, dismiss velocity, settle duration) is
+     mirrored into MT refs: initial values ride the constructor's
+     `INIT_MT_REF` transfer; later changes hop through watch-triggered
+     `runOnMainThread` setter worklets. Plain BG writes to
+     `MainThreadRef.current` are silently dropped by vue-lynx@0.4.0 (the
+     setter is a dev-warn no-op), and the watch dispatches fire post-mount
+     so they don't hit the setup-time registration race above.
 
      Inline `animation: 'none'` on the dismiss-after-drag path overrides
      Presence's `.ui-leaving` keyframe so the panel slides smoothly from
@@ -33,8 +46,8 @@ export interface SheetContentImplProps {
 </script>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
-import { runOnBackground, useMainThreadRef } from 'vue-lynx'
+import { computed, inject, watch } from 'vue'
+import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import {
   PresenceContextKey,
@@ -97,20 +110,82 @@ const lastTouchYRef = useMainThreadRef<number>(0)
 // Ring-buffer for velocity. Each entry is `[y, timestampMs]`. We keep the
 // trailing 50ms of touch samples.
 const sampleRingRef = useMainThreadRef<Array<[number, number]>>([])
-// Panel height in px on MT (for dismiss threshold). Derived from viewport.
-const panelHeightPxRef = useMainThreadRef<number>(
-  Math.round(ctx.viewportHeight.value * (
-    ctx.snapPoints.value.length > 0
-      ? ctx.snapPoints.value[ctx.snapPoints.value.length - 1] ?? 1
-      : 1
-  )),
-)
+
+// Root-owned MT refs (created and INIT_MT_REF-registered by SheetRoot).
+// Bound to local consts so the worklet transform captures the
+// MainThreadRef itself rather than the whole BG context object.
+const backdropRef = ctx.backdropElRef
+const progressRef = ctx.progressMTRef
+
+// Panel height in px on MT (for the dismiss threshold and backdrop fade
+// progress). Recomputes on rotation / late-resolving SystemInfo /
+// snapPoint changes; the watch below re-syncs it to MT.
+const panelHeightPx = computed(() => {
+  const snaps = ctx.snapPoints.value
+  const maxSnap = snaps.length > 0 ? snaps[snaps.length - 1] ?? 1 : 1
+  return Math.round(ctx.viewportHeight.value * maxSnap)
+})
+const panelHeightPxRef = useMainThreadRef<number>(panelHeightPx.value)
+
+// Release physics from SheetRoot's props. `ctx.velocityThreshold` is
+// deliberately not mirrored — it only matters for multi-snap drag settle,
+// which isn't implemented yet.
+const dismissVelocityRef = useMainThreadRef<number>(ctx.dismissVelocity.value)
+const durationMsRef = useMainThreadRef<number>(ctx.duration.value)
+
+// ---- Config sync BG → MT ----------------------------------------------
+// vue-lynx@0.4.0 silently drops BG-thread writes to `MainThreadRef.current`
+// (only the constructor's INIT_MT_REF transfers a value BG → MT), so these
+// syncs have to hop through `runOnMainThread`. That's safe here: watch
+// callbacks fire post-mount, long after the refs are registered — the
+// setup-time dispatch race in the header comment doesn't apply.
+
+function _setPanelHeightPx(v: number) {
+  'main thread'
+  panelHeightPxRef.current = v
+}
+
+function _setDismissVelocity(v: number) {
+  'main thread'
+  dismissVelocityRef.current = v
+}
+
+function _setDurationMs(v: number) {
+  'main thread'
+  durationMsRef.current = v
+}
+
+watch(panelHeightPx, (v) => { void runOnMainThread(_setPanelHeightPx as any)(v) })
+watch(ctx.dismissVelocity, (v) => { void runOnMainThread(_setDismissVelocity as any)(v) })
+watch(ctx.duration, (v) => { void runOnMainThread(_setDurationMs as any)(v) })
 
 // ---- Touch worklets ---------------------------------------------------
 
 function _setStyle(decl: Record<string, string>) {
   'main thread'
   const el = containerRef as unknown as {
+    current?: {
+      setStyleProperties?(s: Record<string, string>): void
+      setStyleProperty?(k: string, v: string): void
+    }
+  }
+  if (el.current?.setStyleProperties) {
+    el.current.setStyleProperties(decl)
+  }
+  else if (el.current?.setStyleProperty) {
+    for (const k in decl) el.current.setStyleProperty(k, decl[k])
+  }
+}
+
+// DEVICE-VERIFY: painting a SECOND element (the backdrop) from the
+// content's touch worklets hasn't been device-verified — it's the same
+// setStyleProperty surface as the panel, but through a ref populated by
+// a sibling component (`SheetBackdropImpl`'s `:main-thread-ref`).
+function _setBackdropStyle(decl: Record<string, string>) {
+  'main thread'
+  // The backdrop is optional (sheets can render without one) and unmounts
+  // with Presence on close, so `current` may be null — bail quietly.
+  const el = backdropRef as unknown as {
     current?: {
       setStyleProperties?(s: Record<string, string>): void
       setStyleProperty?(k: string, v: string): void
@@ -145,6 +220,9 @@ function _onTouchStart(e: { detail: { y: number } }) {
   // which causes drag to "not pick up" the way the user expects.
   // Snapping to 0 immediately gives the drag a clean origin to work from.
   _setStyle({ transition: 'none', transform: 'translateY(0)' })
+  // The backdrop joins the drag: kill its transition so the per-frame
+  // opacity writes in touchmove paint immediately instead of easing.
+  _setBackdropStyle({ transition: 'none' })
 }
 
 function _onTouchMove(e: { detail: { y: number } }) {
@@ -157,6 +235,14 @@ function _onTouchMove(e: { detail: { y: number } }) {
   let delta = y - touchStartYRef.current
   if (delta < 0) delta = 0
   _setStyle({ transform: `translateY(${delta}px)` })
+  // Drag-synced backdrop fade: 1 = fully open, 0 = dragged the full panel
+  // height. Mirrored into the context's progressMTRef for other MT readers.
+  const hpx = panelHeightPxRef.current
+  let progress = hpx > 0 ? 1 - delta / hpx : 1
+  if (progress < 0) progress = 0
+  if (progress > 1) progress = 1
+  progressRef.current = progress
+  _setBackdropStyle({ opacity: String(progress) })
   const now = Date.now()
   sampleRingRef.current.push([y, now])
   _pruneRing(now)
@@ -182,21 +268,33 @@ function _onTouchEnd() {
   }
 
   const panelHpx = panelHeightPxRef.current
-  // Dismiss if dragged > 40% of panel height OR flicked down hard.
+  // Dismiss if dragged > 40% of panel height OR flicked down hard
+  // (faster than SheetRoot's `dismissVelocity` prop).
   const DISMISS_DISTANCE = panelHpx * 0.4
-  const FLING_VELOCITY = 600
   const shouldDismiss = delta > DISMISS_DISTANCE
-    || (velocity > 0 && velocity > FLING_VELOCITY)
+    || (velocity > 0 && velocity > dismissVelocityRef.current)
 
+  // Settle timings derive from SheetRoot's `duration` prop: snap-back uses
+  // the full duration; dismiss is a slightly quicker 0.9× cut (matches the
+  // previous hardcoded 280 / 250ms feel at the default duration).
+  const durationMs = durationMsRef.current
   if (shouldDismiss) {
+    const dismissMs = Math.round(durationMs * 0.9)
     // Suppress the `.ui-leaving` keyframe with inline `animation: none` so
     // the slide-off transitions smoothly from the current drag position
     // instead of snapping back to translateY(0) first. The
     // `@transitionend` listener then advances Presence to `Left`.
     _setStyle({
       animation: 'none',
-      transition: 'transform 250ms ease-in',
+      transition: `transform ${dismissMs}ms ease-in`,
       transform: 'translateY(100%)',
+    })
+    // Fade the backdrop out alongside the slide-off. Presence unmounts it
+    // once the close completes, so the inline opacity can't stick around.
+    progressRef.current = 0
+    _setBackdropStyle({
+      transition: `opacity ${dismissMs}ms ease-in`,
+      opacity: '0',
     })
     runOnBackground(_emitClose as any)()
   }
@@ -204,8 +302,14 @@ function _onTouchEnd() {
     // Snap back to open via a quick CSS transition. The .ui-open class
     // statically holds `translateY(0)` once the inline transform matches.
     _setStyle({
-      transition: 'transform 280ms ease-out',
+      transition: `transform ${durationMs}ms ease-out`,
       transform: 'translateY(0)',
+    })
+    // Restore the backdrop dim in step with the panel's snap-back.
+    progressRef.current = 1
+    _setBackdropStyle({
+      transition: `opacity ${durationMs}ms ease-out`,
+      opacity: '1',
     })
   }
 }
@@ -214,9 +318,17 @@ function _onTouchCancel() {
   'main thread'
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
+  // Cancel snaps back faster than a deliberate release — 0.7× the settle
+  // duration (matches the previous hardcoded 200ms at the 280ms default).
+  const cancelMs = Math.round(durationMsRef.current * 0.7)
   _setStyle({
-    transition: 'transform 200ms ease-out',
+    transition: `transform ${cancelMs}ms ease-out`,
     transform: 'translateY(0)',
+  })
+  progressRef.current = 1
+  _setBackdropStyle({
+    transition: `opacity ${cancelMs}ms ease-out`,
+    opacity: '1',
   })
 }
 

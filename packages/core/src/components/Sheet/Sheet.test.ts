@@ -101,6 +101,30 @@ describe('SheetRoot — v-model:open / v-model:snapIndex', () => {
     const { ctx } = await mountRoot({ viewportHeight: 999 })
     expect(ctx.viewportHeight.value).toBe(999)
   })
+
+  // SheetContent's release worklets read these via MT refs synced from the
+  // context — assert the context carries the prop values (and defaults)
+  // rather than hardcoded physics.
+  it('exposes drag physics config (dismissVelocity, duration) from props', async () => {
+    const { ctx } = await mountRoot({ dismissVelocity: 900, duration: 400 })
+    expect(ctx.dismissVelocity.value).toBe(900)
+    expect(ctx.duration.value).toBe(400)
+  })
+
+  it('defaults dismissVelocity to 600 and duration to 280', async () => {
+    const { ctx } = await mountRoot()
+    expect(ctx.dismissVelocity.value).toBe(600)
+    expect(ctx.duration.value).toBe(280)
+  })
+
+  it('provides MT refs for drag progress and the backdrop element', async () => {
+    const { ctx } = await mountRoot()
+    // Drag worklets write progress on touchmove and paint opacity through
+    // the backdrop handle; both must exist on context even with no drag yet.
+    expect(ctx.progressMTRef).toBeDefined()
+    expect(ctx.backdropElRef).toBeDefined()
+    expect(ctx.backdropElRef.current).toBeNull()
+  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────

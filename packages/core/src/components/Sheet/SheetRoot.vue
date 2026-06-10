@@ -25,7 +25,8 @@ export interface SheetRootProps {
   viewportHeight?: number
   /**
    * Absolute velocity (px/s) above which a fling advances by one snap regardless
-   * of position.
+   * of position. Currently unused — reserved for multi-snap drag settle,
+   * which isn't implemented yet.
    * @defaultValue `400`
    */
   velocityThreshold?: number
@@ -34,7 +35,11 @@ export interface SheetRootProps {
    * @defaultValue `600`
    */
   dismissVelocity?: number
-  /** Settle animation duration in ms. */
+  /**
+   * Settle animation duration in ms. Drag release snap-back uses it
+   * directly; drag-dismiss and touch-cancel use shorter cuts of it.
+   * @defaultValue `280`
+   */
   duration?: number
   /**
    * Allow drag below the first snap to dismiss.
@@ -101,8 +106,9 @@ const viewportHeight = computed(() => {
   return 800
 })
 
-// MT progress (0 closed → 1 fully open). Lives at the root so the backdrop
-// can read it without injecting through SheetContent.
+// MT drag progress (1 fully open → 0 dragged to dismiss; only written
+// during drag — see sheetContext). Lives at the root so the backdrop can
+// read it without injecting through SheetContent.
 const progressMTRef = useMainThreadRef<number>(0)
 const backdropElRef = useMainThreadRef<any>(null)
 

@@ -21,8 +21,11 @@ const emits = defineEmits<{
 
 const ctx = injectSheetRootContext()
 
-// Same MT element handle SheetContent's drag worklets paint opacity into;
-// the keyframe-based fade below targets the same `<view>` via class.
+// Same MT element handle SheetContent's drag worklets paint inline
+// `opacity` into during drag; the keyframe-based fade below covers the
+// open / close transitions on the same `<view>` via class. Inline styles
+// from a drag can't leak across opens: Presence unmounts this view on
+// close, so each open starts from a fresh element.
 const overlayRef = ctx.backdropElRef
 
 const presence = inject(PresenceContextKey, null)

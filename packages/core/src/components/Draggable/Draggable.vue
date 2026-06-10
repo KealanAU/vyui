@@ -68,7 +68,7 @@ export type DraggableEmits = {
 </script>
 
 <script setup lang="ts">
-import { onUnmounted, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 const props = withDefaults(defineProps<DraggableProps>(), {
@@ -138,18 +138,65 @@ const xQueueRef = useMainThreadRef<number[]>([])
 const yQueueRef = useMainThreadRef<number[]>([])
 const tQueueRef = useMainThreadRef<number[]>([])
 
+// Handle of the in-flight `resetOnEnd` animation. Written only inside MT
+// worklets (BG writes to MainThreadRef.current are silently dropped).
+const resetAnimRef = useMainThreadRef<any>(null)
+
 // BG-side mirror so the slot's `dragging` prop is reactive.
 const draggingState = ref(false)
 
-watch(() => props.axis, (v) => { axisRef.current = encodeAxis(v) })
-watch(() => props.disabled, (v) => { disabledRef.current = v })
-watch(() => props.resetOnEnd, (v) => { resetOnEndRef.current = v })
-watch(() => props.duration, (v) => { durationRef.current = v })
-watch(() => props.emitMove, (v) => { emitMoveRef.current = v })
-watch(() => props.bounds?.left, (v) => { minXRef.current = resolveMin(v) })
-watch(() => props.bounds?.right, (v) => { maxXRef.current = resolveMax(v) })
-watch(() => props.bounds?.top, (v) => { minYRef.current = resolveMin(v) })
-watch(() => props.bounds?.bottom, (v) => { maxYRef.current = resolveMax(v) })
+function _syncConfig(
+  axis: 0 | 1 | 2,
+  disabled: boolean,
+  resetOnEnd: boolean,
+  duration: number,
+  emitMove: boolean,
+  minX: number,
+  maxX: number,
+  minY: number,
+  maxY: number,
+) {
+  'main thread'
+  axisRef.current = axis
+  disabledRef.current = disabled
+  resetOnEndRef.current = resetOnEnd
+  durationRef.current = duration
+  emitMoveRef.current = emitMove
+  minXRef.current = minX
+  maxXRef.current = maxX
+  minYRef.current = minY
+  maxYRef.current = maxY
+}
+
+// BG-side assignments to `MainThreadRef.current` are silently dropped by
+// vue-lynx (only the constructor transfers a value BG→MT), so prop updates
+// must be shipped over as a setter-worklet dispatch.
+watch(
+  () => [
+    props.axis,
+    props.disabled,
+    props.resetOnEnd,
+    props.duration,
+    props.emitMove,
+    props.bounds?.left,
+    props.bounds?.right,
+    props.bounds?.top,
+    props.bounds?.bottom,
+  ] as const,
+  () => {
+    runOnMainThread(_syncConfig as any)(
+      encodeAxis(props.axis),
+      props.disabled,
+      props.resetOnEnd,
+      props.duration,
+      props.emitMove,
+      resolveMin(props.bounds?.left),
+      resolveMax(props.bounds?.right),
+      resolveMin(props.bounds?.top),
+      resolveMax(props.bounds?.bottom),
+    )
+  },
+)
 
 function _setTransform(x: number, y: number) {
   'main thread'
@@ -172,7 +219,9 @@ function _animateTo(fromX: number, fromY: number, toX: number, toY: number) {
   currentXRef.current = toX
   currentYRef.current = toY
   if (typeof el.current?.animate === 'function') {
-    el.current.animate(
+    // Keep the handle: a fill-forwards animation outranks inline style in the
+    // cascade, so it must be cancelled before the next drag's transform writes.
+    resetAnimRef.current = el.current.animate(
       [
         { transform: `translate3d(${fromX}px, ${fromY}px, 0)` },
         { transform: `translate3d(${toX}px, ${toY}px, 0)` },
@@ -226,6 +275,20 @@ function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }>
   if (disabledRef.current) return
   const t0 = e.touches[0]
   if (!t0) return
+
+  // Cancel any in-flight resetOnEnd animation: active animations beat inline
+  // style in the cascade, so leaving it running would mask this drag's
+  // `setStyleProperty('transform', …)` writes. Inline `animation: 'none'`
+  // (the Sheet's touchstart stomp) does NOT cancel programmatic `.animate()`
+  // animations — only the handle can. Re-assert the current transform so the
+  // element doesn't snap to the pre-animation position.
+  const anim = resetAnimRef.current
+  if (anim && typeof anim.cancel === 'function') {
+    anim.cancel()
+    resetAnimRef.current = null
+    _setTransform(currentXRef.current, currentYRef.current)
+  }
+
   isDraggingRef.current = true
   touchStartXRef.current = t0.clientX
   touchStartYRef.current = t0.clientY
@@ -303,11 +366,8 @@ function _emitEnd(x: number, y: number, dx: number, dy: number, vx: number, vy: 
   emits('dragEnd', { x, y, dx, dy, vx, vy })
 }
 
-onUnmounted(() => {
-  xQueueRef.current = []
-  yQueueRef.current = []
-  tQueueRef.current = []
-})
+// No BG-side unmount cleanup: the velocity queues live on the main thread
+// and die with the element; BG writes to MainThreadRef.current are no-ops.
 
 function reset(animate = true) {
   if (animate) {
