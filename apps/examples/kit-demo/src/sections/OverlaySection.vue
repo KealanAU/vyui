@@ -13,6 +13,7 @@ import {
 
 const modalOpen = ref(false)
 const drawerOpen = ref(false)
+const drawerFullOpen = ref(false)
 const dropdownOpen = ref(false)
 
 // Notifications — each entry has a "Show" button that surfaces its detail as a
@@ -123,9 +124,30 @@ const fruitItems = [
 
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
       <text class="text-slate-900 text-base font-semibold">Drawer</text>
-      <text class="text-slate-500 text-xs">Bottom-sheet via SheetRoot.</text>
-      <VyDrawer v-model:open="drawerOpen" title="Drawer title" description="Slide-up sheet.">
+      <text class="text-slate-500 text-xs">
+        Bottom-sheet via SheetRoot with multi-snap: opens at 90%, drag down
+        to catch the 40% snap, drag up to return, fling down to dismiss.
+      </text>
+      <VyDrawer
+        v-model:open="drawerOpen"
+        title="Drawer title"
+        description="Drag me between the 40% and 90% snaps."
+        :snap-points="[0.4, 0.9]"
+        :default-snap-index="1"
+      >
         <VyButton color="neutral" variant="subtle" label="Open drawer" />
+      </VyDrawer>
+      <!-- Single-snap full-screen control case: takes the classic
+           keyframe open/close path (no intermediate snaps, no inline
+           animation override) — useful for comparing against the
+           multi-snap drawer above. -->
+      <VyDrawer
+        v-model:open="drawerFullOpen"
+        title="Full-screen drawer"
+        description="Single snap at 100% — drag down or fling to dismiss."
+        :snap-points="[1]"
+      >
+        <VyButton color="neutral" variant="subtle" label="Open full-screen drawer" />
       </VyDrawer>
     </view>
 
