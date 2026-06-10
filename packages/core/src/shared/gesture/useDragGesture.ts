@@ -6,6 +6,13 @@
 // velocity queue, the rAF snap animation, and the MT↔BG hops, so a component
 // only supplies config + settle callbacks.
 //
+// BG → MT sync: in vue-lynx@0.4.0 a background-thread write to
+// `MainThreadRef.current` is silently dropped (the setter is a no-op; only the
+// constructor's `INIT_MT_REF` op transfers a value BG→MT). So every prop
+// change is pushed by dispatching a setter worklet via `runOnMainThread`
+// (`_syncConfig` below), and writes to `.current` happen only INSIDE worklets,
+// where they are MT-local and stick.
+//
 // Worklet constraints, learned the hard way in `SwiperRoot.vue`:
 //   - `'main thread'` bodies are INLINE and SELF-CONTAINED. They do NOT call
 //     worklets in another file (cross-file worklet calls don't resolve), so
@@ -24,7 +31,7 @@
 // source module being a `.ts` instead of an SFC.
 
 import type { Ref } from 'vue'
-import { onMounted, onUnmounted, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 export interface DragGestureConfig {
@@ -69,7 +76,14 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   const touchStartXRef = useMainThreadRef<number>(0)
   const touchStartOffsetRef = useMainThreadRef<number>(0)
   const isDraggingRef = useMainThreadRef<boolean>(false)
-  const internalCommitRef = useMainThreadRef<boolean>(false)
+  // Offset a drag just settled to, pending consumption by `_jumpAndAnimate`.
+  // NaN is the "nothing pending" sentinel (no valid offset is NaN). An offset
+  // rather than a boolean flag because `_settle` only writes `currentIndex`
+  // when the index actually changed — a same-index snap-back never fires the
+  // watch, and a stale boolean would swallow the NEXT programmatic change.
+  // Comparing offsets makes a stale value harmless: a later change to a
+  // different index produces a different target and still animates.
+  const expectedOffsetRef = useMainThreadRef<number>(Number.NaN)
 
   const itemWidthRef = useMainThreadRef<number>(config.itemWidth())
   const itemCountRef = useMainThreadRef<number>(config.itemCount())
@@ -86,12 +100,25 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   const animGenRef = useMainThreadRef<number>(0)
 
   // --- BG → MT sync --------------------------------------------------------
-  watch(config.itemWidth, (v) => { itemWidthRef.current = v })
-  watch(config.itemCount, (v) => { itemCountRef.current = v })
-  watch(config.duration, (v) => { durationRef.current = v })
-  watch(config.threshold, (v) => { thresholdRef.current = v })
-  watch(config.velocityThreshold, (v) => { velocityThresholdRef.current = v })
-  watch(config.disabled, (v) => { disabledRef.current = v })
+  // One combined watch dispatching one setter worklet: BG-side writes to
+  // `MainThreadRef.current` are silently dropped in vue-lynx@0.4.0, so the
+  // values must hop via `runOnMainThread` (see header). The MT refs stay —
+  // worklets read them per-frame without a BG round-trip.
+  watch(
+    [
+      config.itemWidth,
+      config.itemCount,
+      config.duration,
+      config.threshold,
+      config.velocityThreshold,
+      config.disabled,
+    ],
+    ([itemWidth, itemCount, duration, threshold, velocityThreshold, disabled]) => {
+      runOnMainThread(_syncConfig as any)(
+        itemWidth, itemCount, duration, threshold, velocityThreshold, disabled,
+      )
+    },
+  )
 
   watch(currentIndex, (next, prev) => {
     if (next === prev) return
@@ -99,6 +126,23 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   })
 
   // --- Worklets (all inline; no cross-file calls, no stored worklets) ------
+
+  function _syncConfig(
+    itemWidth: number,
+    itemCount: number,
+    duration: number,
+    threshold: number,
+    velocityThreshold: number,
+    disabled: boolean,
+  ) {
+    'main thread'
+    itemWidthRef.current = itemWidth
+    itemCountRef.current = itemCount
+    durationRef.current = duration
+    thresholdRef.current = threshold
+    velocityThresholdRef.current = velocityThreshold
+    disabledRef.current = disabled
+  }
 
   function _setTransform(offset: number) {
     'main thread'
@@ -148,11 +192,13 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   function _jumpAndAnimate(targetIndex: number) {
     'main thread'
     if (isDraggingRef.current) return
-    if (internalCommitRef.current) {
-      internalCommitRef.current = false
-      return
-    }
     const target = -targetIndex * itemWidthRef.current
+    const expected = expectedOffsetRef.current
+    expectedOffsetRef.current = Number.NaN
+    // Skip only when this change is the echo of a drag settle we already
+    // animated in `_onTouchEnd`. The NaN sentinel falls through on its own:
+    // `NaN === target` is always false (inline Number.isNaN-equivalent).
+    if (expected === target) return
     _animateTo(target)
   }
 
@@ -240,9 +286,20 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     if (target > count - 1) target = count - 1
 
     const targetOffset = -target * width
-    internalCommitRef.current = true
+    expectedOffsetRef.current = targetOffset
     _animateTo(targetOffset)
     runOnBackground(_settle as any)(target)
+  }
+
+  function _teardown() {
+    'main thread'
+    // Bump the generation so an in-flight rAF `step` bails on its next frame,
+    // and drop the velocity queues. Must run ON MT — the equivalent BG-side
+    // `.current` writes are silently dropped (see header).
+    animGenRef.current = animGenRef.current + 1
+    isDraggingRef.current = false
+    posQueueRef.current = []
+    timeQueueRef.current = []
   }
 
   // --- BG callbacks --------------------------------------------------------
@@ -268,13 +325,27 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   // --- Lifecycle -----------------------------------------------------------
 
   onMounted(() => {
-    runOnMainThread(_setTransform as any)(offsetRef.current)
+    const initialOffset = -(currentIndex.value ?? 0) * config.itemWidth()
+    // Index 0 → translateX(0) is already the laid-out position, so skip the
+    // dispatch: `runOnMainThread` during mount travels over
+    // `coreContext.dispatchEvent`, a different channel from the batched op
+    // queue carrying `INIT_MT_REF`, and can reach MT before the refs are
+    // registered (vue-lynx@0.4.0 — see SheetContentImpl.vue). Touch handlers
+    // are immune: `SET_WORKLET_EVENT` flushes in the same batch as
+    // `INIT_MT_REF`.
+    if (initialOffset === 0) return
+    // Nonzero initial index: defer past the post-flush op batch. nextTick
+    // narrows but does NOT close the cross-channel race — only vue-lynx's
+    // `waitForFlush` could, and it is not publicly exported in 0.4.0.
+    void nextTick().then(() => {
+      runOnMainThread(_setTransform as any)(initialOffset)
+    })
   })
 
   onUnmounted(() => {
-    animGenRef.current = animGenRef.current + 1
-    posQueueRef.current = []
-    timeQueueRef.current = []
+    // Fire-and-forget MT hop — direct `.current` writes here would be BG-side
+    // no-ops and the in-flight rAF snap would keep painting after unmount.
+    runOnMainThread(_teardown as any)()
   })
 
   return {

@@ -9,6 +9,7 @@ import {
   resolveSnapPositions,
   resolveSnapToPosition,
   useSheetBehavior,
+  viewportSnapsToPositions,
 } from './useSheetBehavior.js'
 
 describe('directionAxis', () => {
@@ -77,6 +78,28 @@ describe('resolveSnapPositions', () => {
 
   it('returns an empty array when input is empty', () => {
     expect(resolveSnapPositions([], 800)).toEqual([])
+  })
+})
+
+describe('viewportSnapsToPositions', () => {
+  // SheetRoot semantics: fractions of VIEWPORT height, panel sized to the
+  // largest snap (travel = maxSnap × viewport).
+  it('maps the largest snap to 0 (fully open) and smaller ones to px offsets', () => {
+    // snaps [0.4, 0.9], viewport 800 → travel 720; 0.9 → 0, 0.4 → 720 - 320.
+    expect(viewportSnapsToPositions([0.4, 0.9], 800, 720)).toEqual([0, 400])
+  })
+
+  it('returns ascending positions regardless of input order', () => {
+    expect(viewportSnapsToPositions([0.9, 0.25, 0.5], 800, 720)).toEqual([0, 320, 520])
+  })
+
+  it('maps the single-snap default [1] to position 0', () => {
+    expect(viewportSnapsToPositions([1], 800, 800)).toEqual([0])
+  })
+
+  it('returns [] for no snaps and 0s for unmeasured travel', () => {
+    expect(viewportSnapsToPositions([], 800, 720)).toEqual([])
+    expect(viewportSnapsToPositions([0.4, 0.9], 800, 0)).toEqual([0, 0])
   })
 })
 
