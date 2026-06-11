@@ -40,6 +40,17 @@ describe('Primitive', () => {
     expect(element.getAttribute('type')).toBe('button')
   })
 
+  it('renders image as a childless leaf (native image rejects children)', () => {
+    const Component = defineComponent({
+      components: { Primitive },
+      template: `<Primitive as="image" src="foo.png"><view>ignored</view></Primitive>`,
+    })
+    const { container } = render(Component)
+    const element = container.querySelector('image')!
+    expect(element.getAttribute('src')).toBe('foo.png')
+    expect(element.childNodes.length).toBe(0)
+  })
+
   it('renders multiple child elements', () => {
     const Component = defineComponent({
       components: { Primitive },

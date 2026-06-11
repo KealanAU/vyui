@@ -7,6 +7,13 @@
 //   the `data-[state=...]` animation hooks emitted by core's `ToastRoot`.
 import type { Color } from './colors'
 
+// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
+// XML, so the `text-${c}-500` class on the `icon` slot never reaches the
+// glyph — Toast.vue bakes `resolveColorHex(appConfig, color, ICON_FG_SHADE)`
+// into the Icon `color` prop. The class below is built from this constant so
+// class and baked color can't drift.
+export const ICON_FG_SHADE = 500
+
 // LYNX NOTE — `var()` in inline `style=""` does NOT resolve on Lynx native
 // (only stylesheet-level `var()` does). The original Reka UI swipe classes
 // `translate-x-(--reka-toast-swipe-move-x)` / `translate-x-(--reka-toast-swipe-end-x)`
@@ -17,7 +24,7 @@ import type { Color } from './colors'
 // pixel values instead of via custom-property indirection.
 export default (colors: Color[]) => ({
   slots: {
-    root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 p-4 flex flex-row gap-2.5 w-[calc(100vw-2rem)] max-w-sm ui-open:animate-[slide-in_200ms_ease-out] ui-closed:animate-[fade-out_100ms_ease-in]',
+    root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 p-4 flex flex-row gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
     wrapper: 'w-0 flex-1 flex flex-col',
     title: 'text-sm font-medium text-neutral-900',
     description: 'text-sm text-neutral-500',
@@ -30,7 +37,7 @@ export default (colors: Color[]) => ({
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, {
-      icon: `text-${c}-500`,
+      icon: `text-${c}-${ICON_FG_SHADE}`,
       progress: `bg-${c}-500`
     }])) as Record<Color, { icon: string, progress: string }>,
     orientation: {

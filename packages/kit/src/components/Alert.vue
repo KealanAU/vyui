@@ -1,6 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
-import theme from '../theme/alert'
+import theme, { iconFg } from '../theme/alert'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 
@@ -35,11 +35,13 @@ export interface AlertProps {
 }
 
 export interface AlertSlots {
-  leading(props?: {}): any
+  /** Receives `iconColor` so custom icons can match the variant's resolved foreground. */
+  leading(props: { iconColor: string }): any
   title(props?: {}): any
   description(props?: {}): any
   actions(props?: {}): any
-  close(props?: {}): any
+  /** Receives `iconColor` so custom close icons can match the variant's resolved foreground. */
+  close(props: { iconColor: string }): any
 }
 </script>
 
@@ -47,6 +49,7 @@ export interface AlertSlots {
 import { computed, useSlots } from 'vue'
 import { Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { resolveColorHex } from '../utils/resolveColor'
 
 const props = withDefaults(defineProps<AlertProps>(), {
   orientation: 'vertical',
@@ -70,15 +73,24 @@ const ui = computed(() => buildAlert(appConfig)({
   title: hasTitle.value,
 }))
 
+// Lynx SVG can't inherit currentColor — bake the variant's foreground into
+// the icon fill at render time (same pattern as Button/Input). Fallbacks
+// mirror the theme's `defaultVariants` (`primary` / `solid`).
+const iconColor = computed(() => {
+  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'solid')
+  return fg === 'white' ? 'white' : resolveColorHex(appConfig, fg.semantic, fg.shade)
+})
+
 const onClose = () => emit('update:open', false)
 </script>
 
 <template>
   <view :class="ui.root({ class: [props.class, props.ui?.root] })">
-    <slot name="leading">
+    <slot name="leading" :icon-color="iconColor">
       <VyIcon
         v-if="icon"
         :name="icon"
+        :color="iconColor"
         :class="ui.icon({ class: props.ui?.icon })"
       />
     </slot>
@@ -117,13 +129,13 @@ const onClose = () => emit('update:open', false)
       :class="ui.actions({ class: props.ui?.actions })"
     >
       <slot v-if="orientation === 'horizontal'" name="actions" />
-      <slot name="close">
+      <slot name="close" :icon-color="iconColor">
         <view
           v-if="close"
           bindtap="onClose"
           :class="ui.close({ class: props.ui?.close })"
         >
-          <VyIcon :name="resolvedCloseIcon" :class="ui.icon({ class: props.ui?.icon })" />
+          <VyIcon :name="resolvedCloseIcon" :color="iconColor" :class="ui.icon({ class: props.ui?.icon })" />
         </view>
       </slot>
     </view>

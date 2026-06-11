@@ -1,6 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
-import theme from '../theme/actionSheet'
+import theme, { leadingIconFg, TRAILING_ICON_FG } from '../theme/actionSheet'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 import type { AvatarProps } from './Avatar.vue'
@@ -90,12 +90,12 @@ export interface ActionSheetSlots {
   default(props: { open: boolean }): any
   /** Header region — replaces the built-in title / description block. */
   header(props?: {}): any
-  /** Custom rendering for an item's leading slot. */
-  'item-leading'(props: { item: ActionSheetItem, index: number }): any
+  /** Custom rendering for an item's leading slot. Receives `iconColor` so custom icons can match the item's resolved foreground. */
+  'item-leading'(props: { item: ActionSheetItem, index: number, iconColor: string }): any
   /** Custom rendering for an item's label. */
   'item-label'(props: { item: ActionSheetItem, index: number }): any
-  /** Custom rendering for an item's trailing slot. */
-  'item-trailing'(props: { item: ActionSheetItem, index: number }): any
+  /** Custom rendering for an item's trailing slot. Receives `iconColor` so custom icons can match the trailing foreground. */
+  'item-trailing'(props: { item: ActionSheetItem, index: number, iconColor: string }): any
 }
 
 /**
@@ -123,6 +123,7 @@ import {
   Icon as VyIcon,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { resolveColorHex } from '../utils/resolveColor'
 import VyAvatar from './Avatar.vue'
 
 const props = withDefaults(defineProps<ActionSheetProps>(), {
@@ -182,6 +183,14 @@ const cancelLabel = computed(() => (typeof props.cancel === 'string' ? props.can
 
 const itemUi = (color?: ActionSheetItem['color'], disabled?: boolean) =>
   buildActionSheet(appConfig)({ size: props.size, color, disabled: disabled || undefined })
+
+// Lynx SVG can't inherit currentColor — bake the row's foreground into the
+// icon fill at render time (same pattern as Button/Input).
+const itemIconColor = (color?: ActionSheetItem['color']) => {
+  const fg = leadingIconFg(color)
+  return resolveColorHex(appConfig, fg.semantic, fg.shade)
+}
+const trailingIconColor = computed(() => resolveColorHex(appConfig, TRAILING_ICON_FG.semantic, TRAILING_ICON_FG.shade))
 </script>
 
 <template>
@@ -225,7 +234,7 @@ const itemUi = (color?: ActionSheetItem['color'], disabled?: boolean) =>
             :class="itemUi(row.item?.color, row.item?.disabled).item({ class: props.ui?.item })"
             @tap="row.item && handleSelect(row.item)"
           >
-            <slot name="item-leading" :item="row.item!" :index="row.index">
+            <slot name="item-leading" :item="row.item!" :index="row.index" :icon-color="itemIconColor(row.item?.color)">
               <VyAvatar
                 v-if="row.item?.avatar"
                 v-bind="row.item.avatar"
@@ -234,6 +243,7 @@ const itemUi = (color?: ActionSheetItem['color'], disabled?: boolean) =>
               <VyIcon
                 v-else-if="row.item?.icon"
                 :name="row.item.icon"
+                :color="itemIconColor(row.item?.color)"
                 :class="itemUi(row.item?.color).itemLeadingIcon({ class: props.ui?.itemLeadingIcon })"
               />
             </slot>
@@ -242,10 +252,11 @@ const itemUi = (color?: ActionSheetItem['color'], disabled?: boolean) =>
                 {{ row.item?.label }}
               </text>
             </slot>
-            <slot name="item-trailing" :item="row.item!" :index="row.index">
+            <slot name="item-trailing" :item="row.item!" :index="row.index" :icon-color="trailingIconColor">
               <VyIcon
                 v-if="row.item?.trailingIcon"
                 :name="row.item.trailingIcon"
+                :color="trailingIconColor"
                 :class="ui.itemTrailingIcon({ class: props.ui?.itemTrailingIcon })"
               />
             </slot>

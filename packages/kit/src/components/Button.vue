@@ -1,5 +1,5 @@
 <script lang="ts">
-import theme from '../theme/button'
+import theme, { iconFg } from '../theme/button'
 import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { AvatarProps } from './Avatar.vue'
 
@@ -51,8 +51,10 @@ export interface ButtonProps {
 
 export interface ButtonSlots {
   default(props?: {}): any
-  leading(props?: {}): any
-  trailing(props?: {}): any
+  /** Receives `iconColor` so custom icons can match the variant's resolved foreground. */
+  leading(props: { iconColor: string }): any
+  /** Receives `iconColor` so custom icons can match the variant's resolved foreground. */
+  trailing(props: { iconColor: string }): any
 }
 </script>
 
@@ -62,6 +64,7 @@ import { Button as CoreButton } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 import { useStyledComponent } from '../composables/useStyledComponent'
 import { Icon as VyIcon } from '@vyui/core'
+import { resolveColorHex } from '../utils/resolveColor'
 import VyAvatar from './Avatar.vue'
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -101,6 +104,14 @@ const isIconOnly = computed(() =>
   && !!(resolvedLeadingIcon.value || resolvedTrailingIcon.value || props.avatar),
 )
 
+// Lynx SVG can't inherit currentColor — bake the variant's foreground into
+// the icon fill at render time (same pattern as Input/Select). Fallbacks
+// mirror the theme's `defaultVariants` (`primary` / `solid`).
+const iconColor = computed(() => {
+  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'solid')
+  return fg === 'white' ? 'white' : resolveColorHex(appConfig, fg.semantic, fg.shade)
+})
+
 const { ui } = useStyledComponent('button', theme, () => ({
   color: props.color,
   variant: props.variant,
@@ -128,10 +139,11 @@ defineExpose({ buttonRef })
     :disabled="disabled || loading"
     :class="ui.base({ class: [props.class, props.ui?.base] })"
   >
-    <slot name="leading">
+    <slot name="leading" :icon-color="iconColor">
       <VyIcon
         v-if="loading"
         :name="resolvedLoadingIcon"
+        :color="iconColor"
         :class="ui.leadingIcon({ class: props.ui?.leadingIcon })"
       />
       <VyAvatar
@@ -143,6 +155,7 @@ defineExpose({ buttonRef })
       <VyIcon
         v-else-if="resolvedLeadingIcon"
         :name="resolvedLeadingIcon"
+        :color="iconColor"
         :class="ui.leadingIcon({ class: props.ui?.leadingIcon })"
       />
     </slot>
@@ -151,10 +164,11 @@ defineExpose({ buttonRef })
       <text v-if="label" :class="ui.label({ class: props.ui?.label })">{{ label }}</text>
     </slot>
 
-    <slot name="trailing">
+    <slot name="trailing" :icon-color="iconColor">
       <VyIcon
         v-if="resolvedTrailingIcon"
         :name="resolvedTrailingIcon"
+        :color="iconColor"
         :class="ui.trailingIcon({ class: props.ui?.trailingIcon })"
       />
     </slot>

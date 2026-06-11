@@ -1,6 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
-import theme from '../theme/toggleGroup'
+import theme, { iconFg } from '../theme/toggleGroup'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 
@@ -50,7 +50,8 @@ export interface ToggleGroupEmits {
 }
 
 export interface ToggleGroupSlots {
-  default(props: { item: ToggleGroupItemShape & { value: ToggleGroupValue }, index: number }): any
+  /** Receives `iconColor` so custom icons can match the item's resolved on/off foreground. */
+  default(props: { item: ToggleGroupItemShape & { value: ToggleGroupValue }, index: number, iconColor: string }): any
 }
 </script>
 
@@ -58,6 +59,7 @@ export interface ToggleGroupSlots {
 import { computed } from 'vue'
 import { ToggleGroupItem, ToggleGroupRoot, Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { resolveColorHex } from '../utils/resolveColor'
 
 const props = withDefaults(defineProps<ToggleGroupProps>(), {
   type: 'single',
@@ -85,6 +87,16 @@ function normalizeItem(item: ToggleGroupItem) {
 }
 
 const normalizedItems = computed(() => (props.items ?? []).map(normalizeItem))
+
+// Lynx SVG can't inherit currentColor, and the `group-ui-on:` shift on
+// `leadingIcon` never reaches the rasterized glyph — bake the fill per item
+// from the `pressed` state core's Toggle forwards through the item slot
+// (same pattern as Button/Tabs). Fallbacks mirror the theme's
+// `defaultVariants` (`primary` / `outline`).
+const itemIconColor = (pressed: boolean | undefined) => {
+  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'outline', !!pressed)
+  return resolveColorHex(appConfig, fg.semantic, fg.shade)
+}
 </script>
 
 <template>
@@ -100,14 +112,16 @@ const normalizedItems = computed(() => (props.items ?? []).map(normalizeItem))
     <ToggleGroupItem
       v-for="(item, index) in normalizedItems"
       :key="String(item.value)"
+      v-slot="{ pressed }"
       :value="item.value"
       :disabled="item.disabled"
       :class="ui.item({ class: props.ui?.item })"
     >
-      <slot :item="item" :index="index">
+      <slot :item="item" :index="index" :icon-color="itemIconColor(pressed)">
         <VyIcon
           v-if="item.icon"
           :name="item.icon"
+          :color="itemIconColor(pressed)"
           :class="ui.leadingIcon({ class: props.ui?.leadingIcon })"
         />
         <text v-if="item.label" :class="ui.label({ class: props.ui?.label })">{{ item.label }}</text>

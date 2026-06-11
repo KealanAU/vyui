@@ -42,9 +42,23 @@ const subtle = (c: string) =>
 
 const VARIANT_BUILDERS = { outline, soft, subtle } as const
 
-type Variant = keyof typeof VARIANT_BUILDERS
+export type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
+
+// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
+// XML, so neither the resting `text-*` nor the `group-ui-on:text-*` shift on
+// `leadingIcon` ever reaches the glyph — ToggleGroup.vue bakes the fill per
+// item from the `pressed` state core's Toggle forwards through its slot.
+// Derive it from the same `fg` string the variant emits so class and baked
+// color can't drift.
+export function iconFg(color: string, variant: Variant, on: boolean): { semantic: string, shade: number } {
+  const { fg } = VARIANT_BUILDERS[variant](color)
+  const match = on
+    ? fg.match(/\bgroup-ui-on:text-([a-z0-9-]+)-(\d+)/)
+    : fg.match(/(?:^|\s)text-([a-z0-9-]+)-(\d+)/)
+  return match ? { semantic: match[1], shade: Number(match[2]) } : { semantic: 'neutral', shade: 700 }
+}
 
 export default (colors: Color[]) => ({
   slots: {
