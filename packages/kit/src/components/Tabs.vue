@@ -1,6 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
-import theme from '../theme/tabs'
+import theme, { iconFg } from '../theme/tabs'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 
@@ -58,7 +58,10 @@ export interface TabsEmits {
 }
 
 export interface TabsSlots {
-  leading(props: { item: TabsItem, index: number }): any
+  /** Always receives `iconColor` (optional only to satisfy the dynamic-slot
+   * index signature) so custom icons can match the trigger's resolved
+   * active/inactive foreground. */
+  leading(props: { item: TabsItem, index: number, iconColor?: string }): any
   default(props: { item: TabsItem, index: number }): any
   trailing(props: { item: TabsItem, index: number }): any
   content(props: { item: TabsItem, index: number }): any
@@ -77,6 +80,7 @@ import {
   Icon as VyIcon,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { resolveColorHex } from '../utils/resolveColor'
 
 const props = withDefaults(defineProps<TabsProps>(), {
   content: true,
@@ -99,6 +103,17 @@ const ui = computed(() => buildTabs(appConfig)({
 
 const resolveValue = (item: TabsItem, index: number) =>
   item.value !== undefined ? item.value : String(index)
+
+// Lynx SVG can't inherit currentColor, and the active/inactive `group-ui-*`
+// classes on `leadingIcon` never reach the rasterized glyph — bake the fill
+// per trigger instead (same pattern as Button/Input). `activeValue` comes
+// from TabsRoot's scoped slot: the same ref `TabsTrigger` compares against
+// (strict equality), so it also tracks uncontrolled tabs. Fallbacks mirror
+// the theme's `defaultVariants` (`primary` / `pill`).
+const triggerIconColor = (item: TabsItem, index: number, activeValue: string | number | undefined) => {
+  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'pill', resolveValue(item, index) === activeValue)
+  return fg === 'white' ? 'white' : resolveColorHex(appConfig, fg.semantic, fg.shade)
+}
 </script>
 
 <template>
@@ -108,6 +123,7 @@ const resolveValue = (item: TabsItem, index: number) =>
     :orientation="orientation"
     :unmount-on-hide="unmountOnHide"
     :class="ui.root({ class: [props.class, props.ui?.root] })"
+    v-slot="{ modelValue: activeValue }"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <TabsList :class="ui.list({ class: props.ui?.list })">
@@ -120,10 +136,11 @@ const resolveValue = (item: TabsItem, index: number) =>
         :disabled="item.disabled"
         :class="ui.trigger({ class: props.ui?.trigger })"
       >
-        <slot name="leading" :item="item" :index="index">
+        <slot name="leading" :item="item" :index="index" :icon-color="triggerIconColor(item, index, activeValue)">
           <VyIcon
             v-if="item.icon"
             :name="item.icon"
+            :color="triggerIconColor(item, index, activeValue)"
             :class="ui.leadingIcon({ class: props.ui?.leadingIcon })"
           />
         </slot>

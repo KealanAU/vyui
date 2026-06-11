@@ -34,6 +34,18 @@ const linkLabel = (c: string) =>
 
 const linkIndicator = (c: string) => `bg-${c}-500`
 
+// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
+// XML, so the state-dependent `group-ui-*:text-*` classes spread onto
+// `leadingIcon` never reach the glyph — Tabs.vue bakes the fill per state via
+// the Icon `color` prop (resolved with `resolveColorHex`). Derive it from the
+// same label builder strings so class and baked color can't drift.
+export function iconFg(color: string, variant: 'pill' | 'link', active: boolean): { semantic: string, shade: number } | 'white' {
+  const label = (variant === 'link' ? linkLabel : pillLabel)(color)
+  const token = label.match(new RegExp(`group-ui-${active ? 'active' : 'inactive'}:text-(\\S+)`))?.[1]
+  const parts = token?.match(/^([a-z0-9-]+)-(\d+)$/)
+  return parts ? { semantic: parts[1], shade: Number(parts[2]) } : 'white'
+}
+
 export default (colors: Color[]) => ({
   slots: {
     // Lynx's tailwind preset has no `inline-flex` and `display:flex` defaults

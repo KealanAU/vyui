@@ -1,6 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
-import theme from '../theme/toast'
+import theme, { ICON_FG_SHADE } from '../theme/toast'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 import type { ButtonProps } from './Button.vue'
@@ -47,7 +47,8 @@ export interface ToastEmits {
 
 export interface ToastSlots {
   default(props?: {}): any
-  leading(props?: {}): any
+  /** Receives `iconColor` so custom icons can match the toast's resolved color. */
+  leading(props: { iconColor: string }): any
   title(props?: {}): any
   description(props?: {}): any
   actions(props?: {}): any
@@ -59,6 +60,7 @@ export interface ToastSlots {
 import { computed } from 'vue'
 import { ToastRoot, ToastTitle, ToastDescription, ToastAction, ToastClose, Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { resolveColorHex } from '../utils/resolveColor'
 import VyAvatar from './Avatar.vue'
 import VyButton from './Button.vue'
 
@@ -78,6 +80,10 @@ const ui = computed(() => buildToast(appConfig)({
 
 const resolvedCloseIcon = computed(() => props.closeIcon || appConfig.ui.icons?.close || 'i-lucide-x')
 
+// Lynx SVG can't inherit currentColor — bake the toast color's `text-*-500`
+// into the icon fill at render time (same pattern as Button/Input).
+const iconColor = computed(() => resolveColorHex(appConfig, props.color ?? 'primary', ICON_FG_SHADE))
+
 const closeButtonProps = computed<Partial<ButtonProps>>(() => {
   const overrides = typeof props.close === 'object' ? props.close : {}
   return {
@@ -95,10 +101,11 @@ const closeButtonProps = computed<Partial<ButtonProps>>(() => {
     :class="ui.root({ class: [props.class, props.ui?.root] })"
     @update:open="$emit('update:open', $event)"
   >
-    <slot name="leading">
+    <slot name="leading" :icon-color="iconColor">
       <VyIcon
         v-if="icon"
         :name="icon"
+        :color="iconColor"
         :class="ui.icon({ class: props.ui?.icon })"
       />
       <VyAvatar

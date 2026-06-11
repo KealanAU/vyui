@@ -43,13 +43,24 @@ const ghost = (c: string) =>
 
 const VARIANT_BUILDERS = { solid, outline, subtle, soft, ghost } as const
 
-type Variant = keyof typeof VARIANT_BUILDERS
+export type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 
 const variantClass = (color: string, variant: Variant) => {
   const { base, fg } = VARIANT_BUILDERS[variant](color)
   return { root: base, title: fg, description: fg, icon: fg }
+}
+
+// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
+// XML, so the `text-*` class on the `icon` slot never reaches the glyph — the
+// fill must be baked into the SVG via the Icon `color` prop (Alert.vue
+// resolves it with `resolveColorHex`). Derive the fill from the same `fg`
+// string the variant emits so class and baked color can't drift.
+export function iconFg(color: string, variant: Variant): { semantic: string, shade: number } | 'white' {
+  const { fg } = VARIANT_BUILDERS[variant](color)
+  const match = fg.match(/^text-([a-z0-9-]+)-(\d+)/i)
+  return match ? { semantic: match[1], shade: Number(match[2]) } : 'white'
 }
 
 export default (colors: Color[]) => ({

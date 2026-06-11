@@ -26,7 +26,12 @@ export interface PrimitiveProps {
   as?: AsTag | Component
 }
 
-const SELF_CLOSING_TAGS = ['input']
+// Lynx leaf elements that must render WITHOUT children. Vue emits fragment /
+// comment anchor nodes even for empty slots, and vue-lynx materializes those
+// as real elements on native (`createComment` → `__comment`, fragment anchors
+// → `#text`). A native `<image>` with any child fails to render (lynx-web
+// tolerates it, so the breakage is native-only).
+const SELF_CLOSING_TAGS = ['input', 'image']
 
 export const Primitive = defineComponent({
   name: 'Primitive',

@@ -3,8 +3,11 @@
  * Vue-Lynx. `Slideover` (side-sliding panel) is the closer match to our
  * core `Sheet*` primitive than `Drawer` (vaul snap-points). Light-mode
  * only; `dark:*`, `focus:*`, `focus-visible:*`, `shadow-*`, and
- * `transition-shadow` classes are dropped. Animation `data-[state=...]`
- * classes are kept.
+ * `transition-shadow` classes are dropped. Nuxt UI's animation utilities
+ * are dropped too: open/close motion is owned by core's Presence-driven
+ * `vyui-*` keyframes, and a same-specificity `ui-open:animate-[…]` utility
+ * later in the cascade overrides them with undefined keyframes — the
+ * drawer then snaps open with no slide.
  *
  * NOTE: the core `Sheet*` primitive is a bottom-sheet — the `side` prop
  * here drives a `data-side` attribute on the content for styling, but
@@ -13,7 +16,7 @@
  */
 export default {
   slots: {
-    overlay: 'fixed inset-0 bg-neutral-900/50 ui-open:animate-[fade-in_200ms_ease-out] ui-closed:animate-[fade-out_200ms_ease-in]',
+    overlay: 'fixed inset-0 bg-neutral-900/50',
     content: 'fixed bg-white border border-neutral-200 flex flex-col',
     handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-2 mb-1',
     header: 'flex flex-row items-center gap-1.5 p-4 min-h-16',
@@ -40,8 +43,11 @@ export default {
       },
     },
     transition: {
+      // Intentionally empty — core's SheetContentImpl drives the slide via
+      // `ui-entering`/`ui-leaving` keyframes. Kept so `transition` stays a
+      // valid variant for user overrides via appConfig.
       true: {
-        content: 'ui-open:animate-[slide-in_200ms_ease-out] ui-closed:animate-[slide-out_200ms_ease-in]',
+        content: '',
       },
     },
   },

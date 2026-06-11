@@ -73,7 +73,7 @@ const neutralVariants = {
 
 const VARIANT_BUILDERS = { solid, outline, soft, subtle, ghost, link } as const
 
-type Variant = keyof typeof VARIANT_BUILDERS
+export type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 
@@ -82,6 +82,18 @@ const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 const variantClass = (color: string, variant: Variant) => {
   const { base, fg } = color === NEUTRAL ? neutralVariants[variant] : VARIANT_BUILDERS[variant](color)
   return { base, label: fg, leadingIcon: fg, trailingIcon: fg }
+}
+
+// The `text-*` classes above reach the label `<text>`, but not the icons —
+// Lynx's `<svg>` rasterizes its XML, so CSS color never makes it into the
+// glyph and the fill must be baked into the SVG via the Icon `color` prop
+// (Button.vue resolves it with `resolveColorHex`). Derive the fill from the
+// same `fg` string the variant emits so class and baked color can't drift.
+// `link`'s `active:` shade shift is class-only and doesn't reach the icon.
+export function iconFg(color: string, variant: Variant): { semantic: string, shade: number } | 'white' {
+  const { fg } = color === NEUTRAL ? neutralVariants[variant] : VARIANT_BUILDERS[variant](color)
+  const match = fg.match(/^text-([a-z0-9-]+)-(\d+)/i)
+  return match ? { semantic: match[1], shade: Number(match[2]) } : 'white'
 }
 
 // `import type { Color }` keeps the color record typed to the DEFAULT semantic

@@ -32,7 +32,7 @@ export interface DropdownMenuItemsProps {
 </script>
 
 <script setup lang="ts">
-import { useSlots } from 'vue'
+import { computed, useSlots } from 'vue'
 import {
   DropdownMenuItem as CoreDropdownMenuItem,
   DropdownMenuCheckboxItem,
@@ -40,6 +40,9 @@ import {
   DropdownMenuSeparator,
   Icon as VyIcon,
 } from '@vyui/core'
+import { iconFg, TRAILING_ICON_FG } from '../../theme/dropdownMenu'
+import { useAppConfig } from '../../composables/useAppConfig'
+import { resolveColorHex } from '../../utils/resolveColor'
 import VyAvatar from '../Avatar.vue'
 
 const props = withDefaults(defineProps<DropdownMenuItemsProps>(), {
@@ -57,6 +60,18 @@ defineSlots<{
 }>()
 
 const slots = useSlots()
+
+const appConfig = useAppConfig()
+
+// Lynx SVG can't inherit currentColor — bake the item's resting foreground
+// into the icon fill at render time (same pattern as Button/Input). The
+// `group-ui-highlighted:` shade shift stays class-only (it can't reach the
+// rasterized glyph), so the icon keeps its resting color while pressed.
+const itemIconColor = (color?: DropdownMenuItem['color']) => {
+  const fg = iconFg(color)
+  return resolveColorHex(appConfig, fg.semantic, fg.shade)
+}
+const trailingIconColor = computed(() => resolveColorHex(appConfig, TRAILING_ICON_FG.semantic, TRAILING_ICON_FG.shade))
 
 function getLabel(item: DropdownMenuItem | undefined): string | undefined {
   if (!item) return undefined
@@ -108,6 +123,7 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
         <VyIcon
           v-if="row.item.checked"
           :name="checkedIcon"
+          :color="itemIconColor(row.item?.color)"
           :class="ui.itemLeadingIcon({ color: row.item?.color, class: uiOverrides?.itemLeadingIcon })"
         />
         <view :class="ui.itemWrapper({ class: uiOverrides?.itemWrapper })">
@@ -159,11 +175,13 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
         <VyIcon
           v-else-if="row.item?.loading"
           :name="loadingIcon"
+          :color="itemIconColor(row.item?.color)"
           :class="ui.itemLeadingIcon({ color: row.item?.color, class: [uiOverrides?.itemLeadingIcon, 'animate-spin'] })"
         />
         <VyIcon
           v-else-if="row.item?.icon"
           :name="row.item.icon"
+          :color="itemIconColor(row.item?.color)"
           :class="ui.itemLeadingIcon({ color: row.item?.color, class: uiOverrides?.itemLeadingIcon })"
         />
 
@@ -225,6 +243,7 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
           <VyIcon
             v-else-if="row.item?.children?.length"
             :name="childrenIcon"
+            :color="trailingIconColor"
             :class="ui.itemTrailingIcon({ class: uiOverrides?.itemTrailingIcon })"
           />
         </view>

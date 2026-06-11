@@ -11,9 +11,22 @@
  */
 import type { Color } from './colors'
 
+// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
+// XML, so the `text-*` classes on the icon slots (including the
+// `group-ui-highlighted:` shifts) never reach the glyph —
+// `DropdownMenuItems.vue` bakes the resting fill via the Icon `color` prop
+// (resolved with `resolveColorHex`). The highlighted/open shade shift is
+// class-only and doesn't reach the icon. Keep in sync with the `active`
+// variant + the per-color compoundVariants below.
+export function iconFg(color?: string): { semantic: string, shade: number } {
+  return color ? { semantic: color, shade: 500 } : { semantic: 'neutral', shade: 500 }
+}
+
+export const TRAILING_ICON_FG = { semantic: 'neutral', shade: 400 } as const
+
 export default (colors: Color[]) => ({
   slots: {
-    content: 'min-w-32 bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 divide-y divide-neutral-200 overflow-y-auto ui-open:animate-[scale-in_100ms_ease-out] ui-closed:animate-[scale-out_100ms_ease-in]',
+    content: 'min-w-32 bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 divide-y divide-neutral-200 overflow-y-auto',
     group: 'p-1',
     label: 'w-full flex flex-row items-center font-semibold text-neutral-900',
     separator: '-mx-1 my-1 h-px bg-neutral-200',
@@ -22,7 +35,7 @@ export default (colors: Color[]) => ({
     itemLeadingAvatar: 'shrink-0',
     itemLeadingAvatarSize: '',
     itemTrailing: 'ms-auto flex flex-row gap-1.5 items-center',
-    itemTrailingIcon: 'shrink-0',
+    itemTrailingIcon: `shrink-0 text-${TRAILING_ICON_FG.semantic}-${TRAILING_ICON_FG.shade}`,
     itemWrapper: 'flex-1 flex flex-col text-start min-w-0',
     itemLabel: 'truncate',
     itemDescription: 'truncate text-xs text-neutral-500',
