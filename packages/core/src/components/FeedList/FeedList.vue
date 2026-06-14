@@ -5,13 +5,21 @@
      item template slot, optional pull-to-refresh, and load-more on
      scroll-to-lower.
 
-     Pull-to-refresh: Lynx's iOS list runtime does not register a
-     `refresh-header` UI as a direct child of `<list>` — that combination
-     crashes with `LynxCreateUIException: refresh-header ui not found`. The
-     supported pattern is to wrap `<list>` in a `<refresh>` element and put
-     `<refresh-header>` as a sibling of the list inside that wrapper. The
-     `<refresh>` element owns the gesture, the refresh state, and the
-     `finishRefresh` / `autoStartRefresh` UI methods.
+     Pull-to-refresh: the supported native pattern wraps `<list>` in a
+     `<refresh>` element with `<refresh-header>` as a SIBLING of the list inside
+     that wrapper (placing `<refresh-header>` inside `<list>` crashes with
+     `LynxCreateUIException: refresh-header ui not found`). The `<refresh>`
+     element owns the gesture, the refresh state, and the `finishRefresh` /
+     `autoStartRefresh` UI methods.
+
+     IMPORTANT — runtime gating: `<refresh>` / `<refresh-header>` are *legacy*
+     built-in UI classes that stock LynxExplorer / the OSS engine do NOT
+     register. Mounting `<refresh>` there hard-crashes the create-UI pass with
+     `LynxCreateUIException: refresh ui not found when create UI`. So we only
+     emit the `<refresh>` wrapper when the runtime is known to support it
+     (`isNativeRefreshSupported()` or the `refreshSupported` prop override);
+     otherwise we render the bare virtualized `<list>` with PTR disabled. See
+     REFRESH-PHYSICS.md for why the element is missing and how to enable it.
 
      State machine: the native `<refresh>` element owns the gesture and bounce
      physics, so we do NOT reimplement lynx-ui's MT-worklet rubber-band engine.
@@ -83,6 +91,26 @@ export interface FeedListProps<T = unknown> {
   /** Enable pull-to-refresh. Renders a `<refresh>` wrapper around the list. */
   enableRefresh?: boolean
   /**
+   * Whether the host Lynx runtime registers the native `<refresh>` /
+   * `<refresh-header>` UI elements.
+   *
+   * These are legacy built-in elements absent from stock LynxExplorer / the
+   * OSS engine: mounting `<refresh>` there hard-crashes the create-UI pass
+   * (`LynxCreateUIException: refresh ui not found when create UI`). There is no
+   * runtime API to feature-detect element registration, so:
+   * - `undefined` (default) — auto-detect via `isNativeRefreshSupported()`,
+   *   which is conservative and returns `false` unless the host advertises
+   *   `SystemInfo.supportRefreshUI`. PTR then degrades to a plain `<list>`.
+   * - `true` — force-render `<refresh>` (only set this if you *know* your host
+   *   registers the elements; otherwise it will crash on load).
+   * - `false` — never render `<refresh>`, even if detection would allow it.
+   *
+   * When refresh is unsupported the component still mounts cleanly with
+   * `enableRefresh` set; pull-to-refresh is simply disabled and the bare
+   * virtualized `<list>` is rendered.
+   */
+  refreshSupported?: boolean
+  /**
    * How long (ms) to keep the header in the `done` state after `refreshing`
    * flips back to false before returning to `idle` and rebounding the header.
    * Gives consumers a window to show a "Updated" affordance.
@@ -149,6 +177,7 @@ export type FeedListEmits = {
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { useStandardVModelOf } from '@/shared/composables'
+import { isNativeRefreshSupported } from '@/shared/utils'
 
 const props = withDefaults(defineProps<FeedListProps<T>>(), {
   itemKeyField: 'id' as never,
@@ -363,9 +392,40 @@ const showLoadMoreFooter = computed(
   () => props.enableLoadMore && !props.noMoreData,
 )
 
+// Whether the native `<refresh>` element is actually safe to mount on this
+// host. Detection (`isNativeRefreshSupported`) is conservative and crash-safe:
+// it returns `false` on stock LynxExplorer / OSS engines that don't register
+// the legacy refresh UI, so we never emit a `<refresh>` that would hard-crash
+// the create-UI pass. The `refreshSupported` prop is the explicit override.
+const refreshSupported = computed(() => {
+  if (props.refreshSupported != null) return props.refreshSupported
+  return isNativeRefreshSupported()
+})
+// Render the `<refresh>` wrapper only when refresh is both requested AND the
+// runtime can mount it. Otherwise fall through to the bare `<list>` so the
+// component mounts cleanly with PTR gracefully disabled.
+const usePtrWrapper = computed(() => props.enableRefresh && refreshSupported.value)
+
+// Dev-time signal so consumers aren't surprised when PTR silently no-ops on a
+// runtime that lacks the native refresh UI.
+if (__DEV__ && props.enableRefresh && !refreshSupported.value) {
+  console.warn(
+    '[vyui/FeedList] `enableRefresh` is set but the native `<refresh>` UI is '
+    + 'not registered on this Lynx runtime (e.g. stock LynxExplorer). '
+    + 'Pull-to-refresh is disabled to avoid a create-UI crash. If your host '
+    + 'does register the refresh element, set `:refresh-supported="true"`.',
+  )
+}
+
 onBeforeUnmount(clearDoneTimer)
 
-defineExpose({ startRefresh, finishRefresh, scrollToIndex, refreshState })
+defineExpose({
+  startRefresh,
+  finishRefresh,
+  scrollToIndex,
+  refreshState,
+  refreshSupported,
+})
 </script>
 
 <template>
@@ -380,9 +440,14 @@ defineExpose({ startRefresh, finishRefresh, scrollToIndex, refreshState })
   </view>
   <!-- PTR-on: wrap list in `<refresh>` so iOS registers the refresh UI. The
        `<refresh-header>` belongs as a sibling of `<list>` inside this
-       wrapper — placing it inside `<list>` crashes the create-UI pass. -->
+       wrapper — placing it inside `<list>` crashes the create-UI pass.
+
+       Gated on `usePtrWrapper` (= `enableRefresh` AND the runtime registers the
+       native `<refresh>` element). On runtimes lacking it we fall through to
+       the bare `<list>` below so we never emit a `<refresh>` that hard-crashes
+       the create-UI pass (`refresh ui not found when create UI`). -->
   <refresh
-    v-else-if="enableRefresh"
+    v-else-if="usePtrWrapper"
     ref="refreshEl"
     class="vyui-feed-list__refresh"
     :data-vyui-refresh-state="refreshState"

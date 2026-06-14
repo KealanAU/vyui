@@ -47,6 +47,7 @@ export {
 } from './selector'
 
 export {
+  isNativeRefreshSupported,
   lynxSDKVersionStringToNumber,
   mtsLynxSDKVersionStringToNumber,
   mtsNativeLynxSDKVersionLessThan,
