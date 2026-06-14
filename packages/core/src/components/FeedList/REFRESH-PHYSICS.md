@@ -153,3 +153,96 @@ No shippable code change here. The feature is blocked on
 vue-lynx gesture-binding path is device-verified, FeedList should continue to
 delegate pull-to-refresh to the native `<refresh>` element with the existing
 JS lifecycle state machine on top. No changeset added (no code change).
+
+---
+
+# Addendum — `<refresh>` not registered on LynxExplorer (create-UI crash)
+
+**Symptom.** Opening a demo tab with a `<FeedList enable-refresh>` hard-crashed
+the Lynx runtime (LynxExplorer, SDK 1.4.0) at create-UI time:
+
+```
+LynxCreateUIException: refresh ui not found when create UI
+```
+
+i.e. the native `<refresh>` element FeedList renders for native PTR is **not
+registered** in this runtime build.
+
+## Why `<refresh>` is missing
+
+`<refresh>` / `<refresh-header>` are **legacy built-in UI classes** from older
+internal Lynx native runtimes (Lark / TT shells), where the host app registered
+`refresh` and `refresh-header` UI classes into the element factory. The
+open-source **LynxExplorer** build — and the engine that `@lynx-js/react` /
+`vue-lynx` target — does **not** register these elements. When the element
+factory is asked to create a `refresh` UI it has no class for, it throws
+`LynxCreateUIException: refresh ui not found when create UI` during the
+create-UI pass. The crash happens on mount, before any JS event handler runs,
+so it cannot be caught at the component level — it has to be avoided by **not
+emitting the element at all**.
+
+Cross-check with lynx-ui (`lynx-ui/packages/lynx-ui-feed-list/`): lynx-ui's
+feed-list **never uses a native `<refresh>` element**. `grep` for `<refresh`,
+`refresh-view`, `RefreshView` across all of `lynx-ui/packages/` returns
+nothing. Its `useRefreshAndBounce` builds the *entire* pull-to-refresh
+experience on a plain `<list>` using `@lynx-js/gesture-runtime` gesture
+arbitration (`consumeGesture` / `interceptGesture`) + MT `translateY` transforms
+(see the original findings above). It gates only on `enableRefresh` /
+`enableBounce` options and on SDK version for the consume-vs-intercept branch —
+**never** on the existence of a native refresh element, because it doesn't rely
+on one. This is strong corroboration that the native `<refresh>` element is not
+a portable, registered element in the modern OSS engine; lynx-ui deliberately
+avoids it.
+
+## Is native PTR testable on this runtime?
+
+**No.** On stock LynxExplorer SDK 1.4.0 the `<refresh>` element is unavailable,
+so native pull-to-refresh cannot be exercised there at all — and merely mounting
+it crashes. Native PTR only works on a host that registers the legacy refresh
+UI (a custom embedder). There is also **no runtime JS API to query the element
+registry**, so "is `<refresh>` registered" cannot be feature-detected directly;
+it can only be inferred from an explicit host signal or assumed unsafe.
+
+## Fix shipped — gate the `<refresh>` render
+
+FeedList now renders the `<refresh>` wrapper only when **both** `enableRefresh`
+is set **and** the runtime is known to support the element. Otherwise it renders
+the bare virtualized `<list>` with PTR disabled, so the component mounts cleanly
+with `enable-refresh` set on a runtime lacking `<refresh>`.
+
+- New helper `isNativeRefreshSupported()` (`shared/utils/version.ts`):
+  conservative and crash-safe — returns `false` when `SystemInfo` is absent
+  (jsdom / OSS engine) or gives no positive signal; returns `true` only when the
+  host advertises `SystemInfo.supportRefreshUI === true`. There's no element
+  registry API, so "unsupported" is the safe default.
+- New FeedList prop `refreshSupported?: boolean` (escape hatch):
+  `undefined` (default) → auto-detect; `true` → force-render `<refresh>` (only
+  for hosts that genuinely register it); `false` → never render it.
+- Template gate `usePtrWrapper = computed(() => enableRefresh && refreshSupported)`
+  replaces the old `v-else-if="enableRefresh"` on `<refresh>`. The bare-list
+  `v-else` branch handles the unsupported case.
+- A `__DEV__` warning fires when `enableRefresh` is set but the runtime lacks
+  the element, so the silent PTR no-op is discoverable.
+
+Everything else is preserved: the `FeedListRefreshState` machine, the
+`startrefresh` double-fire guard, `headeroffset`/`dropdown` → `pulling`/
+`releaseReady` mapping, waterfall/flow layout, loadMore debounce, and the
+documented `<refresh-header>`-as-sibling-of-`<list>` constraint. Public API is
+unchanged (`:items`, `:item-key`, `enable-refresh`, `enable-load-more`,
+`v-model:refreshing`, `@refresh`, `#item`); `refreshSupported` is additive and
+defaults safe. `defineExpose` now also surfaces `refreshSupported` for
+consumers that want to render their own fallback affordance.
+
+## Re-test steps (simulator)
+
+1. Build the kit/native demo and open it in LynxExplorer (SDK 1.4.0).
+2. Open the FeedList / Gestures demo tab with `enable-refresh` set. It must now
+   **mount without crashing** — the bare `<list>` renders, scrolling and
+   load-more work, and pull-to-refresh is inert (no native bounce header).
+3. Confirm the `__DEV__` console warning appears once explaining PTR is disabled
+   because `<refresh>` isn't registered.
+4. To verify native PTR positively, run on a host that registers the legacy
+   refresh UI and either set `SystemInfo.supportRefreshUI = true` (auto-detect)
+   or pass `:refresh-supported="true"` on the FeedList; the `<refresh>` wrapper
+   then mounts and the existing state machine drives pull / release / loading /
+   done as before.

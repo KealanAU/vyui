@@ -77,8 +77,11 @@ describe('FeedList — PTR template branching', () => {
     const here = path.dirname(new URL(import.meta.url).pathname)
     const sfc = fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
 
-    // Three required pieces for the iOS-safe PTR layout.
-    expect(sfc).toMatch(/<refresh\b[^>]*v-else-if="enableRefresh"/)
+    // Three required pieces for the iOS-safe PTR layout. The `<refresh>`
+    // wrapper is gated on `usePtrWrapper` (= enableRefresh AND the runtime
+    // registers the native refresh UI) so it never mounts on hosts that lack
+    // the element (which crashes the create-UI pass).
+    expect(sfc).toMatch(/<refresh\b[^>]*v-else-if="usePtrWrapper"/)
     expect(sfc).toMatch(/<refresh-header\b/)
     expect(sfc).toMatch(/@startrefresh="onStartRefresh"/)
 
@@ -112,6 +115,55 @@ describe('FeedList — PTR template branching', () => {
 })
 
 function suppressUnused(..._args: unknown[]): void { /* tsc no-unused-locals shim */ }
+
+// Crash guard: the native `<refresh>` element is NOT registered on stock
+// LynxExplorer / OSS engines — mounting it hard-crashes the create-UI pass
+// (`refresh ui not found when create UI`). FeedList must only emit `<refresh>`
+// when the runtime supports it, falling back to the bare `<list>` otherwise.
+// Mirror of the `usePtrWrapper` gate in the component.
+describe('FeedList — refresh support gating', () => {
+  function usePtrWrapper(
+    enableRefresh: boolean,
+    refreshSupportedProp: boolean | undefined,
+    detected: boolean,
+  ): boolean {
+    const refreshSupported = refreshSupportedProp != null
+      ? refreshSupportedProp
+      : detected
+    return enableRefresh && refreshSupported
+  }
+
+  it('does NOT render <refresh> when the runtime lacks the element (default)', () => {
+    // enableRefresh set, but auto-detection says unsupported → bare list.
+    expect(usePtrWrapper(true, undefined, false)).toBe(false)
+  })
+
+  it('renders <refresh> when auto-detection reports support', () => {
+    expect(usePtrWrapper(true, undefined, true)).toBe(true)
+  })
+
+  it('prop true forces <refresh> even when detection says unsupported', () => {
+    expect(usePtrWrapper(true, true, false)).toBe(true)
+  })
+
+  it('prop false suppresses <refresh> even when detection says supported', () => {
+    expect(usePtrWrapper(true, false, true)).toBe(false)
+  })
+
+  it('never renders <refresh> when enableRefresh is false', () => {
+    expect(usePtrWrapper(false, true, true)).toBe(false)
+  })
+
+  it('SFC gates the <refresh> wrapper on usePtrWrapper, not enableRefresh', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const here = path.dirname(new URL(import.meta.url).pathname)
+    const sfc = fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
+    expect(sfc).toMatch(/<refresh\b[^>]*v-else-if="usePtrWrapper"/)
+    // The gate combines enableRefresh with the support signal.
+    expect(sfc).toMatch(/usePtrWrapper\s*=\s*computed\(\s*\(\)\s*=>\s*props\.enableRefresh\s*&&\s*refreshSupported\.value/)
+  })
+})
 
 // Refresh lifecycle state machine. The component layers a JS state machine
 // over the native `<refresh>` element (idle → pulling → releaseReady →
