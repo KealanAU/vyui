@@ -20,6 +20,12 @@ export {
 } from './ToastAction.vue'
 export { default as ToastClose } from './ToastClose.vue'
 export {
+  decideDismiss,
+  default as ToastSwipe,
+  type ToastSwipeEmits,
+  type ToastSwipeProps,
+} from './ToastSwipe.vue'
+export {
   default as ToastViewport,
   type ToastViewportPosition,
   type ToastViewportProps,

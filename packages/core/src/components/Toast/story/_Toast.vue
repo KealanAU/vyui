@@ -45,7 +45,7 @@ const toastBindings = (() => {
   <ToastProvider :duration="props.providerDuration" :expand-by-default="props.expandByDefault">
     <template #default="{ expanded, count }">
       <ToastRoot
-        v-slot="{ open, index, count: localCount, isFront, heightBefore, expand, collapse, toggleExpanded }"
+        v-slot="{ open, index, count: localCount, isFront, heightBefore, expand, collapse, toggleExpanded, progress, duration: localDuration }"
         data-testid="toast"
         @update:open="onUpdateOpen"
       >
@@ -68,6 +68,8 @@ const toastBindings = (() => {
         <text data-testid="local-count">{{ localCount }}</text>
         <text data-testid="is-front">{{ String(isFront) }}</text>
         <text data-testid="height-before">{{ heightBefore }}</text>
+        <text data-testid="progress">{{ progress }}</text>
+        <text data-testid="local-duration">{{ localDuration }}</text>
         <text data-testid="open">{{ String(open) }}</text>
       </ToastRoot>
       <text data-testid="expanded">{{ String(expanded) }}</text>

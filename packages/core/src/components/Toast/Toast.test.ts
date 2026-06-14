@@ -91,6 +91,56 @@ describe('Toast — auto-dismiss timer (fake timers)', () => {
 
 })
 
+describe('Toast — progress countdown (fake timers)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('exposes the resolved duration as a slot value', async () => {
+    const { container } = render(Toast, { providerDuration: 2000 })
+    await waitForUpdate()
+    expect(q(container, 'local-duration')?.textContent).toBe('2000')
+  })
+
+  it('drains progress from 1 toward 0 over the duration', async () => {
+    const { container } = render(Toast, { providerDuration: 1000 })
+    await waitForUpdate()
+    expect(q(container, 'progress')?.textContent).toBe('1')
+
+    vi.advanceTimersByTime(500)
+    await waitForUpdate()
+    const mid = Number(q(container, 'progress')?.textContent)
+    expect(mid).toBeGreaterThan(0)
+    expect(mid).toBeLessThan(1)
+  })
+
+  it('keeps progress at 1 when auto-dismiss is off (duration=0)', async () => {
+    const { container } = render(Toast, { providerDuration: 0 })
+    await waitForUpdate()
+    vi.advanceTimersByTime(5000)
+    await waitForUpdate()
+    expect(q(container, 'progress')?.textContent).toBe('1')
+  })
+
+  it('freezes progress while the stack is expanded', async () => {
+    const { container } = render(Toast, { providerDuration: 1000 })
+    await waitForUpdate()
+    vi.advanceTimersByTime(300)
+    await waitForUpdate()
+    fireEvent.tap(q(container, 'expand-btn')!)
+    await waitForUpdate()
+    const frozen = Number(q(container, 'progress')?.textContent)
+    vi.advanceTimersByTime(2000)
+    await waitForUpdate()
+    // Still mounted (timer paused) and progress unchanged.
+    expect(q(container, 'toast')).not.toBeNull()
+    expect(Number(q(container, 'progress')?.textContent)).toBe(frozen)
+  })
+})
+
 describe('Toast — stack expansion', () => {
   it('expand sets data-expanded on the toast', async () => {
     const { container } = render(Toast)

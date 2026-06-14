@@ -28,6 +28,36 @@ export interface ToastProps {
   avatar?: AvatarProps
   color?: ToastVariants['color']
   orientation?: ToastVariants['orientation']
+  /**
+   * Sonner-style stacking. When `true`, toasts collapse into an overlapping
+   * pile (front toast fully visible, the rest peeking out scaled-down behind
+   * it) and fan out under each other when the stack is expanded — tap any
+   * toast to toggle. Off by default: toasts render as a plain gapped column.
+   *
+   * Requires the surrounding `<ToastProvider>` (it owns the shared stack
+   * order/expanded state) and a `<ToastViewport>` anchored to match `stackFrom`.
+   */
+  stacked?: boolean
+  /**
+   * Which edge the stack is pinned to — must match the `ToastViewport`
+   * `position`. `top` fans toasts downward, `bottom` fans them upward.
+   * Only used when `stacked`. Defaults to `bottom` (Sonner's default).
+   */
+  stackFrom?: 'top' | 'bottom'
+  /**
+   * Show a thin countdown bar along the bottom edge that drains as the
+   * auto-dismiss timer runs. Tracks `ToastRoot`'s `progress`, so it pauses
+   * while the stack is expanded and is hidden when auto-dismiss is off
+   * (`duration: 0`).
+   */
+  progress?: boolean
+  /** Enable swipe-to-dismiss (fling the toast away to close it). */
+  swipe?: boolean
+  /**
+   * Directions a swipe may dismiss in. `horizontal` (default) flings either
+   * way; `left` / `right` constrain it. Only used when `swipe`.
+   */
+  swipeDirection?: 'horizontal' | 'left' | 'right'
   /** Action buttons rendered after the body. */
   actions?: ButtonProps[]
   /**
@@ -58,7 +88,7 @@ export interface ToastSlots {
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ToastRoot, ToastTitle, ToastDescription, ToastAction, ToastClose, Icon as VyIcon } from '@vyui/core'
+import { ToastRoot, ToastTitle, ToastDescription, ToastAction, ToastClose, ToastSwipe, Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 import { resolveColorHex } from '../utils/resolveColor'
 import VyAvatar from './Avatar.vue'
@@ -66,6 +96,11 @@ import VyButton from './Button.vue'
 
 const props = withDefaults(defineProps<ToastProps>(), {
   close: true,
+  stacked: false,
+  stackFrom: 'bottom',
+  progress: false,
+  swipe: false,
+  swipeDirection: 'horizontal',
 })
 defineEmits<ToastEmits>()
 defineSlots<ToastSlots>()
@@ -84,6 +119,59 @@ const resolvedCloseIcon = computed(() => props.closeIcon || appConfig.ui.icons?.
 // into the icon fill at render time (same pattern as Button/Input).
 const iconColor = computed(() => resolveColorHex(appConfig, props.color ?? 'primary', ICON_FG_SHADE))
 
+// --- Sonner-style stacking geometry -------------------------------------
+// Each toast self-positions from the shared stack data the core `ToastRoot`
+// exposes (index from the front, the combined height of the toasts ahead of
+// it, expanded state). We keep the transforms here in the styled layer —
+// `@vyui/core` deliberately ships the geometry, not the motion.
+const STACK = {
+  /** Vertical peek (px) of each toast behind the front one while collapsed. */
+  collapsePeek: 16,
+  /** Gap (px) between toasts once the stack is fanned out. */
+  expandGap: 14,
+  /** Scale lost per step back in the collapsed pile. */
+  scaleStep: 0.06,
+  /** Toasts deeper than this fade out while collapsed. */
+  maxVisible: 3,
+}
+
+interface StackSlotProps {
+  index: number
+  count: number
+  expanded: boolean
+  heightBefore: number
+}
+
+function stackStyle(s: StackSlotProps): Record<string, any> | undefined {
+  if (!props.stacked)
+    return undefined
+
+  const dir = props.stackFrom === 'top' ? 1 : -1
+  const offset = s.expanded
+    // Fanned out: shift past the real height of the toasts in front + a gap.
+    ? s.heightBefore + s.index * STACK.expandGap
+    // Collapsed: every toast peeks a fixed amount behind the front one.
+    : s.index * STACK.collapsePeek
+  const scale = s.expanded ? 1 : Math.max(1 - s.index * STACK.scaleStep, 0)
+  const visible = s.expanded || s.index < STACK.maxVisible
+
+  return {
+    position: 'absolute',
+    [props.stackFrom]: '0px',
+    // Center horizontally with `left: 50%` + `translateX(-50%)`: Lynx doesn't
+    // honor `margin: auto` for absolutely-positioned elements, and pinning
+    // `left/right: 0` over-constrains the toast's own width. This keeps each
+    // toast at the full default width, centered like the unstacked column.
+    left: '50%',
+    transform: `translateX(-50%) translateY(${dir * offset}px) scale(${scale})`,
+    transformOrigin: `${props.stackFrom} center`,
+    opacity: visible ? 1 : 0,
+    // Front toast (index 0) paints on top of the pile.
+    zIndex: s.count - s.index,
+    transition: 'transform 0.35s ease, opacity 0.35s ease',
+  }
+}
+
 const closeButtonProps = computed<Partial<ButtonProps>>(() => {
   const overrides = typeof props.close === 'object' ? props.close : {}
   return {
@@ -98,9 +186,24 @@ const closeButtonProps = computed<Partial<ButtonProps>>(() => {
 
 <template>
   <ToastRoot
-    :class="ui.root({ class: [props.class, props.ui?.root] })"
+    v-slot="{ index: stackIndex, count: stackCount, expanded, heightBefore, toggleExpanded, progress: progressValue, duration: toastDuration }"
+    as-child
     @update:open="$emit('update:open', $event)"
   >
+    <!-- Outer shell (ToastRoot's `as-child` root): owns the stacking transform.
+         `as-child` is required so this style can read the slot data ToastRoot
+         exposes — slot props aren't in scope on ToastRoot's own attributes.
+         The visual card is a separate inner layer so swipe (MT `transform`)
+         and stacking (BG `transform`) never fight over one element. -->
+    <view
+      :style="stacked ? stackStyle({ index: stackIndex, count: stackCount, expanded, heightBefore }) : undefined"
+      @tap="stacked ? toggleExpanded() : undefined"
+    >
+    <component
+      :is="swipe ? ToastSwipe : 'view'"
+      :class="ui.root({ class: [props.class, props.ui?.root] })"
+      v-bind="swipe ? { direction: swipeDirection } : {}"
+    >
     <slot name="leading" :icon-color="iconColor">
       <VyIcon
         v-if="icon"
@@ -156,5 +259,16 @@ const closeButtonProps = computed<Partial<ButtonProps>>(() => {
         />
       </ToastClose>
     </slot>
+
+    <!-- Countdown bar: scaleX from the left edge keeps the full-width
+         `inset-x-0` box from fighting an explicit width. Hidden when
+         auto-dismiss is off. -->
+    <view
+      v-if="progress && toastDuration > 0"
+      :class="ui.progress({ class: props.ui?.progress })"
+      :style="{ transform: `scaleX(${progressValue})`, transformOrigin: 'left' }"
+    />
+    </component>
+    </view>
   </ToastRoot>
 </template>

@@ -43,9 +43,6 @@ export function getAreaGradient(
   yChannel: ColorChannel,
   colorSpace: ColorSpace = color.space as ColorSpace,
 ): { background: string, gradientX: string, gradientY: string } {
-  const hsl = convertToHsl(color)
-  const hsb = convertToHsb(color)
-
   // Determine which gradient layers to apply based on channels
   const gradientX = getChannelGradientForArea(color, xChannel, colorSpace, 'x')
   const gradientY = getChannelGradientForArea(color, yChannel, colorSpace, 'y')
@@ -126,7 +123,6 @@ function getChannelGradientForArea(
 ): string {
   const direction = axis === 'x' ? 'to right' : 'to top'
   const hsl = convertToHsl(color)
-  const hsb = convertToHsb(color)
 
   switch (channel) {
     case 'saturation': {

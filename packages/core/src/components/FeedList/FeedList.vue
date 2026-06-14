@@ -137,7 +137,7 @@ const listEl = ref<any>(null)
 
 function keyFor(item: T, index: number): string {
   if (typeof props.itemKey === 'function') return props.itemKey(item, index)
-  const field = (props.itemKeyField ?? 'id') as string
+  const field = props.itemKeyField as string
   const v = (item as Record<string, unknown>)[field]
   if (v == null) return String(index)
   return String(v)
