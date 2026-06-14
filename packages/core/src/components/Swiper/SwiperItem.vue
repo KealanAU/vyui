@@ -20,13 +20,28 @@ const props = defineProps<SwiperItemProps>()
 const ctx = injectSwiperRootContext()
 
 const width = computed(() => props.width ?? ctx.itemWidth.value)
+// The gap lives on the item as a trailing margin (leading in RTL) so the snap
+// unit is `itemWidth + spaceBetween` and the track measures correctly. Mirrors
+// lynx-ui `useFirstScreenStyle` (marginInlineEnd).
+const itemStyle = computed(() => {
+  const base: Record<string, string | number> = {
+    width: `${width.value}px`,
+    flexShrink: 0,
+  }
+  const gap = ctx.spaceBetween.value
+  if (gap > 0) {
+    if (ctx.rtl.value) base.marginLeft = `${gap}px`
+    else base.marginRight = `${gap}px`
+  }
+  return base
+})
 </script>
 
 <template>
   <view
     class="vyui-swiper__item"
     data-vyui-swiper-item
-    :style="{ width: `${width}px`, flexShrink: 0 }"
+    :style="itemStyle"
   >
     <slot />
   </view>

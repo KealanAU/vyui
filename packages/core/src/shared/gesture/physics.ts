@@ -134,6 +134,54 @@ export function calcPaging(
   return customRound(-offset / fullSize, rounding) * -fullSize
 }
 
+export interface LoopRebase {
+  /** Animate-from offset, shifted into the same loop period as `finalOffset`. */
+  offset: number
+  /** Animate-to offset, kept seamless across the first↔last seam. */
+  finalOffset: number
+}
+
+/**
+ * Seam-aware loop rebasing — the heart of seamless (non-snapping) looping.
+ *
+ * The track holds the real slides PLUS `loopDuplicateCount` cloned edge slides
+ * on each side, so the region just past either seam shows real-looking content.
+ * When a drag/autoplay step would settle into that clone region (offset beyond
+ * the real range), we shift BOTH the animate-from and animate-to offsets by one
+ * full content width. The visible motion is unchanged (from and to move
+ * together), but the destination lands back inside the real range — so the
+ * NEXT gesture continues seamlessly instead of snapping back across the seam.
+ *
+ * `start`/`end` are the pre-rebase animate-from / animate-to offsets.
+ * `totalWidth` is `fullSize * count` (one full period). Returns the rebased pair.
+ *
+ * Gospel: `useOffset.ts:240-263` (`calcLoop`).
+ */
+export function calcLoop(
+  start: number,
+  end: number,
+  totalWidth: number,
+  count: number,
+): LoopRebase {
+  'main thread'
+  if (count === 0 || totalWidth === 0)
+    return { offset: 0, finalOffset: 0 }
+  const fullSize = totalWidth / count
+  let offset = start
+  let finalOffset = end
+  if (finalOffset < -totalWidth + fullSize) {
+    // Past the last item (e.g. item n) → rebase forward to item 0's period.
+    finalOffset += totalWidth
+    offset += totalWidth
+  }
+  else if (finalOffset > 0) {
+    // Before the first item (e.g. item -1) → rebase back to item n-1's period.
+    finalOffset -= totalWidth
+    offset -= totalWidth
+  }
+  return { offset, finalOffset }
+}
+
 /**
  * Drop samples older than `ms` from the velocity queues, keeping at
  * least `minLength` samples (so sparse touchmove still produces a

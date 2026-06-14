@@ -10,6 +10,7 @@ import {
   applyBounce,
   autoscrollDelta,
   calcLimit,
+  calcLoop,
   calcPaging,
   calcVelocity,
   customRound,
@@ -145,6 +146,49 @@ describe('calcPaging', () => {
   })
   it('clamps when before the first index', () => {
     expect(calcPaging(50, 100, 4, false, 0.5)).toBe(0)
+  })
+})
+
+describe('calcLoop', () => {
+  // count=4, fullSize=100 → totalWidth=400. Real range is offsets [0, -300].
+  const TOTAL = 400
+  const COUNT = 4
+
+  it('leaves an in-range move untouched', () => {
+    // item 1 → item 2: from -100 to -200, both in range.
+    expect(calcLoop(-100, -200, TOTAL, COUNT)).toEqual({
+      offset: -100,
+      finalOffset: -200,
+    })
+  })
+
+  it('rebases a forward seam crossing (last → first) by +totalWidth', () => {
+    // item 3 (-300) → item 4 (-400, the clone of item 0). Rebase so the rest
+    // lands at item 0 (0) while the animate-from shifts to +100 (leading clone).
+    expect(calcLoop(-300, -400, TOTAL, COUNT)).toEqual({
+      offset: 100,
+      finalOffset: 0,
+    })
+  })
+
+  it('rebases a backward seam crossing (first → last) by -totalWidth', () => {
+    // item 0 (0) → item -1 (+100, the clone of item 3). Rebase so the rest
+    // lands at item 3 (-300) while animate-from shifts to -400.
+    expect(calcLoop(0, 100, TOTAL, COUNT)).toEqual({
+      offset: -400,
+      finalOffset: -300,
+    })
+  })
+
+  it('keeps from/to one period apart so motion stays continuous', () => {
+    const { offset, finalOffset } = calcLoop(-300, -400, TOTAL, COUNT)
+    // The visible travel (from − to) is unchanged by the rebase: still 100px.
+    expect(offset - finalOffset).toBe(-300 - -400)
+  })
+
+  it('is a no-op for a zero count / zero width', () => {
+    expect(calcLoop(0, -100, 0, 0)).toEqual({ offset: 0, finalOffset: 0 })
+    expect(calcLoop(0, -100, 0, 4)).toEqual({ offset: 0, finalOffset: 0 })
   })
 })
 

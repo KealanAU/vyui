@@ -40,13 +40,35 @@ export interface DragGestureConfig {
   /** Controlled index (v-model). The controller animates to it on change and
    *  writes the settled index back to it. */
   currentIndex: Ref<number>
-  /** Width of one item (incl. spacing), px. */
+  /** Width of one item (NOT incl. spacing), px. */
   itemWidth: () => number
   /** Total item count. */
   itemCount: () => number
+  /**
+   * Gap between adjacent items, px. The snap unit (`fullSize`) is
+   * `itemWidth + spaceBetween`. Defaults to 0.
+   */
+  spaceBetween?: () => number
+  /**
+   * Active-item alignment within the viewport (`mode: 'normal'`): the resting
+   * transform is nudged so the active item sits at the start / center / end of
+   * the container. Mirrors lynx-ui `modeConfig.align`. Default `'start'`.
+   */
+  align?: () => 'start' | 'center' | 'end'
+  /** Viewport (container) width, px — required for `align` center/end. */
+  containerWidth?: () => number
+  /**
+   * Explicit `[startLimit, endLimit]` non-loop offset clamp. `startLimit` is
+   * how far past the first item the track may rest (px, ≥0 pulls the first
+   * item rightward); `endLimit` how far short of the last item's left edge.
+   * Mirrors lynx-ui `offsetLimit`. Loop mode ignores this.
+   */
+  offsetLimit?: () => [number, number] | undefined
+  /** Right-to-left layout: a forward (next) swipe moves visually rightward. */
+  rtl?: () => boolean
   /** Snap animation duration, ms. */
   duration: () => number
-  /** Fraction of `itemWidth` dragged past which the snap rounds up. */
+  /** Fraction of `fullSize` dragged past which the snap rounds up. */
   threshold: () => number
   /** px/s flick above which a release advances by one item. */
   velocityThreshold: () => number
@@ -90,11 +112,47 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   const axisLockGetter = config.axisLock ?? (() => false)
   const autoplayGetter = config.autoplay ?? (() => false)
   const intervalGetter = config.interval ?? (() => 3000)
+  const spaceBetweenGetter = config.spaceBetween ?? (() => 0)
+  const alignGetter = config.align ?? (() => 'start' as const)
+  const containerWidthGetter = config.containerWidth ?? (() => 0)
+  const offsetLimitGetter = config.offsetLimit ?? (() => undefined)
+  const rtlGetter = config.rtl ?? (() => false)
+
+  // The snap unit is item + gap. `fullSize` is the source of truth for every
+  // offset/index conversion below (drag, snap, autoplay, seam rebasing).
+  const fullSizeOf = () => config.itemWidth() + spaceBetweenGetter()
+
+  // Resolve the non-loop offset clamp `[startLimit, endLimit]` from an explicit
+  // `offsetLimit` prop, else derive it from `align` + `containerWidth` (so an
+  // `align: 'end'` swiper rests its first item against the right edge, etc.).
+  // Mirrors lynx-ui `useOffsetLimit`. Returned in px past each edge.
+  function resolveLimits(): { startLimit: number, endLimit: number } {
+    const explicit = offsetLimitGetter()
+    if (explicit) return { startLimit: explicit[0], endLimit: explicit[1] }
+    const cw = containerWidthGetter()
+    const iw = config.itemWidth()
+    const align = alignGetter()
+    if (cw > 0 && align === 'end') return { startLimit: cw - iw, endLimit: 0 }
+    // 'start' / 'center' default: clamp exactly to the item range.
+    return { startLimit: 0, endLimit: 0 }
+  }
+
+  // Align nudge applied at transform time only (the virtual offset stays
+  // index-based so paging math is unaffected). Mirrors lynx-ui `onOffsetUpdate`.
+  function alignOffsetOf(): number {
+    const align = alignGetter()
+    const cw = containerWidthGetter()
+    const iw = config.itemWidth()
+    if (cw <= 0) return 0
+    if (align === 'center') return (cw - iw) / 2
+    if (align === 'end') return cw - iw
+    return 0
+  }
 
   // --- MT refs -------------------------------------------------------------
   const containerRef = useMainThreadRef<any>(null)
 
-  const offsetRef = useMainThreadRef<number>(-(currentIndex.value ?? 0) * config.itemWidth())
+  const offsetRef = useMainThreadRef<number>(-(currentIndex.value ?? 0) * fullSizeOf())
   const touchStartXRef = useMainThreadRef<number>(0)
   const touchStartYRef = useMainThreadRef<number>(0)
   const touchStartOffsetRef = useMainThreadRef<number>(0)
@@ -122,6 +180,15 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   const disabledRef = useMainThreadRef<boolean>(config.disabled())
   const loopRef = useMainThreadRef<boolean>(loopGetter())
   const axisLockEnabledRef = useMainThreadRef<boolean>(axisLockGetter())
+
+  // Layout/parity refs. `fullSizeRef` is the snap unit; `alignOffsetRef` is the
+  // transform nudge; `startLimitRef`/`endLimitRef` the non-loop clamp; `rtlRef`
+  // flips drag/flick direction.
+  const fullSizeRef = useMainThreadRef<number>(fullSizeOf())
+  const alignOffsetRef = useMainThreadRef<number>(alignOffsetOf())
+  const startLimitRef = useMainThreadRef<number>(resolveLimits().startLimit)
+  const endLimitRef = useMainThreadRef<number>(resolveLimits().endLimit)
+  const rtlRef = useMainThreadRef<boolean>(rtlGetter())
 
   // Autoplay MT state.
   const autoplayRef = useMainThreadRef<boolean>(autoplayGetter())
@@ -153,6 +220,27 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     ([itemWidth, itemCount, duration, threshold, velocityThreshold, disabled, loop, axisLock]) => {
       runOnMainThread(_syncConfig as any)(
         itemWidth, itemCount, duration, threshold, velocityThreshold, disabled, loop, axisLock,
+      )
+    },
+  )
+
+  // Layout/parity sync — `fullSize`, align nudge, clamp limits, RTL. Computed
+  // on BG (where `containerWidth`/`align`/`offsetLimit` props live) and pushed
+  // to MT-local refs (BG `.current` writes are dropped — see header).
+  watch(
+    [
+      config.itemWidth,
+      spaceBetweenGetter,
+      alignGetter,
+      containerWidthGetter,
+      () => offsetLimitGetter()?.[0],
+      () => offsetLimitGetter()?.[1],
+      rtlGetter,
+    ],
+    () => {
+      const limits = resolveLimits()
+      runOnMainThread(_syncLayout as any)(
+        fullSizeOf(), alignOffsetOf(), limits.startLimit, limits.endLimit, rtlGetter(),
       )
     },
   )
@@ -192,13 +280,34 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     axisLockEnabledRef.current = axisLock
   }
 
+  function _syncLayout(
+    fullSize: number,
+    alignOffset: number,
+    startLimit: number,
+    endLimit: number,
+    rtl: boolean,
+  ) {
+    'main thread'
+    fullSizeRef.current = fullSize
+    alignOffsetRef.current = alignOffset
+    startLimitRef.current = startLimit
+    endLimitRef.current = endLimit
+    rtlRef.current = rtl
+  }
+
+  // Apply the virtual `offset` to the track transform. The align nudge shifts
+  // the active item to the requested viewport position; in RTL the sign flips
+  // so a "next" (lower visual-x) step reads as forward. Mirrors lynx-ui
+  // `onOffsetUpdate` + `setOffset`.
   function _setTransform(offset: number) {
     'main thread'
     const el = containerRef as unknown as {
       current?: { setStyleProperty?(k: string, v: string): void }
     }
+    let effective = offset + alignOffsetRef.current
+    if (rtlRef.current) effective = -effective
     if (el.current?.setStyleProperty) {
-      el.current.setStyleProperty('transform', `translateX(${offset}px)`)
+      el.current.setStyleProperty('transform', `translateX(${effective}px)`)
     }
   }
 
@@ -229,32 +338,123 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
       const el = containerRef as unknown as {
         current?: { setStyleProperty?(k: string, v: string): void }
       }
+      let effective = value + alignOffsetRef.current
+      if (rtlRef.current) effective = -effective
       if (el.current?.setStyleProperty) {
-        el.current.setStyleProperty('transform', `translateX(${value}px)`)
+        el.current.setStyleProperty('transform', `translateX(${effective}px)`)
       }
       if (progress < 1) requestAnimationFrame(step)
     }
     requestAnimationFrame(step)
   }
 
-  // Advance one step on the MT (used by autoplay). Wraps in loop mode, stops at
-  // the last item otherwise.
+  // Seamless seam crossing. Animate the track from the live offset to `rawTo`
+  // (in the clone region — real-looking content), then on the final frame
+  // rebase the resting offset to `realTo` (the same slide in the real period).
+  // Because clones are exact copies, the rebase is a no-op visually: the pixel
+  // shown at `rawTo` equals the pixel at `realTo`. This is the node-duplication
+  // payoff — motion continues past the seam instead of snap-animating back.
+  function _animateToSeam(rawTo: number, realTo: number) {
+    'main thread'
+    animGenRef.current = animGenRef.current + 1
+    const gen = animGenRef.current
+    const from = offsetRef.current
+    const ms = durationRef.current
+    if (ms <= 0 || from === rawTo) {
+      offsetRef.current = realTo
+      _setTransform(realTo)
+      return
+    }
+    let startTs = 0
+    function step(ts: number) {
+      if (gen !== animGenRef.current) return
+      if (!startTs) startTs = Number(ts)
+      let elapsed = Number(ts) - startTs
+      if (elapsed < 0) elapsed = 0
+      let progress = elapsed / ms
+      if (progress > 1) progress = 1
+      const eased = 1 - (1 - progress) * (1 - progress) * (1 - progress)
+      const value = from + (rawTo - from) * eased
+      const el = containerRef as unknown as {
+        current?: { setStyleProperty?(k: string, v: string): void }
+      }
+      if (progress < 1) {
+        offsetRef.current = value
+        let effective = value + alignOffsetRef.current
+        if (rtlRef.current) effective = -effective
+        if (el.current?.setStyleProperty) {
+          el.current.setStyleProperty('transform', `translateX(${effective}px)`)
+        }
+        requestAnimationFrame(step)
+      }
+      else {
+        // Final frame: rest in the real period (invisible rebase across clones).
+        offsetRef.current = realTo
+        let effective = realTo + alignOffsetRef.current
+        if (rtlRef.current) effective = -effective
+        if (el.current?.setStyleProperty) {
+          el.current.setStyleProperty('transform', `translateX(${effective}px)`)
+        }
+      }
+    }
+    requestAnimationFrame(step)
+  }
+
+  // Seam-aware animate: animate from the CURRENT offset to a raw (possibly
+  // out-of-range) target, then commit the wrapped index. In loop mode, if the
+  // raw target lands in the clone region we keep the offset there during the
+  // animation (seamless — the clones show real content) and the index commit
+  // uses the wrapped value. After settling, `_jumpAndAnimate` (fired by the
+  // currentIndex watch echo) is suppressed by the expectedOffset guard, and the
+  // next gesture reads `offsetRef` directly so the seam is invisible.
+  //
+  // Mirrors lynx-ui `calcLoop` (physics.ts `calcLoop`): the rebase shifts BOTH
+  // endpoints by one period, but since we animate FROM the live offset we only
+  // need to compute the seamless target offset + the wrapped index here.
+  function _animateToIndex(rawIndex: number) {
+    'main thread'
+    const full = fullSizeRef.current
+    const count = itemCountRef.current
+    if (count <= 0) return
+    let wrapped = rawIndex
+    if (loopRef.current) {
+      wrapped = ((rawIndex % count) + count) % count
+    }
+    else {
+      if (wrapped < 0) wrapped = 0
+      if (wrapped > count - 1) wrapped = count - 1
+    }
+    // Seamless target: animate to the RAW (unwrapped) offset so motion is
+    // continuous across the seam, then snap the offset back into the real
+    // period once settled (handled below via expectedOffset rebasing).
+    const rawOffset = -rawIndex * full
+    const wrappedOffset = -wrapped * full
+    expectedOffsetRef.current = wrappedOffset
+    if (loopRef.current && rawOffset !== wrappedOffset) {
+      // Animate to the clone-region offset for seamless motion, then on the
+      // final frame rebase the offset to the real period. We approximate this
+      // by animating to rawOffset and immediately committing wrappedOffset as
+      // the resting offset once the animation completes.
+      _animateToSeam(rawOffset, wrappedOffset)
+    }
+    else {
+      _animateTo(wrappedOffset)
+    }
+    runOnBackground(_settle as any)(wrapped)
+  }
+
+  // Advance one step on the MT (used by autoplay). Wraps seamlessly in loop
+  // mode, stops at the last item otherwise.
   function _advance() {
     'main thread'
     if (isDraggingRef.current) return
-    const width = itemWidthRef.current
+    const full = fullSizeRef.current
     const count = itemCountRef.current
     if (count <= 1) return
-    const cur = Math.round(-offsetRef.current / width)
-    let next = cur + 1
-    if (next > count - 1) {
-      if (loopRef.current) next = 0
-      else return
-    }
-    const targetOffset = -next * width
-    expectedOffsetRef.current = targetOffset
-    _animateTo(targetOffset)
-    runOnBackground(_settle as any)(next)
+    const cur = Math.round(-offsetRef.current / full)
+    const next = cur + 1
+    if (next > count - 1 && !loopRef.current) return
+    _animateToIndex(next)
   }
 
   // Autoplay loop. setTimeout chains itself; cancelled by clearing the timer
@@ -296,12 +496,29 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   function _jumpAndAnimate(targetIndex: number) {
     'main thread'
     if (isDraggingRef.current) return
-    const target = -targetIndex * itemWidthRef.current
+    const target = -targetIndex * fullSizeRef.current
     const expected = expectedOffsetRef.current
     expectedOffsetRef.current = Number.NaN
     // Skip only when this change is the echo of a settle we already animated.
     // The NaN sentinel falls through on its own: `NaN === target` is false.
     if (expected === target) return
+    // Programmatic jump: take the shortest seamless path in loop mode so e.g.
+    // setIndex(0) from the last item slides forward over the seam rather than
+    // rewinding across every slide.
+    if (loopRef.current) {
+      const full = fullSizeRef.current
+      const count = itemCountRef.current
+      if (count > 0) {
+        const cur = Math.round(-offsetRef.current / full)
+        const curMod = ((cur % count) + count) % count
+        let forward = targetIndex - curMod
+        forward = ((forward % count) + count) % count
+        const backward = forward - count
+        const step = Math.abs(forward) <= Math.abs(backward) ? forward : backward
+        _animateToIndex(cur + step)
+        return
+      }
+    }
     _animateTo(target)
   }
 
@@ -361,14 +578,20 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     }
     if (axisLockedRef.current) return
 
-    const delta = x - touchStartXRef.current
-    const width = itemWidthRef.current
+    // RTL: a rightward finger move (positive dX) should read as moving toward
+    // LOWER indices, i.e. a positive offset — so flip the delta sign.
+    const rawDelta = x - touchStartXRef.current
+    const delta = rtlRef.current ? -rawDelta : rawDelta
+    const full = fullSizeRef.current
     const count = itemCountRef.current
     let next = touchStartOffsetRef.current + delta
-    // Offset clamping. Loop mode never clamps; otherwise clamp to [min, 0].
+    // Offset clamping. Loop mode never clamps (drag enters the clone region
+    // freely). Otherwise clamp to [endLimit-edge, startLimit] derived from the
+    // align/offsetLimit-aware limits.
     if (!loopRef.current) {
-      const minOffset = -(count - 1) * width
-      if (next > 0) next = 0
+      const maxOffset = startLimitRef.current
+      const minOffset = -(count - 1) * full + endLimitRef.current
+      if (next > maxOffset) next = maxOffset
       if (next < minOffset) next = minOffset
     }
     offsetRef.current = next
@@ -394,7 +617,8 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     gestureLockedRef.current = false
     axisLockedRef.current = false
 
-    // Inline velocity (px/s) — mirrors physics.ts `calcVelocity`.
+    // Inline velocity (px/s) — mirrors physics.ts `calcVelocity`. In RTL the
+    // sign is flipped so positive = "forward" (toward higher indices).
     _pruneQueue(500, 0)
     const tq = timeQueueRef.current
     const pq = posQueueRef.current
@@ -403,18 +627,19 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
       const dt = (tq[tq.length - 1] - tq[0]) / 1000
       if (dt > 0) velocity = (pq[pq.length - 1] - pq[0]) / dt
     }
+    if (rtlRef.current) velocity = -velocity
 
     const startOffset = touchStartOffsetRef.current
     const endOffset = offsetRef.current
-    const width = itemWidthRef.current
-    const count = itemCountRef.current
+    const full = fullSizeRef.current
     const threshold = thresholdRef.current
     const vThreshold = velocityThresholdRef.current
-    const loop = loopRef.current
 
     // Inline customRound + paging — mirrors physics.ts `customRound`/`calcPaging`.
+    // Computed in RAW (unwrapped) index space so loop seam crossings stay
+    // continuous; `_animateToIndex` wraps + rebases seamlessly.
     let target: number
-    const ratio = -endOffset / width
+    const ratio = -endOffset / full
     const decimal = ratio - Math.floor(ratio)
     if (decimal >= threshold) target = Math.ceil(ratio)
     else target = Math.floor(ratio)
@@ -422,23 +647,12 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     // Velocity flick overrides — advance/retreat one step from start index.
     // (Carousel paging policy: flick steps from where the user grabbed.)
     if (velocity < 0 ? -velocity >= vThreshold : velocity >= vThreshold) {
-      const startIdx = Math.round(-startOffset / width)
+      const startIdx = Math.round(-startOffset / full)
       target = startIdx + (velocity < 0 ? 1 : -1)
     }
 
-    // Wrap (loop) or clamp (default) the index.
-    if (loop) {
-      target = ((target % count) + count) % count
-    }
-    else {
-      if (target < 0) target = 0
-      if (target > count - 1) target = count - 1
-    }
-
-    const targetOffset = -target * width
-    expectedOffsetRef.current = targetOffset
-    _animateTo(targetOffset)
-    runOnBackground(_settle as any)(target)
+    // `_animateToIndex` wraps (loop, seamless) or clamps (default) and commits.
+    _animateToIndex(target)
 
     // Resume autoplay after the drag settled.
     if (autoplayRef.current) _autoplayStart()
@@ -488,7 +702,7 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   // --- Lifecycle -----------------------------------------------------------
 
   onMounted(() => {
-    const initialOffset = -(currentIndex.value ?? 0) * config.itemWidth()
+    const initialOffset = -(currentIndex.value ?? 0) * fullSizeOf()
     // Index 0 → translateX(0) is already the laid-out position, so skip the
     // dispatch: `runOnMainThread` during mount travels over
     // `coreContext.dispatchEvent`, a different channel from the batched op
@@ -496,9 +710,13 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     // registered (vue-lynx@0.4.0 — see SheetContentImpl.vue). Touch handlers
     // are immune: `SET_WORKLET_EVENT` flushes in the same batch as
     // `INIT_MT_REF`.
-    if (initialOffset !== 0) {
-      // Nonzero initial index: defer past the post-flush op batch. nextTick
-      // narrows but does NOT close the cross-channel race.
+    // Dispatch the initial transform whenever the resting position isn't the
+    // bare `translateX(0)` already laid out: a nonzero start index, an align
+    // nudge (center/end), or RTL all need it. `_setTransform` re-applies the
+    // align/RTL adjustment MT-side from the refs.
+    if (initialOffset !== 0 || alignOffsetOf() !== 0 || rtlGetter()) {
+      // Deferred past the post-flush op batch. nextTick narrows but does NOT
+      // close the cross-channel race (see SheetContentImpl.vue).
       void nextTick().then(() => {
         runOnMainThread(_setTransform as any)(initialOffset)
       })
