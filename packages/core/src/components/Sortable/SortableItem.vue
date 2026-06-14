@@ -41,6 +41,12 @@ const indexRef = useMainThreadRef<number>(props.index)
 const itemDisabledRef = useMainThreadRef<boolean>(props.disabled)
 const lastTargetRef = useMainThreadRef<number>(-1)
 const liftedDyRef = useMainThreadRef<number>(0)
+// Long-press timer id, MT-local. The activation delay is timed on the main
+// thread (via the worklet `setTimeout`) so a touch never has to round-trip
+// MT→BG→setTimeout→MT before the row can lift — that cross-channel hop is the
+// documented-fragile path (see useDragGesture onMounted) and on-device it was
+// dropping the activation entirely, so drag never started. 0 = no timer.
+const activationTimerRef = useMainThreadRef<number>(0)
 
 // Velocity tracker (Y) — drives the velocity-aware drop: a fast toss lands one
 // row further in the flick direction than the raw pointer offset (mirrors
@@ -55,7 +61,6 @@ watch(() => props.disabled, (v) => { itemDisabledRef.current = v })
 const elementRef: SortableItemHandle['elementRef'] = { current: null }
 let handle: SortableItemHandle | null = null
 let unregister: (() => void) | null = null
-let pendingActivationTimer: ReturnType<typeof setTimeout> | null = null
 
 onMounted(() => {
   elementRef.current = (containerRef as unknown as {
@@ -70,10 +75,8 @@ watch(() => props.index, (v) => {
 })
 
 onBeforeUnmount(() => {
-  if (pendingActivationTimer != null) {
-    clearTimeout(pendingActivationTimer)
-    pendingActivationTimer = null
-  }
+  // Cancel a pending long-press on the MT (BG `.current` writes are dropped).
+  runOnMainThread(_cancelActivation as any)()
   if (unregister) {
     unregister()
     unregister = null
@@ -203,12 +206,23 @@ function _onTouchStart(e: { touches: Array<{ clientY: number }> }) {
   posQueueRef.current = [e.touches[0].clientY]
   timeQueueRef.current = [Date.now()]
   // Defer activation by `longPressMs` so a tap or vertical scroll doesn't lift.
+  // Timed entirely on the main thread — `_onTouchMove` disarms it if the finger
+  // travels before it fires, and `_onTouchEnd` clears it on release. Keeping it
+  // MT-local avoids the MT→BG→setTimeout→MT round-trip that was dropping the
+  // activation on-device.
+  if (activationTimerRef.current) {
+    clearTimeout(activationTimerRef.current)
+    activationTimerRef.current = 0
+  }
   const delay = ctx.longPressMsMT.current
   if (delay <= 0) {
     _activate()
   }
   else {
-    runOnBackground(_scheduleActivation as any)(indexRef.current, delay)
+    activationTimerRef.current = setTimeout(() => {
+      activationTimerRef.current = 0
+      _activate()
+    }, delay) as unknown as number
   }
 }
 
@@ -219,9 +233,15 @@ function _onTouchMove(e: { touches: Array<{ clientY: number }> }) {
   const dy = y - touchStartYRef.current
 
   // Pre-activation: a meaningful pre-timer move means the user was scrolling.
-  // Disarm so the deferred `_activate` becomes a no-op.
+  // Disarm + cancel the pending long-press so the row never lifts mid-scroll.
   if (!draggingRef.current) {
-    if (Math.abs(dy) > 6) armedRef.current = false
+    if (Math.abs(dy) > 6) {
+      armedRef.current = false
+      if (activationTimerRef.current) {
+        clearTimeout(activationTimerRef.current)
+        activationTimerRef.current = 0
+      }
+    }
     return
   }
 
@@ -263,6 +283,13 @@ function _onTouchEnd() {
   if (!armedRef.current && !draggingRef.current) return
   armedRef.current = false
 
+  // Cancel a still-pending long-press: a quick tap/release must not lift the
+  // row after the finger is already gone.
+  if (activationTimerRef.current) {
+    clearTimeout(activationTimerRef.current)
+    activationTimerRef.current = 0
+  }
+
   if (!draggingRef.current) {
     // Long-press never confirmed — nothing to do.
     return
@@ -303,29 +330,23 @@ function _onTouchEnd() {
 
 // ── BG callbacks ───────────────────────────────────────────────────────────
 
-function _scheduleActivation(forIndex: number, delay: number) {
-  if (pendingActivationTimer != null) {
-    clearTimeout(pendingActivationTimer)
-    pendingActivationTimer = null
-  }
-  pendingActivationTimer = setTimeout(() => {
-    pendingActivationTimer = null
-    if (props.index !== forIndex) return
-    runOnMainThread(_activate as any)()
-  }, delay)
-}
-
 function _emitDragStart(idx: number) {
   ctx.notifyDragStart(idx)
 }
 
 function _emitDragEnd(from: number, to: number) {
-  if (pendingActivationTimer != null) {
-    clearTimeout(pendingActivationTimer)
-    pendingActivationTimer = null
-  }
   ctx.commitReorder(from, to)
   ctx.notifyDragEnd()
+}
+
+// MT teardown — cancel a pending long-press timer when the row unmounts. BG
+// writes to `.current` are dropped, so the clear must happen ON the MT.
+function _cancelActivation() {
+  'main thread'
+  if (activationTimerRef.current) {
+    clearTimeout(activationTimerRef.current)
+    activationTimerRef.current = 0
+  }
 }
 </script>
 

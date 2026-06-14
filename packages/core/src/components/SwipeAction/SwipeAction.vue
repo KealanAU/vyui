@@ -90,6 +90,12 @@ const touchStartXRef = useMainThreadRef<number>(0)
 const touchStartYRef = useMainThreadRef<number>(0)
 const startXRef = useMainThreadRef<number>(0)
 const isDraggingRef = useMainThreadRef<boolean>(false)
+// Handle to the in-flight snap animation. A `fill: 'forwards'` Web Animation
+// outranks inline style in the cascade, so the row's `setStyleProperty` writes
+// during the NEXT drag are masked until this is cancelled — that was why a
+// slow-drag after an open/close animation appeared frozen on-device. Mirrors
+// Draggable's `resetAnimRef`.
+const snapAnimRef = useMainThreadRef<any>(null)
 // Axis lock: 0 = undecided, 1 = horizontal (own the gesture),
 // 2 = vertical (yield to list scroll). Resolved once per gesture after the
 // finger crosses GESTURE_THRESHOLD, then sticky until release.
@@ -146,7 +152,9 @@ function _animateTo(targetX: number) {
   }
   currentXRef.current = targetX
   if (typeof el.current?.animate === 'function') {
-    el.current.animate(
+    // Keep the handle: a fill-forwards animation outranks inline style in the
+    // cascade, so it must be cancelled before the next drag's transform writes.
+    snapAnimRef.current = el.current.animate(
       [
         { transform: `translateX(${from}px)` },
         { transform: `translateX(${targetX}px)` },
@@ -185,6 +193,16 @@ function _getVelocity() {
 function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
   'main thread'
   if (disabledRef.current) return
+  // Cancel any in-flight snap animation: a `fill: 'forwards'` animation beats
+  // inline style, so leaving it running would mask this drag's
+  // `setStyleProperty('transform')` writes. Re-assert the current transform so
+  // the row doesn't snap to its pre-animation position.
+  const anim = snapAnimRef.current
+  if (anim && typeof anim.cancel === 'function') {
+    anim.cancel()
+    snapAnimRef.current = null
+    _applyTransform(currentXRef.current)
+  }
   isDraggingRef.current = true
   axisLockRef.current = 0
   const x = e.touches[0].clientX
