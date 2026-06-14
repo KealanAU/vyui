@@ -24,6 +24,21 @@ export type { SlideDirection } from './useAnimate.js'
 
 export { useMtSmoke } from './useMtSmoke.js'
 
+export {
+  BOUNCE_CONSTANTS,
+  BOUNCING_STATUS,
+  getBouncingStatus,
+  isOverTriggerDistance,
+  rubberBandingDistance,
+  shouldBounceWhenTouchEnd,
+} from './useBounce.js'
+export type {
+  BounceableBasicProps,
+  BouncingStatusValue,
+  ScrollToBouncesInfo,
+  SingleSidedBounce,
+} from './useBounce.js'
+
 export { useTouchEmulation } from './useTouchEmulation.js'
 export type { UseTouchEmulationOptions, UseTouchEmulationReturn } from './useTouchEmulation.js'
 
