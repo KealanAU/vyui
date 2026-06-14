@@ -725,6 +725,7 @@ defineExpose({ id: containerId })
       class="vyui-scroll-view"
       data-vyui-scroll-view
       android-touch-slop="page"
+      :style="{ width: '100%', height: '100%' }"
       :scroll-orientation="scrollOrientation"
       :bounces="false"
       :enable-scroll="!disabled"
