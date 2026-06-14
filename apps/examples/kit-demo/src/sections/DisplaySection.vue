@@ -37,6 +37,10 @@ const swiperSlides = [
   { label: 'Slide 3', tint: 'bg-emerald-500' },
   { label: 'Slide 4', tint: 'bg-amber-500' },
 ]
+// Autoplay + loop carousel — exercises the new core props (autoplay/interval,
+// loop, axisLock) forwarded through the kit Swiper wrapper. Autoplay pauses
+// while dragging and resumes on release; loop wraps last → first.
+const autoSwiperIndex = ref(0)
 
 const innerTab = ref<string | number>('overview')
 const innerTabItems = [
@@ -143,6 +147,30 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
         </template>
       </VySwiper>
       <text class="text-slate-500 text-xs">Drag to swipe · flick to advance · dots reflect settle.</text>
+    </view>
+
+    <!-- Swiper: autoplay + loop + axis-lock (new core props via kit passthrough) -->
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+      <view class="flex flex-row items-center justify-between">
+        <text class="text-slate-900 text-base font-semibold">Swiper · autoplay + loop</text>
+        <text class="text-slate-500 text-xs">Active: {{ autoSwiperIndex + 1 }} / {{ swiperSlides.length }}</text>
+      </view>
+      <VySwiper
+        v-model="autoSwiperIndex"
+        :items="swiperSlides"
+        :item-width="280"
+        :autoplay="2500"
+        loop
+        axis-lock
+        show-indicators
+      >
+        <template #item="{ item }">
+          <view :class="['h-32 rounded-lg flex items-center justify-center', item.tint]" :style="{ width: '264px' }">
+            <text class="text-white text-lg font-bold">{{ item.label }}</text>
+          </view>
+        </template>
+      </VySwiper>
+      <text class="text-slate-500 text-xs">Auto-advances every 2.5s · loops past the end · pauses while you drag.</text>
     </view>
 
     <!-- Separator -->
