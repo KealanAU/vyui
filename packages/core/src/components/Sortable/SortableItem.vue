@@ -42,6 +42,12 @@ const itemDisabledRef = useMainThreadRef<boolean>(props.disabled)
 const lastTargetRef = useMainThreadRef<number>(-1)
 const liftedDyRef = useMainThreadRef<number>(0)
 
+// Velocity tracker (Y) — drives the velocity-aware drop: a fast toss lands one
+// row further in the flick direction than the raw pointer offset (mirrors
+// physics.ts sortableDropTarget).
+const posQueueRef = useMainThreadRef<number[]>([])
+const timeQueueRef = useMainThreadRef<number[]>([])
+
 watch(() => props.index, (v) => { indexRef.current = v })
 watch(() => props.disabled, (v) => { itemDisabledRef.current = v })
 
@@ -116,6 +122,57 @@ function _clearAll() {
 }
 
 /**
+ * Nudge the scroll container when the finger nears an edge during a drag.
+ * `pageY` is the absolute pointer Y; the viewport top/height come from the
+ * root context (measured on mount). Speed ramps linearly inside the edge
+ * band — mirrors physics.ts autoscrollDelta. Reads/writes `scrollTop`
+ * directly (MT-local), falling back to `scrollTo` when present.
+ */
+function _autoScroll(pageY: number) {
+  'main thread'
+  const edge = ctx.autoScrollEdgeMT.current
+  if (edge <= 0) return
+  const el = ctx.scrollRefMT.current as unknown as {
+    scrollTop?: number
+    scrollHeight?: number
+    clientHeight?: number
+    scrollTo?(opts: { top?: number, behavior?: string }): void
+  } | null
+  if (!el) return
+  const viewportTop = ctx.viewportTopMT.current
+  const viewport = ctx.viewportHeightMT.current
+  if (viewport <= 0) return
+  const pointer = pageY - viewportTop
+  const maxSpeed = ctx.autoScrollSpeedMT.current
+
+  let delta = 0
+  if (pointer < edge) {
+    const intensity = (edge - pointer) / edge
+    delta = -maxSpeed * (intensity > 1 ? 1 : intensity < 0 ? 0 : intensity)
+  }
+  else {
+    const bottom = viewport - edge
+    if (pointer > bottom) {
+      const intensity = (pointer - bottom) / edge
+      delta = maxSpeed * (intensity > 1 ? 1 : intensity < 0 ? 0 : intensity)
+    }
+  }
+  if (delta === 0) return
+
+  const cur = typeof el.scrollTop === 'number' ? el.scrollTop : 0
+  let next = cur + delta
+  if (next < 0) next = 0
+  const maxScroll = (el.scrollHeight ?? 0) - (el.clientHeight ?? viewport)
+  if (maxScroll >= 0 && next > maxScroll) next = maxScroll
+  if (typeof el.scrollTo === 'function') {
+    el.scrollTo({ top: next, behavior: 'auto' })
+  }
+  else if (typeof el.scrollTop === 'number') {
+    el.scrollTop = next
+  }
+}
+
+/**
  * Called by BG after the long-press timer elapses. Marks this item as the
  * lifted one provided the finger is still down and no other item has claimed
  * the gesture in the meantime.
@@ -143,6 +200,8 @@ function _onTouchStart(e: { touches: Array<{ clientY: number }> }) {
   touchStartTimeRef.current = Date.now()
   liftedDyRef.current = 0
   lastTargetRef.current = indexRef.current
+  posQueueRef.current = [e.touches[0].clientY]
+  timeQueueRef.current = [Date.now()]
   // Defer activation by `longPressMs` so a tap or vertical scroll doesn't lift.
   const delay = ctx.longPressMsMT.current
   if (delay <= 0) {
@@ -173,12 +232,30 @@ function _onTouchMove(e: { touches: Array<{ clientY: number }> }) {
   liftedDyRef.current = dy
   _setTransform(elementRef.current, dy)
 
+  // Velocity sampling — last 50ms window, keep >=2 so a release always has a
+  // pair to differentiate.
+  posQueueRef.current.push(y)
+  timeQueueRef.current.push(Date.now())
+  const tq = timeQueueRef.current
+  const pq = posQueueRef.current
+  const cutoff = Date.now() - 50
+  while (tq.length > 2 && tq[0] < cutoff) {
+    tq.shift()
+    pq.shift()
+  }
+
   let target = startIdx + Math.round(dy / itemH)
   if (target < 0) target = 0
   if (target > count - 1) target = count - 1
   lastTargetRef.current = target
 
   _shiftOthers(startIdx, target)
+
+  // Edge autoscroll — when the finger nears the top/bottom of the scroll
+  // viewport, nudge the container so long lists keep reordering past the fold.
+  // Mirrors physics.ts autoscrollDelta. No-op when the root isn't a scroller
+  // (scrollTop/scrollTo absent) or no viewport height was measured.
+  _autoScroll(y)
 }
 
 function _onTouchEnd() {
@@ -196,8 +273,30 @@ function _onTouchEnd() {
   let target = lastTargetRef.current
   if (target < 0) target = startIdx
 
+  // Velocity-aware drop — a fast toss lands one row further in the flick
+  // direction than the pointer offset settled on. Mirrors physics.ts
+  // sortableDropTarget. Inline velocity (px/s) from the Y queues.
+  const tq = timeQueueRef.current
+  const pq = posQueueRef.current
+  let velocity = 0
+  if (tq.length >= 2) {
+    const dt = (tq[tq.length - 1] - tq[0]) / 1000
+    if (dt > 0) velocity = (pq[pq.length - 1] - pq[0]) / dt
+  }
+  const count = ctx.itemHandlesMT.current.length
+  // VELOCITY_THRESHOLD_DEFAULT = 300 (physics.ts).
+  if (velocity < 0 ? -velocity >= 300 : velocity >= 300) {
+    const dir = velocity > 0 ? 1 : -1
+    if (dir > 0 && target >= startIdx) target += 1
+    else if (dir < 0 && target <= startIdx) target -= 1
+  }
+  if (target < 0) target = 0
+  if (target > count - 1) target = count - 1
+
   _clearAll()
   liftedDyRef.current = 0
+  posQueueRef.current = []
+  timeQueueRef.current = []
   ctx.draggingIndexMT.current = -1
   runOnBackground(_emitDragEnd as any)(startIdx, target)
 }

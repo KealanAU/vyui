@@ -45,3 +45,38 @@ describe('Sortable — commitReorder logic', () => {
     expect(move(['a', 'b', 'c', 'd'], 1, 1)).toEqual(['a', 'b', 'c', 'd'])
   })
 })
+
+// Velocity-aware drop the touchend worklet runs (mirrors the body of
+// `_onTouchEnd` in SortableItem.vue / physics.ts sortableDropTarget): a fast
+// toss lands one row further in the flick direction, clamped to range, never
+// reversing the pointer's committed direction.
+describe('Sortable — velocity-aware drop', () => {
+  function drop(startIdx: number, rawTarget: number, velocity: number, count: number): number {
+    let target = rawTarget
+    if (velocity < 0 ? -velocity >= 300 : velocity >= 300) {
+      const dir = velocity > 0 ? 1 : -1
+      if (dir > 0 && target >= startIdx) target += 1
+      else if (dir < 0 && target <= startIdx) target -= 1
+    }
+    if (target < 0) target = 0
+    if (target > count - 1) target = count - 1
+    return target
+  }
+
+  it('passes the raw target through when velocity is mild', () => {
+    expect(drop(2, 3, 100, 6)).toBe(3)
+  })
+  it('a fast downward toss throws one row further', () => {
+    expect(drop(0, 2, 400, 6)).toBe(3)
+  })
+  it('a fast upward toss throws one row higher', () => {
+    expect(drop(5, 3, -400, 6)).toBe(2)
+  })
+  it('does not reverse the committed pointer direction', () => {
+    expect(drop(0, 3, -400, 6)).toBe(3)
+  })
+  it('clamps to the list bounds', () => {
+    expect(drop(5, 5, 400, 6)).toBe(5)
+    expect(drop(0, 0, -400, 6)).toBe(0)
+  })
+})

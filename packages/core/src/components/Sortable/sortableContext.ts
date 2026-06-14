@@ -42,6 +42,18 @@ export interface SortableRootContext<T = unknown> {
   /** Long-press activation delay in ms. */
   longPressMsMT: MainThreadRef<number>
 
+  // ── Autoscroll (MT) ──────────────────────────────────────────────────────
+  /** Scroll container element (the root view). null when not yet mounted. */
+  scrollRefMT: MainThreadRef<{ scrollTop?: number, scrollHeight?: number, clientHeight?: number, scrollTo?(o: { top?: number, behavior?: string }): void } | null>
+  /** Viewport top in page coords, px. Measured on mount. */
+  viewportTopMT: MainThreadRef<number>
+  /** Viewport height, px. Measured on mount; 0 disables autoscroll. */
+  viewportHeightMT: MainThreadRef<number>
+  /** Edge band (px from top/bottom) within which autoscroll engages. 0 = off. */
+  autoScrollEdgeMT: MainThreadRef<number>
+  /** Max autoscroll speed in px per touchmove frame. */
+  autoScrollSpeedMT: MainThreadRef<number>
+
   // ── BG callbacks invoked from MT worklets ────────────────────────────────
   /** Register a freshly mounted item; returns an unregister fn for onBeforeUnmount. */
   register: (handle: SortableItemHandle) => () => void

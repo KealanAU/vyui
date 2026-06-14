@@ -8,18 +8,22 @@ import { describe, expect, it } from 'vitest'
 
 import {
   applyBounce,
+  autoscrollDelta,
   calcLimit,
   calcPaging,
   calcVelocity,
   customRound,
   decideSnapTarget,
+  decideSwipeAction,
   easeOutCubic,
   HORIZONTAL_CONSUME_RANGES,
   isAngleInRanges,
   pickSnap,
+  projectMomentum,
   pruneQueue,
   resolveAxisLock,
   rubberEffect,
+  sortableDropTarget,
 } from './physics'
 
 describe('customRound', () => {
@@ -352,6 +356,97 @@ describe('pickSnap', () => {
 
   it('returns the position unchanged when there are no candidates', () => {
     expect(pickSnap(42, 999, [], opts)).toBe(42)
+  })
+})
+
+describe('projectMomentum', () => {
+  it('coasts in the direction of velocity', () => {
+    expect(projectMomentum(0, 100, 5)).toBe(20)
+    expect(projectMomentum(0, -100, 5)).toBe(-20)
+  })
+  it('higher decel → shorter coast', () => {
+    expect(projectMomentum(0, 100, 10)).toBe(10)
+    expect(projectMomentum(0, 100, 2)).toBe(50)
+  })
+  it('no coast when decel is non-positive (returns position)', () => {
+    expect(projectMomentum(42, 1000, 0)).toBe(42)
+    expect(projectMomentum(42, 1000, -1)).toBe(42)
+  })
+  it('zero velocity stays put', () => {
+    expect(projectMomentum(7, 0, 5)).toBe(7)
+  })
+})
+
+describe('decideSwipeAction', () => {
+  const base = {
+    actionWidth: 80,
+    rowWidth: 320,
+    snapThreshold: 0.5,
+    commitThreshold: 0.5,
+    commitVelocity: 1200,
+    velocityThreshold: 400,
+  }
+
+  it('closes on a short drag with mild velocity', () => {
+    expect(decideSwipeAction({ ...base, endX: -10, velocity: -50 })).toBe('close')
+  })
+  it('opens when dragged past the snap threshold', () => {
+    // -endX = 50 ≥ 0.5*80 = 40
+    expect(decideSwipeAction({ ...base, endX: -50, velocity: 0 })).toBe('open')
+  })
+  it('opens on a soft leftward flick before the snap threshold', () => {
+    expect(decideSwipeAction({ ...base, endX: -20, velocity: -500 })).toBe('open')
+  })
+  it('commits past the commit threshold', () => {
+    // -endX = 200 ≥ 0.5*320 = 160
+    expect(decideSwipeAction({ ...base, endX: -200, velocity: 0 })).toBe('commit')
+  })
+  it('commits on a hard leftward flick regardless of position', () => {
+    expect(decideSwipeAction({ ...base, endX: -30, velocity: -1400 })).toBe('commit')
+  })
+  it('a rightward flick closes even past the open threshold', () => {
+    // open by position (-endX = 50 ≥ 40) but the user flicked right → close
+    expect(decideSwipeAction({ ...base, endX: -50, velocity: 600 })).toBe('close')
+  })
+})
+
+describe('sortableDropTarget', () => {
+  it('passes the raw target through with no flick', () => {
+    expect(sortableDropTarget(2, 3, 0, 6)).toBe(3)
+    expect(sortableDropTarget(2, 1, 100, 6)).toBe(1) // velocity below threshold
+  })
+  it('a fast downward toss lands one row further', () => {
+    expect(sortableDropTarget(0, 2, 400, 6)).toBe(3)
+  })
+  it('a fast upward toss lands one row higher', () => {
+    expect(sortableDropTarget(5, 3, -400, 6)).toBe(2)
+  })
+  it('never reverses a drag the pointer already committed to', () => {
+    // dragged down to target 3 but flicked up — pointer wins, no -1 overshoot
+    expect(sortableDropTarget(0, 3, -400, 6)).toBe(3)
+  })
+  it('clamps to valid range', () => {
+    expect(sortableDropTarget(5, 5, 400, 6)).toBe(5)
+    expect(sortableDropTarget(0, 0, -400, 6)).toBe(0)
+  })
+})
+
+describe('autoscrollDelta', () => {
+  const base = { viewport: 600, edge: 60, maxSpeed: 12 }
+  it('is 0 in the dead zone', () => {
+    expect(autoscrollDelta({ ...base, pointer: 300 })).toBe(0)
+  })
+  it('scrolls up near the top, ramping to maxSpeed at the edge', () => {
+    expect(autoscrollDelta({ ...base, pointer: 0 })).toBe(-12)
+    expect(autoscrollDelta({ ...base, pointer: 30 })).toBe(-6)
+  })
+  it('scrolls down near the bottom', () => {
+    expect(autoscrollDelta({ ...base, pointer: 600 })).toBe(12)
+    expect(autoscrollDelta({ ...base, pointer: 570 })).toBe(6)
+  })
+  it('is 0 when disabled (edge or viewport non-positive)', () => {
+    expect(autoscrollDelta({ ...base, edge: 0, pointer: 0 })).toBe(0)
+    expect(autoscrollDelta({ ...base, viewport: 0, pointer: 0 })).toBe(0)
   })
 })
 
