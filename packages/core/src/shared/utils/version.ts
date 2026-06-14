@@ -75,33 +75,3 @@ export function mtsNativeLynxSDKVersionLessThan(
       < mtsLynxSDKVersionStringToNumber(lynxSDKVersion)
   )
 }
-
-/**
- * Whether the native `<refresh>` / `<refresh-header>` UI elements are
- * registered in the host Lynx runtime.
- *
- * These are *legacy* built-in UI classes from older internal Lynx (Lark/TT)
- * native runtimes. The open-source LynxExplorer build (and the engine that
- * `@lynx-js/react` / `vue-lynx` target) does **not** register them: mounting a
- * `<refresh>` element there hard-crashes the create-UI pass with
- * `LynxCreateUIException: refresh ui not found when create UI`. There is no
- * runtime element-registry query API to feature-detect this directly, so the
- * only crash-safe default is to treat `<refresh>` as **unsupported** unless the
- * host explicitly advertises it.
- *
- * Detection order:
- * 1. `SystemInfo.supportRefreshUI === true` — explicit positive signal a custom
- *    native runtime can set when it does register the refresh UI. Honoured first
- *    so embedders that ship the legacy elements still get native PTR.
- * 2. Otherwise `false` — the safe default for stock LynxExplorer / OSS engines.
- *
- * Consumers that know their host registers the elements can override per-call
- * via the FeedList `refreshSupported` prop.
- */
-export function isNativeRefreshSupported(): boolean {
-  if (typeof SystemInfo === 'undefined') return false
-  // `supportRefreshUI` is a vyui/embedder convention, not a standard Lynx
-  // field — cast through `unknown` so we don't widen the typed SystemInfo.
-  const info = SystemInfo as unknown as { supportRefreshUI?: boolean }
-  return info.supportRefreshUI === true
-}

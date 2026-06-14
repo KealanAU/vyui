@@ -1024,12 +1024,11 @@ function allOff() {
         <DemoCard v-if="showFeedList">
             <DemoLabel>FEED LIST</DemoLabel>
             <DemoHint
-                >Virtualised list + load-more. Pull-to-refresh is OFF here
-                because `enable-refresh` renders Lynx's `&lt;refresh&gt;`
-                element from `lynx_xelement`, which isn't linked into the
-                default LynxExplorer build (crashes
-                `LynxCreateUIException: refresh ui not found`). Enable it only
-                in builds that include `lynx_xelement`.</DemoHint
+                >Virtualised list + load-more. Pull-to-refresh is not provided:
+                the native `&lt;refresh&gt;` element is unused upstream
+                (lynx-ui) and absent from the default LynxExplorer build
+                (mounting it crashes `LynxCreateUIException: refresh ui not
+                found`). PTR is deferred — see FeedList REFRESH-PHYSICS.md.</DemoHint
             >
             <FeedList
                 :items="feedItems"

@@ -30,22 +30,19 @@ name did not exist in the icon set, so it rendered nothing.
 
 ---
 
-## 2. FeedList refresh crash-safe (no `LynxCreateUIException`)
+## 2. FeedList no longer crashes (no `LynxCreateUIException`)
 
 - [ ] Open the **Feed** tab.
-- [ ] Confirm the demo loads without crashing. On runtimes lacking the native
-      `<refresh>` element (e.g. iOS sdk 1.4.0) the list must still render and
-      scroll — it must NOT throw `LynxCreateUIException: refresh ui not found`.
+- [ ] Confirm the demo loads without crashing — it must NOT throw
+      `LynxCreateUIException: refresh ui not found`.
 - [ ] Scroll the list up and down. It scrolls smoothly within its panel.
 
-**Expected:** the feed appears with 20 items and is scrollable; no crash on
-mount even when `enable-refresh` is set on a runtime without `<refresh>`.
+**Expected:** the feed appears with 20 items and is scrollable; no crash on mount.
 
-**Runtime notes:** the on-screen amber note states native pull-to-refresh depends
-on runtime `<refresh>` support. If the runtime lacks it, the pull-down gesture is
-inert but load-more and scrolling still work. (Crash-safety is owned by the
-FeedList worker in `packages/core`; this plan only verifies the public-API usage
-does not regress.)
+**Runtime notes:** the native `<refresh>` element has been removed from FeedList
+entirely (it is unused upstream in lynx-ui and absent from the OSS runtime), so
+there is no longer any pull-to-refresh code path to crash. Pull-to-refresh is
+deferred — see `packages/core/src/components/FeedList/REFRESH-PHYSICS.md`.
 
 ---
 
@@ -65,22 +62,18 @@ and clamping keep the dragged item inside the list bounds.
 
 ---
 
-## 4. FeedList has its own tab (pull-to-refresh + load-more)
+## 4. FeedList has its own tab (load-more)
 
 - [ ] Confirm **Feed** is its own top-level tab (no longer crammed into Gestures).
-- [ ] The list region is tall (~440px) so the gestures are actually exercisable.
-- [ ] **Pull down** from the top past the threshold and release. If the runtime
-      supports `<refresh>`, a "Fresh item" is prepended after ~0.9s and the
-      header rebounds.
+- [ ] The list region is tall (~440px) so load-more is actually exercisable.
 - [ ] **Scroll to the bottom.** 10 more items append (load-more), debounced so a
       single fling triggers it once.
 - [ ] Tap **Reset feed** to return to the initial 20 items.
 
-**Expected:** refresh prepends one fresh item; load-more appends batches of 10;
-reset restores the original 20.
+**Expected:** load-more appends batches of 10; reset restores the original 20.
 
-**Runtime notes:** pull-to-refresh requires runtime `<refresh>` support (see #2).
-Load-more and scrolling work regardless.
+**Runtime notes:** pull-to-refresh is not implemented (see #2). Load-more and
+scrolling are the FeedList interactions to verify.
 
 ---
 

@@ -54,191 +54,32 @@ describe('FeedList — keyFor', () => {
   })
 })
 
-// Pull-to-refresh: the iOS list runtime requires `<refresh>` wrapping `<list>`
-// with `<refresh-header>` as a sibling — putting `<refresh-header>` inside
-// `<list>` crashes the create-UI pass (`refresh-header ui not found`). The
-// `enableRefresh` flag toggles between the wrapped and bare templates. Verify
-// the toggle by inspecting the rendered template source rather than mounting,
-// since `<list>` rendering itself is blocked on MTS test infra.
-describe('FeedList — PTR template branching', () => {
-  it('renders a <refresh> wrapper around <list> when enableRefresh is true', async () => {
-    const Component = (await import('./FeedList.vue')).default as any
-    const tpl = String(Component.render ?? Component.__file ?? '')
-    // Vue compiles templates to a render function — fall back to the SFC
-    // template source if the compiled fn isn't introspectable. Either way,
-    // <refresh> must reference `enable-refresh` and wrap a child <list>.
-    const src = tpl
-    // sanity — ensure we're looking at the real component
-    expect(Component).toBeDefined()
-    // The template literal lives in the SFC. Read the .vue file directly so
-    // the assertion doesn't depend on the compiled render fn shape.
+// FeedList renders Lynx's native virtualized `<list>` directly. Pull-to-refresh
+// is intentionally NOT implemented (the native `<refresh>` element is unused
+// upstream and absent from the OSS runtime — see FeedList.vue header). Verify
+// the template renders a bare `<list>` with no `<refresh>` wrapper by inspecting
+// the SFC source, since `<list>` rendering is blocked on MTS test infra.
+describe('FeedList — template', () => {
+  async function readSfc(): Promise<string> {
     const fs = await import('node:fs')
     const path = await import('node:path')
     const here = path.dirname(new URL(import.meta.url).pathname)
-    const sfc = fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
+    return fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
+  }
 
-    // Three required pieces for the iOS-safe PTR layout. The `<refresh>`
-    // wrapper is gated on `usePtrWrapper` (= enableRefresh AND the runtime
-    // registers the native refresh UI) so it never mounts on hosts that lack
-    // the element (which crashes the create-UI pass).
-    expect(sfc).toMatch(/<refresh\b[^>]*v-else-if="usePtrWrapper"/)
-    expect(sfc).toMatch(/<refresh-header\b/)
-    expect(sfc).toMatch(/@startrefresh="onStartRefresh"/)
-
-    // `<refresh-header>` must be a SIBLING of the inner `<list>`, not nested
-    // inside it. Use a word-boundary regex to isolate the `<refresh>` wrapper
-    // (`<refresh-header>` also starts with `<refresh` and must not match).
-    const wrapperBlock = sfc.match(/<refresh\s[\s\S]*?<\/refresh>/)?.[0] ?? ''
-    expect(wrapperBlock).toContain('<refresh-header')
-    expect(wrapperBlock).toContain('<list')
-
-    const headerOpen = wrapperBlock.indexOf('<refresh-header')
-    const headerClose = wrapperBlock.indexOf('</refresh-header>')
-    const listOpen = wrapperBlock.search(/<list\s/)
-    expect(headerOpen).toBeGreaterThan(-1)
-    expect(headerClose).toBeGreaterThan(headerOpen)
-    expect(listOpen).toBeGreaterThan(headerClose)
-    suppressUnused(src, tpl)
-  })
-
-  it('renders a bare <list> (no <refresh>) when enableRefresh is false', async () => {
-    const fs = await import('node:fs')
-    const path = await import('node:path')
-    const here = path.dirname(new URL(import.meta.url).pathname)
-    const sfc = fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
-
-    // The v-else branch is the bare-list fallback. It must not be wrapped in
-    // <refresh> and must still have the data-vyui-feed-list hook.
-    expect(sfc).toMatch(/<list\b[^>]*v-else\b/)
+  it('renders a bare <list> with the data-vyui-feed-list hook', async () => {
+    const sfc = await readSfc()
+    expect(sfc).toMatch(/<list\b/)
     expect(sfc).toMatch(/data-vyui-feed-list\b/)
   })
-})
 
-function suppressUnused(..._args: unknown[]): void { /* tsc no-unused-locals shim */ }
-
-// Crash guard: the native `<refresh>` element is NOT registered on stock
-// LynxExplorer / OSS engines — mounting it hard-crashes the create-UI pass
-// (`refresh ui not found when create UI`). FeedList must only emit `<refresh>`
-// when the runtime supports it, falling back to the bare `<list>` otherwise.
-// Mirror of the `usePtrWrapper` gate in the component.
-describe('FeedList — refresh support gating', () => {
-  function usePtrWrapper(
-    enableRefresh: boolean,
-    refreshSupportedProp: boolean | undefined,
-    detected: boolean,
-  ): boolean {
-    const refreshSupported = refreshSupportedProp != null
-      ? refreshSupportedProp
-      : detected
-    return enableRefresh && refreshSupported
-  }
-
-  it('does NOT render <refresh> when the runtime lacks the element (default)', () => {
-    // enableRefresh set, but auto-detection says unsupported → bare list.
-    expect(usePtrWrapper(true, undefined, false)).toBe(false)
-  })
-
-  it('renders <refresh> when auto-detection reports support', () => {
-    expect(usePtrWrapper(true, undefined, true)).toBe(true)
-  })
-
-  it('prop true forces <refresh> even when detection says unsupported', () => {
-    expect(usePtrWrapper(true, true, false)).toBe(true)
-  })
-
-  it('prop false suppresses <refresh> even when detection says supported', () => {
-    expect(usePtrWrapper(true, false, true)).toBe(false)
-  })
-
-  it('never renders <refresh> when enableRefresh is false', () => {
-    expect(usePtrWrapper(false, true, true)).toBe(false)
-  })
-
-  it('SFC gates the <refresh> wrapper on usePtrWrapper, not enableRefresh', async () => {
-    const fs = await import('node:fs')
-    const path = await import('node:path')
-    const here = path.dirname(new URL(import.meta.url).pathname)
-    const sfc = fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
-    expect(sfc).toMatch(/<refresh\b[^>]*v-else-if="usePtrWrapper"/)
-    // The gate combines enableRefresh with the support signal.
-    expect(sfc).toMatch(/usePtrWrapper\s*=\s*computed\(\s*\(\)\s*=>\s*props\.enableRefresh\s*&&\s*refreshSupported\.value/)
-  })
-})
-
-// Refresh lifecycle state machine. The component layers a JS state machine
-// over the native `<refresh>` element (idle → pulling → releaseReady →
-// refreshing → done → idle). Verify the transition logic in isolation — the
-// component drives the same transitions off the `refreshing` watcher and the
-// native `startrefresh` / `headeroffset` events.
-describe('FeedList — refresh state machine', () => {
-  type State = 'idle' | 'pulling' | 'releaseReady' | 'refreshing' | 'done'
-
-  // Mirror of the offset → state mapping in `onHeaderOffset`.
-  function offsetToState(
-    offset: number,
-    headerSize: number,
-    current: State,
-    inFlight: boolean,
-  ): State {
-    if (inFlight) return current
-    if (current === 'refreshing' || current === 'done') return current
-    if (offset <= 0) return 'idle'
-    return headerSize > 0 && offset >= headerSize ? 'releaseReady' : 'pulling'
-  }
-
-  it('maps pull offset to pulling below threshold and releaseReady at/above it', () => {
-    expect(offsetToState(0, 60, 'idle', false)).toBe('idle')
-    expect(offsetToState(20, 60, 'idle', false)).toBe('pulling')
-    expect(offsetToState(60, 60, 'pulling', false)).toBe('releaseReady')
-    expect(offsetToState(80, 60, 'pulling', false)).toBe('releaseReady')
-  })
-
-  it('falls back to pulling when header size is unknown', () => {
-    expect(offsetToState(80, 0, 'idle', false)).toBe('pulling')
-  })
-
-  it('does not regress out of refreshing/done via offset updates', () => {
-    expect(offsetToState(0, 60, 'refreshing', false)).toBe('refreshing')
-    expect(offsetToState(80, 60, 'done', false)).toBe('done')
-  })
-
-  it('ignores offset updates while a refresh is in flight', () => {
-    expect(offsetToState(80, 60, 'pulling', true)).toBe('pulling')
-  })
-})
-
-// Double-fire guard for native `startrefresh`. The component only emits
-// `refresh` / flips `refreshing` once per gesture even if the native element
-// fires `startrefresh` twice.
-describe('FeedList — startrefresh double-fire guard', () => {
-  function makeStart() {
-    let inFlight = false
-    let refreshing = false
-    let fired = 0
-    return {
-      start(disabled = false) {
-        if (disabled) return
-        if (inFlight || refreshing) return
-        inFlight = true
-        refreshing = true
-        fired += 1
-      },
-      get fired() { return fired },
-    }
-  }
-
-  it('fires refresh exactly once for repeated startrefresh events', () => {
-    const s = makeStart()
-    s.start()
-    s.start()
-    s.start()
-    expect(s.fired).toBe(1)
-  })
-
-  it('does not fire when disabled', () => {
-    const s = makeStart()
-    s.start(true)
-    expect(s.fired).toBe(0)
+  it('never emits a native <refresh> / <refresh-header> element', async () => {
+    const sfc = await readSfc()
+    // Scope to the template — the file header comment legitimately mentions
+    // `<refresh>` when documenting why it is intentionally absent.
+    const template = sfc.match(/<template>[\s\S]*<\/template>/)?.[0] ?? ''
+    expect(template).not.toMatch(/<refresh\b/)
+    expect(template).not.toMatch(/<refresh-header\b/)
   })
 })
 
@@ -304,10 +145,10 @@ describe('FeedList — loadMore debounce', () => {
   })
 })
 
-// SFC-source assertions for the new refresh-header slot bindings and footer
-// slots — verified against the template source like the PTR branching tests,
-// since `<list>` rendering is blocked on MTS test infra.
-describe('FeedList — refresh-header + footer slots', () => {
+// SFC-source assertions for the footer slots — verified against the template
+// source like the template tests, since `<list>` rendering is blocked on MTS
+// test infra.
+describe('FeedList — footer slots', () => {
   async function readSfc(): Promise<string> {
     const fs = await import('node:fs')
     const path = await import('node:path')
@@ -315,25 +156,9 @@ describe('FeedList — refresh-header + footer slots', () => {
     return fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
   }
 
-  it('passes lifecycle state + flags into the refreshHeader slot', async () => {
-    const sfc = await readSfc()
-    expect(sfc).toMatch(/name="refreshHeader"/)
-    expect(sfc).toMatch(/:state="refreshState"/)
-    expect(sfc).toMatch(/:release-ready="refreshState === 'releaseReady'"/)
-    expect(sfc).toMatch(/:refreshing="refreshState === 'refreshing'"/)
-  })
-
   it('exposes loadMoreFooter and noMoreDataFooter slots', async () => {
     const sfc = await readSfc()
     expect(sfc).toMatch(/name="loadMoreFooter"/)
     expect(sfc).toMatch(/name="noMoreDataFooter"/)
-  })
-
-  it('keeps the iOS-safe refresh-header sibling layout intact', async () => {
-    const sfc = await readSfc()
-    const wrapperBlock = sfc.match(/<refresh\s[\s\S]*?<\/refresh>/)?.[0] ?? ''
-    const headerClose = wrapperBlock.indexOf('</refresh-header>')
-    const listOpen = wrapperBlock.search(/<list\s/)
-    expect(listOpen).toBeGreaterThan(headerClose)
   })
 })

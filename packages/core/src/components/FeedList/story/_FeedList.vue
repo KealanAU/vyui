@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { FeedListRefreshState } from '..'
 import { ref } from 'vue'
 
 import { FeedList } from '..'
@@ -7,18 +6,8 @@ import { FeedList } from '..'
 const items = ref<Array<{ id: string, label: string }>>(
   Array.from({ length: 30 }, (_, i) => ({ id: `r-${i}`, label: `Row ${i + 1}` })),
 )
-const refreshing = ref(false)
 const loadingMore = ref(false)
 const noMoreData = ref(false)
-const refreshStateLabel = ref<FeedListRefreshState>('idle')
-
-function onRefresh() {
-  refreshing.value = true
-  setTimeout(() => {
-    items.value = items.value.map(it => ({ ...it, label: `${it.label} (refreshed)` }))
-    refreshing.value = false
-  }, 600)
-}
 
 function onLoadMore() {
   // `loadingMore` is owned by FeedList via v-model:loadingMore, so the
@@ -41,25 +30,17 @@ function onLoadMore() {
     loadingMore.value = false
   }, 600)
 }
-
-function onRefreshStateChange(s: FeedListRefreshState) {
-  refreshStateLabel.value = s
-}
 </script>
 
 <template>
   <view data-vyui-feed-list-story>
     <FeedList
-      v-model:refreshing="refreshing"
       v-model:loading-more="loadingMore"
       :items="items"
       :no-more-data="noMoreData"
-      enable-refresh
       enable-load-more
       data-testid="feed-list"
-      @refresh="onRefresh"
       @load-more="onLoadMore"
-      @refresh-state-change="onRefreshStateChange"
     >
       <template #item="{ item, index }">
         <view
@@ -74,25 +55,6 @@ function onRefreshStateChange(s: FeedListRefreshState) {
           }"
         >
           <text>{{ item.label }} (#{{ index }})</text>
-        </view>
-      </template>
-      <!-- Header swaps copy per lifecycle state, mirroring lynx-ui's
-           pull / release / loading affordances. -->
-      <template #refreshHeader="{ pulling, releaseReady, refreshing: isRefreshing, done }">
-        <view :style="{ padding: '12px', alignItems: 'center' }">
-          <text data-testid="refresh-header-label">
-            {{
-              isRefreshing
-                ? 'Refreshing…'
-                : done
-                  ? 'Updated'
-                  : releaseReady
-                    ? 'Release to refresh'
-                    : pulling
-                      ? 'Pull to refresh'
-                      : 'Pull to refresh'
-            }}
-          </text>
         </view>
       </template>
       <template #loadMoreFooter="{ loading }">
@@ -110,8 +72,6 @@ function onRefreshStateChange(s: FeedListRefreshState) {
       </template>
     </FeedList>
     <text data-testid="count">{{ items.length }}</text>
-    <text data-testid="refreshing-state">{{ refreshing ? 'yes' : 'no' }}</text>
-    <text data-testid="refresh-state">{{ refreshStateLabel }}</text>
     <text data-testid="loading-more-state">{{ loadingMore ? 'yes' : 'no' }}</text>
   </view>
 </template>

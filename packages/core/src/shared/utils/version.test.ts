@@ -6,7 +6,6 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  isNativeRefreshSupported,
   lynxSDKVersionStringToNumber,
   nativeLynxSDKVersionGreaterThan,
   nativeLynxSDKVersionLessThan,
@@ -96,38 +95,6 @@ describe('version utils', () => {
     it('handles minor version differences', () => {
       ;(globalThis as any).SystemInfo = createMockSystemInfo('1.1.0')
       expect(nativeLynxSDKVersionLessThan('1.2.0')).toBe(true)
-    })
-  })
-
-  describe('isNativeRefreshSupported', () => {
-    afterEach(() => {
-      delete (globalThis as any).SystemInfo
-    })
-
-    it('returns false when SystemInfo is absent (jsdom / OSS engine)', () => {
-      delete (globalThis as any).SystemInfo
-      expect(isNativeRefreshSupported()).toBe(false)
-    })
-
-    it('returns false by default when SystemInfo gives no positive signal', () => {
-      ;(globalThis as any).SystemInfo = createMockSystemInfo('1.4.0')
-      expect(isNativeRefreshSupported()).toBe(false)
-    })
-
-    it('returns true only when the host advertises supportRefreshUI', () => {
-      ;(globalThis as any).SystemInfo = {
-        ...createMockSystemInfo('1.4.0'),
-        supportRefreshUI: true,
-      }
-      expect(isNativeRefreshSupported()).toBe(true)
-    })
-
-    it('treats a non-true supportRefreshUI as unsupported', () => {
-      ;(globalThis as any).SystemInfo = {
-        ...createMockSystemInfo('1.4.0'),
-        supportRefreshUI: 'yes',
-      }
-      expect(isNativeRefreshSupported()).toBe(false)
     })
   })
 })

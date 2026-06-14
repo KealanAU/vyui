@@ -203,46 +203,35 @@ UI (a custom embedder). There is also **no runtime JS API to query the element
 registry**, so "is `<refresh>` registered" cannot be feature-detected directly;
 it can only be inferred from an explicit host signal or assumed unsafe.
 
-## Fix shipped — gate the `<refresh>` render
+## Decision (final) — pull-to-refresh removed from FeedList
 
-FeedList now renders the `<refresh>` wrapper only when **both** `enableRefresh`
-is set **and** the runtime is known to support the element. Otherwise it renders
-the bare virtualized `<list>` with PTR disabled, so the component mounts cleanly
-with `enable-refresh` set on a runtime lacking `<refresh>`.
+> Supersedes the earlier "gate the `<refresh>` render" approach.
 
-- New helper `isNativeRefreshSupported()` (`shared/utils/version.ts`):
-  conservative and crash-safe — returns `false` when `SystemInfo` is absent
-  (jsdom / OSS engine) or gives no positive signal; returns `true` only when the
-  host advertises `SystemInfo.supportRefreshUI === true`. There's no element
-  registry API, so "unsupported" is the safe default.
-- New FeedList prop `refreshSupported?: boolean` (escape hatch):
-  `undefined` (default) → auto-detect; `true` → force-render `<refresh>` (only
-  for hosts that genuinely register it); `false` → never render it.
-- Template gate `usePtrWrapper = computed(() => enableRefresh && refreshSupported)`
-  replaces the old `v-else-if="enableRefresh"` on `<refresh>`. The bare-list
-  `v-else` branch handles the unsupported case.
-- A `__DEV__` warning fires when `enableRefresh` is set but the runtime lacks
-  the element, so the silent PTR no-op is discoverable.
+Because the reference upstream (lynx-ui) **never uses the native `<refresh>` /
+`<refresh-header>` elements** — confirmed by `grep` returning zero hits across
+`lynx-ui/packages/` — and because those elements are absent from the OSS Lynx
+runtime we target (mounting one crashes the create-UI pass), the native
+`<refresh>` path was a legacy/unsupported dependency that should not ship.
 
-Everything else is preserved: the `FeedListRefreshState` machine, the
-`startrefresh` double-fire guard, `headeroffset`/`dropdown` → `pulling`/
-`releaseReady` mapping, waterfall/flow layout, loadMore debounce, and the
-documented `<refresh-header>`-as-sibling-of-`<list>` constraint. Public API is
-unchanged (`:items`, `:item-key`, `enable-refresh`, `enable-load-more`,
-`v-model:refreshing`, `@refresh`, `#item`); `refreshSupported` is additive and
-defaults safe. `defineExpose` now also surfaces `refreshSupported` for
-consumers that want to render their own fallback affordance.
+FeedList no longer renders `<refresh>` at all. It is a bare virtualized `<list>`
+plus load-more, which matches lynx-ui's element surface. The following PTR API
+was **removed** (the feature was 100% driven by the native element, so guarding
+it left only dead surface):
 
-## Re-test steps (simulator)
+- props: `enableRefresh`, `refreshing` / `defaultRefreshing`, `refreshSupported`,
+  `refreshDoneDuration`
+- emits: `update:refreshing`, `refresh`, `refreshStateChange`
+- slot: `refreshHeader`; type: `FeedListRefreshState`
+- the lifecycle state machine + `startrefresh` double-fire guard
+- util `isNativeRefreshSupported()` (`shared/utils/version.ts`)
 
-1. Build the kit/native demo and open it in LynxExplorer (SDK 1.4.0).
-2. Open the FeedList / Gestures demo tab with `enable-refresh` set. It must now
-   **mount without crashing** — the bare `<list>` renders, scrolling and
-   load-more work, and pull-to-refresh is inert (no native bounce header).
-3. Confirm the `__DEV__` console warning appears once explaining PTR is disabled
-   because `<refresh>` isn't registered.
-4. To verify native PTR positively, run on a host that registers the legacy
-   refresh UI and either set `SystemInfo.supportRefreshUI = true` (auto-detect)
-   or pass `:refresh-supported="true"` on the FeedList; the `<refresh>` wrapper
-   then mounts and the existing state machine drives pull / release / loading /
-   done as before.
+Retained: native `<list>` virtualization, `single`/`flow`/`waterfall` + `spanCount`,
+`loadMore` (native `scrolltolower`) with debounce/suppression, `loadingMore`
+v-model, and the `loadMoreFooter` / `noMoreDataFooter` slots.
+
+## If PTR is wanted later
+
+It must follow lynx-ui's approach: a main-thread rubber-band engine on a plain
+`<list>` via `@lynx-js/gesture-runtime` gesture arbitration (see "What's missing
+in vyui" and "Recommended path" above). That is a tracked, dependency-adding
+task — not a native-element toggle.

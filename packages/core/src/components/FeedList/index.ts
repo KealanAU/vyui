@@ -1,10 +1,10 @@
 // vyui original component — not part of reka-ui. Generic virtualized list
-// backed by Lynx's native `<list>` element with pull-to-refresh + load-more.
-// PTR works by wrapping the `<list>` in a `<refresh>` element (placing
-// `<refresh-header>` directly inside `<list>` crashes iOS on create-UI).
+// backed by Lynx's native `<list>` element with load-more on scroll-to-lower.
+// Pull-to-refresh is intentionally not implemented — see FeedList.vue /
+// REFRESH-PHYSICS.md for why (native `<refresh>` is unused upstream and absent
+// from the OSS runtime).
 export {
   default as FeedList,
   type FeedListEmits,
   type FeedListProps,
-  type FeedListRefreshState,
 } from './FeedList.vue'

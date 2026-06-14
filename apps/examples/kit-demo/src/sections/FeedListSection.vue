@@ -2,8 +2,9 @@
 import { ref } from 'vue'
 import { VyButton, VyFeedList } from '@vyui/kit'
 
-// FeedList — native `<list>` virtualization with the refresh state machine
-// (pull down to refresh) and debounced load-more (scroll to the bottom).
+// FeedList — native `<list>` virtualization with debounced load-more (scroll to
+// the bottom). Pull-to-refresh is intentionally not part of FeedList (the native
+// `<refresh>` element is unused upstream and absent from the OSS runtime).
 //
 // The feed gets its own tall, self-contained scroll region: the native `<list>`
 // owns its vertical scrolling, so we give it a bounded height rather than letting
@@ -13,16 +14,6 @@ let nextFeedId = 21
 const initialFeed = (): { id: number, title: string }[] =>
   Array.from({ length: 20 }, (_, i) => ({ id: i + 1, title: `Item ${i + 1}` }))
 const feedItems = ref(initialFeed())
-const refreshing = ref(false)
-
-function onRefresh(): void {
-  // Simulated network refresh — the state machine holds `refreshing` until we
-  // flip it back, then rebounds the header.
-  setTimeout(() => {
-    feedItems.value = [{ id: nextFeedId++, title: `Fresh item ${nextFeedId}` }, ...feedItems.value]
-    refreshing.value = false
-  }, 900)
-}
 
 function onLoadMore(): void {
   const base = feedItems.value.length
@@ -46,27 +37,16 @@ function resetFeed(): void {
         <text class="text-slate-900 text-base font-semibold">FeedList</text>
         <text class="text-slate-500 text-xs">{{ feedItems.length }} items</text>
       </view>
-      <text class="text-slate-500 text-xs">Pull down to refresh · scroll to the bottom to load more.</text>
-      <!-- Native pull-to-refresh relies on the runtime providing a `<refresh>`
-           element. Some Lynx runtimes (e.g. iOS sdk 1.4.0) ship without it, in
-           which case the list still scrolls and loads more, but the pull-down
-           refresh gesture is unavailable. -->
-      <text class="text-amber-600 text-xs">
-        Note: native pull-to-refresh depends on runtime &lt;refresh&gt; support; on runtimes without it,
-        the list still scrolls and loads more.
-      </text>
+      <text class="text-slate-500 text-xs">Scroll to the bottom to load more (debounced).</text>
 
-      <!-- Tall, bounded region so refresh + load-more are actually exercisable.
+      <!-- Tall, bounded region so load-more is actually exercisable.
            The native `<list>` owns scrolling inside this height. -->
       <view :style="{ height: '440px' }">
         <VyFeedList
-          v-model:refreshing="refreshing"
           :items="feedItems"
           :item-key="(it) => String(it.id)"
-          enable-refresh
           enable-load-more
           class="h-full"
-          @refresh="onRefresh"
           @load-more="onLoadMore"
         >
           <template #item="{ item }">
