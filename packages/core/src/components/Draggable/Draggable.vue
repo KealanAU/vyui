@@ -34,6 +34,19 @@ export interface DraggableProps {
   duration?: number
   /** Emit `drag-move` on every touchmove. Off by default. */
   emitMove?: boolean
+  /**
+   * Carry release velocity into a momentum coast: a flick keeps gliding and
+   * decelerates to rest (clamped to `bounds`) instead of stopping dead at the
+   * finger. Ignored when `resetOnEnd` is `true` (reset wins). Off by default.
+   * @defaultValue `false`
+   */
+  momentum?: boolean
+  /**
+   * Deceleration rate for `momentum`. Higher = shorter fling. Projected
+   * coast distance is `velocity / decel`.
+   * @defaultValue `5`
+   */
+  momentumDecel?: number
 }
 
 export interface DraggablePosition {
@@ -77,6 +90,8 @@ const props = withDefaults(defineProps<DraggableProps>(), {
   resetOnEnd: false,
   duration: 220,
   emitMove: false,
+  momentum: false,
+  momentumDecel: 5,
 })
 
 const emits = defineEmits<DraggableEmits>()
@@ -127,6 +142,8 @@ const disabledRef = useMainThreadRef<boolean>(props.disabled)
 const resetOnEndRef = useMainThreadRef<boolean>(props.resetOnEnd)
 const durationRef = useMainThreadRef<number>(props.duration)
 const emitMoveRef = useMainThreadRef<boolean>(props.emitMove)
+const momentumRef = useMainThreadRef<boolean>(props.momentum)
+const momentumDecelRef = useMainThreadRef<number>(props.momentumDecel)
 const minXRef = useMainThreadRef<number>(resolveMin(props.bounds?.left))
 const maxXRef = useMainThreadRef<number>(resolveMax(props.bounds?.right))
 const minYRef = useMainThreadRef<number>(resolveMin(props.bounds?.top))
@@ -155,6 +172,8 @@ function _syncConfig(
   maxX: number,
   minY: number,
   maxY: number,
+  momentum: boolean,
+  momentumDecel: number,
 ) {
   'main thread'
   axisRef.current = axis
@@ -166,6 +185,8 @@ function _syncConfig(
   maxXRef.current = maxX
   minYRef.current = minY
   maxYRef.current = maxY
+  momentumRef.current = momentum
+  momentumDecelRef.current = momentumDecel
 }
 
 // BG-side assignments to `MainThreadRef.current` are silently dropped by
@@ -182,6 +203,8 @@ watch(
     props.bounds?.right,
     props.bounds?.top,
     props.bounds?.bottom,
+    props.momentum,
+    props.momentumDecel,
   ] as const,
   () => {
     runOnMainThread(_syncConfig as any)(
@@ -194,6 +217,8 @@ watch(
       resolveMax(props.bounds?.right),
       resolveMin(props.bounds?.top),
       resolveMax(props.bounds?.bottom),
+      props.momentum,
+      props.momentumDecel,
     )
   },
 )
@@ -347,7 +372,23 @@ function _onTouchEnd() {
   const vy = axis === 1 ? 0 : v.vy
 
   if (resetOnEndRef.current) {
+    // Reset wins over momentum: animate back to the origin.
     _animateTo(endX, endY, 0, 0)
+  }
+  else if (momentumRef.current) {
+    // Velocity-projected coast — project where the flick would settle under
+    // exponential friction (mirrors physics.ts projectMomentum: pos + v/decel)
+    // then clamp to bounds so a fling can't escape the valid range.
+    const decel = momentumDecelRef.current
+    let toX = endX
+    let toY = endY
+    if (decel > 0) {
+      toX = _clamp(endX + vx / decel, minXRef.current, maxXRef.current)
+      toY = _clamp(endY + vy / decel, minYRef.current, maxYRef.current)
+    }
+    if (toX !== endX || toY !== endY) {
+      _animateTo(endX, endY, toX, toY)
+    }
   }
   runOnBackground(_emitEnd as any)(endX, endY, dx, dy, vx, vy)
 }

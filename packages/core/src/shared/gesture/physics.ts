@@ -340,3 +340,141 @@ export function easeOutCubic(progress: number): number {
   'main thread'
   return 1 - (1 - progress) ** 3
 }
+
+/**
+ * Project where a released drag would coast to under exponential friction.
+ * `position` is the offset at release, `velocity` is px/s. `decel` is the
+ * deceleration rate (px/s² equivalent expressed as a fraction retained per
+ * second); higher `decel` → shorter fling. Returns the projected resting
+ * offset.
+ *
+ * The closed-form of v(t) = v0 * e^(-decel*t) integrated to rest:
+ *   distance = v0 / decel
+ * (the same model iOS UIScrollView uses). Used by Draggable's momentum
+ * release and any free-pan surface that wants a flick to keep coasting
+ * instead of stopping dead at the finger.
+ */
+export function projectMomentum(position: number, velocity: number, decel = 5): number {
+  'main thread'
+  if (decel <= 0)
+    return position
+  return position + velocity / decel
+}
+
+export type SwipeActionDecision = 'commit' | 'open' | 'close'
+
+export interface SwipeActionDecisionOpts {
+  /** Row translateX at release. 0 = closed; negative = revealed. */
+  endX: number
+  /** Release velocity px/s along X (negative = leftward / opening). */
+  velocity: number
+  /** Width of the revealed action panel, px. */
+  actionWidth: number
+  /** Width of the full row, px. */
+  rowWidth: number
+  /** Fraction of `actionWidth` past which a slow release snaps open. */
+  snapThreshold: number
+  /** Fraction of `rowWidth` past which a slow release commits. */
+  commitThreshold: number
+  /** |velocity| px/s above which a flick commits regardless of position. */
+  commitVelocity: number
+  /** |velocity| px/s above which a flick snaps open/closed. */
+  velocityThreshold: number
+}
+
+/**
+ * Velocity-aware release decision for SwipeAction. A hard leftward flick
+ * commits; a softer leftward flick (or a drag past the open threshold) snaps
+ * open; a rightward flick or short drag closes. Velocity wins over position
+ * so a fast flick from near-closed still triggers the right outcome.
+ *
+ * Pure mirror of `_onTouchEnd` in `SwipeAction.vue` — kept here so the
+ * decision is unit-tested without the MT worklet pipeline. Mirrors lynx-ui
+ * `swipeWithEasingInOut` / `swipeCancelDueToSmallVelocity`
+ * (`lynx-ui-swipe-action/src/index.tsx`).
+ */
+export function decideSwipeAction(opts: SwipeActionDecisionOpts): SwipeActionDecision {
+  'main thread'
+  const { endX, velocity, actionWidth, rowWidth, snapThreshold, commitThreshold, commitVelocity, velocityThreshold } = opts
+  const opening = -velocity // positive when dragging leftward (revealing)
+  if (opening >= commitVelocity || -endX >= commitThreshold * rowWidth)
+    return 'commit'
+  // A rightward flick (closing) always wins toward closed, even past the snap
+  // threshold — matches the "flick to dismiss" feel of the gospel.
+  if (velocity >= velocityThreshold)
+    return 'close'
+  if (opening >= velocityThreshold || -endX >= snapThreshold * actionWidth)
+    return 'open'
+  return 'close'
+}
+
+/**
+ * Clamp a Sortable target index to the valid range, factoring in a
+ * velocity-aware overshoot: a fast flick lets the drop land one row further
+ * in the direction of travel than the raw pointer offset would, which makes a
+ * quick toss feel like it "throws" the row rather than dropping it short.
+ *
+ * `rawTarget` is the pointer-derived target (startIdx + round(dy/itemH)).
+ * `velocity` is px/s along Y (positive = downward). `count` is item count.
+ */
+export function sortableDropTarget(
+  startIdx: number,
+  rawTarget: number,
+  velocity: number,
+  count: number,
+  velocityThreshold = VELOCITY_THRESHOLD_DEFAULT,
+): number {
+  'main thread'
+  let target = rawTarget
+  if (Math.abs(velocity) >= velocityThreshold) {
+    // Bias one row in the flick direction, but never reverse a drag the
+    // pointer already committed to.
+    const dir = velocity > 0 ? 1 : -1
+    if (dir > 0 && target >= startIdx)
+      target += 1
+    else if (dir < 0 && target <= startIdx)
+      target -= 1
+  }
+  if (target < 0)
+    return 0
+  if (target > count - 1)
+    return count - 1
+  return target
+}
+
+export interface AutoscrollOpts {
+  /** Pointer position within the scroll viewport (px from its top edge). */
+  pointer: number
+  /** Height of the scroll viewport, px. */
+  viewport: number
+  /** Distance from an edge (px) within which autoscroll engages. */
+  edge: number
+  /** Max scroll speed in px/frame at the very edge. */
+  maxSpeed: number
+}
+
+/**
+ * Compute the per-frame autoscroll delta for a drag near a list edge.
+ * Returns a negative delta near the top edge (scroll up), positive near the
+ * bottom edge (scroll down), and 0 in the dead zone. Speed ramps linearly
+ * from 0 at the edge band's inner boundary to `maxSpeed` at the very edge.
+ *
+ * Mirrors the edge-autoscroll behavior common to drag-and-drop lists; lynx-ui
+ * relies on the host ScrollView's native momentum, so this is the vyui port
+ * of that affordance for the MT pipeline.
+ */
+export function autoscrollDelta({ pointer, viewport, edge, maxSpeed }: AutoscrollOpts): number {
+  'main thread'
+  if (edge <= 0 || viewport <= 0)
+    return 0
+  if (pointer < edge) {
+    const intensity = (edge - pointer) / edge
+    return -maxSpeed * Math.max(0, Math.min(1, intensity))
+  }
+  const bottom = viewport - edge
+  if (pointer > bottom) {
+    const intensity = (pointer - bottom) / edge
+    return maxSpeed * Math.max(0, Math.min(1, intensity))
+  }
+  return 0
+}

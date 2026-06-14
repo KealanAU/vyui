@@ -21,6 +21,18 @@ export interface SortableRootProps<T = unknown> {
    * @defaultValue 250
    */
   longPressMs?: number
+  /**
+   * Edge band in px from the top/bottom of the root within which a drag
+   * triggers autoscroll. Set to 0 to disable. Requires the root to be a
+   * scroll container (e.g. `scroll-view` / overflow scroll) for any effect.
+   * @defaultValue 48
+   */
+  autoScrollEdge?: number
+  /**
+   * Max autoscroll speed in px per touchmove frame at the very edge.
+   * @defaultValue 12
+   */
+  autoScrollSpeed?: number
 }
 
 export type SortableRootEmits<T = unknown> = {
@@ -36,7 +48,7 @@ export type SortableRootEmits<T = unknown> = {
 
 <script setup lang="ts" generic="T = unknown">
 import { computed, ref, watch } from 'vue'
-import { useMainThreadRef } from 'vue-lynx'
+import { runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import { useStandardVModel } from '@/shared/composables'
 
@@ -46,6 +58,8 @@ import { provideSortableRootContext } from './sortableContext'
 const props = withDefaults(defineProps<SortableRootProps<T>>(), {
   disabled: false,
   longPressMs: 250,
+  autoScrollEdge: 48,
+  autoScrollSpeed: 12,
 })
 
 const emits = defineEmits<SortableRootEmits<T>>()
@@ -67,9 +81,47 @@ const disabledMT = useMainThreadRef<boolean>(props.disabled)
 const draggingIndexMT = useMainThreadRef<number>(-1)
 const longPressMsMT = useMainThreadRef<number>(props.longPressMs)
 
+// ── Autoscroll (MT) ─────────────────────────────────────────────────────────
+const rootRef = useMainThreadRef<any>(null)
+const scrollRefMT = useMainThreadRef<any>(null)
+const viewportTopMT = useMainThreadRef<number>(0)
+const viewportHeightMT = useMainThreadRef<number>(0)
+const autoScrollEdgeMT = useMainThreadRef<number>(props.autoScrollEdge)
+const autoScrollSpeedMT = useMainThreadRef<number>(props.autoScrollSpeed)
+
 watch(itemHeight, (v) => { itemHeightMT.current = v })
 watch(disabled, (v) => { disabledMT.current = v })
 watch(() => props.longPressMs, (v) => { longPressMsMT.current = v })
+// Config sync — BG writes to MainThreadRef.current are dropped (vue-lynx
+// 0.4.0), so push through a setter worklet.
+watch(() => props.autoScrollEdge, (v) => { runOnMainThread(_syncAutoScroll as any)(v, props.autoScrollSpeed) })
+watch(() => props.autoScrollSpeed, (v) => { runOnMainThread(_syncAutoScroll as any)(props.autoScrollEdge, v) })
+
+function _syncAutoScroll(edge: number, speed: number) {
+  'main thread'
+  autoScrollEdgeMT.current = edge
+  autoScrollSpeedMT.current = speed
+}
+
+// Seed the scroll container + viewport metrics on the MT side once the root
+// element appears. Bound to `main-thread-binduiappear`; reads the root element
+// from its own MT ref. `viewportHeightMT` of 0 keeps autoscroll inert until
+// the element reports a size.
+function _bindScroll() {
+  'main thread'
+  const el = (rootRef as any).current
+  scrollRefMT.current = el
+  if (!el) return
+  if (typeof el.getBoundingClientRect === 'function') {
+    const r = el.getBoundingClientRect()
+    if (r) {
+      viewportTopMT.current = r.top ?? 0
+      viewportHeightMT.current = r.height ?? (el.clientHeight ?? 0)
+      return
+    }
+  }
+  viewportHeightMT.current = el.clientHeight ?? 0
+}
 
 function register(handle: SortableItemHandle) {
   itemHandlesMT.current = [...itemHandlesMT.current, handle]
@@ -108,6 +160,11 @@ provideSortableRootContext({
   disabledMT,
   draggingIndexMT,
   longPressMsMT,
+  scrollRefMT,
+  viewportTopMT,
+  viewportHeightMT,
+  autoScrollEdgeMT,
+  autoScrollSpeedMT,
   register,
   commitReorder,
   notifyDragStart,
@@ -119,6 +176,8 @@ provideSortableRootContext({
   <view
     class="vyui-sortable"
     data-vyui-sortable-root
+    :main-thread-ref="rootRef"
+    :main-thread-binduiappear="_bindScroll"
     :style="{ display: 'flex', flexDirection: 'column' }"
   >
     <slot :items="items" />
