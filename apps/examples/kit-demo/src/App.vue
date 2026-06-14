@@ -6,6 +6,8 @@ import ThemeSection from './sections/ThemeSection.vue'
 import FormSection from './sections/FormSection.vue'
 import DisplaySection from './sections/DisplaySection.vue'
 import GesturesSection from './sections/GesturesSection.vue'
+import FeedListSection from './sections/FeedListSection.vue'
+import ScrollViewSection from './sections/ScrollViewSection.vue'
 import IslandSection from './sections/IslandSection.vue'
 import OverlaySection from './sections/OverlaySection.vue'
 
@@ -40,7 +42,9 @@ const allTabItems = [
   { value: 'theme',   label: 'Theme', icon: 'icon-park-outline:paint',            slot: 'theme' },
   { value: 'form',    label: 'Form',  icon: 'icon-park-outline:edit',             slot: 'form' },
   { value: 'display', label: 'View',  icon: 'icon-park-outline:layers',           slot: 'display' },
-  { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:gesture',      slot: 'gestures' },
+  { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures' },
+  { value: 'feed',    label: 'Feed',  icon: 'icon-park-outline:list-two',         slot: 'feed' },
+  { value: 'scroll',  label: 'Scroll', icon: 'icon-park-outline:swipe',           slot: 'scroll' },
   { value: 'island',  label: 'Island', icon: 'icon-park-outline:pill',            slot: 'island' },
   { value: 'overlay', label: 'Modal', icon: 'icon-park-outline:application-menu', slot: 'overlay' },
 ]
@@ -91,6 +95,14 @@ const tabItems = computed(() => allTabItems)
 
           <template #gestures>
             <GesturesSection />
+          </template>
+
+          <template #feed>
+            <FeedListSection />
+          </template>
+
+          <template #scroll>
+            <ScrollViewSection />
           </template>
 
           <template #island>
