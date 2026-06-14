@@ -52,7 +52,7 @@ function resetFeed(): void {
            which case the list still scrolls and loads more, but the pull-down
            refresh gesture is unavailable. -->
       <text class="text-amber-600 text-xs">
-        Note: native pull-to-refresh depends on runtime <refresh> support; on runtimes without it,
+        Note: native pull-to-refresh depends on runtime &lt;refresh&gt; support; on runtimes without it,
         the list still scrolls and loads more.
       </text>
 
