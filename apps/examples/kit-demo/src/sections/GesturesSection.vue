@@ -24,7 +24,11 @@ function onSwipeOpen(id: number, open: boolean): void {
   swipeLog.value = `row ${id}: ${open ? 'opened' : 'closed'}`
 }
 function onSwipeCommit(id: number): void {
-  swipeLog.value = `row ${id}: committed`
+  // A full swipe past the commit threshold is the destructive action — delete
+  // the row (iOS-mail style). A partial swipe instead reveals the Delete button
+  // to tap (see the `#actions` slot).
+  swipeLog.value = `row ${id}: committed → deleted`
+  removeRow(id)
 }
 
 // Sortable — drag to reorder; the list reflects the committed order via v-model.
@@ -41,7 +45,7 @@ const tags = ref(['Design', 'Engineering', 'Product', 'Research', 'Support'])
         <text class="text-slate-900 text-base font-semibold">SwipeAction</text>
         <text class="text-slate-400 text-xs">{{ swipeLog }}</text>
       </view>
-      <text class="text-slate-500 text-xs">Swipe a row left · flick to commit · slow-drag respects threshold.</text>
+      <text class="text-slate-500 text-xs">Full swipe (or flick) deletes · a partial swipe reveals Delete to tap.</text>
       <view class="flex flex-col gap-2">
         <VySwipeAction
           v-for="row in mailRows"
