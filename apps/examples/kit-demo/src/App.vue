@@ -50,6 +50,15 @@ const allTabItems = [
 ]
 const tabItems = computed(() => allTabItems)
 
+// Tabs whose content is itself a gesture surface or its own scroller (a native
+// `<list>` / bounce `<scroll-view>`). The outer page `<scroll-view>` consumes
+// the vertical touch/pan stream for its own scrolling, which starves those
+// inner gestures (drag-to-reorder, swipe rows, pull a list) — the symptom is
+// "the whole page scrolls instead of the thing under my finger". For these tabs
+// we disable the outer scroll so the inner surface owns the gesture.
+const FULL_BLEED_TABS = ['gestures', 'feed', 'scroll']
+const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
+
 // ActionSheet header trigger removed for now: ActionSheet wraps the core
 // `Sheet*` primitives whose main-thread worklet currently throws "cannot read
 // property 'bind' of undefined" (see SheetContent.vue header and wip commit
@@ -63,7 +72,7 @@ const tabItems = computed(() => allTabItems)
   >
     <OverlayRoot />
 
-    <scroll-view class="w-full h-full" scroll-orientation="vertical">
+    <scroll-view class="w-full h-full" scroll-orientation="vertical" :enable-scroll="pageScrolls">
       <view class="flex flex-col gap-4 px-5 pt-16 pb-10">
         <view class="flex flex-col gap-1">
           <text class="text-slate-900 text-2xl font-bold">@vyui/kit demo</text>

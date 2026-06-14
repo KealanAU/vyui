@@ -8,16 +8,28 @@ import { VySortable, VySwipeAction } from '@vyui/kit'
 // primitive snaps against.
 const mailRows = ref([
   { id: 1, from: 'Lynx CI', subject: 'Build #482 passed' },
-  { id: 2, from: 'Kealan', subject: 'Re: gesture parity' },
+  { id: 2, from: 'Notifications', subject: 'New comment on your PR' },
   { id: 3, from: 'Releases', subject: 'v0.0.6 published' },
 ])
 function removeRow(id: number): void {
   mailRows.value = mailRows.value.filter(r => r.id !== id)
 }
 
-// Sortable — long-press / drag to reorder. The list reflects the committed order
-// via v-model. Edge autoscroll + clamping come from the core upgrade. A plain tap
-// (no drag) must NOT reorder.
+// Diagnostic readout — the SwipeAction emits `update:open` on snap and `commit`
+// on a full swipe. If dragging a row updates this line, touch events are
+// reaching the worklet (so any remaining issue is threshold/snap tuning). If it
+// never changes while you drag, the row isn't receiving touchmove at all.
+const swipeLog = ref('(no swipe yet)')
+function onSwipeOpen(id: number, open: boolean): void {
+  swipeLog.value = `row ${id}: ${open ? 'opened' : 'closed'}`
+}
+function onSwipeCommit(id: number): void {
+  swipeLog.value = `row ${id}: committed`
+}
+
+// Sortable — drag to reorder; the list reflects the committed order via v-model.
+// Demo uses `long-press-ms="0"` (instant lift on press) so a simulator mouse
+// click-drag works without holding. Edge autoscroll + clamping come from core.
 const tags = ref(['Design', 'Engineering', 'Product', 'Research', 'Support'])
 </script>
 
@@ -25,7 +37,10 @@ const tags = ref(['Design', 'Engineering', 'Product', 'Research', 'Support'])
   <view class="flex flex-col gap-4 pt-2">
     <!-- SwipeAction (velocity-aware release) -->
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">SwipeAction</text>
+      <view class="flex flex-row items-center justify-between">
+        <text class="text-slate-900 text-base font-semibold">SwipeAction</text>
+        <text class="text-slate-400 text-xs">{{ swipeLog }}</text>
+      </view>
       <text class="text-slate-500 text-xs">Swipe a row left · flick to commit · slow-drag respects threshold.</text>
       <view class="flex flex-col gap-2">
         <VySwipeAction
@@ -34,6 +49,8 @@ const tags = ref(['Design', 'Engineering', 'Product', 'Research', 'Support'])
           :row-width="300"
           :action-width="80"
           side="right"
+          @update:open="(o: boolean) => onSwipeOpen(row.id, o)"
+          @commit="onSwipeCommit(row.id)"
         >
           <view class="bg-white h-16 flex flex-col justify-center px-4" :style="{ width: '300px' }">
             <text class="text-slate-900 text-sm font-medium">{{ row.from }}</text>
@@ -55,8 +72,11 @@ const tags = ref(['Design', 'Engineering', 'Product', 'Research', 'Support'])
     <!-- Sortable (edge autoscroll + clamping) -->
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
       <text class="text-slate-900 text-base font-semibold">Sortable</text>
-      <text class="text-slate-500 text-xs">Drag to reorder · a plain tap should not move a row. Current: {{ tags.join(' · ') }}</text>
-      <VySortable v-model="tags">
+      <text class="text-slate-500 text-xs">Press a row and drag to reorder. Current: {{ tags.join(' · ') }}</text>
+      <!-- `long-press-ms="0"` = lift immediately on press so a mouse click-drag
+           works on the simulator. The Gestures tab disables the outer page
+           scroll (see App.vue), so instant drag won't fight page scrolling. -->
+      <VySortable v-model="tags" :long-press-ms="0">
         <template #item="{ item }">
           <view class="bg-slate-50 border border-slate-200 rounded-md h-11 flex flex-row items-center px-3 mb-2">
             <text class="text-slate-400 text-base mr-3">⠿</text>
