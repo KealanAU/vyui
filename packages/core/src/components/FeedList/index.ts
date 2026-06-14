@@ -6,4 +6,5 @@ export {
   default as FeedList,
   type FeedListEmits,
   type FeedListProps,
+  type FeedListRefreshState,
 } from './FeedList.vue'

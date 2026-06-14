@@ -112,3 +112,176 @@ describe('FeedList — PTR template branching', () => {
 })
 
 function suppressUnused(..._args: unknown[]): void { /* tsc no-unused-locals shim */ }
+
+// Refresh lifecycle state machine. The component layers a JS state machine
+// over the native `<refresh>` element (idle → pulling → releaseReady →
+// refreshing → done → idle). Verify the transition logic in isolation — the
+// component drives the same transitions off the `refreshing` watcher and the
+// native `startrefresh` / `headeroffset` events.
+describe('FeedList — refresh state machine', () => {
+  type State = 'idle' | 'pulling' | 'releaseReady' | 'refreshing' | 'done'
+
+  // Mirror of the offset → state mapping in `onHeaderOffset`.
+  function offsetToState(
+    offset: number,
+    headerSize: number,
+    current: State,
+    inFlight: boolean,
+  ): State {
+    if (inFlight) return current
+    if (current === 'refreshing' || current === 'done') return current
+    if (offset <= 0) return 'idle'
+    return headerSize > 0 && offset >= headerSize ? 'releaseReady' : 'pulling'
+  }
+
+  it('maps pull offset to pulling below threshold and releaseReady at/above it', () => {
+    expect(offsetToState(0, 60, 'idle', false)).toBe('idle')
+    expect(offsetToState(20, 60, 'idle', false)).toBe('pulling')
+    expect(offsetToState(60, 60, 'pulling', false)).toBe('releaseReady')
+    expect(offsetToState(80, 60, 'pulling', false)).toBe('releaseReady')
+  })
+
+  it('falls back to pulling when header size is unknown', () => {
+    expect(offsetToState(80, 0, 'idle', false)).toBe('pulling')
+  })
+
+  it('does not regress out of refreshing/done via offset updates', () => {
+    expect(offsetToState(0, 60, 'refreshing', false)).toBe('refreshing')
+    expect(offsetToState(80, 60, 'done', false)).toBe('done')
+  })
+
+  it('ignores offset updates while a refresh is in flight', () => {
+    expect(offsetToState(80, 60, 'pulling', true)).toBe('pulling')
+  })
+})
+
+// Double-fire guard for native `startrefresh`. The component only emits
+// `refresh` / flips `refreshing` once per gesture even if the native element
+// fires `startrefresh` twice.
+describe('FeedList — startrefresh double-fire guard', () => {
+  function makeStart() {
+    let inFlight = false
+    let refreshing = false
+    let fired = 0
+    return {
+      start(disabled = false) {
+        if (disabled) return
+        if (inFlight || refreshing) return
+        inFlight = true
+        refreshing = true
+        fired += 1
+      },
+      get fired() { return fired },
+    }
+  }
+
+  it('fires refresh exactly once for repeated startrefresh events', () => {
+    const s = makeStart()
+    s.start()
+    s.start()
+    s.start()
+    expect(s.fired).toBe(1)
+  })
+
+  it('does not fire when disabled', () => {
+    const s = makeStart()
+    s.start(true)
+    expect(s.fired).toBe(0)
+  })
+})
+
+// Load-more debounce + suppression. Mirrors the guards in `onScrollToLower`.
+describe('FeedList — loadMore debounce', () => {
+  function makeLoadMore(opts: {
+    enableLoadMore?: boolean
+    debounceMs?: number
+    noMoreData?: () => boolean
+    loadingMore?: () => boolean
+  } = {}) {
+    const enableLoadMore = opts.enableLoadMore ?? true
+    const debounceMs = opts.debounceMs ?? 400
+    let lastAt = 0
+    let fired = 0
+    let loadingMore = false
+    return {
+      scrollToLower(now: number, disabled = false) {
+        if (!enableLoadMore || disabled) return
+        const noMore = opts.noMoreData?.() ?? false
+        const loading = opts.loadingMore?.() ?? loadingMore
+        if (loading || noMore) return
+        if (now - lastAt < debounceMs) return
+        lastAt = now
+        loadingMore = true
+        fired += 1
+      },
+      finishLoad() { loadingMore = false },
+      get fired() { return fired },
+    }
+  }
+
+  it('fires once then suppresses while loadingMore is true', () => {
+    const lm = makeLoadMore()
+    lm.scrollToLower(1000)
+    lm.scrollToLower(1100)
+    lm.scrollToLower(2000)
+    expect(lm.fired).toBe(1)
+  })
+
+  it('fires again after the fetch finishes and the debounce window passes', () => {
+    const lm = makeLoadMore({ debounceMs: 400 })
+    lm.scrollToLower(1000)
+    lm.finishLoad()
+    lm.scrollToLower(1200) // within debounce window → suppressed
+    expect(lm.fired).toBe(1)
+    lm.finishLoad()
+    lm.scrollToLower(1500) // past window → fires
+    expect(lm.fired).toBe(2)
+  })
+
+  it('never fires when noMoreData is true', () => {
+    const lm = makeLoadMore({ noMoreData: () => true })
+    lm.scrollToLower(1000)
+    lm.scrollToLower(5000)
+    expect(lm.fired).toBe(0)
+  })
+
+  it('does not fire when enableLoadMore is false', () => {
+    const lm = makeLoadMore({ enableLoadMore: false })
+    lm.scrollToLower(1000)
+    expect(lm.fired).toBe(0)
+  })
+})
+
+// SFC-source assertions for the new refresh-header slot bindings and footer
+// slots — verified against the template source like the PTR branching tests,
+// since `<list>` rendering is blocked on MTS test infra.
+describe('FeedList — refresh-header + footer slots', () => {
+  async function readSfc(): Promise<string> {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const here = path.dirname(new URL(import.meta.url).pathname)
+    return fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
+  }
+
+  it('passes lifecycle state + flags into the refreshHeader slot', async () => {
+    const sfc = await readSfc()
+    expect(sfc).toMatch(/name="refreshHeader"/)
+    expect(sfc).toMatch(/:state="refreshState"/)
+    expect(sfc).toMatch(/:release-ready="refreshState === 'releaseReady'"/)
+    expect(sfc).toMatch(/:refreshing="refreshState === 'refreshing'"/)
+  })
+
+  it('exposes loadMoreFooter and noMoreDataFooter slots', async () => {
+    const sfc = await readSfc()
+    expect(sfc).toMatch(/name="loadMoreFooter"/)
+    expect(sfc).toMatch(/name="noMoreDataFooter"/)
+  })
+
+  it('keeps the iOS-safe refresh-header sibling layout intact', async () => {
+    const sfc = await readSfc()
+    const wrapperBlock = sfc.match(/<refresh\s[\s\S]*?<\/refresh>/)?.[0] ?? ''
+    const headerClose = wrapperBlock.indexOf('</refresh-header>')
+    const listOpen = wrapperBlock.search(/<list\s/)
+    expect(listOpen).toBeGreaterThan(headerClose)
+  })
+})
