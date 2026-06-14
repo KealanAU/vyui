@@ -27,7 +27,7 @@ import type {
   BounceableBasicProps,
   ScrollToBouncesInfo,
   SingleSidedBounce,
-} from '@/shared/composables'
+} from '@/shared/composables/useBounce'
 
 export type { BounceableBasicProps, ScrollToBouncesInfo, SingleSidedBounce }
 
