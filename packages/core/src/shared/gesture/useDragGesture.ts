@@ -3,8 +3,8 @@
 //
 // Shared horizontal drag-gesture controller for paged surfaces (Swiper today;
 // Sheet/drawer next — see #37). Owns the MT refs, the prop→MT-ref sync, the
-// velocity queue, the rAF snap animation, and the MT↔BG hops, so a component
-// only supplies config + settle callbacks.
+// velocity queue, the rAF snap animation, axis lock, autoplay, and the MT↔BG
+// hops, so a component only supplies config + settle callbacks.
 //
 // BG → MT sync: in vue-lynx@0.4.0 a background-thread write to
 // `MainThreadRef.current` is silently dropped (the setter is a no-op; only the
@@ -21,6 +21,8 @@
 //   - Worklets are never stored in a ref and invoked (`ref.current()` kills the
 //     `_workletMap` lookup). The animation uses an integer generation counter
 //     to cancel instead.
+//   - MT worklet fns become `const`; you cannot forward-reference one worklet
+//     from another. Define helper worklets ABOVE their callers.
 //   - Inner helpers nested inside a worklet carry NO directive — they run in
 //     the outer worklet's closure. Only the top-level handlers are worklets.
 //
@@ -50,6 +52,18 @@ export interface DragGestureConfig {
   velocityThreshold: () => number
   /** When true, touch input is ignored. */
   disabled: () => boolean
+  /** When true, navigation wraps circularly (index 0 ↔ last). */
+  loop?: () => boolean
+  /**
+   * When true, a gesture that starts off-axis (more vertical than horizontal)
+   * is released back to the host scroll surface instead of being consumed.
+   * Mirrors lynx-ui `experimentalHorizontalSwipeOnly`.
+   */
+  axisLock?: () => boolean
+  /** When true, the swiper auto-advances on an interval. */
+  autoplay?: () => boolean
+  /** Autoplay step interval, ms (added to `duration`). */
+  interval?: () => number
   /** Fired (on BG) when a drag begins. */
   onSwipeStart: () => void
   /** Fired (on BG) with the settled index when a drag ends. */
@@ -59,21 +73,30 @@ export interface DragGestureConfig {
 export interface DragGesture {
   /** Bind to the draggable track's `:main-thread-ref`. */
   containerRef: ReturnType<typeof useMainThreadRef<any>>
-  onTouchStart: (e: { detail: { x: number } }) => void
-  onTouchMove: (e: { detail: { x: number } }) => void
+  onTouchStart: (e: { detail: { x: number, y: number } }) => void
+  onTouchMove: (e: { detail: { x: number, y: number } }) => void
   onTouchEnd: () => void
-  /** Clamp + commit an index programmatically (BG side). */
+  /** Clamp/wrap + commit an index programmatically (BG side). */
   setIndex: (index: number) => void
 }
 
+/** Slop (px) before axis lock engages — mirrors physics.ts GESTURE_THRESHOLD. */
+const GESTURE_THRESHOLD = 8
+
 export function useDragGesture(config: DragGestureConfig): DragGesture {
   const { currentIndex } = config
+
+  const loopGetter = config.loop ?? (() => false)
+  const axisLockGetter = config.axisLock ?? (() => false)
+  const autoplayGetter = config.autoplay ?? (() => false)
+  const intervalGetter = config.interval ?? (() => 3000)
 
   // --- MT refs -------------------------------------------------------------
   const containerRef = useMainThreadRef<any>(null)
 
   const offsetRef = useMainThreadRef<number>(-(currentIndex.value ?? 0) * config.itemWidth())
   const touchStartXRef = useMainThreadRef<number>(0)
+  const touchStartYRef = useMainThreadRef<number>(0)
   const touchStartOffsetRef = useMainThreadRef<number>(0)
   const isDraggingRef = useMainThreadRef<boolean>(false)
   // Offset a drag just settled to, pending consumption by `_jumpAndAnimate`.
@@ -85,12 +108,26 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   // different index produces a different target and still animates.
   const expectedOffsetRef = useMainThreadRef<number>(Number.NaN)
 
+  // Axis-lock state. Once a gesture crosses GESTURE_THRESHOLD we decide whether
+  // it is "horizontal enough" to consume; if not, axisLockedRef stays true and
+  // subsequent moves are ignored so the host scroll surface keeps the gesture.
+  const gestureLockedRef = useMainThreadRef<boolean>(false)
+  const axisLockedRef = useMainThreadRef<boolean>(false)
+
   const itemWidthRef = useMainThreadRef<number>(config.itemWidth())
   const itemCountRef = useMainThreadRef<number>(config.itemCount())
   const durationRef = useMainThreadRef<number>(config.duration())
   const thresholdRef = useMainThreadRef<number>(config.threshold())
   const velocityThresholdRef = useMainThreadRef<number>(config.velocityThreshold())
   const disabledRef = useMainThreadRef<boolean>(config.disabled())
+  const loopRef = useMainThreadRef<boolean>(loopGetter())
+  const axisLockEnabledRef = useMainThreadRef<boolean>(axisLockGetter())
+
+  // Autoplay MT state.
+  const autoplayRef = useMainThreadRef<boolean>(autoplayGetter())
+  const intervalRef = useMainThreadRef<number>(intervalGetter())
+  const autoplayTimerRef = useMainThreadRef<number>(0)
+  const autoplayStoppedRef = useMainThreadRef<boolean>(false)
 
   const posQueueRef = useMainThreadRef<number[]>([])
   const timeQueueRef = useMainThreadRef<number[]>([])
@@ -100,10 +137,8 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   const animGenRef = useMainThreadRef<number>(0)
 
   // --- BG → MT sync --------------------------------------------------------
-  // One combined watch dispatching one setter worklet: BG-side writes to
-  // `MainThreadRef.current` are silently dropped in vue-lynx@0.4.0, so the
-  // values must hop via `runOnMainThread` (see header). The MT refs stay —
-  // worklets read them per-frame without a BG round-trip.
+  // BG-side writes to `MainThreadRef.current` are silently dropped in
+  // vue-lynx@0.4.0, so values must hop via `runOnMainThread` (see header).
   watch(
     [
       config.itemWidth,
@@ -112,13 +147,20 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
       config.threshold,
       config.velocityThreshold,
       config.disabled,
+      loopGetter,
+      axisLockGetter,
     ],
-    ([itemWidth, itemCount, duration, threshold, velocityThreshold, disabled]) => {
+    ([itemWidth, itemCount, duration, threshold, velocityThreshold, disabled, loop, axisLock]) => {
       runOnMainThread(_syncConfig as any)(
-        itemWidth, itemCount, duration, threshold, velocityThreshold, disabled,
+        itemWidth, itemCount, duration, threshold, velocityThreshold, disabled, loop, axisLock,
       )
     },
   )
+
+  // Autoplay enable/interval changes — (re)start or pause on the MT.
+  watch([autoplayGetter, intervalGetter], ([autoplay, interval]) => {
+    runOnMainThread(_syncAutoplay as any)(autoplay, interval)
+  })
 
   watch(currentIndex, (next, prev) => {
     if (next === prev) return
@@ -126,6 +168,8 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   })
 
   // --- Worklets (all inline; no cross-file calls, no stored worklets) ------
+  // Defined in dependency order: a worklet may only reference worklets above
+  // it (MT worklet fns become `const`; forward refs throw at setup).
 
   function _syncConfig(
     itemWidth: number,
@@ -134,6 +178,8 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     threshold: number,
     velocityThreshold: number,
     disabled: boolean,
+    loop: boolean,
+    axisLock: boolean,
   ) {
     'main thread'
     itemWidthRef.current = itemWidth
@@ -142,6 +188,8 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     thresholdRef.current = threshold
     velocityThresholdRef.current = velocityThreshold
     disabledRef.current = disabled
+    loopRef.current = loop
+    axisLockEnabledRef.current = axisLock
   }
 
   function _setTransform(offset: number) {
@@ -189,15 +237,70 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     requestAnimationFrame(step)
   }
 
+  // Advance one step on the MT (used by autoplay). Wraps in loop mode, stops at
+  // the last item otherwise.
+  function _advance() {
+    'main thread'
+    if (isDraggingRef.current) return
+    const width = itemWidthRef.current
+    const count = itemCountRef.current
+    if (count <= 1) return
+    const cur = Math.round(-offsetRef.current / width)
+    let next = cur + 1
+    if (next > count - 1) {
+      if (loopRef.current) next = 0
+      else return
+    }
+    const targetOffset = -next * width
+    expectedOffsetRef.current = targetOffset
+    _animateTo(targetOffset)
+    runOnBackground(_settle as any)(next)
+  }
+
+  // Autoplay loop. setTimeout chains itself; cancelled by clearing the timer
+  // and flipping `autoplayStoppedRef`. interval + duration so a step completes
+  // its snap before the next begins.
+  function _autoplayTick() {
+    'main thread'
+    if (autoplayStoppedRef.current || !autoplayRef.current) return
+    if (autoplayTimerRef.current) clearTimeout(autoplayTimerRef.current)
+    autoplayTimerRef.current = setTimeout(() => {
+      if (autoplayStoppedRef.current || !autoplayRef.current) return
+      _advance()
+      _autoplayTick()
+    }, intervalRef.current + durationRef.current) as unknown as number
+  }
+
+  function _autoplayStart() {
+    'main thread'
+    if (!autoplayRef.current) return
+    autoplayStoppedRef.current = false
+    _autoplayTick()
+  }
+
+  function _autoplayStop() {
+    'main thread'
+    if (autoplayTimerRef.current) clearTimeout(autoplayTimerRef.current)
+    autoplayTimerRef.current = 0
+    autoplayStoppedRef.current = true
+  }
+
+  function _syncAutoplay(autoplay: boolean, interval: number) {
+    'main thread'
+    autoplayRef.current = autoplay
+    intervalRef.current = interval
+    if (autoplay) _autoplayStart()
+    else _autoplayStop()
+  }
+
   function _jumpAndAnimate(targetIndex: number) {
     'main thread'
     if (isDraggingRef.current) return
     const target = -targetIndex * itemWidthRef.current
     const expected = expectedOffsetRef.current
     expectedOffsetRef.current = Number.NaN
-    // Skip only when this change is the echo of a drag settle we already
-    // animated in `_onTouchEnd`. The NaN sentinel falls through on its own:
-    // `NaN === target` is always false (inline Number.isNaN-equivalent).
+    // Skip only when this change is the echo of a settle we already animated.
+    // The NaN sentinel falls through on its own: `NaN === target` is false.
     if (expected === target) return
     _animateTo(target)
   }
@@ -213,31 +316,61 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     }
   }
 
-  function _onTouchStart(e: { detail: { x: number } }) {
+  function _onTouchStart(e: { detail: { x: number, y: number } }) {
     'main thread'
     if (disabledRef.current) return
+    // Pause autoplay for the duration of the drag.
+    _autoplayStop()
     // Cancel any in-flight animation by bumping the generation.
     animGenRef.current = animGenRef.current + 1
     isDraggingRef.current = true
+    gestureLockedRef.current = false
+    axisLockedRef.current = false
     const x = e.detail.x
+    const y = e.detail.y
     touchStartXRef.current = x
+    touchStartYRef.current = y
     touchStartOffsetRef.current = offsetRef.current
     timeQueueRef.current = [Date.now()]
     posQueueRef.current = [x]
     runOnBackground(_emitSwipeStart as any)()
   }
 
-  function _onTouchMove(e: { detail: { x: number } }) {
+  function _onTouchMove(e: { detail: { x: number, y: number } }) {
     'main thread'
     if (!isDraggingRef.current) return
     const x = e.detail.x
+    const y = e.detail.y
+
+    // Axis lock: once the gesture crosses the slop radius, classify it. If it
+    // is more vertical than horizontal, lock to the cross axis and stop
+    // consuming moves (host scroll keeps it). Mirrors physics.ts resolveAxisLock
+    // with the ±45° HORIZONTAL_CONSUME_RANGES.
+    if (axisLockEnabledRef.current && !gestureLockedRef.current) {
+      const dX = x - touchStartXRef.current
+      const dY = y - touchStartYRef.current
+      const displacement = Math.sqrt(dX * dX + dY * dY)
+      if (displacement > GESTURE_THRESHOLD) {
+        const angle = (Math.atan2(dY, dX) * 180) / Math.PI
+        // Horizontal-enough if angle within ±45° of either horizontal direction.
+        const a = angle < 0 ? -angle : angle
+        const horizontal = a <= 45 || a >= 135
+        gestureLockedRef.current = true
+        axisLockedRef.current = !horizontal
+      }
+    }
+    if (axisLockedRef.current) return
+
     const delta = x - touchStartXRef.current
     const width = itemWidthRef.current
     const count = itemCountRef.current
     let next = touchStartOffsetRef.current + delta
-    const minOffset = -(count - 1) * width
-    if (next > 0) next = 0
-    if (next < minOffset) next = minOffset
+    // Offset clamping. Loop mode never clamps; otherwise clamp to [min, 0].
+    if (!loopRef.current) {
+      const minOffset = -(count - 1) * width
+      if (next > 0) next = 0
+      if (next < minOffset) next = minOffset
+    }
     offsetRef.current = next
     _setTransform(next)
     posQueueRef.current.push(x)
@@ -249,6 +382,17 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     'main thread'
     if (!isDraggingRef.current) return
     isDraggingRef.current = false
+
+    // If the gesture was locked to the cross axis, don't snap — let the host
+    // scroll surface have settled it. Restore autoplay and bail.
+    if (axisLockedRef.current) {
+      gestureLockedRef.current = false
+      axisLockedRef.current = false
+      if (autoplayRef.current) _autoplayStart()
+      return
+    }
+    gestureLockedRef.current = false
+    axisLockedRef.current = false
 
     // Inline velocity (px/s) — mirrors physics.ts `calcVelocity`.
     _pruneQueue(500, 0)
@@ -266,6 +410,7 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     const count = itemCountRef.current
     const threshold = thresholdRef.current
     const vThreshold = velocityThresholdRef.current
+    const loop = loopRef.current
 
     // Inline customRound + paging — mirrors physics.ts `customRound`/`calcPaging`.
     let target: number
@@ -275,31 +420,42 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     else target = Math.floor(ratio)
 
     // Velocity flick overrides — advance/retreat one step from start index.
-    // (Carousel paging policy: flick steps from where the user grabbed, not
-    // from the nearest candidate — see physics.ts `decideSnapTarget`.)
+    // (Carousel paging policy: flick steps from where the user grabbed.)
     if (velocity < 0 ? -velocity >= vThreshold : velocity >= vThreshold) {
       const startIdx = Math.round(-startOffset / width)
       target = startIdx + (velocity < 0 ? 1 : -1)
     }
 
-    if (target < 0) target = 0
-    if (target > count - 1) target = count - 1
+    // Wrap (loop) or clamp (default) the index.
+    if (loop) {
+      target = ((target % count) + count) % count
+    }
+    else {
+      if (target < 0) target = 0
+      if (target > count - 1) target = count - 1
+    }
 
     const targetOffset = -target * width
     expectedOffsetRef.current = targetOffset
     _animateTo(targetOffset)
     runOnBackground(_settle as any)(target)
+
+    // Resume autoplay after the drag settled.
+    if (autoplayRef.current) _autoplayStart()
   }
 
   function _teardown() {
     'main thread'
     // Bump the generation so an in-flight rAF `step` bails on its next frame,
-    // and drop the velocity queues. Must run ON MT — the equivalent BG-side
-    // `.current` writes are silently dropped (see header).
+    // drop the velocity queues, and kill the autoplay timer. Must run ON MT —
+    // the equivalent BG-side `.current` writes are silently dropped (header).
     animGenRef.current = animGenRef.current + 1
     isDraggingRef.current = false
     posQueueRef.current = []
     timeQueueRef.current = []
+    if (autoplayTimerRef.current) clearTimeout(autoplayTimerRef.current)
+    autoplayTimerRef.current = 0
+    autoplayStoppedRef.current = true
   }
 
   // --- BG callbacks --------------------------------------------------------
@@ -316,9 +472,16 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   // --- Public API ----------------------------------------------------------
 
   function setIndex(index: number) {
+    const count = config.itemCount()
+    if (count <= 0) return
     let next = index
-    if (next < 0) next = 0
-    if (next > config.itemCount() - 1) next = config.itemCount() - 1
+    if (loopGetter()) {
+      next = ((next % count) + count) % count
+    }
+    else {
+      if (next < 0) next = 0
+      if (next > count - 1) next = count - 1
+    }
     currentIndex.value = next
   }
 
@@ -333,18 +496,24 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     // registered (vue-lynx@0.4.0 — see SheetContentImpl.vue). Touch handlers
     // are immune: `SET_WORKLET_EVENT` flushes in the same batch as
     // `INIT_MT_REF`.
-    if (initialOffset === 0) return
-    // Nonzero initial index: defer past the post-flush op batch. nextTick
-    // narrows but does NOT close the cross-channel race — only vue-lynx's
-    // `waitForFlush` could, and it is not publicly exported in 0.4.0.
-    void nextTick().then(() => {
-      runOnMainThread(_setTransform as any)(initialOffset)
-    })
+    if (initialOffset !== 0) {
+      // Nonzero initial index: defer past the post-flush op batch. nextTick
+      // narrows but does NOT close the cross-channel race.
+      void nextTick().then(() => {
+        runOnMainThread(_setTransform as any)(initialOffset)
+      })
+    }
+    // Kick off autoplay if enabled at mount. Deferred for the same reason.
+    if (autoplayGetter()) {
+      void nextTick().then(() => {
+        runOnMainThread(_autoplayStart as any)()
+      })
+    }
   })
 
   onUnmounted(() => {
     // Fire-and-forget MT hop — direct `.current` writes here would be BG-side
-    // no-ops and the in-flight rAF snap would keep painting after unmount.
+    // no-ops and the in-flight rAF snap / autoplay timer would keep running.
     runOnMainThread(_teardown as any)()
   })
 

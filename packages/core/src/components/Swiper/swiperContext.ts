@@ -10,8 +10,10 @@ export interface SwiperRootContext {
   currentIndex: Ref<number>
   itemCount: ComputedRef<number>
   itemWidth: ComputedRef<number>
+  /** Whether navigation wraps circularly (index 0 ↔ last). */
+  loop: ComputedRef<boolean>
   /** Set the current index from a child / external API. Triggers animation. */
-  setIndex: (index: number, animate?: boolean) => void
+  setIndex: (index: number) => void
 }
 
 export const [injectSwiperRootContext, provideSwiperRootContext] =
