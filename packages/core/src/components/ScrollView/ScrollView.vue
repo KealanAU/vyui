@@ -415,7 +415,7 @@ function _mtBouncingSetStyle(offset: number) {
 
 function _mtTriggerScrollToBounces(isUpper: boolean) {
   'main thread'
-  runOnBackground(_emitScrollToBounces)({ direction: isUpper ? 'upper' : 'lower' })
+  runOnBackground(_emitScrollToBounces as any)({ direction: isUpper ? 'upper' : 'lower' })
 }
 
 function _mtIsOverTriggerDistance() {
