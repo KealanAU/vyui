@@ -1,5 +1,4 @@
 import type { InjectionKey } from 'vue'
-import type { TVConfig } from './utils/tv'
 
 /** Recursive `Partial<T>` — every nested property is also optional. */
 export type DeepPartial<T> = {
@@ -25,8 +24,6 @@ export interface AppConfig {
     colors?: string[]
     /** Semantic icon name → Iconify id (e.g. `loading` → `i-lucide-loader-circle`). */
     icons?: Record<string, string>
-    /** Per-app `tailwind-variants` config passed to `createTV`. */
-    tv?: TVConfig
   } & ComponentThemes
 }
 

@@ -53,6 +53,21 @@ function showNotification(n: Notification) {
     activeToast.value = null
   }, 3200)
 }
+// Sonner-style stack — multiple toasts coexist, collapsed into an overlapping
+// pile that fans out under each other when you tap one (`stacked` on VyToast).
+const stackedToasts = ref<Array<Notification & { key: number }>>([])
+let stackKey = 0
+function pushStackedToast() {
+  const n = notifications[stackKey % notifications.length]
+  stackedToasts.value = [...stackedToasts.value, { ...n, key: stackKey++ }]
+}
+function clearStackedToasts() {
+  stackedToasts.value = []
+}
+function dismissStackedToast(key: number) {
+  stackedToasts.value = stackedToasts.value.filter(t => t.key !== key)
+}
+
 const dropdownItems = [
   [
     { label: 'Profile',  icon: 'icon-park-outline:user' },
@@ -123,6 +138,19 @@ const fruitItems = [
     </view>
 
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-slate-900 text-base font-semibold">Stacked toasts (Sonner)</text>
+      <text class="text-slate-500 text-xs">
+        Add a few — they collapse into a pile pinned to the top. Tap any toast
+        to fan them out under each other, tap again to collapse. Swipe a toast
+        sideways to dismiss it.
+      </text>
+      <view class="flex flex-row gap-2">
+        <VyButton color="primary" variant="soft" size="sm" label="Add toast" @tap="pushStackedToast" />
+        <VyButton color="neutral" variant="ghost" size="sm" label="Clear" @tap="clearStackedToasts" />
+      </view>
+    </view>
+
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
       <text class="text-slate-900 text-base font-semibold">Drawer</text>
       <text class="text-slate-500 text-xs">
         Bottom-sheet via SheetRoot with multi-snap: opens at 90%, drag down
@@ -187,6 +215,27 @@ const fruitItems = [
         :description="activeToast?.detail"
         :icon="activeToast?.icon"
         :close="false"
+      />
+    </ToastViewport>
+  </ToastProvider>
+
+  <!-- Sonner stack: one provider owns the shared order/expanded state; every
+       toast opts in with `stacked` and matches the viewport edge via
+       `stack-from`. Tapping a toast toggles the provider's expanded state. -->
+  <ToastProvider v-if="stackedToasts.length">
+    <ToastViewport position="top" :style="{ paddingTop: '16px', zIndex: 60 }">
+      <VyToast
+        v-for="t in stackedToasts"
+        :key="t.key"
+        stacked
+        stack-from="top"
+        swipe
+        progress
+        :title="t.title"
+        :description="t.detail"
+        :icon="t.icon"
+        :close="false"
+        @update:open="dismissStackedToast(t.key)"
       />
     </ToastViewport>
   </ToastProvider>

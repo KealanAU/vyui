@@ -10,7 +10,7 @@ export type DayOfWeek = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'
 import type { DateRange, Grid } from './types'
 import { CalendarDate, endOfMonth, endOfYear, getDayOfWeek, startOfMonth, startOfWeek, startOfYear } from '@internationalized/date'
 import { getDaysInMonth, getLastFirstDayOfWeek, getNextLastDayOfWeek } from './comparators'
-import { chunk } from './utils'
+import { chunk } from '@/shared/arrays'
 
 export type WeekDayFormat = 'narrow' | 'short' | 'long'
 
