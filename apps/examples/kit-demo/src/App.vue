@@ -72,7 +72,17 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
   >
     <OverlayRoot />
 
-    <scroll-view class="w-full h-full" scroll-orientation="vertical" :enable-scroll="pageScrolls">
+    <!-- Swap the outer element by tab rather than toggling `enable-scroll` on a
+         single instance: a content tab gets a real (scrolling) `<scroll-view>`;
+         a full-bleed tab gets a plain non-scrolling `<view>` so its inner
+         gesture surface / native `<list>` / bounce `<scroll-view>` owns the
+         touch stream. Swapping the element type forces a fresh mount, avoiding
+         a `<scroll-view>` getting stuck non-scrollable after a prop flip. -->
+    <component
+      :is="pageScrolls ? 'scroll-view' : 'view'"
+      class="w-full h-full"
+      scroll-orientation="vertical"
+    >
       <view class="flex flex-col gap-4 px-5 pt-16 pb-10">
         <view class="flex flex-col gap-1">
           <text class="text-slate-900 text-2xl font-bold">@vyui/kit demo</text>
@@ -127,6 +137,6 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
           <text class="text-slate-400 text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
         </view>
       </view>
-    </scroll-view>
+    </component>
   </view>
 </template>
