@@ -114,9 +114,6 @@ export function linearScale(input: readonly [number, number], output: readonly [
 
 export { getDecimalCount, roundValue } from '@/shared/clamp'
 
-export const PAGE_KEYS = ['PageUp', 'PageDown']
-export const ARROW_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
-
 type SlideDirection = 'from-left' | 'from-right' | 'from-bottom' | 'from-top'
 export const BACK_KEYS: Record<SlideDirection, string[]> = {
   'from-left': ['Home', 'PageDown', 'ArrowDown', 'ArrowLeft'],

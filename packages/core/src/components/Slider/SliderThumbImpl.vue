@@ -116,7 +116,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  const i = rootContext.thumbElements.value.findIndex(i => i === thumbElement.value) ?? -1
+  const i = rootContext.thumbElements.value.findIndex(i => i === thumbElement.value)
   rootContext.thumbElements.value.splice(i, 1)
   if (rootContext.mtsEnabled.value) {
     rootContext.thumbHandlesMT.current = rootContext.thumbHandlesMT.current

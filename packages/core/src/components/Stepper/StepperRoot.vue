@@ -143,13 +143,7 @@ const isPrevDisabled = computed(() => {
   return typeof (el as any).getAttribute === 'function' ? (el as any).getAttribute('disabled') === '' : false
 })
 
-watch(modelValue, async () => {
-  await nextTick(() => {
-    nextStepperItem.value = totalStepperItemsArray.value.length && modelValue.value! < totalStepperItemsArray.value.length ? totalStepperItemsArray.value[modelValue.value!] : null
-    prevStepperItem.value = totalStepperItemsArray.value.length && modelValue.value! > 1 ? totalStepperItemsArray.value[modelValue.value! - 2] : null
-  })
-})
-watch(totalStepperItemsArray, async () => {
+watch([modelValue, totalStepperItemsArray], async () => {
   await nextTick(() => {
     nextStepperItem.value = totalStepperItemsArray.value.length && modelValue.value! < totalStepperItemsArray.value.length ? totalStepperItemsArray.value[modelValue.value!] : null
     prevStepperItem.value = totalStepperItemsArray.value.length && modelValue.value! > 1 ? totalStepperItemsArray.value[modelValue.value! - 2] : null
