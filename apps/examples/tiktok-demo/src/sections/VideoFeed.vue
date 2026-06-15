@@ -24,6 +24,7 @@ import { VyFeedList } from '@vyui/kit'
 import { SEED_VIDEOS, LOAD_MORE_VIDEOS, type Video } from '../data/videos'
 import VideoCard from '../components/VideoCard.vue'
 import LoadCounter from '../components/LoadCounter.vue'
+import Spinner from '../components/Spinner.vue'
 
 const emit = defineEmits<{
   // Fired when the user taps the comment count on a video card.
@@ -67,12 +68,13 @@ function onLoadMore() {
   if (loadingMore.value || allLoaded.value) return
   loadingMore.value = true
   // Simulate a network fetch. Using setTimeout keeps the demo self-contained.
+  // Forced ~1.5s delay so the loading spinner is visible on every fetch.
   setTimeout(() => {
     videos.value = [...videos.value, ...LOAD_MORE_VIDEOS]
     allLoaded.value = true
     loadingMore.value = false
     emit('videosLoaded', LOAD_MORE_VIDEOS.length)
-  }, 700)
+  }, 1500)
 }
 </script>
 
@@ -126,6 +128,7 @@ function onLoadMore() {
       :style="{ zIndex: 20 }"
     >
       <view class="px-3 py-1 rounded-full bg-black/70 flex flex-row items-center gap-2">
+        <Spinner :size="16" color="#ffffff" />
         <text class="text-white text-xs">Loading more…</text>
       </view>
     </view>

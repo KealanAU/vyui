@@ -16,6 +16,7 @@ import { Icon as VyIcon } from '@vyui/core'
 import { VyDrawer, VyFeedList } from '@vyui/kit'
 import { SEED_COMMENTS, makeComments, COMMENTS_TOTAL, type Comment } from '../data/comments'
 import LoadCounter from './LoadCounter.vue'
+import Spinner from './Spinner.vue'
 
 const props = defineProps<{
   open: boolean
@@ -60,6 +61,7 @@ const listHeight = Math.round(screenH * 0.62)
 function onLoadMore() {
   if (loadingMore.value || allLoaded.value) return
   loadingMore.value = true
+  // Forced ~1.5s delay so the spinner is actually visible on every fetch.
   setTimeout(() => {
     const remaining = COMMENTS_TOTAL - comments.value.length
     const next = makeComments(comments.value.length, Math.min(BATCH, remaining))
@@ -69,7 +71,7 @@ function onLoadMore() {
     loadingMore.value = false
     // Notify parent so the global N/total badge updates.
     emit('commentsLoaded', next.length)
-  }, 700)
+  }, 1500)
 }
 </script>
 
@@ -134,7 +136,8 @@ function onLoadMore() {
         <!-- Sentinel footer row shown while loading or when all comments have
              loaded. FeedList's loadMoreFooter/noMoreDataFooter slots are not in
              the current kit interface so we use a plain view beneath the list. -->
-        <view v-if="loadingMore" class="py-4 flex items-center justify-center">
+        <view v-if="loadingMore" class="py-4 flex flex-row items-center justify-center gap-2">
+          <Spinner :size="18" color="#94a3b8" />
           <text class="text-slate-400 text-sm">Loading more comments…</text>
         </view>
         <view v-else-if="allLoaded" class="py-4 flex items-center justify-center">
