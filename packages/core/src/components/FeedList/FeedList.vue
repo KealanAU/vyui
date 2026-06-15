@@ -238,6 +238,11 @@ const disabledRef = useMainThreadRef<boolean>(props.disabled)
 // SDK < 3.3 → use consumeGesture; else interceptGesture. Evaluated on MT.
 const useInterceptRef = useMainThreadRef<boolean>(true)
 
+// Stable per-instance gesture id (any unique number works for one detector).
+// Declared here (above the worklet callbacks) so they can reference it —
+// worklets are backward-reference only.
+const GESTURE_ID = Math.floor(Math.random() * 1_000_000) + 1
+
 // --- Worklet helpers (defined ABOVE callers; constraint #2) -------------
 
 /** Paint translateY on the wrapper. */
@@ -346,12 +351,22 @@ function _onGestureBegin() {
  * delta), `scrollY`, and `isAtStart` (list is at the top). We only own the
  * gesture while pulling DOWN from the top; otherwise we hand it back to the
  * native scroller so normal scrolling and load-more keep working.
+ *
+ * IMPORTANT: the engine invokes this with the *internal* state manager, whose
+ * arbitration method is `__ConsumeGesture(element, id, { consume, inner })` —
+ * NOT the public `interceptGesture`/`consumeGesture` (those only exist on the
+ * `wrapCallback` wrapper that gesture-runtime would build for the JSX-prop
+ * path, which we don't use). `inner:false` = intercept (SDK ≥ 3.3 takes the
+ * gesture from the outer native scroller); `inner:true` = consume (SDK < 3.3).
  */
 function _onGestureUpdate(event: any, stateManager: any) {
   'main thread'
+  const gestureEl = event.currentTarget.element
+  const inner = !useInterceptRef.current
   if (disabledRef.current) {
-    if (useInterceptRef.current) stateManager.interceptGesture(false)
-    else stateManager.consumeGesture(false)
+    if (stateManager.__ConsumeGesture) {
+      stateManager.__ConsumeGesture(gestureEl, GESTURE_ID, { consume: false, inner })
+    }
     return
   }
   const params = event.params
@@ -366,14 +381,16 @@ function _onGestureUpdate(event: any, stateManager: any) {
 
   if (!shouldOwn) {
     // Hand the gesture back to the native scroller.
-    if (useInterceptRef.current) stateManager.interceptGesture(false)
-    else stateManager.consumeGesture(false)
+    if (stateManager.__ConsumeGesture) {
+      stateManager.__ConsumeGesture(gestureEl, GESTURE_ID, { consume: false, inner })
+    }
     return
   }
 
   // Own the gesture and paint the rubber-band.
-  if (useInterceptRef.current) stateManager.interceptGesture(true)
-  else stateManager.consumeGesture(true)
+  if (stateManager.__ConsumeGesture) {
+    stateManager.__ConsumeGesture(gestureEl, GESTURE_ID, { consume: true, inner })
+  }
 
   const threshold = thresholdRef.current
   // Rubber resistance keyed off the threshold as the natural bounce width.
@@ -434,10 +451,7 @@ function _onClosed() {
 
 // --- Gesture installation ------------------------------------------------
 // vue-lynx has no `main-thread:gesture` transform, so we install the detector
-// ourselves from MT once the element refs are registered. The gesture id is a
-// stable per-instance integer (any unique number works for a single detector).
-const GESTURE_ID = Math.floor(Math.random() * 1_000_000) + 1
-
+// ourselves from MT once the element refs are registered.
 function _installGesture() {
   'main thread'
   // Detect SDK to pick consume vs intercept (mirrors lynx-ui useRefresh).
