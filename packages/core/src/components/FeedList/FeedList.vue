@@ -458,7 +458,7 @@ function _onClosed() {
 // --- Gesture installation ------------------------------------------------
 // vue-lynx has no `main-thread:gesture` transform, so we install the detector
 // ourselves from MT once the element refs are registered.
-function _installGesture() {
+function _installGesture(callbacks: any) {
   'main thread'
   // Detect SDK to pick consume vs intercept (mirrors lynx-ui useRefresh).
   let sdkLessThan33 = false
@@ -490,14 +490,16 @@ function _installGesture() {
   // exactly like React-Lynx's `onWorkletCtxUpdate` (worklet-runtime/lib/bindings
   // /observers.js) does for every gesture callback. Without this `addRef` the
   // engine may hold the ctxs but never dispatch to them.
+  // `callbacks` arrives from the BG thread (see onMounted) so each `.callback`
+  // is still a worklet ctx OBJECT carrying its worklet_info. Register each with
+  // the JS-function lifecycle manager (like React-Lynx's `onWorkletCtxUpdate`).
   const lcm = (globalThis as any).lynxWorkletImpl?._jsFunctionLifecycleManager
-  globalThis.console.log('[vyui-ptr] install: lynxWorkletImpl=', typeof (globalThis as any).lynxWorkletImpl, 'lcm=', lcm != null, 'beginExecId=', (_onGestureBegin as any)._execId)
-  if (lcm != null) {
-    lcm.addRef((_onGestureBegin as any)._execId, _onGestureBegin)
-    lcm.addRef((_onGestureUpdate as any)._execId, _onGestureUpdate)
-    lcm.addRef((_onGestureEnd as any)._execId, _onGestureEnd)
+  globalThis.console.log('[vyui-ptr] install: lcm=', lcm != null, 'cbCount=', callbacks && callbacks.length, 'beginExecId=', callbacks && callbacks[0] ? callbacks[0].callback._execId : 'none')
+  if (lcm != null && callbacks != null) {
+    for (let i = 0; i < callbacks.length; i++) {
+      lcm.addRef(callbacks[i].callback._execId, callbacks[i].callback)
+    }
   }
-  globalThis.console.log('[vyui-ptr] install: calling __SetGestureDetector id=', GESTURE_ID)
   // `globalThis.` (not bare) so the worklet transform treats it as a recognized
   // global rather than a background closure var to capture (which crashed at
   // setup with `__SetGestureDetector is not defined`). The PAPI is global on MT
@@ -506,14 +508,7 @@ function _installGesture() {
     el.element,
     GESTURE_ID,
     7, // GestureTypeInner.NATIVE (inlined literal; bare enum imports are undefined on MT)
-    {
-      config: { enabled: true },
-      callbacks: [
-        { name: 'onBegin', callback: _onGestureBegin },
-        { name: 'onUpdate', callback: _onGestureUpdate },
-        { name: 'onEnd', callback: _onGestureEnd },
-      ],
-    },
+    { config: { enabled: true }, callbacks },
     { waitFor: [], simultaneous: [], continueWith: [] },
   )
   globalThis.console.log('[vyui-ptr] install: __SetGestureDetector returned (registered)')
@@ -522,8 +517,18 @@ function _installGesture() {
 onMounted(() => {
   console.log('[vyui-ptr] onMounted (BG); enableRefresh=', props.enableRefresh)
   if (!props.enableRefresh) return
+  // Build the callback descriptor HERE on the background thread, where the
+  // worklet references (`_onGestureBegin` …) are still ctx objects carrying
+  // worklet_info, and pass it as an argument. Referencing them only inside the
+  // MT install worklet conveyed callbacks WITHOUT worklet_info — native logged
+  // "TriggerFiberElementWorklet failed since worklet_info is empty".
+  const callbacks = [
+    { name: 'onBegin', callback: _onGestureBegin },
+    { name: 'onUpdate', callback: _onGestureUpdate },
+    { name: 'onEnd', callback: _onGestureEnd },
+  ]
   // Defer install so the element-ref + worklet-ctx ops have flushed to MT.
-  runOnMainThread(_installGesture as any)()
+  runOnMainThread(_installGesture as any)(callbacks)
   console.log('[vyui-ptr] onMounted: scheduled _installGesture on MT')
 })
 
