@@ -40,6 +40,11 @@ const videos = ref<Video[]>([...SEED_VIDEOS])
 const loadingMore = ref(false)
 const allLoaded = ref(false)
 
+// DEBUG: live PTR state, updated by FeedList's refreshStateChange. If this
+// stays 'idle' while you pull DOWN at the top, the gesture callbacks aren't
+// firing; if it cycles pulling→releaseReady, the gesture works. Remove later.
+const dbgState = ref<FeedListRefreshState>('idle')
+
 // Full-screen paging height. A Lynx `<list-item>` sizes to its CONTENT, not to
 // the list viewport — so a child `h-full` collapses and the card's absolutely
 // positioned overlays render off-screen (the "video is way off the top" bug).
@@ -126,6 +131,14 @@ function refreshLabel(state: FeedListRefreshState, _progress: number): string {
       <LoadCounter :loaded="currentIndex + 1" :total="videos.length" label="videos" />
     </view>
 
+    <!-- DEBUG: live PTR state. Watch this while pulling DOWN at the top. -->
+    <view
+      class="absolute top-12 left-3 px-2 py-1 rounded-md bg-fuchsia-600/80"
+      :style="{ zIndex: 20 }"
+    >
+      <text class="text-white text-xs font-semibold">PTR: {{ dbgState }}</text>
+    </view>
+
     <!-- Vertical paging feed. `:item-snap="true"` = native paging (one video
          per swipe). `:enable-refresh` = custom rubber-band pull-to-refresh:
          pull down at the top, release, and new videos prepend. -->
@@ -141,6 +154,7 @@ function refreshLabel(state: FeedListRefreshState, _progress: number): string {
       :load-more-threshold-item-count="2"
       class="w-full h-full"
       @refresh="onRefresh"
+      @refresh-state-change="dbgState = $event"
       @load-more="onLoadMore"
       @scroll="onScroll"
     >
