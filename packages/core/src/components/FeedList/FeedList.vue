@@ -21,12 +21,12 @@
 
      WORKLET CONSTRAINTS (project memory)
      ------------------------------------
-     - All `'main thread'` worklets that drive the gesture are INLINED here.
-       vue-lynx's worklet loader skips MT functions imported from workspace
-       `.ts` modules, so only PURE maths is pulled from `physics.ts` and only
-       the no-per-frame-callback `installGestureDetector` from
-       `gestureArbitration.ts` (it carries the directive and resolves no
-       cross-file callbacks).
+     - ALL `'main thread'` worklets that drive the gesture are INLINED here,
+       INCLUDING the `__SetGestureDetector` install call. A worklet resident in
+       a workspace `.ts` (even "pure plumbing") gets bundled into the BG realm
+       and crashes the card at load with `__SetAttribute is not defined`. Only
+       PURE, worklet-free maths/types are pulled from `physics.ts` and
+       `gestureArbitration.ts`.
      - Worklets are backward-reference only — helpers are defined ABOVE callers.
      - BG writes to `MainThreadRef.current` are dropped; config is synced via
        `runOnMainThread` setter worklets. -->
@@ -138,10 +138,11 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import { useStandardVModelOf } from '@/shared/composables'
-import {
-  emptyRelationMap,
-  installGestureDetector,
-} from '@/shared/gesture/gestureArbitration'
+// Types/policy/constants only — NO runtime worklet is imported from this module.
+// The gesture-install worklet (`__SetGestureDetector`/`__SetAttribute`) is
+// inlined in `_installGesture` below: a worklet resident in a workspace `.ts`
+// gets bundled to the BG realm and crashes at card load with
+// `__SetAttribute is not defined`. See gestureArbitration.ts "WHAT LIVES WHERE".
 
 const props = withDefaults(defineProps<FeedListProps<T>>(), {
   itemKeyField: 'id' as never,
@@ -437,12 +438,18 @@ function _installGesture() {
 
   const el = (listRef as unknown as { current?: unknown }).current
   if (el == null) return
-  // Build the detector config with the inline callbacks as worklet ctxs and
-  // install it. `installGestureDetector` is pure plumbing (no cross-file
-  // callback resolution), so importing it from the shared `.ts` is safe.
-  installGestureDetector(
+  // Install the native gesture detector directly via MT PAPIs. Mirrors
+  // React-Lynx `processGesture`: mark the element gesture-owning, disable
+  // flatten so it can receive the gesture, then register the detector with the
+  // inline touch callbacks. These globals exist ONLY in the MT realm (gated by
+  // `enableNewGesture`, flipped on in patches/vue-lynx@0.4.0.patch), so this
+  // call MUST stay inside this `'main thread'` worklet — see the import note.
+  __SetAttribute(el, 'has-react-gesture', true)
+  __SetAttribute(el, 'flatten', false)
+  __SetGestureDetector(
     el,
     GESTURE_ID,
+    7, // GestureTypeInner.NATIVE (inlined literal; bare enum imports are undefined on MT)
     {
       config: { enabled: true },
       callbacks: [
@@ -451,7 +458,7 @@ function _installGesture() {
         { name: 'onEnd', callback: _onGestureEnd },
       ],
     },
-    emptyRelationMap(),
+    { waitFor: [], simultaneous: [], continueWith: [] },
   )
 }
 

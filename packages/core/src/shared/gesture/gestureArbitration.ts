@@ -33,16 +33,20 @@
 //
 // WHAT LIVES WHERE (constraint #1: cross-file MT worklets don't register)
 // ----------------------------------------------------------------------
-// The gesture's touch CALLBACKS must be `'main thread'` worklets INLINED in the
-// consuming SFC — a worklet imported from this `.ts` would be skipped by
-// vue-lynx's worklet loader and never bind. So this module only provides:
-//   - types (`GestureArbitrationOptions`, `NativeGestureCallbacks`),
-//   - the PURE consume-vs-intercept policy (`shouldInterceptGesture`), and
-//   - the install/uninstall PAPI worklets, which take the element + a built
-//     gesture descriptor and call `__SetGestureDetector` (no per-frame logic,
-//     so no cross-file-callback problem).
-// The SFC builds the descriptor with its own inline callbacks and hands it to
-// `installGestureDetector` via `runOnMainThread`.
+// EVERY worklet that touches the engine — the per-frame touch callbacks AND the
+// `__SetGestureDetector` / `__SetAttribute` install call — must be `'main thread'`
+// worklets INLINED in the consuming SFC. vue-lynx's worklet loader follows `@/`
+// imports but does NOT correctly realm-separate a worklet that lives in a
+// workspace `.ts`: the function body lands in the BACKGROUND bundle where the
+// MT-only PAPIs are undefined, and the card crashes at load with
+// `ReferenceError: __SetAttribute is not defined`. (An earlier revision kept the
+// install call here as "pure plumbing" and hit exactly that crash on device.)
+// So this module is worklet-FREE — it only provides:
+//   - types (`NativeGestureDetectorConfig`, `GestureRelationMap`, …),
+//   - the PURE consume-vs-intercept policy (`shouldInterceptGesture`),
+//   - PAPI ambient declarations, and
+//   - small pure helpers (`emptyRelationMap`).
+// The SFC inlines the install worklet and calls `__SetGestureDetector` directly.
 //
 // SELECTOR
 // --------
@@ -135,29 +139,9 @@ declare global {
   function __SetAttribute(element: unknown, key: string, value: unknown): void
 }
 
-/**
- * Install a native gesture detector on a raw Lynx `element` from the MT realm.
- * Mirrors React-Lynx `processGesture` for the non-composed case: marks the
- * element as gesture-owning, disables flatten (so it can receive the gesture),
- * then registers the detector.
- *
- * MUST be invoked from a `'main thread'` context (e.g. via `runOnMainThread`).
- * Carries the `'main thread'` directive so it can be dispatched directly; it
- * contains no cross-file callback resolution (the callbacks were already built
- * as worklets by the caller), so it registers correctly even from this `.ts`.
- */
-export function installGestureDetector(
-  element: unknown,
-  id: number,
-  config: NativeGestureDetectorConfig,
-  relationMap: GestureRelationMap,
-): void {
-  'main thread'
-  if (element == null) return
-  __SetAttribute(element, 'has-react-gesture', true)
-  __SetAttribute(element, 'flatten', false)
-  __SetGestureDetector(element, id, 7 /* GestureTypeInner.NATIVE */, config, relationMap)
-}
+// NOTE: the actual install worklet (`__SetAttribute` + `__SetGestureDetector`)
+// is INLINED in each consuming SFC, not exported here — see "WHAT LIVES WHERE"
+// above for why a `.ts`-resident worklet crashes the card at load.
 
 /**
  * Default relation map (no relations) — the common case for a single
