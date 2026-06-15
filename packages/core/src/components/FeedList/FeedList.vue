@@ -338,12 +338,16 @@ watch(
 
 // --- Gesture callbacks (inline worklets, registered on the detector) -----
 
-function _onGestureBegin() {
+function _onGestureBegin(event: any) {
   'main thread'
   if (disabledRef.current) return
   draggingRef.current = true
   startYRef.current = 0
   startOffsetRef.current = offsetRef.current
+  // DEBUG: if this callback fires while at the top edge, nudge the content 30px
+  // so we can SEE (pure MT, no runOnBackground) whether the detector dispatches
+  // touches and whether `isAtStart` is reported. Remove once PTR works.
+  if (event && event.params && event.params.isAtStart === true) _paint(30)
 }
 
 /**
