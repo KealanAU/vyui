@@ -15,11 +15,14 @@
 //   TikTok mechanic. FeedList also handles load-more on scrolltolower, so one
 //   component covers both surface features (paging + load-more).
 //
-//   Pull-to-refresh is intentionally NOT used here — the upstream-derived
-//   refresh header was dropped; this demo is about snap paging + the comments
-//   drawer's load-on-scroll, not PTR.
+//   Pull-to-refresh: this feed uses FeedList's custom rubber-band PTR
+//   (`enable-refresh`, gesture-arbitrated). Pulling down at the top reveals the
+//   #refreshHeader spinner and, on release, prepends "new" videos at the top —
+//   the headline FeedList feature. (The comments drawer separately demos
+//   load-more on scroll.)
 
 import { ref } from 'vue'
+import type { FeedListRefreshState } from '@vyui/core'
 import { VyFeedList } from '@vyui/kit'
 import { SEED_VIDEOS, LOAD_MORE_VIDEOS, type Video } from '../data/videos'
 import VideoCard from '../components/VideoCard.vue'
@@ -76,6 +79,37 @@ function onLoadMore() {
     emit('videosLoaded', LOAD_MORE_VIDEOS.length)
   }, 1500)
 }
+
+// --- Pull-to-refresh (FeedList enable-refresh) ---------------------------
+// The engine sets `refreshing` true + emits `refresh` once the pull crosses
+// the threshold and is released; we do the async fetch, prepend the new videos,
+// then set `refreshing = false` to end it and spring the header closed.
+const refreshing = ref(false)
+let refreshSeq = 0
+
+function onRefresh() {
+  // Forced ~1.5s so the spinner header is clearly visible on every pull.
+  setTimeout(() => {
+    refreshSeq += 1
+    // Three "new" videos: clone seed items with fresh ids so picsum returns
+    // different images and the keys stay unique.
+    const fresh: Video[] = SEED_VIDEOS.slice(0, 3).map((v, i) => ({
+      ...v,
+      id: `fresh-${refreshSeq}-${i}`,
+    }))
+    videos.value = [...fresh, ...videos.value]
+    currentIndex.value = 0
+    refreshing.value = false
+    emit('videosLoaded', fresh.length)
+  }, 1500)
+}
+
+function refreshLabel(state: FeedListRefreshState, _progress: number): string {
+  if (state === 'refreshing') return 'Refreshing…'
+  if (state === 'releaseReady') return 'Release to refresh'
+  if (state === 'done') return 'Done'
+  return 'Pull to refresh'
+}
 </script>
 
 <template>
@@ -92,21 +126,35 @@ function onLoadMore() {
       <LoadCounter :loaded="currentIndex + 1" :total="videos.length" label="videos" />
     </view>
 
-    <!-- Vertical paging feed. `:item-snap="true"` enables the native list
-         paging effect; combined with full-screen-height items the list snaps
-         one video per swipe (the TikTok mechanic). `enable-load-more` triggers
-         `onLoadMore` when the user nears the last item. -->
+    <!-- Vertical paging feed. `:item-snap="true"` = native paging (one video
+         per swipe). `:enable-refresh` = custom rubber-band pull-to-refresh:
+         pull down at the top, release, and new videos prepend. -->
     <VyFeedList
       :items="videos"
       item-key-field="id"
       scroll-orientation="vertical"
       :item-snap="true"
+      :enable-refresh="true"
+      v-model:refreshing="refreshing"
+      :refresh-threshold="72"
       :enable-load-more="!allLoaded"
       :load-more-threshold-item-count="2"
       class="w-full h-full"
+      @refresh="onRefresh"
       @load-more="onLoadMore"
       @scroll="onScroll"
     >
+      <!-- Pull-to-refresh header. Revealed as you pull; `state`/`progress` come
+           from the gesture engine. Sized to the refresh threshold (72px). -->
+      <template #refreshHeader="{ state, progress }">
+        <view class="w-full h-full flex flex-row items-center justify-center gap-2">
+          <Spinner v-if="state === 'refreshing'" :size="18" color="#ffffff" />
+          <text class="text-white/90 text-xs">
+            {{ refreshLabel(state, progress) }}
+          </text>
+        </view>
+      </template>
+
       <template #item="{ item }">
         <!-- Pin each item to one screen height (see screenH) so the card's
              absolute overlays anchor correctly and the list pages one video
