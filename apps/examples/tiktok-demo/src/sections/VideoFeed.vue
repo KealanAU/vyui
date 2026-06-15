@@ -48,15 +48,19 @@ const screenH = (() => {
   return 812 // iPhone-ish fallback for web preview
 })()
 
-// Current position in the feed (0-based). Updated by the native list `snap`
-// event each time paging settles on a video — so the side badge reads e.g.
-// "3/15" and ticks up/down as you flick. This also makes snap paging visibly
-// verifiable: if the number doesn't change per swipe, snap isn't firing.
+// Current position in the feed (0-based) → the side badge reads e.g. "3/15"
+// and ticks up/down as you flick. Derived from the list's absolute scroll
+// offset rather than the `snap` event: scrollTop is reliable and present on
+// every scroll, whereas the snap payload's index field varied by platform.
+// Native event detail lands under `.detail` (iOS) or `.params` (Android).
 const currentIndex = ref(0)
 
-function onSnap(event: unknown) {
-  const pos = (event as { detail?: { position?: number } })?.detail?.position
-  if (typeof pos === 'number') currentIndex.value = pos
+function onScroll(event: unknown) {
+  const d = (event as { detail?: { scrollTop?: number }, params?: { scrollTop?: number } })
+  const top = d?.detail?.scrollTop ?? d?.params?.scrollTop
+  if (typeof top !== 'number' || screenH <= 0) return
+  const idx = Math.round(top / screenH)
+  currentIndex.value = Math.max(0, Math.min(idx, videos.value.length - 1))
 }
 
 function onLoadMore() {
@@ -99,7 +103,7 @@ function onLoadMore() {
       :load-more-threshold-item-count="2"
       class="w-full h-full"
       @load-more="onLoadMore"
-      @snap="onSnap"
+      @scroll="onScroll"
     >
       <template #item="{ item }">
         <!-- Pin each item to one screen height (see screenH) so the card's

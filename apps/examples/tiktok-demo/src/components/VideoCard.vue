@@ -56,7 +56,9 @@ function fmt(n: number): string {
          Icon Park Solid (ByteDance's set, fitting for a Lynx demo). -->
     <view class="absolute inset-0 flex items-center justify-center">
       <view class="w-16 h-16 rounded-full bg-black/30 flex items-center justify-center">
-        <VyIcon name="icon-park-solid:play" :size="32" color="#ffffff" />
+        <!-- play-one, not play: icon-park-solid:play is mask-based and Lynx's
+             <svg> rasterizer drops masks (renders a solid box). -->
+        <VyIcon name="icon-park-solid:play-one" :size="32" color="#ffffff" />
       </view>
     </view>
 
@@ -86,7 +88,9 @@ function fmt(n: number): string {
            can track which video's comments are shown. -->
       <view class="flex flex-col items-center gap-1" @tap="emit('openComments', video.id)">
         <view class="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center">
-          <VyIcon name="icon-park-solid:comment" :size="24" color="#ffffff" />
+          <!-- outline variant: every icon-park-solid comment/message bubble is
+               mask-based (unrenderable on Lynx's <svg>), so use the outline one. -->
+          <VyIcon name="icon-park-outline:comment" :size="24" color="#ffffff" />
         </view>
         <text class="text-white text-xs font-medium">{{ fmt(video.comments) }}</text>
       </view>
