@@ -6,10 +6,11 @@ import { VySortable, VySwipeAction } from '@vyui/kit'
 // quick flick opens/commits even on a short drag, while a slow drag respects the
 // position threshold. `rowWidth`/`actionWidth` are the px references the core
 // primitive snaps against.
+// Kept short: the Gestures tab does not page-scroll (so the inner gestures own
+// the touch stream), which means both cards must fit on screen without scrolling.
 const mailRows = ref([
   { id: 1, from: 'Lynx CI', subject: 'Build #482 passed' },
-  { id: 2, from: 'Notifications', subject: 'New comment on your PR' },
-  { id: 3, from: 'Releases', subject: 'v0.0.6 published' },
+  { id: 2, from: 'Releases', subject: 'v0.0.6 published' },
 ])
 function removeRow(id: number): void {
   mailRows.value = mailRows.value.filter(r => r.id !== id)
@@ -34,7 +35,7 @@ function onSwipeCommit(id: number): void {
 // Sortable — drag to reorder; the list reflects the committed order via v-model.
 // Demo uses `long-press-ms="0"` (instant lift on press) so a simulator mouse
 // click-drag works without holding. Edge autoscroll + clamping come from core.
-const tags = ref(['Design', 'Engineering', 'Product', 'Research', 'Support'])
+const tags = ref(['Design', 'Engineering', 'Product', 'Research'])
 </script>
 
 <template>

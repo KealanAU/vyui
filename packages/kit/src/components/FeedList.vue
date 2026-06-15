@@ -34,6 +34,8 @@ export interface FeedListProps<T = unknown> {
   loadMoreThresholdItemCount?: number
   /** Number of items from the top that triggers `scrollToUpper`. */
   upperThresholdItemCount?: number
+  /** No more data to load — stops `loadMore` and shows the end-of-list footer. */
+  noMoreData?: boolean
   class?: any
   ui?: Partial<Record<keyof ReturnType<typeof buildFeedList>['slots'], any>>
 }
@@ -43,6 +45,10 @@ export interface FeedListSlots<T = unknown> {
   item?(props: { item: T, index: number }): any
   /** Rendered in place of the list when `items` is empty. */
   empty?(props?: {}): any
+  /** Footer shown at the bottom while more data can be loaded. */
+  loadMoreFooter?(props: { loading: boolean }): any
+  /** Footer shown at the bottom once `noMoreData` is true. */
+  noMoreDataFooter?(props?: {}): any
 }
 </script>
 
@@ -81,6 +87,7 @@ const cls = computed(() => ui.value({ class: props.class }))
     :enable-load-more="enableLoadMore"
     :load-more-threshold-item-count="loadMoreThresholdItemCount"
     :upper-threshold-item-count="upperThresholdItemCount"
+    :no-more-data="noMoreData"
     :class="cls"
     @load-more="emit('loadMore')"
     @scroll-to-lower="emit('scrollToLower', $event)"
@@ -93,6 +100,12 @@ const cls = computed(() => ui.value({ class: props.class }))
     </template>
     <template #empty>
       <slot name="empty" />
+    </template>
+    <template #loadMoreFooter="{ loading }">
+      <slot name="loadMoreFooter" :loading="loading" />
+    </template>
+    <template #noMoreDataFooter>
+      <slot name="noMoreDataFooter" />
     </template>
   </CoreFeedList>
 </template>

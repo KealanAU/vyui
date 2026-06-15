@@ -10,23 +10,34 @@ import { VyButton, VyFeedList } from '@vyui/kit'
 // owns its vertical scrolling, so we give it a bounded height rather than letting
 // it sit inside the demo's outer vertical `<scroll-view>` (nesting two vertical
 // scrollers is a known Lynx gotcha that breaks both scrollers' gesture routing).
+// Cap the demo feed so it stops growing (load-more appends 10 each time).
+const MAX_ITEMS = 50
 let nextFeedId = 21
 const initialFeed = (): { id: number, title: string }[] =>
   Array.from({ length: 20 }, (_, i) => ({ id: i + 1, title: `Item ${i + 1}` }))
 const feedItems = ref(initialFeed())
+const noMoreData = ref(false)
 
 function onLoadMore(): void {
   const base = feedItems.value.length
+  const remaining = MAX_ITEMS - base
+  if (remaining <= 0) {
+    noMoreData.value = true
+    return
+  }
+  const add = Math.min(10, remaining)
   feedItems.value = [
     ...feedItems.value,
-    ...Array.from({ length: 10 }, (_, i) => ({ id: nextFeedId + i, title: `Item ${base + i + 1}` })),
+    ...Array.from({ length: add }, (_, i) => ({ id: nextFeedId + i, title: `Item ${base + i + 1}` })),
   ]
-  nextFeedId += 10
+  nextFeedId += add
+  if (feedItems.value.length >= MAX_ITEMS) noMoreData.value = true
 }
 
 function resetFeed(): void {
   nextFeedId = 21
   feedItems.value = initialFeed()
+  noMoreData.value = false
 }
 </script>
 
@@ -46,12 +57,18 @@ function resetFeed(): void {
           :items="feedItems"
           :item-key="(it) => String(it.id)"
           enable-load-more
+          :no-more-data="noMoreData"
           class="h-full"
           @load-more="onLoadMore"
         >
           <template #item="{ item }">
             <view class="border-b border-slate-100 h-14 flex flex-row items-center px-2">
               <text class="text-slate-900 text-sm">{{ item.title }}</text>
+            </view>
+          </template>
+          <template #noMoreDataFooter>
+            <view class="h-12 flex items-center justify-center">
+              <text class="text-slate-400 text-xs">No more items ({{ MAX_ITEMS }} max)</text>
             </view>
           </template>
         </VyFeedList>

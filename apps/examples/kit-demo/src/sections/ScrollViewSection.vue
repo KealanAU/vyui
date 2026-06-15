@@ -1,44 +1,27 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { ScrollView } from '@vyui/core'
 
-// ScrollView — custom main-thread bounce with overscroll indicator items and the
-// `scrollToBounces` event. Pull past either edge to reveal the bounce item.
+// ScrollView — native vertical scrolling with iOS rubber-band overscroll (the
+// underlying element is a real UIScrollView, so bounce comes for free).
 //
-// This gets its own tall, self-contained scroll region. The bounce
-// `<scroll-view>` is itself a vertical scroller, so we bound its height and keep
-// it out of the demo's outer vertical `<scroll-view>`: nesting two vertical
-// scrollers is a known Lynx gotcha that confuses gesture routing and overscroll.
-const lastBounce = ref<string>('—')
-function onBounce(info: unknown): void {
-  lastBounce.value = (info as { direction: string }).direction
-}
+// NOTE: the custom main-thread bounce system (`enable-bounces` + bounce-item
+// slots) is currently not working on-device — the worklets receive touches but
+// don't drive the transform. Until that's fixed we demo the native path, which
+// scrolls and bounces. See ScrollView.vue for the custom-bounce caveat. This
+// region's tab renders a non-scrolling container so this is the only vertical
+// scroller (no nesting conflict).
 </script>
 
 <template>
   <view class="flex flex-col gap-4 pt-2">
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <view class="flex flex-row items-center justify-between">
-        <text class="text-slate-900 text-base font-semibold">ScrollView · bounce</text>
-        <text class="text-slate-500 text-xs">Last bounce: {{ lastBounce }}</text>
-      </view>
+      <text class="text-slate-900 text-base font-semibold">ScrollView</text>
       <text class="text-slate-500 text-xs">
-        Scroll within the panel, then overscroll past either edge to reveal the bounce indicator.
+        Scroll the panel; overscroll past either edge for the native rubber-band bounce.
       </text>
 
-      <!-- Tall, bounded region: enough rows that the content scrolls, and the
-           overscroll/bounce can be triggered at both edges. -->
       <view :style="{ height: '460px' }">
-        <ScrollView
-          enable-bounces
-          class="h-full"
-          @scroll-to-bounces="onBounce"
-        >
-          <template #upperBounceItem>
-            <view class="h-12 flex items-center justify-center">
-              <text class="text-slate-400 text-xs">↓ release to bounce</text>
-            </view>
-          </template>
+        <ScrollView class="h-full">
           <view class="flex flex-col">
             <view
               v-for="n in 24"
@@ -48,11 +31,6 @@ function onBounce(info: unknown): void {
               <text class="text-slate-900 text-sm">Row {{ n }}</text>
             </view>
           </view>
-          <template #lowerBounceItem>
-            <view class="h-12 flex items-center justify-center">
-              <text class="text-slate-400 text-xs">↑ release to bounce</text>
-            </view>
-          </template>
         </ScrollView>
       </view>
     </view>
