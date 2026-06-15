@@ -101,8 +101,10 @@ const cls = computed(() => ui.value({ class: props.class }))
     <template #empty>
       <slot name="empty" />
     </template>
-    <template #loadMoreFooter="{ loading }">
-      <slot name="loadMoreFooter" :loading="loading" />
+    <!-- Core only renders this slot while loading, so `loading` is always true
+         here; kept in the kit slot contract for consumer convenience. -->
+    <template #loadMoreFooter>
+      <slot name="loadMoreFooter" :loading="true" />
     </template>
     <template #noMoreDataFooter>
       <slot name="noMoreDataFooter" />
