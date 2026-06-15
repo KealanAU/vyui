@@ -87,8 +87,19 @@ const rowRef = useMainThreadRef<any>(null)
 // clamped to [-rowWidth, 0] during drag.
 const currentXRef = useMainThreadRef<number>(props.defaultOpen ? -props.actionWidth : 0)
 const touchStartXRef = useMainThreadRef<number>(0)
+const touchStartYRef = useMainThreadRef<number>(0)
 const startXRef = useMainThreadRef<number>(0)
 const isDraggingRef = useMainThreadRef<boolean>(false)
+// Handle to the in-flight snap animation. A `fill: 'forwards'` Web Animation
+// outranks inline style in the cascade, so the row's `setStyleProperty` writes
+// during the NEXT drag are masked until this is cancelled — that was why a
+// slow-drag after an open/close animation appeared frozen on-device. Mirrors
+// Draggable's `resetAnimRef`.
+const snapAnimRef = useMainThreadRef<any>(null)
+// Axis lock: 0 = undecided, 1 = horizontal (own the gesture),
+// 2 = vertical (yield to list scroll). Resolved once per gesture after the
+// finger crosses GESTURE_THRESHOLD, then sticky until release.
+const axisLockRef = useMainThreadRef<0 | 1 | 2>(0)
 
 // MT mirrors of BG state.
 const actionWidthRef = useMainThreadRef<number>(props.actionWidth)
@@ -141,7 +152,9 @@ function _animateTo(targetX: number) {
   }
   currentXRef.current = targetX
   if (typeof el.current?.animate === 'function') {
-    el.current.animate(
+    // Keep the handle: a fill-forwards animation outranks inline style in the
+    // cascade, so it must be cancelled before the next drag's transform writes.
+    snapAnimRef.current = el.current.animate(
       [
         { transform: `translateX(${from}px)` },
         { transform: `translateX(${targetX}px)` },
@@ -177,22 +190,52 @@ function _getVelocity() {
   return (p[length - 1] - p[0]) / dt
 }
 
-function _onTouchStart(e: { touches: Array<{ clientX: number }> }) {
+function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
   'main thread'
   if (disabledRef.current) return
+  // Cancel any in-flight snap animation: a `fill: 'forwards'` animation beats
+  // inline style, so leaving it running would mask this drag's
+  // `setStyleProperty('transform')` writes. Re-assert the current transform so
+  // the row doesn't snap to its pre-animation position.
+  const anim = snapAnimRef.current
+  if (anim && typeof anim.cancel === 'function') {
+    anim.cancel()
+    snapAnimRef.current = null
+    _applyTransform(currentXRef.current)
+  }
   isDraggingRef.current = true
+  axisLockRef.current = 0
   const x = e.touches[0].clientX
+  const y = e.touches[0].clientY
   touchStartXRef.current = x
+  touchStartYRef.current = y
   startXRef.current = currentXRef.current
   timeQueueRef.current = [Date.now()]
   positionQueueRef.current = [x]
 }
 
-function _onTouchMove(e: { touches: Array<{ clientX: number }> }) {
+function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
   'main thread'
   if (!isDraggingRef.current) return
   const x = e.touches[0].clientX
+  const y = e.touches[0].clientY
   const dx = x - touchStartXRef.current
+  const dy = y - touchStartYRef.current
+
+  // Axis lock — mirrors physics.ts resolveAxisLock with the horizontal
+  // consume cone (±45°). Once the finger travels past the 8px slop we decide,
+  // once, whether this gesture is ours (horizontal) or belongs to a vertical
+  // list scroll. A vertical gesture is yielded for the rest of the touch so
+  // we never fight the surrounding scroller.
+  if (axisLockRef.current === 0) {
+    const displacement = Math.sqrt(dx * dx + dy * dy)
+    // GESTURE_THRESHOLD = 8 (physics.ts).
+    if (displacement <= 8) return
+    // Horizontal when |dx| >= |dy| (the ±45° cone).
+    axisLockRef.current = Math.abs(dx) >= Math.abs(dy) ? 1 : 2
+  }
+  if (axisLockRef.current === 2) return
+
   let nextX = startXRef.current + dx
   // Clamp: row content can move from -rowWidth to 0. No positive overshoot.
   if (nextX > 0) nextX = 0
@@ -209,20 +252,38 @@ function _onTouchEnd() {
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
 
+  // Gesture was claimed by a vertical scroll — leave the row where it is
+  // (it never moved) without forcing a snap or emitting state.
+  if (axisLockRef.current === 2) {
+    axisLockRef.current = 0
+    return
+  }
+  axisLockRef.current = 0
+
   const endX = currentXRef.current
   const velocity = _getVelocity()
   const aw = actionWidthRef.current
   const rw = rowWidthRef.current
   const snapAt = snapThresholdRef.current * aw
   const commitAt = commitThresholdRef.current * rw
+  const opening = -velocity // positive = leftward flick (revealing)
 
-  if (-velocity >= commitVelocityRef.current || -endX >= commitAt) {
+  // Velocity-aware decision — mirrors physics.ts decideSwipeAction. A hard
+  // leftward flick commits; a rightward flick always closes (even past the
+  // open threshold); otherwise position + soft-flick decide open vs close.
+  if (opening >= commitVelocityRef.current || -endX >= commitAt) {
     _animateTo(-rw)
     runOnBackground(_emitCommit as any)()
     return
   }
 
-  if (-velocity >= velocityThresholdRef.current || -endX >= snapAt) {
+  if (velocity >= velocityThresholdRef.current) {
+    _animateTo(0)
+    runOnBackground(_emitOpen as any)(false)
+    return
+  }
+
+  if (opening >= velocityThresholdRef.current || -endX >= snapAt) {
     _animateTo(-aw)
     runOnBackground(_emitOpen as any)(true)
     return

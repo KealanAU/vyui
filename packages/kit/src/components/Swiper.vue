@@ -28,16 +28,18 @@ export interface SwiperProps {
    * multiples of this width.
    */
   itemWidth?: number
-  /**
-   * Reserved for future core support. Accepted on the wrapper for forward
-   * compatibility; ignored today.
-   */
+  /** Navigate circularly: dragging/autoplay past the last item wraps around. */
   loop?: boolean
   /**
-   * Reserved for future core support. `true` enables autoplay at a default
-   * interval, a number sets the interval in ms. Ignored today.
+   * `true` enables autoplay at a default interval; a number sets the interval
+   * in ms. Autoplay pauses while the user is dragging.
    */
   autoplay?: boolean | number
+  /**
+   * Only consume predominantly-horizontal gestures, releasing vertical drags
+   * to the host scroll surface. Useful for carousels inside a vertical scroll.
+   */
+  axisLock?: boolean
   direction?: SwiperVariants['direction']
   size?: SwiperVariants['size']
   /** Show the fixed dot indicator strip. Opt-in. */
@@ -65,6 +67,9 @@ const props = withDefaults(defineProps<SwiperProps>(), {
   itemWidth: 300,
   direction: 'horizontal',
   showIndicators: false,
+  loop: false,
+  autoplay: false,
+  axisLock: false,
 })
 const emit = defineEmits<SwiperEmits>()
 defineSlots<SwiperSlots>()
@@ -84,6 +89,11 @@ const itemCount = computed(() => {
   const nodes = slots.default?.() ?? []
   return nodes.length
 })
+
+// `autoplay` accepts `boolean | number`: a number is the interval in ms and
+// also implies autoplay is on. Split into the two core props.
+const autoplayEnabled = computed(() => props.autoplay !== false && props.autoplay != null)
+const autoplayInterval = computed(() => (typeof props.autoplay === 'number' ? props.autoplay : undefined))
 </script>
 
 <template>
@@ -91,6 +101,10 @@ const itemCount = computed(() => {
     :model-value="modelValue"
     :item-width="itemWidth"
     :item-count="itemCount"
+    :loop="loop"
+    :axis-lock="axisLock"
+    :autoplay="autoplayEnabled"
+    :interval="autoplayInterval"
     :class="ui.root({ class: [props.class, props.ui?.root] })"
     @update:model-value="emit('update:modelValue', $event)"
   >

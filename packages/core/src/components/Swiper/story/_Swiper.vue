@@ -8,6 +8,15 @@ const props = defineProps<{
   itemWidth?: number
   itemCount?: number
   disabled?: boolean
+  loop?: boolean
+  autoplay?: boolean
+  interval?: number
+  axisLock?: boolean
+  spaceBetween?: number
+  align?: 'start' | 'center' | 'end'
+  containerWidth?: number
+  offsetLimit?: [number, number]
+  rtl?: boolean
 }>()
 
 const itemWidth = computed(() => props.itemWidth ?? 300)
@@ -26,6 +35,15 @@ const current = ref(props.defaultValue ?? 0)
       :item-width="itemWidth"
       :item-count="itemCount"
       :disabled="disabled"
+      :loop="loop"
+      :autoplay="autoplay"
+      :interval="interval"
+      :axis-lock="axisLock"
+      :space-between="spaceBetween"
+      :align="align"
+      :container-width="containerWidth"
+      :offset-limit="offsetLimit"
+      :rtl="rtl"
       data-testid="swiper-root"
     >
       <SwiperItem

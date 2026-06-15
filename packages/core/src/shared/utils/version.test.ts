@@ -4,7 +4,7 @@
 //
 // Ported from `lynx-family/lynx-ui` `packages/lynx-ui-common/src/utils/version.test.ts`.
 
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   lynxSDKVersionStringToNumber,
   nativeLynxSDKVersionGreaterThan,
