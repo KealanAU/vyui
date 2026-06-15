@@ -27,3 +27,20 @@ index 2201679cff292214a49d6db18cc00627f31431a6..049a6456f82a9c0c1b39006528926a1e
      while(null !== (match = bareRe.exec(source)))specifiers.add(match[1]);
      if (0 === specifiers.size) return '';
      return [
+diff --git a/plugin/dist/index.js b/plugin/dist/index.js
+--- a/plugin/dist/index.js
++++ b/plugin/dist/index.js
+@@ -323,7 +323,12 @@
+                         enableCSSInheritance: opts.enableCSSInheritance ?? false,
+                         customCSSInheritanceList: opts.customCSSInheritanceList,
+                         enableRemoveCSSScope: false,
+-                        enableNewGesture: false,
++                        // [vyui local patch — REMOVE WHEN UPSTREAM EXPOSES THIS]
++                        // vue-lynx hardcodes the new-gesture pipeline OFF, which
++                        // gates the native gesture-arbitration path that
++                        // @lynx-js/gesture-runtime + FeedList pull-to-refresh need
++                        // (__SetGestureDetector / consumeGesture). Flip it ON.
++                        enableNewGesture: true,
+                         removeDescendantSelectorScope: true,
+                         cssPlugins: [
+                             vueScopeStripCSSPlugin
