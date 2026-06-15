@@ -14,6 +14,7 @@ import {
   VyProgress,
   VySeparator,
   VySkeleton,
+  VySwipeAction,
   VySwiper,
   VyTabs,
   VyToast,
@@ -37,6 +38,20 @@ const swiperSlides = [
   { label: 'Slide 3', tint: 'bg-emerald-500' },
   { label: 'Slide 4', tint: 'bg-amber-500' },
 ]
+// Autoplay + loop carousel — exercises the new core props (autoplay/interval,
+// loop, axisLock) forwarded through the kit Swiper wrapper. Autoplay pauses
+// while dragging and resumes on release; loop wraps last → first.
+const autoSwiperIndex = ref(0)
+
+// SwipeAction — velocity-aware release: a quick flick commits even on a short
+// drag; a full swipe deletes (iOS-mail style); a partial swipe reveals Delete.
+const mailRows = ref([
+  { id: 1, from: 'Lynx CI', subject: 'Build #482 passed' },
+  { id: 2, from: 'Releases', subject: 'v0.0.6 published' },
+])
+function removeMail(id: number): void {
+  mailRows.value = mailRows.value.filter(r => r.id !== id)
+}
 
 const innerTab = ref<string | number>('overview')
 const innerTabItems = [
@@ -143,6 +158,60 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
         </template>
       </VySwiper>
       <text class="text-slate-500 text-xs">Drag to swipe · flick to advance · dots reflect settle.</text>
+    </view>
+
+    <!-- Swiper: autoplay + loop + axis-lock (new core props via kit passthrough) -->
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+      <view class="flex flex-row items-center justify-between">
+        <text class="text-slate-900 text-base font-semibold">Swiper · autoplay + loop</text>
+        <text class="text-slate-500 text-xs">Active: {{ autoSwiperIndex + 1 }} / {{ swiperSlides.length }}</text>
+      </view>
+      <VySwiper
+        v-model="autoSwiperIndex"
+        :items="swiperSlides"
+        :item-width="280"
+        :autoplay="2500"
+        loop
+        axis-lock
+        show-indicators
+      >
+        <template #item="{ item }">
+          <view :class="['h-32 rounded-lg flex items-center justify-center', item.tint]" :style="{ width: '264px' }">
+            <text class="text-white text-lg font-bold">{{ item.label }}</text>
+          </view>
+        </template>
+      </VySwiper>
+      <text class="text-slate-500 text-xs">Auto-advances every 2.5s · loops past the end · pauses while you drag.</text>
+    </view>
+
+    <!-- SwipeAction -->
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-slate-900 text-base font-semibold">SwipeAction</text>
+      <text class="text-slate-500 text-xs">Full swipe (or flick) deletes · a partial swipe reveals Delete to tap.</text>
+      <view class="flex flex-col gap-2">
+        <VySwipeAction
+          v-for="row in mailRows"
+          :key="row.id"
+          :row-width="300"
+          :action-width="80"
+          side="right"
+          @commit="removeMail(row.id)"
+        >
+          <view class="bg-white h-16 flex flex-col justify-center px-4" :style="{ width: '300px' }">
+            <text class="text-slate-900 text-sm font-medium">{{ row.from }}</text>
+            <text class="text-slate-500 text-xs">{{ row.subject }}</text>
+          </view>
+          <template #actions="{ close }">
+            <view
+              class="bg-rose-500 h-16 flex items-center justify-center"
+              :style="{ width: '80px' }"
+              @tap="removeMail(row.id); close()"
+            >
+              <text class="text-white text-sm font-semibold">Delete</text>
+            </view>
+          </template>
+        </VySwipeAction>
+      </view>
     </view>
 
     <!-- Separator -->

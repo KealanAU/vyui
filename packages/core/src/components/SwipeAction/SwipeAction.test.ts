@@ -39,10 +39,17 @@ describe('SwipeAction — release-snap decision', () => {
     commitVelocity: number
     velocityThreshold: number
   }): Decision {
-    if (-opts.velocity >= opts.commitVelocity || -opts.endX >= opts.commitThreshold * opts.rowWidth) {
+    // Mirrors `_onTouchEnd` in SwipeAction.vue (and physics.ts
+    // decideSwipeAction): commit on hard leftward flick / past commit
+    // threshold; a rightward flick always closes; else open vs close.
+    const opening = -opts.velocity // positive = leftward (revealing)
+    if (opening >= opts.commitVelocity || -opts.endX >= opts.commitThreshold * opts.rowWidth) {
       return 'commit'
     }
-    if (-opts.velocity >= opts.velocityThreshold || -opts.endX >= opts.snapThreshold * opts.actionWidth) {
+    if (opts.velocity >= opts.velocityThreshold) {
+      return 'close'
+    }
+    if (opening >= opts.velocityThreshold || -opts.endX >= opts.snapThreshold * opts.actionWidth) {
       return 'open'
     }
     return 'close'
@@ -77,5 +84,37 @@ describe('SwipeAction — release-snap decision', () => {
 
   it('commits on hard leftward flick regardless of position', () => {
     expect(decide({ ...base, endX: -30, velocity: -1400 })).toBe('commit')
+  })
+
+  it('a rightward flick closes even past the open threshold', () => {
+    // position alone (-endX = 50 ≥ 40) would open, but the flick is rightward
+    expect(decide({ ...base, endX: -50, velocity: 600 })).toBe('close')
+  })
+})
+
+// Axis-lock decision the touchmove worklet runs once per gesture: a gesture
+// past the 8px slop is "ours" only when |dx| >= |dy| (the ±45° horizontal
+// cone), otherwise it belongs to the surrounding vertical list scroll.
+describe('SwipeAction — axis lock', () => {
+  function axis(dx: number, dy: number): 0 | 1 | 2 {
+    const displacement = Math.sqrt(dx * dx + dy * dy)
+    if (displacement <= 8) return 0 // undecided
+    return Math.abs(dx) >= Math.abs(dy) ? 1 : 2 // 1 = horizontal, 2 = vertical
+  }
+
+  it('stays undecided below the slop threshold', () => {
+    expect(axis(3, 3)).toBe(0)
+    expect(axis(5, 5)).toBe(0)
+  })
+  it('locks horizontal for a mostly-horizontal drag', () => {
+    expect(axis(20, 4)).toBe(1)
+    expect(axis(-30, 10)).toBe(1)
+  })
+  it('yields to vertical scroll for a mostly-vertical drag', () => {
+    expect(axis(4, 20)).toBe(2)
+    expect(axis(10, -30)).toBe(2)
+  })
+  it('diagonal at exactly 45° is horizontal (boundary inclusive)', () => {
+    expect(axis(20, 20)).toBe(1)
   })
 })
