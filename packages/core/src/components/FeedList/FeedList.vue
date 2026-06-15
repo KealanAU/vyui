@@ -344,10 +344,10 @@ function _onGestureBegin(event: any) {
   draggingRef.current = true
   startYRef.current = 0
   startOffsetRef.current = offsetRef.current
-  // DEBUG: if this callback fires while at the top edge, nudge the content 30px
-  // so we can SEE (pure MT, no runOnBackground) whether the detector dispatches
-  // touches and whether `isAtStart` is reported. Remove once PTR works.
-  if (event && event.params && event.params.isAtStart === true) _paint(30)
+  // DEBUG: nudge the content 30px on ANY gesture-begin so we can SEE (pure MT)
+  // whether the detector dispatches touches at all. Remove once PTR works.
+  void event
+  _paint(30)
 }
 
 /**
@@ -483,6 +483,16 @@ function _installGesture() {
   if (el == null || el.element == null || el.setAttribute == null) return
   el.setAttribute('has-react-gesture', true)
   el.setAttribute('flatten', false)
+  // Register the callback worklet ctxs with the JS-function lifecycle manager,
+  // exactly like React-Lynx's `onWorkletCtxUpdate` (worklet-runtime/lib/bindings
+  // /observers.js) does for every gesture callback. Without this `addRef` the
+  // engine may hold the ctxs but never dispatch to them.
+  const lcm = (globalThis as any).lynxWorkletImpl?._jsFunctionLifecycleManager
+  if (lcm != null) {
+    lcm.addRef((_onGestureBegin as any)._execId, _onGestureBegin)
+    lcm.addRef((_onGestureUpdate as any)._execId, _onGestureUpdate)
+    lcm.addRef((_onGestureEnd as any)._execId, _onGestureEnd)
+  }
   // `globalThis.` (not bare) so the worklet transform treats it as a recognized
   // global rather than a background closure var to capture (which crashed at
   // setup with `__SetGestureDetector is not defined`). The PAPI is global on MT
