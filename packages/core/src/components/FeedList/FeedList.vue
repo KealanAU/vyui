@@ -338,16 +338,12 @@ watch(
 
 // --- Gesture callbacks (inline worklets, registered on the detector) -----
 
-function _onGestureBegin(event: any) {
+function _onGestureBegin() {
   'main thread'
-  globalThis.console.log('[vyui-ptr] onBegin fired; isAtStart=', event && event.params ? event.params.isAtStart : 'no-params')
   if (disabledRef.current) return
   draggingRef.current = true
   startYRef.current = 0
   startOffsetRef.current = offsetRef.current
-  // DEBUG: nudge the content 30px on ANY gesture-begin so we can SEE (pure MT)
-  // whether the detector dispatches touches at all. Remove once PTR works.
-  _paint(30)
 }
 
 /**
@@ -382,7 +378,6 @@ function _onGestureUpdate(event: any, stateManager: any) {
 
   const pullingDown = next > 0
   const shouldOwn = atTop && (pullingDown || offsetRef.current > 0) && !refreshingRef.current
-  globalThis.console.log('[vyui-ptr] onUpdate atTop=', atTop, 'deltaY=', params.deltaY, 'next=', next, 'shouldOwn=', shouldOwn)
 
   if (!shouldOwn) {
     // Hand the gesture back to the native scroller.
@@ -411,7 +406,6 @@ function _onGestureUpdate(event: any, stateManager: any) {
 
 function _onGestureEnd() {
   'main thread'
-  globalThis.console.log('[vyui-ptr] onEnd fired; offset=', offsetRef.current)
   if (!draggingRef.current) return
   draggingRef.current = false
   if (refreshingRef.current) return
@@ -458,6 +452,15 @@ function _onClosed() {
 // --- Gesture installation ------------------------------------------------
 // vue-lynx has no `main-thread:gesture` transform, so we install the detector
 // ourselves from MT once the element refs are registered.
+//
+// BLOCKED ON UPSTREAM: this registers the detector and the engine DOES fire
+// onBegin/onUpdate/onEnd, but the callback worklets are never attached to the
+// element on the main thread (native: "TriggerFiberElementWorklet failed since
+// worklet_info is empty"). React-Lynx attaches them via the `main-thread:gesture`
+// snapshot path (processGestureBackground on BG + processGesture on MT); vue-lynx
+// has no equivalent binding, so PTR cannot fire today. The engine is kept ready
+// for when vue-lynx ships `:main-thread-gesture` — see
+// docs/upstream/vue-lynx-gesture-binding.md.
 function _installGesture(callbacks: any) {
   'main thread'
   // Detect SDK to pick consume vs intercept (mirrors lynx-ui useRefresh).
@@ -482,7 +485,6 @@ function _installGesture(callbacks: any) {
   const el = (listRef as unknown as {
     current?: { element?: unknown, setAttribute?: (k: string, v: unknown) => void }
   }).current
-  globalThis.console.log('[vyui-ptr] install: el=', el != null, 'rawEl=', !!(el && el.element), 'setAttr=', !!(el && el.setAttribute), 'setDetector=', typeof (globalThis as any).__SetGestureDetector)
   if (el == null || el.element == null || el.setAttribute == null) return
   el.setAttribute('has-react-gesture', true)
   el.setAttribute('flatten', false)
@@ -494,7 +496,6 @@ function _installGesture(callbacks: any) {
   // is still a worklet ctx OBJECT carrying its worklet_info. Register each with
   // the JS-function lifecycle manager (like React-Lynx's `onWorkletCtxUpdate`).
   const lcm = (globalThis as any).lynxWorkletImpl?._jsFunctionLifecycleManager
-  globalThis.console.log('[vyui-ptr] install: lcm=', lcm != null, 'cbCount=', callbacks && callbacks.length, 'beginExecId=', callbacks && callbacks[0] ? callbacks[0].callback._execId : 'none')
   if (lcm != null && callbacks != null) {
     for (let i = 0; i < callbacks.length; i++) {
       lcm.addRef(callbacks[i].callback._execId, callbacks[i].callback)
@@ -511,11 +512,9 @@ function _installGesture(callbacks: any) {
     { config: { enabled: true }, callbacks },
     { waitFor: [], simultaneous: [], continueWith: [] },
   )
-  globalThis.console.log('[vyui-ptr] install: __SetGestureDetector returned (registered)')
 }
 
 onMounted(() => {
-  console.log('[vyui-ptr] onMounted (BG); enableRefresh=', props.enableRefresh)
   if (!props.enableRefresh) return
   // Register each gesture-callback worklet ctx on the BACKGROUND thread so the
   // native side gets a runnable worklet — otherwise it logs "TriggerFiberElement
@@ -536,7 +535,6 @@ onMounted(() => {
   ]
   // Defer install so the element-ref + worklet-ctx ops have flushed to MT.
   runOnMainThread(_installGesture as any)(callbacks)
-  console.log('[vyui-ptr] onMounted: scheduled _installGesture on MT')
 })
 
 // --- Helpers / public API ------------------------------------------------

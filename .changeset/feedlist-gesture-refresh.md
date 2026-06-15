@@ -2,14 +2,22 @@
 "@vyui/core": patch
 ---
 
-FeedList: real rubber-band pull-to-refresh via gesture arbitration.
+FeedList: rubber-band pull-to-refresh engine via gesture arbitration (BLOCKED
+on a vue-lynx upstream gap — see below).
 
-Pull-to-refresh is now a custom rubber-band driven by a gesture-arbitrated
+Pull-to-refresh is a custom rubber-band driven by a gesture-arbitrated
 `NativeGesture` (`@lynx-js/gesture-runtime`) on a bare `<list>`, replacing the
 native `<refresh>` wrapper. This is the only way to own the pull physics and
 threshold while out-arbitrating the list's native vertical scroll. Requires the
 engine's new-gesture pipeline, which vue-lynx hardcodes off — flipped on via an
 extended `patches/vue-lynx@0.4.0.patch` (`enableNewGesture: true`).
+
+KNOWN LIMITATION: PTR does not fire yet. The detector registers and the engine
+dispatches onBegin/onUpdate/onEnd, but vue-lynx has no `:main-thread-gesture`
+binding to attach the callback worklets to the element on the main thread
+(native: "TriggerFiberElementWorklet failed since worklet_info is empty"). The
+API + engine ship dormant behind `enableRefresh`, ready for when vue-lynx adds
+the binding. See `docs/upstream/vue-lynx-gesture-binding.md`.
 
 New shared primitive `@/shared/gesture/gestureArbitration` wraps the
 consume/intercept policy (SDK `< 3.3` consume vs `>= 3.3` intercept). The
