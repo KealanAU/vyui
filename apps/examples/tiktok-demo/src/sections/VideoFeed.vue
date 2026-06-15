@@ -8,20 +8,22 @@
 //   variant in the kit theme only repositions the dot indicators; the actual
 //   swipe axis is always horizontal.
 //
-//   VyFeedList wraps Lynx's native `<list>` which handles vertical-paging
-//   natively with `scroll-orientation="vertical"`. Each item is `h-full`
-//   (100vh on Lynx) so the list snap-scrolls one video per swipe — the same
-//   mechanical feel as TikTok. FeedList also ships load-more on scrolltolower
-//   and the PTR refresh slot that PTR integration needs, making it the single
-//   component that handles all three surface-level features (paging, load-more,
-//   future PTR).
+//   VyFeedList wraps Lynx's native `<list>` with `scroll-orientation="vertical"`
+//   and `:item-snap="true"`, which maps to the native `item-snap` paging effect
+//   (`{ factor: 0, offset: 0 }` — snap each item to the top). Combined with
+//   per-item full screen height that gives one-video-per-swipe paging — the
+//   TikTok mechanic. FeedList also handles load-more on scrolltolower, so one
+//   component covers both surface features (paging + load-more).
+//
+//   Pull-to-refresh is intentionally NOT used here — the upstream-derived
+//   refresh header was dropped; this demo is about snap paging + the comments
+//   drawer's load-on-scroll, not PTR.
 
 import { ref } from 'vue'
 import { VyFeedList } from '@vyui/kit'
 import { SEED_VIDEOS, LOAD_MORE_VIDEOS, type Video } from '../data/videos'
 import VideoCard from '../components/VideoCard.vue'
 import LoadCounter from '../components/LoadCounter.vue'
-import PullRefreshHeader from '../components/PullRefreshHeader.vue'
 
 const emit = defineEmits<{
   // Fired when the user taps the comment count on a video card.
@@ -46,14 +48,10 @@ const screenH = (() => {
   return 812 // iPhone-ish fallback for web preview
 })()
 
-// N/total counters. `loadedCount` ticks up as batches land; `totalCount` is the
-// ceiling (seed + load-more). Both are shown in the overlay LoadCounter badge.
+// N/total counter. `loadedCount` ticks up as batches land; `totalCount` is the
+// ceiling (seed + load-more). Shown in the side LoadCounter badge.
 const loadedCount = ref(SEED_VIDEOS.length)
 const totalCount = ref(SEED_VIDEOS.length + LOAD_MORE_VIDEOS.length)
-
-// refreshing v-model — will be bound to FeedList when PTR ships.
-// Declared here so refreshFeed() can set it and the template can read it.
-const refreshing = ref(false)
 
 function onLoadMore() {
   if (loadingMore.value || allLoaded.value) return
@@ -67,35 +65,6 @@ function onLoadMore() {
     emit('videosLoaded', LOAD_MORE_VIDEOS.length)
   }, 700)
 }
-
-/**
- * PTR handler — prepends 3 new mock videos and bumps the N/total counter.
- * Ready to attach to `@refresh` on VyFeedList once `enableRefresh` ships.
- *
- * INTEGRATION(PTR): once @vyui/core FeedList ships enableRefresh, wire
- *   :enable-refresh="true" + v-model:refreshing="refreshing" + @refresh="refreshFeed"
- *   on the VyFeedList below, AND uncomment the #refreshHeader slot block.
- *   Contract: state ∈ 'idle'|'pulling'|'releaseReady'|'refreshing'|'done',
- *   progress 0..1.
- */
-function refreshFeed() {
-  if (refreshing.value) return
-  refreshing.value = true
-  setTimeout(() => {
-    // Prepend 3 synthetic "new" videos — clones of seed items with fresh ids.
-    const fresh: Video[] = SEED_VIDEOS.slice(0, 3).map((v, i) => ({
-      ...v,
-      id: `refresh-${Date.now()}-${i}`,
-    }))
-    videos.value = [...fresh, ...videos.value]
-    totalCount.value += fresh.length
-    loadedCount.value += fresh.length
-    refreshing.value = false
-  }, 1200)
-}
-
-// Expose refreshFeed so App.vue can call it from a debug button if needed.
-defineExpose({ refreshFeed })
 </script>
 
 <template>
@@ -112,50 +81,20 @@ defineExpose({ refreshFeed })
       <LoadCounter :loaded="loadedCount" :total="totalCount" label="videos" />
     </view>
 
-    <!-- Vertical paging feed. Each item is full-screen height so Lynx's native
-         list scroll snaps one item at a time — the TikTok paging mechanic.
-         `enable-load-more` triggers `onLoadMore` when the user nears the last
-         item. PTR wiring is commented in the block below. -->
+    <!-- Vertical paging feed. `:item-snap="true"` enables the native list
+         paging effect; combined with full-screen-height items the list snaps
+         one video per swipe (the TikTok mechanic). `enable-load-more` triggers
+         `onLoadMore` when the user nears the last item. -->
     <VyFeedList
       :items="videos"
       item-key-field="id"
       scroll-orientation="vertical"
+      :item-snap="true"
       :enable-load-more="!allLoaded"
       :load-more-threshold-item-count="2"
       class="w-full h-full"
       @load-more="onLoadMore"
     >
-      <!--
-        INTEGRATION(PTR): once @vyui/core FeedList ships enableRefresh,
-        replace the opening <VyFeedList> tag above with:
-
-          <VyFeedList
-            :items="videos"
-            item-key-field="id"
-            scroll-orientation="vertical"
-            :enable-load-more="!allLoaded"
-            :load-more-threshold-item-count="2"
-            :enable-refresh="true"
-            v-model:refreshing="refreshing"
-            class="w-full h-full"
-            @load-more="onLoadMore"
-            @refresh="refreshFeed"
-          >
-
-        And uncomment the #refreshHeader slot below:
-
-          <template #refreshHeader>
-            <PullRefreshHeader
-              :loaded="loadedCount"
-              :total="totalCount"
-            />
-          </template>
-
-        The PullRefreshHeader component already renders the N/total badge and
-        a state-aware arrow/spinner — just pass `state` and `progress` from
-        the slot's scoped props once the slot emits them.
-      -->
-
       <template #item="{ item }">
         <!-- Pin each item to one screen height (see screenH) so the card's
              absolute overlays anchor correctly and the list pages one video

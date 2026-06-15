@@ -12,9 +12,15 @@ engine's new-gesture pipeline, which vue-lynx hardcodes off — flipped on via a
 extended `patches/vue-lynx@0.4.0.patch` (`enableNewGesture: true`).
 
 New shared primitive `@/shared/gesture/gestureArbitration` wraps the
-consume/intercept policy (SDK `< 3.3` consume vs `>= 3.3` intercept) and the
-`__SetGestureDetector` install, without taking a dependency on
+consume/intercept policy (SDK `< 3.3` consume vs `>= 3.3` intercept). The
+`__SetGestureDetector` install worklet is inlined in the SFC and calls the
+PAPIs via `globalThis` (a `.ts`-resident worklet crashes the card at load, and
+bare PAPI identifiers get captured from the background scope). No dependency on
 `@lynx-js/lynx-ui-common`.
+
+Also new: `itemSnap` prop — `true` enables native `<list>` `item-snap` paging
+(snap each item to the top, `{ factor: 0, offset: 0 }`), or pass a custom
+`{ factor, offset }`. Used for full-screen vertical paging (one item per swipe).
 
 BREAKING (FeedList PTR surface):
 

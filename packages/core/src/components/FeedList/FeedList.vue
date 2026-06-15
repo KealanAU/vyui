@@ -65,6 +65,14 @@ export interface FeedListProps<T = unknown> {
    */
   bounces?: boolean
   /**
+   * Snap each item to a rest position after scrolling (native `<list>`
+   * `item-snap`) — e.g. full-screen vertical paging (one item per swipe).
+   * `true` snaps each item to the top (`{ factor: 0, offset: 0 }`); pass an
+   * object for a custom paging factor/offset. `list-type: 'single'` only.
+   * @defaultValue `false`
+   */
+  itemSnap?: boolean | { factor: number, offset: number }
+  /**
    * @defaultValue `true`
    */
   scrollBarEnable?: boolean
@@ -530,6 +538,13 @@ function onScrollStateChange(event: unknown): void {
   emits('scrollStateChange', event)
 }
 
+// Resolve `itemSnap` to the native `item-snap` object (or undefined → no attr).
+// `true` → snap each item to the top, the full-screen paging case.
+const itemSnapValue = computed(() => {
+  if (!props.itemSnap) return undefined
+  return props.itemSnap === true ? { factor: 0, offset: 0 } : props.itemSnap
+})
+
 const isEmpty = computed(() => props.items.length === 0)
 // Render the footer row whenever load-more is enabled: it shows the
 // `loadMoreFooter` slot while loading, else the `noMoreDataFooter` slot.
@@ -586,6 +601,7 @@ defineExpose({ scrollToIndex, refreshState })
         :scroll-bar-enable="scrollBarEnable"
         :lower-threshold-item-count="loadMoreThresholdItemCount"
         :upper-threshold-item-count="upperThresholdItemCount"
+        v-bind="{ 'item-snap': itemSnapValue }"
         @scroll="onScroll"
         @scrolltolower="onScrollToLower"
         @scrolltoupper="onScrollToUpper"
@@ -626,6 +642,7 @@ defineExpose({ scrollToIndex, refreshState })
     :scroll-bar-enable="scrollBarEnable"
     :lower-threshold-item-count="loadMoreThresholdItemCount"
     :upper-threshold-item-count="upperThresholdItemCount"
+    v-bind="{ 'item-snap': itemSnapValue }"
     @scroll="onScroll"
     @scrolltolower="onScrollToLower"
     @scrolltoupper="onScrollToUpper"

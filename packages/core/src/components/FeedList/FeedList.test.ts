@@ -94,7 +94,11 @@ describe('FeedList — PTR wiring (gesture-arbitrated)', () => {
 
   it('installs the gesture detector manually (vue-lynx has no gesture transform)', async () => {
     const sfc = await readSfc()
-    expect(sfc).toMatch(/installGestureDetector/)
+    // The install worklet is inlined in the SFC (a .ts-resident worklet crashes
+    // at card load) and the PAPIs are reached via `globalThis.` so the worklet
+    // transform doesn't capture them from the background scope.
+    expect(sfc).toMatch(/globalThis\.__SetGestureDetector/)
+    expect(sfc).toMatch(/globalThis\.__SetAttribute/)
     // The new-gesture path is enabled via the vue-lynx patch, not a template
     // prop — assert no gesture-binding ATTRIBUTE is used (scan the template).
     const template = sfc.match(/<template>[\s\S]*<\/template>/)?.[0] ?? ''

@@ -25,6 +25,12 @@ export interface FeedListProps<T = unknown> {
   spanCount?: number
   scrollOrientation?: 'vertical' | 'horizontal'
   bounces?: boolean
+  /**
+   * Snap each item to a rest position after scrolling (native `item-snap`).
+   * `true` = full-screen paging (snap each item to the top); pass an object for
+   * a custom `{ factor, offset }`. `listType: 'single'` only.
+   */
+  itemSnap?: boolean | { factor: number, offset: number }
   scrollBarEnable?: boolean
   /** Disable scrolling. */
   disabled?: boolean
@@ -82,6 +88,7 @@ const cls = computed(() => ui.value({ class: props.class }))
     :span-count="spanCount"
     :scroll-orientation="scrollOrientation"
     :bounces="bounces"
+    :item-snap="itemSnap"
     :scroll-bar-enable="scrollBarEnable"
     :disabled="disabled"
     :enable-load-more="enableLoadMore"

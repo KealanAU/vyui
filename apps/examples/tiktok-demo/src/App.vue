@@ -16,8 +16,7 @@ function openComments(videoId: string) {
 
 // Global N/total counter that spans both the video feed and the comments list.
 // Each domain starts its own segment; we track the combined loaded count here
-// so the app-level overlay badge (PullRefreshHeader uses this same figure)
-// reflects all loaded data, not just one list.
+// so an app-level figure reflects all loaded data, not just one list.
 const globalLoaded = ref(0)
 const globalTotal = ref(0)          // set on mount via onFeedReady
 
