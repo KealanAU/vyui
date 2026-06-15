@@ -517,11 +517,18 @@ function _installGesture(callbacks: any) {
 onMounted(() => {
   console.log('[vyui-ptr] onMounted (BG); enableRefresh=', props.enableRefresh)
   if (!props.enableRefresh) return
-  // Build the callback descriptor HERE on the background thread, where the
-  // worklet references (`_onGestureBegin` …) are still ctx objects carrying
-  // worklet_info, and pass it as an argument. Referencing them only inside the
-  // MT install worklet conveyed callbacks WITHOUT worklet_info — native logged
-  // "TriggerFiberElementWorklet failed since worklet_info is empty".
+  // Register each gesture-callback worklet ctx on the BACKGROUND thread so the
+  // native side gets a runnable worklet — otherwise it logs "TriggerFiberElement
+  // Worklet failed since worklet_info is empty" and the callback body never runs.
+  // React-Lynx does this in `processGestureBackground` via `registerWorkletCtx`.
+  // vue-lynx has no `main-thread:gesture` transform to do it for us, but its
+  // `runOnMainThread(fn)` calls `registerWorkletCtx(fn)` as a side effect
+  // (assigning `_execId`), so we run each callback through it and discard the
+  // returned caller. Mutates the ctx in place, so the same objects below carry
+  // the registration into `__SetGestureDetector`.
+  runOnMainThread(_onGestureBegin as any)
+  runOnMainThread(_onGestureUpdate as any)
+  runOnMainThread(_onGestureEnd as any)
   const callbacks = [
     { name: 'onBegin', callback: _onGestureBegin },
     { name: 'onUpdate', callback: _onGestureUpdate },
