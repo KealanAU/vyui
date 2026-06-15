@@ -22,6 +22,10 @@ Also new: `itemSnap` prop — `true` enables native `<list>` `item-snap` paging
 (snap each item to the top, `{ factor: 0, offset: 0 }`), or pass a custom
 `{ factor, offset }`. Used for full-screen vertical paging (one item per swipe).
 
+Also new: `snap` emit forwarding the native `<list>` `bindsnap` event
+(`event.detail.position` = settled item index) — useful with `itemSnap` to
+track the current page.
+
 BREAKING (FeedList PTR surface):
 
 - `enableRefresh` now renders a translated wrapper + bare `<list>` instead of a

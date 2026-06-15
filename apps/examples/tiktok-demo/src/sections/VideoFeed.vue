@@ -48,10 +48,16 @@ const screenH = (() => {
   return 812 // iPhone-ish fallback for web preview
 })()
 
-// N/total counter. `loadedCount` ticks up as batches land; `totalCount` is the
-// ceiling (seed + load-more). Shown in the side LoadCounter badge.
-const loadedCount = ref(SEED_VIDEOS.length)
-const totalCount = ref(SEED_VIDEOS.length + LOAD_MORE_VIDEOS.length)
+// Current position in the feed (0-based). Updated by the native list `snap`
+// event each time paging settles on a video — so the side badge reads e.g.
+// "3/15" and ticks up/down as you flick. This also makes snap paging visibly
+// verifiable: if the number doesn't change per swipe, snap isn't firing.
+const currentIndex = ref(0)
+
+function onSnap(event: unknown) {
+  const pos = (event as { detail?: { position?: number } })?.detail?.position
+  if (typeof pos === 'number') currentIndex.value = pos
+}
 
 function onLoadMore() {
   if (loadingMore.value || allLoaded.value) return
@@ -59,7 +65,6 @@ function onLoadMore() {
   // Simulate a network fetch. Using setTimeout keeps the demo self-contained.
   setTimeout(() => {
     videos.value = [...videos.value, ...LOAD_MORE_VIDEOS]
-    loadedCount.value = videos.value.length
     allLoaded.value = true
     loadingMore.value = false
     emit('videosLoaded', LOAD_MORE_VIDEOS.length)
@@ -71,14 +76,14 @@ function onLoadMore() {
   <!-- Full-screen container. Black background bleeds between gradient cards. -->
   <view class="w-full h-full bg-black relative">
 
-    <!-- N/total counter — pinned to the SIDE (top-right), not centered, so it
-         reads as an unobtrusive "what's loaded" indicator rather than the main
-         event. The drawer's own counter tracks comments separately. -->
+    <!-- Position counter — pinned to the SIDE (top-right). Shows the current
+         video (1-based) out of the total loaded, updated by the list `snap`
+         event so it ticks up/down as you flick between videos. -->
     <view
       class="absolute top-12 right-3 flex flex-row justify-end"
       :style="{ zIndex: 20 }"
     >
-      <LoadCounter :loaded="loadedCount" :total="totalCount" label="videos" />
+      <LoadCounter :loaded="currentIndex + 1" :total="videos.length" label="videos" />
     </view>
 
     <!-- Vertical paging feed. `:item-snap="true"` enables the native list
@@ -94,6 +99,7 @@ function onLoadMore() {
       :load-more-threshold-item-count="2"
       class="w-full h-full"
       @load-more="onLoadMore"
+      @snap="onSnap"
     >
       <template #item="{ item }">
         <!-- Pin each item to one screen height (see screenH) so the card's

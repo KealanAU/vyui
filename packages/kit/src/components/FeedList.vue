@@ -70,6 +70,8 @@ const emit = defineEmits<{
   scrollToUpper: [event: unknown]
   scroll: [event: unknown]
   scrollStateChange: [event: unknown]
+  /** Native `bindsnap` — `event.detail.position` is the snapped item index. */
+  snap: [event: unknown]
 }>()
 defineSlots<FeedListSlots<T>>()
 
@@ -101,6 +103,7 @@ const cls = computed(() => ui.value({ class: props.class }))
     @scroll-to-upper="emit('scrollToUpper', $event)"
     @scroll="emit('scroll', $event)"
     @scroll-state-change="emit('scrollStateChange', $event)"
+    @snap="emit('snap', $event)"
   >
     <template #item="{ item, index }">
       <slot name="item" :item="(item as T)" :index="index" />

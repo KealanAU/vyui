@@ -138,6 +138,11 @@ export type FeedListEmits = {
   scroll: [event: unknown]
   /** Native `bindscrollstatechange`. */
   scrollStateChange: [event: unknown]
+  /**
+   * Native `bindsnap` — fires when `itemSnap` paging settles on an item.
+   * `event.detail.position` is the snapped item index.
+   */
+  snap: [event: unknown]
 }
 </script>
 
@@ -538,6 +543,10 @@ function onScrollStateChange(event: unknown): void {
   emits('scrollStateChange', event)
 }
 
+function onSnap(event: unknown): void {
+  emits('snap', event)
+}
+
 // Resolve `itemSnap` to the native `item-snap` object (or undefined → no attr).
 // `true` → snap each item to the top, the full-screen paging case.
 const itemSnapValue = computed(() => {
@@ -606,6 +615,7 @@ defineExpose({ scrollToIndex, refreshState })
         @scrolltolower="onScrollToLower"
         @scrolltoupper="onScrollToUpper"
         @scrollstatechange="onScrollStateChange"
+        @snap="onSnap"
       >
         <!-- `item-key` must stay kebab-cased; bind via `v-bind` to avoid
              Vue's template compiler camelizing the attribute. -->
@@ -647,6 +657,7 @@ defineExpose({ scrollToIndex, refreshState })
     @scrolltolower="onScrollToLower"
     @scrolltoupper="onScrollToUpper"
     @scrollstatechange="onScrollStateChange"
+    @snap="onSnap"
   >
     <list-item
       v-for="(item, index) in items"
