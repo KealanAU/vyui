@@ -34,6 +34,18 @@ const videos = ref<Video[]>([...SEED_VIDEOS])
 const loadingMore = ref(false)
 const allLoaded = ref(false)
 
+// Full-screen paging height. A Lynx `<list-item>` sizes to its CONTENT, not to
+// the list viewport — so a child `h-full` collapses and the card's absolutely
+// positioned overlays render off-screen (the "video is way off the top" bug).
+// Pin each item to the device screen height (CSS px = pixelHeight / pixelRatio)
+// so every card fills exactly one viewport and the list pages one video per
+// swipe. SystemInfo is a Lynx global; guard + fall back for non-Lynx/web preview.
+const screenH = (() => {
+  const sys = (globalThis as { SystemInfo?: { pixelHeight?: number, pixelRatio?: number } }).SystemInfo
+  if (sys?.pixelHeight && sys?.pixelRatio) return Math.round(sys.pixelHeight / sys.pixelRatio)
+  return 812 // iPhone-ish fallback for web preview
+})()
+
 // N/total counters. `loadedCount` ticks up as batches land; `totalCount` is the
 // ceiling (seed + load-more). Both are shown in the overlay LoadCounter badge.
 const loadedCount = ref(SEED_VIDEOS.length)
@@ -90,11 +102,11 @@ defineExpose({ refreshFeed })
   <!-- Full-screen container. Black background bleeds between gradient cards. -->
   <view class="w-full h-full bg-black relative">
 
-    <!-- N/total counter overlay — top-center, above the feed.
-         Shows how many video items have loaded against the total cap.
-         Also updates when CommentsDrawer fires commentsLoaded (via parent). -->
+    <!-- N/total counter — pinned to the SIDE (top-right), not centered, so it
+         reads as an unobtrusive "what's loaded" indicator rather than the main
+         event. The drawer's own counter tracks comments separately. -->
     <view
-      class="absolute top-12 left-0 right-0 flex flex-row justify-center"
+      class="absolute top-12 right-3 flex flex-row justify-end"
       :style="{ zIndex: 20 }"
     >
       <LoadCounter :loaded="loadedCount" :total="totalCount" label="videos" />
@@ -145,10 +157,11 @@ defineExpose({ refreshFeed })
       -->
 
       <template #item="{ item }">
-        <!-- Each card fills the full list item. Lynx `<list-item>` does not
-             set height automatically — the card's `h-full` resolves against
-             the list's own height (100vh on device). -->
-        <view class="w-full h-full">
+        <!-- Pin each item to one screen height (see screenH) so the card's
+             absolute overlays anchor correctly and the list pages one video
+             per swipe. Without the explicit height the item collapses to its
+             content box and the card renders off the top of the screen. -->
+        <view class="w-full" :style="{ height: `${screenH}px` }">
           <VideoCard
             :video="item"
             @open-comments="emit('openComments', $event)"

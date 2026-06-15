@@ -13,7 +13,7 @@
 
 import { ref } from 'vue'
 import { VyDrawer, VyFeedList } from '@vyui/kit'
-import { SEED_COMMENTS, LOAD_MORE_COMMENTS, type Comment } from '../data/comments'
+import { SEED_COMMENTS, makeComments, COMMENTS_TOTAL, type Comment } from '../data/comments'
 import LoadCounter from './LoadCounter.vue'
 
 const props = defineProps<{
@@ -36,23 +36,28 @@ const comments = ref<Comment[]>([...SEED_COMMENTS])
 const loadingMore = ref(false)
 const allLoaded = ref(false)
 
-// N/total for comments specifically — local to this drawer.
+// N/total for comments — local to this drawer. `commentsTotal` is the ceiling
+// the repeated load-more batches climb toward, so the badge reads e.g. 5/45.
 const commentsLoaded = ref(SEED_COMMENTS.length)
-const commentsTotal = ref(SEED_COMMENTS.length + LOAD_MORE_COMMENTS.length)
+const commentsTotal = ref(COMMENTS_TOTAL)
+const BATCH = 8
 
+// Each scroll-to-bottom appends another batch until the ceiling is hit — this
+// is the demo's main "load on scroll down" behaviour. Unlike a single second
+// page, scrolling keeps pulling more rows in, which is what we want to show.
 function onLoadMore() {
   if (loadingMore.value || allLoaded.value) return
   loadingMore.value = true
-  // Simulate a network round-trip. 800ms gives the user visible feedback
-  // that a load is in progress before the new rows appear.
   setTimeout(() => {
-    comments.value = [...comments.value, ...LOAD_MORE_COMMENTS]
+    const remaining = COMMENTS_TOTAL - comments.value.length
+    const next = makeComments(comments.value.length, Math.min(BATCH, remaining))
+    comments.value = [...comments.value, ...next]
     commentsLoaded.value = comments.value.length
-    allLoaded.value = true
+    allLoaded.value = comments.value.length >= COMMENTS_TOTAL
     loadingMore.value = false
     // Notify parent so the global N/total badge updates.
-    emit('commentsLoaded', LOAD_MORE_COMMENTS.length)
-  }, 800)
+    emit('commentsLoaded', next.length)
+  }, 700)
 }
 </script>
 

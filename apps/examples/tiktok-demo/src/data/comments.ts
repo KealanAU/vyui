@@ -18,10 +18,41 @@ export const SEED_COMMENTS: Comment[] = [
   { id: 'c5',  author: '@sora',   text: 'The sheet multi-snap is exactly what vaul does on web — nice 👏', likes: 188, time: '18m' },
 ]
 
-export const LOAD_MORE_COMMENTS: Comment[] = [
-  { id: 'c6',  author: '@niko',   text: 'Does this support Android Lynx runtime yet or iOS only?',         likes: 134, time: '24m' },
-  { id: 'c7',  author: '@yuki',   text: 'Tailwind v3 on Lynx is such a good call — v4 is still chaotic',  likes: 99,  time: '31m' },
-  { id: 'c8',  author: '@petra',  text: 'VyFeedList load-more with no flicker = perfect infinite scroll',  likes: 87,  time: '40m' },
-  { id: 'c9',  author: '@dario',  text: 'The island dock UX is straight-up native iOS quality 🔥',         likes: 74,  time: '52m' },
-  { id: 'c10', author: '@anika',  text: 'Watching this on repeat — open source when? 👀',                 likes: 61,  time: '1h' },
+// Pool of comment bodies/authors the generator cycles through so each
+// load-more batch produces fresh-looking rows. The comments drawer is the
+// primary load-more showcase: scrolling to the bottom keeps appending batches
+// via makeComments() until COMMENTS_TOTAL is reached.
+const BODIES = [
+  'Does this support Android Lynx runtime yet or iOS only?',
+  'Tailwind v3 on Lynx is such a good call — v4 is still chaotic',
+  'VyFeedList load-more with no flicker = perfect infinite scroll',
+  'The island dock UX is straight-up native iOS quality 🔥',
+  'Watching this on repeat — open source when? 👀',
+  'Pull-to-refresh finally feels native on Lynx 🙌',
+  'How are the gesture worklets this smooth on the main thread?',
+  'The drawer snap points are chef’s kiss 👌',
+  'Wait, this is Vue running on Lynx? mind blown',
+  'Saving this for the next project, instant follow',
 ]
+const AUTHORS = ['@niko', '@yuki', '@petra', '@dario', '@anika', '@theo', '@mira', '@kaz', '@ivy', '@otto']
+
+/**
+ * Generate a batch of `count` synthetic comments starting at index `start`.
+ * Lets the drawer demonstrate repeated load-on-scroll instead of a single
+ * fixed second page — scroll down and more keep arriving.
+ */
+export function makeComments(start: number, count: number): Comment[] {
+  return Array.from({ length: count }, (_, i) => {
+    const n = start + i
+    return {
+      id: `c-gen-${n}`,
+      author: AUTHORS[n % AUTHORS.length]!,
+      text: BODIES[n % BODIES.length]!,
+      likes: Math.max(3, 140 - n * 3),
+      time: `${n + 2}m`,
+    }
+  })
+}
+
+/** Total comments the drawer loads across all batches (the N/total ceiling). */
+export const COMMENTS_TOTAL = 45
