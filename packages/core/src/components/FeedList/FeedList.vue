@@ -604,6 +604,7 @@ defineExpose({ scrollToIndex, refreshState })
         :main-thread-ref="listRef"
         class="vyui-feed-list"
         data-vyui-feed-list
+        :style="{ flex: 1 }"
         :scroll-orientation="scrollOrientation"
         :list-type="listType"
         :span-count="spanCount"
