@@ -340,13 +340,13 @@ watch(
 
 function _onGestureBegin(event: any) {
   'main thread'
+  globalThis.console.log('[vyui-ptr] onBegin fired; isAtStart=', event && event.params ? event.params.isAtStart : 'no-params')
   if (disabledRef.current) return
   draggingRef.current = true
   startYRef.current = 0
   startOffsetRef.current = offsetRef.current
   // DEBUG: nudge the content 30px on ANY gesture-begin so we can SEE (pure MT)
   // whether the detector dispatches touches at all. Remove once PTR works.
-  void event
   _paint(30)
 }
 
@@ -382,6 +382,7 @@ function _onGestureUpdate(event: any, stateManager: any) {
 
   const pullingDown = next > 0
   const shouldOwn = atTop && (pullingDown || offsetRef.current > 0) && !refreshingRef.current
+  globalThis.console.log('[vyui-ptr] onUpdate atTop=', atTop, 'deltaY=', params.deltaY, 'next=', next, 'shouldOwn=', shouldOwn)
 
   if (!shouldOwn) {
     // Hand the gesture back to the native scroller.
@@ -410,6 +411,7 @@ function _onGestureUpdate(event: any, stateManager: any) {
 
 function _onGestureEnd() {
   'main thread'
+  globalThis.console.log('[vyui-ptr] onEnd fired; offset=', offsetRef.current)
   if (!draggingRef.current) return
   draggingRef.current = false
   if (refreshingRef.current) return
@@ -480,6 +482,7 @@ function _installGesture() {
   const el = (listRef as unknown as {
     current?: { element?: unknown, setAttribute?: (k: string, v: unknown) => void }
   }).current
+  globalThis.console.log('[vyui-ptr] install: el=', el != null, 'rawEl=', !!(el && el.element), 'setAttr=', !!(el && el.setAttribute), 'setDetector=', typeof (globalThis as any).__SetGestureDetector)
   if (el == null || el.element == null || el.setAttribute == null) return
   el.setAttribute('has-react-gesture', true)
   el.setAttribute('flatten', false)
@@ -488,11 +491,13 @@ function _installGesture() {
   // /observers.js) does for every gesture callback. Without this `addRef` the
   // engine may hold the ctxs but never dispatch to them.
   const lcm = (globalThis as any).lynxWorkletImpl?._jsFunctionLifecycleManager
+  globalThis.console.log('[vyui-ptr] install: lynxWorkletImpl=', typeof (globalThis as any).lynxWorkletImpl, 'lcm=', lcm != null, 'beginExecId=', (_onGestureBegin as any)._execId)
   if (lcm != null) {
     lcm.addRef((_onGestureBegin as any)._execId, _onGestureBegin)
     lcm.addRef((_onGestureUpdate as any)._execId, _onGestureUpdate)
     lcm.addRef((_onGestureEnd as any)._execId, _onGestureEnd)
   }
+  globalThis.console.log('[vyui-ptr] install: calling __SetGestureDetector id=', GESTURE_ID)
   // `globalThis.` (not bare) so the worklet transform treats it as a recognized
   // global rather than a background closure var to capture (which crashed at
   // setup with `__SetGestureDetector is not defined`). The PAPI is global on MT
@@ -511,12 +516,15 @@ function _installGesture() {
     },
     { waitFor: [], simultaneous: [], continueWith: [] },
   )
+  globalThis.console.log('[vyui-ptr] install: __SetGestureDetector returned (registered)')
 }
 
 onMounted(() => {
+  console.log('[vyui-ptr] onMounted (BG); enableRefresh=', props.enableRefresh)
   if (!props.enableRefresh) return
   // Defer install so the element-ref + worklet-ctx ops have flushed to MT.
   runOnMainThread(_installGesture as any)()
+  console.log('[vyui-ptr] onMounted: scheduled _installGesture on MT')
 })
 
 // --- Helpers / public API ------------------------------------------------
