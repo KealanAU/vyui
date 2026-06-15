@@ -29,12 +29,28 @@ function fmt(n: number): string {
 </script>
 
 <template>
-  <!-- Full-screen item. Height is set by the parent FeedList via `h-full` so
-       each card occupies exactly one viewport height — giving the vertical-paging
-       feel. The gradient is the "video" placeholder. -->
+  <!-- Full-screen item. Height is set by the parent FeedList item wrapper.
+       The gradient is the placeholder shown until the fetched image loads. -->
   <view class="w-full h-full relative" :style="{ background: video.gradient }">
 
-    <!-- Centred play glyph — purely decorative, no real video playback. -->
+    <!-- Real fetched media. Lynx has no native <video> element, so each "video"
+         is a real remote image (picsum, seeded by id so every card is visibly
+         different — which also makes the snap-paging obvious as you swipe).
+         `mode=aspectFill` covers the full card; the gradient shows while it
+         loads / if the network is unavailable. -->
+    <image
+      :src="`https://picsum.photos/seed/${video.id}/720/1280`"
+      mode="aspectFill"
+      class="absolute inset-0 w-full h-full"
+    />
+
+    <!-- Scrim so overlaid white text stays legible over any photo. -->
+    <view
+      class="absolute inset-0"
+      :style="{ background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.45) 100%)' }"
+    />
+
+    <!-- Centred play glyph — decorative (still images, no real playback). -->
     <view class="absolute inset-0 flex items-center justify-center">
       <view class="w-16 h-16 rounded-full bg-black/30 flex items-center justify-center">
         <!-- Unicode triangle — avoids an icon dependency just for one glyph. -->

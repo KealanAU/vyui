@@ -42,6 +42,17 @@ const commentsLoaded = ref(SEED_COMMENTS.length)
 const commentsTotal = ref(COMMENTS_TOTAL)
 const BATCH = 8
 
+// A native Lynx `<list>` renders nothing unless its parent has an explicit
+// height (flex-1 alone leaves it 0px — that's why the comments looked empty).
+// Pin the list to a screen-height fraction so it shows rows and scrolls
+// internally. Sized to fit the 0.9 snap; clips gracefully at 0.6.
+const screenH = (() => {
+  const sys = (globalThis as { SystemInfo?: { pixelHeight?: number, pixelRatio?: number } }).SystemInfo
+  if (sys?.pixelHeight && sys?.pixelRatio) return Math.round(sys.pixelHeight / sys.pixelRatio)
+  return 812
+})()
+const listHeight = Math.round(screenH * 0.62)
+
 // Each scroll-to-bottom appends another batch until the ceiling is hit — this
 // is the demo's main "load on scroll down" behaviour. Unlike a single second
 // page, scrolling keeps pulling more rows in, which is what we want to show.
@@ -69,7 +80,7 @@ function onLoadMore() {
   <VyDrawer
     :open="props.open"
     :snap-points="[0.6, 0.9]"
-    :default-snap-index="0"
+    :default-snap-index="1"
     title="Comments"
     @update:open="onOpenChange"
   >
@@ -83,13 +94,16 @@ function onLoadMore() {
           <LoadCounter :loaded="commentsLoaded" :total="commentsTotal" label="comments" />
         </view>
 
-        <!-- Comments list with load-more on scroll-to-lower. -->
+        <!-- Comments list with load-more on scroll-to-lower. Wrapped in an
+             explicit-height view (the native <list> needs a definite height —
+             the kit-demo FeedList does the same) so rows actually render. -->
+        <view :style="{ height: `${listHeight}px` }">
         <VyFeedList
           :items="comments"
           item-key-field="id"
           :enable-load-more="!allLoaded"
           :load-more-threshold-item-count="2"
-          class="flex-1"
+          class="w-full h-full"
           @load-more="onLoadMore"
         >
           <template #item="{ item }">
@@ -113,6 +127,7 @@ function onLoadMore() {
             </view>
           </template>
         </VyFeedList>
+        </view>
 
         <!-- Sentinel footer row shown while loading or when all comments have
              loaded. FeedList's loadMoreFooter/noMoreDataFooter slots are not in
