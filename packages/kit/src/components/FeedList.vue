@@ -26,20 +26,16 @@ export interface FeedListProps<T = unknown> {
   scrollOrientation?: 'vertical' | 'horizontal'
   bounces?: boolean
   scrollBarEnable?: boolean
-  /** Disable scrolling and refresh interactions. */
+  /** Disable scrolling. */
   disabled?: boolean
-  /** Controlled refreshing state. Bind with `v-model:refreshing`. */
-  refreshing?: boolean
-  /** Initial refreshing state when uncontrolled. */
-  defaultRefreshing?: boolean
-  /** Enable pull-to-refresh. */
-  enableRefresh?: boolean
   /** Enable load-more on scroll-to-lower. */
   enableLoadMore?: boolean
   /** Number of items from the bottom that triggers `load-more`. */
   loadMoreThresholdItemCount?: number
   /** Number of items from the top that triggers `scrollToUpper`. */
   upperThresholdItemCount?: number
+  /** No more data to load — stops `loadMore` and shows the end-of-list footer. */
+  noMoreData?: boolean
   class?: any
   ui?: Partial<Record<keyof ReturnType<typeof buildFeedList>['slots'], any>>
 }
@@ -47,10 +43,12 @@ export interface FeedListProps<T = unknown> {
 export interface FeedListSlots<T = unknown> {
   /** Row template. Receives the item and its current index. */
   item?(props: { item: T, index: number }): any
-  /** Custom refresh-header content (only used when `enableRefresh`). */
-  refreshHeader?(props?: {}): any
   /** Rendered in place of the list when `items` is empty. */
   empty?(props?: {}): any
+  /** Footer shown at the bottom while more data can be loaded. */
+  loadMoreFooter?(props: { loading: boolean }): any
+  /** Footer shown at the bottom once `noMoreData` is true. */
+  noMoreDataFooter?(props?: {}): any
 }
 </script>
 
@@ -61,8 +59,6 @@ import { useAppConfig } from '../composables/useAppConfig'
 
 const props = withDefaults(defineProps<FeedListProps<T>>(), {})
 const emit = defineEmits<{
-  'update:refreshing': [value: boolean]
-  refresh: []
   loadMore: []
   scrollToLower: [event: unknown]
   scrollToUpper: [event: unknown]
@@ -88,15 +84,11 @@ const cls = computed(() => ui.value({ class: props.class }))
     :bounces="bounces"
     :scroll-bar-enable="scrollBarEnable"
     :disabled="disabled"
-    :refreshing="refreshing"
-    :default-refreshing="defaultRefreshing"
-    :enable-refresh="enableRefresh"
     :enable-load-more="enableLoadMore"
     :load-more-threshold-item-count="loadMoreThresholdItemCount"
     :upper-threshold-item-count="upperThresholdItemCount"
+    :no-more-data="noMoreData"
     :class="cls"
-    @update:refreshing="emit('update:refreshing', $event)"
-    @refresh="emit('refresh')"
     @load-more="emit('loadMore')"
     @scroll-to-lower="emit('scrollToLower', $event)"
     @scroll-to-upper="emit('scrollToUpper', $event)"
@@ -106,11 +98,14 @@ const cls = computed(() => ui.value({ class: props.class }))
     <template #item="{ item, index }">
       <slot name="item" :item="(item as T)" :index="index" />
     </template>
-    <template #refreshHeader>
-      <slot name="refreshHeader" />
-    </template>
     <template #empty>
       <slot name="empty" />
+    </template>
+    <template #loadMoreFooter="{ loading }">
+      <slot name="loadMoreFooter" :loading="loading" />
+    </template>
+    <template #noMoreDataFooter>
+      <slot name="noMoreDataFooter" />
     </template>
   </CoreFeedList>
 </template>

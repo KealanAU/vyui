@@ -6,22 +6,20 @@ import { FeedList } from '..'
 const items = ref<Array<{ id: string, label: string }>>(
   Array.from({ length: 30 }, (_, i) => ({ id: `r-${i}`, label: `Row ${i + 1}` })),
 )
-const refreshing = ref(false)
 const loadingMore = ref(false)
-
-function onRefresh() {
-  refreshing.value = true
-  setTimeout(() => {
-    items.value = items.value.map(it => ({ ...it, label: `${it.label} (refreshed)` }))
-    refreshing.value = false
-  }, 600)
-}
+const noMoreData = ref(false)
 
 function onLoadMore() {
-  if (loadingMore.value) return
-  loadingMore.value = true
+  // `loadingMore` is owned by FeedList via v-model:loadingMore, so the
+  // component already debounces and suppresses re-fires while a fetch is in
+  // flight. We just clear it when the fetch resolves.
   setTimeout(() => {
     const start = items.value.length
+    if (start >= 60) {
+      noMoreData.value = true
+      loadingMore.value = false
+      return
+    }
     items.value = [
       ...items.value,
       ...Array.from({ length: 10 }, (_, i) => ({
@@ -37,12 +35,11 @@ function onLoadMore() {
 <template>
   <view data-vyui-feed-list-story>
     <FeedList
-      v-model:refreshing="refreshing"
+      v-model:loading-more="loadingMore"
       :items="items"
-      enable-refresh
+      :no-more-data="noMoreData"
       enable-load-more
       data-testid="feed-list"
-      @refresh="onRefresh"
       @load-more="onLoadMore"
     >
       <template #item="{ item, index }">
@@ -60,9 +57,14 @@ function onLoadMore() {
           <text>{{ item.label }} (#{{ index }})</text>
         </view>
       </template>
-      <template #refreshHeader>
+      <template #loadMoreFooter="{ loading }">
         <view :style="{ padding: '12px', alignItems: 'center' }">
-          <text>{{ refreshing ? 'Refreshing…' : 'Pull to refresh' }}</text>
+          <text data-testid="load-more-footer">{{ loading ? 'Loading more…' : 'Scroll for more' }}</text>
+        </view>
+      </template>
+      <template #noMoreDataFooter>
+        <view :style="{ padding: '12px', alignItems: 'center' }">
+          <text data-testid="no-more-footer">No more items</text>
         </view>
       </template>
       <template #empty>
@@ -70,6 +72,6 @@ function onLoadMore() {
       </template>
     </FeedList>
     <text data-testid="count">{{ items.length }}</text>
-    <text data-testid="refreshing-state">{{ refreshing ? 'yes' : 'no' }}</text>
+    <text data-testid="loading-more-state">{{ loadingMore ? 'yes' : 'no' }}</text>
   </view>
 </template>
