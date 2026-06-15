@@ -12,6 +12,7 @@
 // plain `defineProps` + `defineEmits` instead.
 
 import { ref } from 'vue'
+import { Icon as VyIcon } from '@vyui/core'
 import { VyDrawer, VyFeedList } from '@vyui/kit'
 import { SEED_COMMENTS, makeComments, COMMENTS_TOTAL, type Comment } from '../data/comments'
 import LoadCounter from './LoadCounter.vue'
@@ -121,7 +122,8 @@ function onLoadMore() {
                 </view>
                 <text class="text-slate-700 text-sm">{{ item.text }}</text>
                 <view class="flex flex-row items-center gap-1 mt-1">
-                  <text class="text-slate-400 text-xs">♥ {{ item.likes }}</text>
+                  <VyIcon name="icon-park-solid:like" :size="12" color="#94a3b8" />
+                  <text class="text-slate-400 text-xs">{{ item.likes }}</text>
                 </view>
               </view>
             </view>

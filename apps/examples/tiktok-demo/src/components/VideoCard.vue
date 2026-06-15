@@ -1,11 +1,13 @@
 <script setup lang="ts">
-// Full-bleed gradient placeholder card. One per "video" in the feed.
-// In a real TikTok-style app this would be a native <video> element — here we
-// use a gradient view so the demo has zero binary assets and works offline.
+// Full-bleed card. One per "video" in the feed. Lynx has no native <video>
+// element, so the media is a real fetched <image> (gradient behind it as the
+// load/offline placeholder).
 //
-// TikTok layout: gradient fills the full screen, play glyph centred, metadata
-// overlaid in the bottom-left, engagement counts down the right side.
+// TikTok layout: image fills the full screen, play glyph centred, metadata
+// overlaid in the bottom-left, engagement icons (Icon Park Solid) down the
+// right side.
 
+import { Icon as VyIcon } from '@vyui/core'
 import type { Video } from '../data/videos'
 
 defineProps<{
@@ -50,11 +52,11 @@ function fmt(n: number): string {
       :style="{ background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.45) 100%)' }"
     />
 
-    <!-- Centred play glyph — decorative (still images, no real playback). -->
+    <!-- Centred play glyph — decorative (still images, no real playback).
+         Icon Park Solid (ByteDance's set, fitting for a Lynx demo). -->
     <view class="absolute inset-0 flex items-center justify-center">
       <view class="w-16 h-16 rounded-full bg-black/30 flex items-center justify-center">
-        <!-- Unicode triangle — avoids an icon dependency just for one glyph. -->
-        <text class="text-white text-3xl" :style="{ marginLeft: '4px' }">▶</text>
+        <VyIcon name="icon-park-solid:play" :size="32" color="#ffffff" />
       </view>
     </view>
 
@@ -74,7 +76,7 @@ function fmt(n: number): string {
       <!-- Like -->
       <view class="flex flex-col items-center gap-1">
         <view class="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center">
-          <text class="text-white text-xl">♥</text>
+          <VyIcon name="icon-park-solid:like" :size="24" color="#ff2d55" />
         </view>
         <text class="text-white text-xs font-medium">{{ fmt(video.likes) }}</text>
       </view>
@@ -84,7 +86,7 @@ function fmt(n: number): string {
            can track which video's comments are shown. -->
       <view class="flex flex-col items-center gap-1" @tap="emit('openComments', video.id)">
         <view class="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center">
-          <text class="text-white text-xl">💬</text>
+          <VyIcon name="icon-park-solid:comment" :size="24" color="#ffffff" />
         </view>
         <text class="text-white text-xs font-medium">{{ fmt(video.comments) }}</text>
       </view>
@@ -92,7 +94,7 @@ function fmt(n: number): string {
       <!-- Share -->
       <view class="flex flex-col items-center gap-1">
         <view class="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center">
-          <text class="text-white text-xl">↗</text>
+          <VyIcon name="icon-park-solid:share-one" :size="24" color="#ffffff" />
         </view>
         <text class="text-white text-xs font-medium">{{ fmt(video.shares) }}</text>
       </view>

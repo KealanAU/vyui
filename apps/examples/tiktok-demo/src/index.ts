@@ -11,6 +11,7 @@ import { installIntlPolyfill, registerIconSet } from '@vyui/core'
 import { createApp } from 'vue-lynx'
 import { VyUI } from '@vyui/kit'
 import iconParkOutline from '@iconify-json/icon-park-outline/icons.json'
+import iconParkSolid from '@iconify-json/icon-park-solid/icons.json'
 import lucide from '@iconify-json/lucide/icons.json'
 import tabler from '@iconify-json/tabler/icons.json'
 import App from './App.vue'
@@ -20,6 +21,7 @@ installIntlPolyfill()
 
 registerIconSet('lucide', lucide)
 registerIconSet('icon-park-outline', iconParkOutline)
+registerIconSet('icon-park-solid', iconParkSolid)
 registerIconSet('tabler', tabler)
 
 const app = createApp(App)

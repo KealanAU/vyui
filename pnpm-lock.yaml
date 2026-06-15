@@ -208,6 +208,9 @@ importers:
       '@iconify-json/icon-park-outline':
         specifier: ^1.2.0
         version: 1.2.4
+      '@iconify-json/icon-park-solid':
+        specifier: ^1.2.4
+        version: 1.2.4
       '@iconify-json/lucide':
         specifier: ^1.2.108
         version: 1.2.108
@@ -1171,6 +1174,9 @@ packages:
 
   '@iconify-json/icon-park-outline@1.2.4':
     resolution: {integrity: sha512-NyZxXe2gD2TbTOyoRRMdtEJhr6i2KQCdDlYYoOn5oZLndQjwpIhw79hzeFhXvP38/o40D3gQ+l+IaSJgbB+0TQ==}
+
+  '@iconify-json/icon-park-solid@1.2.4':
+    resolution: {integrity: sha512-030MChSP6lCY7N+U5J5R7YguHTGcm7qQEI/ivBjk77El/i8yJatoj568cwwXGM8c6HEU/kIxEE4m3O/6w0WBGg==}
 
   '@iconify-json/lucide@1.2.108':
     resolution: {integrity: sha512-jnmMx7xxShfsKeNNJhn47IKj3gD/AbRz+poKLIPn4rSIXw+yVbXCfUBXza/Jo9YIEEFajBk6Zayet8DqGCvX6w==}
@@ -9091,6 +9097,10 @@ snapshots:
   '@hongzhiyuan/preact@10.28.0-fc4af453': {}
 
   '@iconify-json/icon-park-outline@1.2.4':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/icon-park-solid@1.2.4':
     dependencies:
       '@iconify/types': 2.0.0
 
