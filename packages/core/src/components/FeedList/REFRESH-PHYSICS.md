@@ -1,237 +1,159 @@
-<!-- Copyright 2026 The Lynx Authors. All rights reserved.
-     Licensed under the Apache License Version 2.0. -->
+# FeedList pull-to-refresh — physics & gesture arbitration
 
-# FeedList custom rubber-band pull-to-refresh — feasibility findings
+> Verdict (was "not feasible"): **implemented via `@lynx-js/gesture-runtime`
+> gesture arbitration.** Builds and unit-tests green; the gesture binding and
+> rubber-band physics are **device-only verifiable** (see the checklist at the
+> end). This note records why the obvious approaches fail and how the working
+> one is wired, so the next person doesn't re-derive it.
 
-**Verdict: NOT feasible with what vyui ships today.** Porting lynx-ui's
-main-thread rubber-band refresh/bounce engine requires gesture-arbitration
-primitives (`@lynx-js/gesture-runtime`) and main-thread selector helpers
-(`@lynx-js/lynx-ui-common`) that vyui does not depend on and should not add
-casually. No shippable code change was made; FeedList continues to delegate
-the pull gesture + bounce physics to the native `<refresh>` element, with the
-existing JS refresh *lifecycle* state machine layered on top.
+## The problem: gesture ownership
 
----
+A native `<list>` / `<scroll-view>` **consumes its own vertical scroll
+gesture**. If you hand-roll a rubber-band — listen for touch, paint a
+`translateY` via `setStyleProperty` on overscroll — the native scroller keeps
+claiming the touch stream the moment the user drags past the top edge, and the
+custom transform never wins. Custom pull-to-refresh and overscroll bounce both
+hit this wall. You cannot fix it from the BG thread or with plain
+`:main-thread-bindtouch*` worklets: those see the touches, but they cannot take
+*ownership* away from the native scroller.
 
-## What lynx-ui's engine actually depends on
+The supported fix is **gesture arbitration**: register a gesture recognizer on
+the element and, from its main-thread callbacks, tell the engine frame-by-frame
+whether *you* own the touch (`consumeGesture` / `interceptGesture`) or the
+native scroller does. This is what `@lynx-js/gesture-runtime` + the engine's
+"new gesture" pipeline provide.
 
-Sources inspected:
+## Why the easy paths don't work under vue-lynx
 
-- `lynx-ui/packages/lynx-ui-feed-list/src/index.tsx` (402 LOC)
-- `lynx-ui/packages/lynx-ui-feed-list/src/hooks/useRefresh.ts` (1259 LOC)
-- `lynx-ui/packages/lynx-ui-feed-list/package.json`
+### Native `<refresh>` wrapper
+Works, but: no control over header physics/threshold, and crashes on some iOS
+`<list>` configs (`LynxCreateUIException: refresh-header ui not found` when the
+header is a direct `<list>` child). It also can't do custom overscroll bounce.
+Acceptable as a fallback, not as the product.
 
-The engine is `useRefreshAndBounce` in `hooks/useRefresh.ts`. Its hard imports:
+### React's `main-thread:gesture={g}` — **not available in vue-lynx**
+In React-Lynx, `main-thread:gesture` is a **compiler** feature. The JSX
+transform emits `updateGesture(...)` into the component snapshot, which calls
+`processGesture` →
+`__SetGestureDetector(dom, id, type, config, relationMap)` plus
+`__SetAttribute(dom, 'has-react-gesture', true)` and `flatten=false`, and
+registers each callback as a worklet ctx (`onWorkletCtxUpdate`).
 
-```ts
-import { NativeGesture, useGesture } from '@lynx-js/gesture-runtime'
-import type { GestureChangeEvent, StateManager } from '@lynx-js/gesture-runtime'
-import { log, mtsLog, mtsNativeLynxSDKVersionLessThan, selectorMT }
-  from '@lynx-js/lynx-ui-common'
-```
+**vue-lynx ships none of this.** Its template compiler has no gesture
+transform, and its runtime `patchProp`
+(`vue-lynx/runtime/dist/node-ops.js`) only understands `main-thread-ref`,
+`main-thread-bind<event>` (→ `SET_WORKLET_EVENT`), and generic `SET_PROP`.
+A `:main-thread-gesture` / `:gesture` attribute would fall through to a no-op
+(or a meaningless `SET_PROP`). So **the React gesture DSL does not work here.**
 
-`package.json` declares `@lynx-js/gesture-runtime` and `@lynx-js/lynx-ui-common`
-(workspace) as hard `dependencies`.
+### `enableNewGesture` is hardcoded off
+Even the native path is gated: vue-lynx's build plugin
+(`plugin/dist/index.js`, in the `LynxTemplatePlugin` options block) sets
+`enableNewGesture: false`. We flip it to `true` by extending
+`patches/vue-lynx@0.4.0.patch` (pnpm `patchedDependencies`).
 
-### The load-bearing capability: gesture arbitration
+## How vyui wires it
 
-The whole mechanism hangs on one thing a native `<list>`/`<scroll-view>`
-will NOT give up on its own — its scroll gesture. The engine:
+`enableNewGesture: true` is **necessary but not sufficient** — vue-lynx never
+emits `__SetGestureDetector`. So we install the detector **ourselves** from a
+main-thread worklet, against the raw element behind a `:main-thread-ref` (its
+`.current` inside a worklet IS the live Lynx element — the same handle
+`setStyleProperty` is called on; confirmed in vue-lynx
+`main-thread/dist/worklet-apply.js` `applySetMtRef`).
 
-1. Creates a gesture object: `const g = useGesture(NativeGesture)`.
-2. Attaches it to the list via the JSX prop `main-thread:gesture={g}`
-   (`index.tsx:374`).
-3. In the gesture's main-thread `onBegin` / `onUpdate` / `onEnd` callbacks it
-   receives a `StateManager` and calls:
-   - `gestureManager.consumeGesture(true|false)` (SDK < 3.3), and/or
-   - `gestureManager.interceptGesture(true|false)` (SDK >= 3.3)
-   to **steal the vertical scroll gesture from the native list** the moment the
-   user pulls down at the top edge (`useRefresh.ts:1117-1244`).
+Split, dictated by the project's worklet constraints:
 
-Only after intercepting can it drive its own rubber-band by writing
-`transform: translateY(...)` directly onto the container + header wrappers via
-`selectorMT(containerID)?.setStyleProperty('transform', ...)`
-(`bouncingSetStyle`, `useRefresh.ts:476-574`), running rAF spring/fling
-integration on the main thread (`bouncingBack`, `bouncingBackEntrance`,
-`handleBounceEventInFling`).
+- **`@/shared/gesture/gestureArbitration.ts`** (shared `.ts`): types, the pure
+  consume-vs-intercept policy (`shouldInterceptGesture`), and
+  `installGestureDetector` — a `'main thread'` function that calls
+  `__SetAttribute(el, 'has-react-gesture', true)` / `flatten=false` and
+  `__SetGestureDetector(el, id, 7 /* NATIVE */, config, relationMap)`. It does
+  no per-frame work and resolves no cross-file callbacks, so importing it into a
+  worklet is safe. `GestureTypeInner.NATIVE` is inlined as the literal `7`
+  because vue-lynx's worklet loader does **not** follow bare package imports
+  into the MT realm.
+- **`FeedList.vue`** (SFC): the gesture's touch callbacks
+  (`onBegin`/`onUpdate`/`onEnd`) are **inlined `'main thread'` worklets** —
+  vue-lynx's loader skips MT functions imported from workspace `.ts`, so they
+  must live in the SFC. They paint the rubber-band (`setStyleProperty`), call
+  `interceptGesture`/`consumeGesture` to own/release the touch, and hop pull
+  progress + trigger events back to BG. Only PURE maths is mirrored from
+  `physics.ts` (`rubberEffect`), kept in sync by hand (a unit test pins it).
 
-It also relies on:
-- `selectorMT(id)` to mutate sibling wrapper elements by id from a worklet
-  (the header wrapper, bounce wrappers) — vyui's MT refs only address the one
-  element a `:main-thread-ref` is bound to.
-- `mtsNativeLynxSDKVersionLessThan('3.3')` to branch consume vs. intercept.
-- `SystemInfo.platform` / `SystemInfo.pixelRatio` (globals, available) for
-  per-platform thresholds.
-- Upper/lower edge detection via `binduiappear`/`binduidisappear` on 1ppx
-  sentinel `list-item`s (`onUpperExposure`/`onLowerExposure`) — portable, but
-  only useful once you can intercept the gesture.
+The detector is installed in `onMounted` via `runOnMainThread(_installGesture)`
+once the element-ref / worklet-ctx ops have flushed to MT.
 
-## What's missing in vyui
+### Consume vs intercept (SDK branch)
+Mirrors lynx-ui's `useRefresh`: on SDK `< 3.3` the inner `consumeGesture(own)`
+call is used; on `>= 3.3` the outer `interceptGesture(own)` call (which takes
+ownership from the *native* scroller) is correct. The SDK is read on MT in
+`_installGesture` (inlined `SystemInfo.engineVersion` parse, mirroring
+`mtsNativeLynxSDKVersionLessThan('3.3')`) and stored in an MT ref the callbacks
+read.
 
-| Need | lynx-ui source | vyui status |
-| --- | --- | --- |
-| `useGesture(NativeGesture)` + `main-thread:gesture` prop | `@lynx-js/gesture-runtime` | **Not a dependency. Not installed. Not in lockfile.** |
-| `StateManager.consumeGesture` / `interceptGesture` | `@lynx-js/gesture-runtime` | **None.** No gesture-arbitration primitive exists anywhere in `packages/core/src`. |
-| `selectorMT(id)` MT element lookup by id | `@lynx-js/lynx-ui-common` | **None.** vyui addresses MT elements only via `useMainThreadRef` bound to one element. |
-| `mtsNativeLynxSDKVersionLessThan` | `@lynx-js/lynx-ui-common` | **None.** |
+### `selectorMT`
+lynx-ui's `selectorMT(id)` resolves an element from the MT registry. vue-lynx
+does not export that registry, and `:main-thread-ref` already gives us the
+element directly — so we deliberately **do not** add `@lynx-js/lynx-ui-common`.
+The ref-unwrap is the `selectorMT` equivalent. A future sibling-by-id lookup
+would use vue-lynx `querySelector('#id')` (BG) or an extra `:main-thread-ref`.
 
-vyui's `packages/core/package.json` lists only `@lynx-js/react`,
-`@lynx-js/types`, `@lynx-js/testing-environment` (the last two dev-only).
-`grep` for `gesture-runtime`, `useGesture`, `NativeGesture`, `consumeGesture`,
-`interceptGesture`, `main-thread:gesture` across `packages/core/src` returns
-nothing.
+## Public API (matches the demo-facing contract)
 
-## Why the existing vyui MT pattern can't substitute
+- `enableRefresh?: boolean` (default `false`)
+- `refreshing?: boolean` — `v-model:refreshing`; emits `update:refreshing`
+- `refreshThreshold?: number` — px to trigger (default `64`)
+- `enableBounce?: boolean` — overscroll bounce at both edges
+- emit `refresh` — once when the pull crosses threshold and is released
+- emit `refreshStateChange(state: FeedListRefreshState)`
+- slot `refreshHeader` with `{ state: FeedListRefreshState, progress: number }`
+  (`progress` is 0..1 of threshold)
+- `type FeedListRefreshState = 'idle' | 'pulling' | 'releaseReady' | 'refreshing' | 'done'`
+- Retained: load-more (native `scrolltolower`), `v-model:loadingMore`,
+  `loadMoreFooter` / `noMoreDataFooter` slots, virtualization,
+  `listType` / `spanCount` / `scrollOrientation` / `bounces`.
 
-vyui has the *physics* already (`shared/gesture/physics.ts`:
-`rubberEffect`, `applyBounce`, `calcVelocity`, `pruneQueue`, `easeOutCubic`,
-`projectMomentum` — all unit-tested) and the MT-worklet plumbing pattern
-(`shared/gesture/useDragGesture.ts`: prop→MT-ref sync, rAF animation, BG↔MT
-hops). So the math and the worklet pipeline are not the blocker.
+Lifecycle: consumer sets `refreshing = false` to end → engine springs the
+header closed → state goes `'done'` then `'idle'`.
 
-The blocker is **gesture ownership**. Every vyui component that drives a
-custom MT transform from `bindtouch*` worklets (Swiper, Sheet, Draggable,
-Slider, SwipeAction) binds those handlers to a **non-scrolling `<view>`**.
-None binds touch worklets to a scroll-owning `<list>`/`<scroll-view>`
-(verified: `grep main-thread:bindtouch packages/core/src/**/*.vue` finds no
-`<list>` host). A native `<list>` consumes its own vertical scroll gesture;
-plain `bindtouchmove` worklets fire alongside scrolling but cannot suppress it
-or redirect the surface, so a hand-rolled rubber-band on the list itself would
-fight the native scroller (jitter / both moving). Stealing the gesture is
-precisely what `consumeGesture`/`interceptGesture` exist for, and that is the
-piece vyui lacks.
+## Device-verification checklist (CANNOT run under vitest — no device)
 
-The documented `<refresh-header>`-as-sibling-of-`<list>` constraint
-(FeedList.vue header comment) further means the *native* `<refresh>` element is
-currently the thing that legitimately owns the pull gesture — replacing it
-means taking over arbitration, i.e. the gesture-runtime path.
+The build and unit tests cover: the state machine, prop/emit/slot wiring, the
+consume-vs-intercept policy, and the rubber-band maths. They do **not** and
+cannot cover anything that needs the real gesture/MT engine. Verify on an
+**iOS simulator** (and ideally Android):
 
-## Recommended path
+1. **Gesture binds at all.** That `__SetGestureDetector` installed from a
+   vue-lynx worklet actually registers a recognizer (the whole approach hinges
+   on this — it is reverse-engineered from React-Lynx's `processGesture`, never
+   run). If `onUpdate` never fires, the binding failed.
+2. **Worklet-ctx callbacks dispatch.** That the inline SFC worklets passed as
+   `config.callbacks[].callback` are invoked by the engine with
+   `(event, stateManager)` and that `stateManager.interceptGesture/consumeGesture`
+   exist and work.
+3. **`event.params` shape.** That `params.deltaY`, `params.isAtStart` are
+   populated as assumed (typed from gesture-runtime's `NativeGestureChangeEvent`,
+   not observed).
+4. **Arbitration correctness.** Pulling down at the top owns the touch and shows
+   the rubber-band; normal scrolling and load-more still work (gesture released
+   when not at top / not pulling).
+5. **Threshold + release.** Cross `refreshThreshold` → `refresh` fires once,
+   header holds; release below → springs back to idle.
+6. **End-of-refresh spring.** Setting `refreshing = false` springs the header
+   closed and lands on `idle` (via `done`).
+7. **`enableBounce`** overscroll at both edges (the bounce branch is wired but
+   the most lightly exercised).
+8. **SDK branch** on both an SDK `< 3.3` and `>= 3.3` runtime.
 
-Two viable options, in preference order:
+## Uncertainty / open risks
 
-1. **Keep delegating to native `<refresh>` (current state — recommended).**
-   The existing JS refresh state machine + `headeroffset`/`dropdown` →
-   `pulling`/`releaseReady` mapping already lets consumers render custom
-   pull / release / loading / done affordances in the `refreshHeader` slot,
-   while the native element provides correct, platform-tuned bounce physics
-   and gesture ownership for free. This is the lowest-risk option and needs no
-   new dependency. No code change required.
-
-2. **Add the gesture dependency and port the engine.** If physics-driven,
-   fully custom-rendered pull (e.g. an interruptible spring whose curve vyui
-   controls, decoupled from the native `<refresh>` look) is genuinely wanted:
-   - Add `@lynx-js/gesture-runtime` to `packages/core` `dependencies` (and a
-     matching peer range), confirm it's compatible with the pinned
-     `@lynx-js/react ^0.116.5` / `vue-lynx ^0.4.0`, and confirm `vue-lynx`'s
-     template compiler accepts a `:main-thread-gesture` (or equivalent) binding
-     — lynx-ui uses React's `main-thread:gesture` JSX prop; the vue-lynx
-     equivalent must be verified to exist and register on a device (cannot be
-     checked under vitest — see issue #6).
-   - Replace `selectorMT(id)` usage: either add a small MT id-selector helper,
-     or restructure so every element the engine transforms carries its own
-     `:main-thread-ref` (header wrapper, list container).
-   - Reuse `shared/gesture/physics.ts` for `rubberEffect` and inline the
-     spring/fling integration as MT worklets in the SFC (cross-file worklets
-     don't register — see project notes), mirroring the `useDragGesture.ts`
-     conventions (helpers defined above callers; BG→MT sync via
-     `runOnMainThread`; BG writes to `.current` dropped).
-   - Preserve the existing `FeedListRefreshState` machine and the
-     `<refresh-header>`-sibling-of-`<list>` layout constraint; the custom
-     engine would drive `translateY` on the wrappers while the state machine
-     stays the public lifecycle contract.
-
-   This is a substantial, device-verification-gated effort and should be its
-   own tracked task with the dependency addition reviewed explicitly, not
-   slipped into a refactor.
-
-## Bottom line
-
-No shippable code change here. The feature is blocked on
-`@lynx-js/gesture-runtime` (gesture arbitration) and `@lynx-js/lynx-ui-common`
-(`selectorMT`, version gating). Until those are deliberately added and the
-vue-lynx gesture-binding path is device-verified, FeedList should continue to
-delegate pull-to-refresh to the native `<refresh>` element with the existing
-JS lifecycle state machine on top. No changeset added (no code change).
-
----
-
-# Addendum — `<refresh>` not registered on LynxExplorer (create-UI crash)
-
-**Symptom.** Opening a demo tab with a `<FeedList enable-refresh>` hard-crashed
-the Lynx runtime (LynxExplorer, SDK 1.4.0) at create-UI time:
-
-```
-LynxCreateUIException: refresh ui not found when create UI
-```
-
-i.e. the native `<refresh>` element FeedList renders for native PTR is **not
-registered** in this runtime build.
-
-## Why `<refresh>` is missing
-
-`<refresh>` / `<refresh-header>` are **legacy built-in UI classes** from older
-internal Lynx native runtimes (Lark / TT shells), where the host app registered
-`refresh` and `refresh-header` UI classes into the element factory. The
-open-source **LynxExplorer** build — and the engine that `@lynx-js/react` /
-`vue-lynx` target — does **not** register these elements. When the element
-factory is asked to create a `refresh` UI it has no class for, it throws
-`LynxCreateUIException: refresh ui not found when create UI` during the
-create-UI pass. The crash happens on mount, before any JS event handler runs,
-so it cannot be caught at the component level — it has to be avoided by **not
-emitting the element at all**.
-
-Cross-check with lynx-ui (`lynx-ui/packages/lynx-ui-feed-list/`): lynx-ui's
-feed-list **never uses a native `<refresh>` element**. `grep` for `<refresh`,
-`refresh-view`, `RefreshView` across all of `lynx-ui/packages/` returns
-nothing. Its `useRefreshAndBounce` builds the *entire* pull-to-refresh
-experience on a plain `<list>` using `@lynx-js/gesture-runtime` gesture
-arbitration (`consumeGesture` / `interceptGesture`) + MT `translateY` transforms
-(see the original findings above). It gates only on `enableRefresh` /
-`enableBounce` options and on SDK version for the consume-vs-intercept branch —
-**never** on the existence of a native refresh element, because it doesn't rely
-on one. This is strong corroboration that the native `<refresh>` element is not
-a portable, registered element in the modern OSS engine; lynx-ui deliberately
-avoids it.
-
-## Is native PTR testable on this runtime?
-
-**No.** On stock LynxExplorer SDK 1.4.0 the `<refresh>` element is unavailable,
-so native pull-to-refresh cannot be exercised there at all — and merely mounting
-it crashes. Native PTR only works on a host that registers the legacy refresh
-UI (a custom embedder). There is also **no runtime JS API to query the element
-registry**, so "is `<refresh>` registered" cannot be feature-detected directly;
-it can only be inferred from an explicit host signal or assumed unsafe.
-
-## Decision (final) — pull-to-refresh removed from FeedList
-
-> Supersedes the earlier "gate the `<refresh>` render" approach.
-
-Because the reference upstream (lynx-ui) **never uses the native `<refresh>` /
-`<refresh-header>` elements** — confirmed by `grep` returning zero hits across
-`lynx-ui/packages/` — and because those elements are absent from the OSS Lynx
-runtime we target (mounting one crashes the create-UI pass), the native
-`<refresh>` path was a legacy/unsupported dependency that should not ship.
-
-FeedList no longer renders `<refresh>` at all. It is a bare virtualized `<list>`
-plus load-more, which matches lynx-ui's element surface. The following PTR API
-was **removed** (the feature was 100% driven by the native element, so guarding
-it left only dead surface):
-
-- props: `enableRefresh`, `refreshing` / `defaultRefreshing`, `refreshSupported`,
-  `refreshDoneDuration`
-- emits: `update:refreshing`, `refresh`, `refreshStateChange`
-- slot: `refreshHeader`; type: `FeedListRefreshState`
-- the lifecycle state machine + `startrefresh` double-fire guard
-- util `isNativeRefreshSupported()` (`shared/utils/version.ts`)
-
-Retained: native `<list>` virtualization, `single`/`flow`/`waterfall` + `spanCount`,
-`loadMore` (native `scrolltolower`) with debounce/suppression, `loadingMore`
-v-model, and the `loadMoreFooter` / `noMoreDataFooter` slots.
-
-## If PTR is wanted later
-
-It must follow lynx-ui's approach: a main-thread rubber-band engine on a plain
-`<list>` via `@lynx-js/gesture-runtime` gesture arbitration (see "What's missing
-in vyui" and "Recommended path" above). That is a tracked, dependency-adding
-task — not a native-element toggle.
+- **vue-lynx gesture-binding syntax**: there is **no** `:main-thread-gesture`
+  template syntax in vue-lynx (confirmed by reading its runtime + plugin). The
+  manual `__SetGestureDetector` install is the intended substitute, but it is
+  unverified on device (item 1 above). If it proves not to register, the
+  fallback is the native `<refresh>` wrapper (still crash-prone on iOS) or
+  contributing a real gesture transform upstream to vue-lynx.
+- **Callback worklet registration**: React-Lynx registers gesture callbacks via
+  `onWorkletCtxUpdate`; we rely on the worklet ctxs being transferable as
+  `runOnMainThread` params. This matches how vue-lynx serializes worklet ctxs,
+  but the engine-side `__SetGestureDetector` consuming them is unproven here.
