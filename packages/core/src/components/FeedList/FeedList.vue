@@ -439,14 +439,22 @@ function _installGesture() {
   const el = (listRef as unknown as { current?: unknown }).current
   if (el == null) return
   // Install the native gesture detector directly via MT PAPIs. Mirrors
-  // React-Lynx `processGesture`: mark the element gesture-owning, disable
-  // flatten so it can receive the gesture, then register the detector with the
-  // inline touch callbacks. These globals exist ONLY in the MT realm (gated by
-  // `enableNewGesture`, flipped on in patches/vue-lynx@0.4.0.patch), so this
-  // call MUST stay inside this `'main thread'` worklet — see the import note.
-  __SetAttribute(el, 'has-react-gesture', true)
-  __SetAttribute(el, 'flatten', false)
-  __SetGestureDetector(
+  // React-Lynx `processGesture` (runtime/lib/gesture/processGesture.js): mark
+  // the element gesture-owning, disable flatten so it can receive the gesture,
+  // then register the detector with the inline touch callbacks.
+  //
+  // CRITICAL: reference the PAPIs through `globalThis.` — NOT bare. The worklet
+  // transform (@lynx-js/react `transformReactLynxSync`) treats an unrecognized
+  // bare free identifier as a CLOSURE variable to capture from the background
+  // scope; `__SetAttribute` doesn't exist on BG, so building the worklet ctx at
+  // setup crashed with `__SetAttribute is not defined`. `globalThis` IS a
+  // recognized global, so `globalThis.__SetAttribute` is a member access that
+  // resolves against the MT realm at run time (these PAPIs are global there once
+  // `enableNewGesture` is on — patches/vue-lynx@0.4.0.patch). React-Lynx avoids
+  // this because it calls them from framework MT runtime code, not a worklet.
+  globalThis.__SetAttribute(el, 'has-react-gesture', true)
+  globalThis.__SetAttribute(el, 'flatten', false)
+  globalThis.__SetGestureDetector(
     el,
     GESTURE_ID,
     7, // GestureTypeInner.NATIVE (inlined literal; bare enum imports are undefined on MT)
