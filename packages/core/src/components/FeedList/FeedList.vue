@@ -582,20 +582,21 @@ defineExpose({ scrollToIndex, refreshState })
     v-else-if="enableRefresh"
     class="vyui-feed-list__ptr"
     data-vyui-feed-list-ptr
-    :style="{ flex: 1, overflow: 'hidden' }"
+    :style="{ height: '100%', overflow: 'hidden' }"
   >
     <view
       :main-thread-ref="wrapperRef"
       class="vyui-feed-list__ptr-wrapper"
       data-vyui-feed-list-ptr-wrapper
-      :style="{ flex: 1 }"
+      :style="{ height: '100%', position: 'relative' }"
     >
-      <!-- Header sits above the list; pulled into view by the wrapper's
-           translateY. `margin-top` keeps it hidden at rest. -->
+      <!-- Header sits ABOVE the fold (absolutely positioned at top:-threshold so
+           it's out of flow and doesn't steal the list's height); the wrapper's
+           translateY on pull brings it into view. -->
       <view
         class="vyui-feed-list__refresh-header"
         data-vyui-feed-list-refresh-header
-        :style="{ marginTop: `-${refreshThreshold}px`, height: `${refreshThreshold}px` }"
+        :style="{ position: 'absolute', top: `-${refreshThreshold}px`, left: '0px', right: '0px', height: `${refreshThreshold}px` }"
       >
         <slot name="refreshHeader" :state="refreshState" :progress="pullProgress" />
       </view>
@@ -604,7 +605,7 @@ defineExpose({ scrollToIndex, refreshState })
         :main-thread-ref="listRef"
         class="vyui-feed-list"
         data-vyui-feed-list
-        :style="{ flex: 1 }"
+        :style="{ height: '100%' }"
         :scroll-orientation="scrollOrientation"
         :list-type="listType"
         :span-count="spanCount"
