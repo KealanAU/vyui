@@ -193,6 +193,58 @@ importers:
         specifier: 3.5.17
         version: 3.5.17(typescript@5.9.3)
 
+  apps/examples/tiktok-demo:
+    dependencies:
+      '@vyui/core':
+        specifier: workspace:*
+        version: link:../../../packages/core
+      '@vyui/kit':
+        specifier: workspace:*
+        version: link:../../../packages/kit
+      vue-lynx:
+        specifier: ^0.4.0
+        version: 0.4.0(patch_hash=69428be67bf3493456cf7cc5995604e1a8129500def9961eb23f9998cb371993)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
+    devDependencies:
+      '@iconify-json/icon-park-outline':
+        specifier: ^1.2.0
+        version: 1.2.4
+      '@iconify-json/lucide':
+        specifier: ^1.2.108
+        version: 1.2.108
+      '@iconify-json/tabler':
+        specifier: ^1.2.35
+        version: 1.2.35
+      '@lynx-js/rspeedy':
+        specifier: ^0.13.5
+        version: 0.13.6(@rspack/core@1.7.11(@swc/helpers@0.5.21))(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.14))
+      '@lynx-js/tailwind-preset':
+        specifier: ^0.4.0
+        version: 0.4.0(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.9.0))
+      '@lynx-js/types':
+        specifier: ^3.8.0
+        version: 3.8.0
+      '@rsbuild/plugin-vue':
+        specifier: ^1.2.6
+        version: 1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(vue@3.5.17(typescript@5.9.3))
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.5.0(postcss@8.5.14)
+      postcss:
+        specifier: ^8.4.49
+        version: 8.5.14
+      rsbuild-plugin-tailwindcss:
+        specifier: ^0.2.4
+        version: 0.2.4(@rsbuild/core@1.7.3)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.9.0))
+      tailwindcss:
+        specifier: ^3.4.17
+        version: 3.4.19(tsx@4.22.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vue:
+        specifier: 3.5.17
+        version: 3.5.17(typescript@5.9.3)
+
   fixtures/fixture-consumer:
     devDependencies:
       '@lynx-js/types':
