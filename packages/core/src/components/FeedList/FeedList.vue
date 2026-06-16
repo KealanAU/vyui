@@ -4,10 +4,10 @@
      Wraps Lynx's native virtualized `<list>` with an item template, rubber-band
      pull-to-refresh, and load-more on scroll-to-lower.
 
-     PTR rides `:main-thread-bindtouch*` worklets (vue-lynx has no
-     `:main-thread-gesture` binding). We track the scroll offset and only take
-     the gesture over while pulling down from the top edge — at `scrollTop 0`
-     with the list's native `bounces` off, nothing competes for the touch.
+     PTR rides `:main-thread-bindtouch*` worklets. We track the scroll offset
+     and only take the gesture over while pulling down from the top edge — at
+     `scrollTop 0` with the list's native `bounces` off, nothing competes for
+     the touch.
      Rationale + device-verify checklist: REFRESH-PHYSICS.md.
 
      Worklet rules: every `'main thread'` fn is inlined here (a `.ts`-resident

@@ -1,11 +1,9 @@
 # FeedList pull-to-refresh — physics & the touch-vs-scroll arbitration
 
 > Verdict: **implemented via `:main-thread-bindtouch*` worklets**, gated to the
-> top edge — the gesture-runtime arbitration route was abandoned (blocked on a
-> missing vue-lynx binding, see "Upstream gap" below). Builds and unit-tests
-> green; the touch binding and rubber-band physics are **device-only verifiable**
-> (checklist at the end). This note records why the obvious approaches fail and
-> how the working one is wired.
+> top edge. Builds and unit-tests green; the touch binding and rubber-band
+> physics are **device-only verifiable** (checklist at the end). This note
+> records how the working approach is wired and why it's gated to the top edge.
 
 ## The problem: gesture ownership
 
@@ -14,11 +12,9 @@ When the user drags, the scroller can claim the touch stream and the custom
 `translateY` rubber-band never wins. Two routes can take ownership back:
 
 1. **Gesture arbitration** (`@lynx-js/gesture-runtime`): register a recognizer
-   and `consumeGesture`/`interceptGesture` frame-by-frame. The *correct* general
-   answer — but **blocked in vue-lynx**: it has no `:main-thread-gesture` binding
-   to attach the callback worklets on the main thread, so the engine fires the
-   callbacks against an empty `worklet_info` and nothing runs (see "Upstream gap"
-   below).
+   and `consumeGesture`/`interceptGesture` frame-by-frame. The most general
+   answer, but the heaviest — it pulls in extra runtime deps and full
+   frame-by-frame arbitration we don't otherwise need.
 2. **Plain touch worklets** (`:main-thread-bindtouch*`): vue-lynx fully supports
    these (ScrollView, Swiper, Slider, SwipeAction, Draggable all use them). They
    *see* every touch but **cannot consume the gesture** from a native scroller.
@@ -45,7 +41,7 @@ scrolling and load-more are untouched.
 This is a **bet**, not a guarantee — see the device checklist. If a target
 platform delivers `touchcancel` the instant the finger moves (handing the
 gesture to the scroller before we can gate), the fallback is the native
-`<refresh>` wrapper, or contributing the `:main-thread-gesture` binding upstream.
+`<refresh>` wrapper.
 
 ## How vyui wires it
 
@@ -110,27 +106,3 @@ rubber-band maths. They do **not** cover the gesture/MT engine. Verify on iOS
 7. **End-of-refresh spring.** Setting `refreshing = false` springs the header
    closed and lands on `idle` (via `done`).
 8. **`enableBounce`** overscroll at both edges (most lightly exercised path).
-
-## Upstream gap (the proper fix, if the bet fails)
-
-The clean answer is a `:main-thread-gesture` binding in vue-lynx. In React-Lynx
-`main-thread:gesture={g}` is a compiler+runtime feature wired through the element
-snapshot: the BG side calls `processGestureBackground` → `registerWorkletCtx` per
-callback, and the MT side calls `processGesture` → `onWorkletCtxUpdate` +
-`__SetAttribute(has-react-gesture/flatten)` + `__SetGestureDetector`. Both halves
-run against the same element + worklet ctx, so the native side has a runnable
-`worklet_info`. vue-lynx ships none of it: calling `__SetGestureDetector` from a
-runtime worklet registers the *detector* but never attaches the callback worklets
-on MT (`registerWorkletCtx` alone only covers BG function resolution) — hence the
-device error `TriggerFiberElementWorklet failed since worklet_info is empty`
-(LynxExplorer SDK 1.4.0, iOS, 2026-06-15).
-
-Everything else is present: vue-lynx's `patchProp` already handles
-`main-thread-ref` (`SET_MT_REF`) and `main-thread-bind<event>`
-(`registerWorkletCtx` + `SET_WORKLET_EVENT` → `__AddEvent`). The PR is to add a
-`gesture` case mirroring that: BG `registerWorkletCtx` on each `value.callbacks[*]`
-+ `pushOp(SET_GESTURE_DETECTOR, …)`; MT a `SET_GESTURE_DETECTOR` op running the
-`processGesture` equivalent. Then FeedList consumes
-`:main-thread-gesture="useGesture(NativeGesture).onUpdate(cb)…"` (as lynx-ui
-does) and drops the touch workaround. This also unlocks the cases the top-edge
-trick can't cover (mid-scroll arbitration, mid-scroller custom bounce).
