@@ -1,0 +1,24 @@
+/*
+ * Tailwind entry. `@lynx-js/tailwind-preset` is utility-only for Lynx,
+ * so we only load `base` and `utilities`.
+ */
+@tailwind base;
+@tailwind utilities;
+
+/* @vyui/kit default theme tokens. */
+@import '@vyui/kit/style.css';
+
+/* Spinner rotation — `animate-spin` isn't in the Lynx tailwind preset, so we
+   define the keyframe here (Lynx supports CSS transform keyframes). */
+@keyframes vyui-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.vyui-spin {
+  animation: vyui-spin 0.8s linear infinite;
+}

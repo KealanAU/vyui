@@ -5,6 +5,9 @@ import { VyTabs } from '@vyui/kit'
 import ThemeSection from './sections/ThemeSection.vue'
 import FormSection from './sections/FormSection.vue'
 import DisplaySection from './sections/DisplaySection.vue'
+import GesturesSection from './sections/GesturesSection.vue'
+import FeedListSection from './sections/FeedListSection.vue'
+import ScrollViewSection from './sections/ScrollViewSection.vue'
 import IslandSection from './sections/IslandSection.vue'
 import OverlaySection from './sections/OverlaySection.vue'
 
@@ -39,10 +42,22 @@ const allTabItems = [
   { value: 'theme',   label: 'Theme', icon: 'icon-park-outline:paint',            slot: 'theme' },
   { value: 'form',    label: 'Form',  icon: 'icon-park-outline:edit',             slot: 'form' },
   { value: 'display', label: 'View',  icon: 'icon-park-outline:layers',           slot: 'display' },
+  { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures' },
+  { value: 'feed',    label: 'Feed',  icon: 'icon-park-outline:list-two',         slot: 'feed' },
+  { value: 'scroll',  label: 'Scroll', icon: 'icon-park-outline:swipe',           slot: 'scroll' },
   { value: 'island',  label: 'Island', icon: 'icon-park-outline:pill',            slot: 'island' },
   { value: 'overlay', label: 'Modal', icon: 'icon-park-outline:application-menu', slot: 'overlay' },
 ]
 const tabItems = computed(() => allTabItems)
+
+// Tabs whose content is itself a gesture surface or its own scroller (a native
+// `<list>` / bounce `<scroll-view>`). The outer page `<scroll-view>` consumes
+// the vertical touch/pan stream for its own scrolling, which starves those
+// inner gestures (drag-to-reorder, swipe rows, pull a list) — the symptom is
+// "the whole page scrolls instead of the thing under my finger". For these tabs
+// we disable the outer scroll so the inner surface owns the gesture.
+const FULL_BLEED_TABS = ['gestures', 'feed', 'scroll']
+const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
 
 // ActionSheet header trigger removed for now: ActionSheet wraps the core
 // `Sheet*` primitives whose main-thread worklet currently throws "cannot read
@@ -57,7 +72,17 @@ const tabItems = computed(() => allTabItems)
   >
     <OverlayRoot />
 
-    <scroll-view class="w-full h-full" scroll-orientation="vertical">
+    <!-- Swap the outer element by tab rather than toggling `enable-scroll` on a
+         single instance: a content tab gets a real (scrolling) `<scroll-view>`;
+         a full-bleed tab gets a plain non-scrolling `<view>` so its inner
+         gesture surface / native `<list>` / bounce `<scroll-view>` owns the
+         touch stream. Swapping the element type forces a fresh mount, avoiding
+         a `<scroll-view>` getting stuck non-scrollable after a prop flip. -->
+    <component
+      :is="pageScrolls ? 'scroll-view' : 'view'"
+      class="w-full h-full"
+      scroll-orientation="vertical"
+    >
       <view class="flex flex-col gap-4 px-5 pt-16 pb-10">
         <view class="flex flex-col gap-1">
           <text class="text-slate-900 text-2xl font-bold">@vyui/kit demo</text>
@@ -87,6 +112,18 @@ const tabItems = computed(() => allTabItems)
             <DisplaySection />
           </template>
 
+          <template #gestures>
+            <GesturesSection />
+          </template>
+
+          <template #feed>
+            <FeedListSection />
+          </template>
+
+          <template #scroll>
+            <ScrollViewSection />
+          </template>
+
           <template #island>
             <IslandSection />
           </template>
@@ -100,6 +137,6 @@ const tabItems = computed(() => allTabItems)
           <text class="text-slate-400 text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
         </view>
       </view>
-    </scroll-view>
+    </component>
   </view>
 </template>

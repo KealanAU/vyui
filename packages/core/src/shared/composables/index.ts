@@ -24,6 +24,21 @@ export type { SlideDirection } from './useAnimate.js'
 
 export { useMtSmoke } from './useMtSmoke.js'
 
+export {
+  BOUNCE_CONSTANTS,
+  BOUNCING_STATUS,
+  getBouncingStatus,
+  isOverTriggerDistance,
+  rubberBandingDistance,
+  shouldBounceWhenTouchEnd,
+} from './useBounce.js'
+// `BounceableBasicProps` / `ScrollToBouncesInfo` / `SingleSidedBounce` are the
+// public bounce *prop* types — they are re-exported via the ScrollView barrel
+// (their natural home) to keep a single export path and avoid a root-level
+// re-export ambiguity. Only the composable-internal `BouncingStatusValue` is
+// surfaced here.
+export type { BouncingStatusValue } from './useBounce.js'
+
 export { useTouchEmulation } from './useTouchEmulation.js'
 export type { UseTouchEmulationOptions, UseTouchEmulationReturn } from './useTouchEmulation.js'
 

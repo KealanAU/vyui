@@ -1,0 +1,107 @@
+<script setup lang="ts">
+// Full-bleed card. One per "video" in the feed. Lynx has no native <video>
+// element, so the media is a real fetched <image> (gradient behind it as the
+// load/offline placeholder).
+//
+// TikTok layout: image fills the full screen, play glyph centred, metadata
+// overlaid in the bottom-left, engagement icons (Icon Park Solid) down the
+// right side.
+
+import { Icon as VyIcon } from '@vyui/core'
+import type { Video } from '../data/videos'
+
+defineProps<{
+  video: Video
+}>()
+
+const emit = defineEmits<{
+  // Tapping the comment count opens the CommentsDrawer from the parent.
+  openComments: [videoId: string]
+}>()
+
+function fmt(n: number): string {
+  // Compact number formatter: 1200 → "1.2K", 1000000 → "1M".
+  // We do this manually instead of Intl.NumberFormat compact because
+  // installIntlPolyfill() only ships basic Intl; compact notation is not
+  // guaranteed on all Lynx runtimes.
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
+  return String(n)
+}
+</script>
+
+<template>
+  <!-- Full-screen item. Height is set by the parent FeedList item wrapper.
+       The gradient is the placeholder shown until the fetched image loads. -->
+  <view class="w-full h-full relative" :style="{ background: video.gradient }">
+
+    <!-- Real fetched media. Lynx has no native <video> element, so each "video"
+         is a real remote image (picsum, seeded by id so every card is visibly
+         different — which also makes the snap-paging obvious as you swipe).
+         `mode=aspectFill` covers the full card; the gradient shows while it
+         loads / if the network is unavailable. -->
+    <image
+      :src="`https://picsum.photos/seed/${video.id}/720/1280`"
+      mode="aspectFill"
+      class="absolute inset-0 w-full h-full"
+    />
+
+    <!-- Scrim so overlaid white text stays legible over any photo. -->
+    <view
+      class="absolute inset-0"
+      :style="{ background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.45) 100%)' }"
+    />
+
+    <!-- Centred play glyph — decorative (still images, no real playback).
+         Icon Park Solid (ByteDance's set, fitting for a Lynx demo). -->
+    <view class="absolute inset-0 flex items-center justify-center">
+      <view class="w-16 h-16 rounded-full bg-black/30 flex items-center justify-center">
+        <!-- play-one, not play: icon-park-solid:play is mask-based and Lynx's
+             <svg> rasterizer drops masks (renders a solid box). -->
+        <VyIcon name="icon-park-solid:play-one" :size="32" color="#ffffff" />
+      </view>
+    </view>
+
+    <!-- Bottom-left: caption + author — TikTok metadata block. -->
+    <view class="absolute bottom-24 left-4 right-20 flex flex-col gap-1">
+      <text class="text-white font-semibold text-base" :style="{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }">
+        {{ video.author }}
+      </text>
+      <text class="text-white/90 text-sm" :style="{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }">
+        {{ video.caption }}
+      </text>
+    </view>
+
+    <!-- Right side: TikTok engagement column — likes, comments, shares. -->
+    <view class="absolute bottom-24 right-3 flex flex-col items-center gap-5">
+
+      <!-- Like -->
+      <view class="flex flex-col items-center gap-1">
+        <view class="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center">
+          <VyIcon name="icon-park-solid:like" :size="24" color="#ff2d55" />
+        </view>
+        <text class="text-white text-xs font-medium">{{ fmt(video.likes) }}</text>
+      </view>
+
+      <!-- Comment — tap opens the CommentsDrawer. Emits to parent rather than
+           opening the drawer directly so the parent owns drawer open state and
+           can track which video's comments are shown. -->
+      <view class="flex flex-col items-center gap-1" @tap="emit('openComments', video.id)">
+        <view class="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center">
+          <!-- outline variant: every icon-park-solid comment/message bubble is
+               mask-based (unrenderable on Lynx's <svg>), so use the outline one. -->
+          <VyIcon name="icon-park-outline:comment" :size="24" color="#ffffff" />
+        </view>
+        <text class="text-white text-xs font-medium">{{ fmt(video.comments) }}</text>
+      </view>
+
+      <!-- Share -->
+      <view class="flex flex-col items-center gap-1">
+        <view class="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center">
+          <VyIcon name="icon-park-solid:share-one" :size="24" color="#ffffff" />
+        </view>
+        <text class="text-white text-xs font-medium">{{ fmt(video.shares) }}</text>
+      </view>
+    </view>
+  </view>
+</template>

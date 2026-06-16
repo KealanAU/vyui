@@ -19,6 +19,13 @@ export interface SortableProps<T = unknown> {
   modelValue?: T[]
   /** Disable dragging on every row. */
   disabled?: boolean
+  /**
+   * How long (ms) a press must be held before a row lifts for dragging. The
+   * hold guards against a tap or a scroll being mistaken for a drag. Set `0`
+   * for immediate drag (e.g. when the list is not inside a scroller).
+   * @defaultValue `250`
+   */
+  longPressMs?: number
   size?: SortableVariants['size']
   class?: any
   ui?: Partial<Record<keyof ReturnType<typeof buildSortable>['slots'], any>>
@@ -63,6 +70,7 @@ const itemHeight = computed(() => ITEM_HEIGHTS[(props.size ?? 'md') as keyof typ
     :model-value="modelValue"
     :item-height="itemHeight"
     :disabled="disabled"
+    :long-press-ms="longPressMs"
     :class="ui.root({ class: [props.class, props.ui?.root] })"
     @update:model-value="(v: T[]) => emit('update:modelValue', v)"
   >

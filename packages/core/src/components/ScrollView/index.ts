@@ -2,6 +2,9 @@
 // Apache 2.0 licensed, adapted from lynx-family/lynx-ui (Apache 2.0).
 export {
   default as ScrollView,
-  type ScrollViewProps,
+  type BounceableBasicProps,
+  type ScrollToBouncesInfo,
   type ScrollViewEmits,
+  type ScrollViewProps,
+  type SingleSidedBounce,
 } from './ScrollView.vue'

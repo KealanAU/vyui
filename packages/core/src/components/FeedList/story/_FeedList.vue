@@ -57,9 +57,11 @@ function onLoadMore() {
           <text>{{ item.label }} (#{{ index }})</text>
         </view>
       </template>
-      <template #loadMoreFooter="{ loading }">
+      <!-- Core renders this slot only while loading, so it always means
+           "loading more" (no `loading` arg — that's the kit wrapper's API). -->
+      <template #loadMoreFooter>
         <view :style="{ padding: '12px', alignItems: 'center' }">
-          <text data-testid="load-more-footer">{{ loading ? 'Loading more…' : 'Scroll for more' }}</text>
+          <text data-testid="load-more-footer">Loading more…</text>
         </view>
       </template>
       <template #noMoreDataFooter>
