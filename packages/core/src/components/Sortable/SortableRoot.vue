@@ -123,12 +123,9 @@ function _bindScroll() {
   viewportHeightMT.current = el.clientHeight ?? 0
 }
 
-function register(handle: SortableItemHandle) {
-  itemHandlesMT.current = [...itemHandlesMT.current, handle]
-  return () => {
-    itemHandlesMT.current = itemHandlesMT.current.filter(h => h !== handle)
-  }
-}
+// Item registration lives in SortableItem and runs on the MAIN thread: the
+// registry is a MainThreadRef and BG writes to `.current` are dropped by
+// vue-lynx 0.4.0, so a BG-side `register()` here left the registry empty.
 
 function commitReorder(from: number, to: number) {
   if (from === to || from < 0 || to < 0) return
@@ -165,7 +162,6 @@ provideSortableRootContext({
   viewportHeightMT,
   autoScrollEdgeMT,
   autoScrollSpeedMT,
-  register,
   commitReorder,
   notifyDragStart,
   notifyDragEnd,
