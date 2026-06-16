@@ -230,10 +230,9 @@ function _setStyle(decl: Record<string, string>) {
   }
 }
 
-// DEVICE-VERIFY: painting a SECOND element (the backdrop) from the
-// content's touch worklets hasn't been device-verified — it's the same
-// setStyleProperty surface as the panel, but through a ref populated by
-// a sibling component (`SheetBackdropImpl`'s `:main-thread-ref`).
+// Paints a SECOND element (the backdrop) from the content's touch worklets:
+// the same setStyleProperty surface as the panel, but through a ref populated
+// by a sibling component (`SheetBackdropImpl`'s `:main-thread-ref`).
 function _setBackdropStyle(decl: Record<string, string>) {
   'main thread'
   // The backdrop is optional (sheets can render without one) and unmounts
@@ -416,8 +415,8 @@ function _onTouchEnd() {
     // Below fully open, inline `animation: none` stays on the panel so a
     // later non-drag close can't start `.ui-leaving` from translateY(0)
     // (`_slideOffFromCurrent` drives those closes). At fully open the
-    // inline animation is cleared so the keyframe paths apply again.
-    // DEVICE-VERIFY: clearing via empty-string setStyleProperty value.
+    // inline animation is cleared (empty-string value) so the keyframe paths
+    // apply again.
     _settleTo(target, `translateY(${target}px)`, durationMs, 'ease-out', target === 0)
     runOnBackground(_settle as any)(idx)
   }
@@ -516,9 +515,9 @@ watch(snapTargetPos, (pos) => {
 // Entered re-sync: the enter keyframe always lands at translateY(0) (fully
 // open). If snapIndex points below that — preset before open, or changed
 // mid-enter — ease down to it now. Also the v1 "open at an intermediate
-// snap" story: slide fully in, then settle down. DEVICE-VERIFY: dispatch
-// rides a different channel than the Entered class patch, so the first
-// frames of the settle may still be masked by the outgoing keyframe.
+// snap" story: slide fully in, then settle down. The dispatch rides a
+// different channel than the Entered class patch, so the first frames of the
+// settle may still be masked by the outgoing keyframe.
 watch(presenceState, (s) => {
   if (s === PresenceState.Entered && snapTargetPos.value !== 0) {
     void runOnMainThread(_jumpToSnap as any)(snapTargetPos.value)
