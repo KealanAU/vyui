@@ -172,10 +172,20 @@ const fruitItems = [
       <VyDrawer
         v-model:open="drawerFullOpen"
         title="Full-screen drawer"
-        description="Single snap at 100% — drag down or fling to dismiss."
+        description="Single snap at 100% — drag the handle down, or use Close below."
         :snap-points="[1]"
       >
         <VyButton color="neutral" variant="subtle" label="Open full-screen drawer" />
+        <!-- A full-screen drawer covers the backdrop, so there's nothing to tap
+             outside it to dismiss. Give the body an explicit close affordance. -->
+        <template #body="{ close }">
+          <view class="flex flex-col gap-3 px-4 py-2">
+            <text class="text-slate-600 text-sm">
+              This drawer fills the viewport. Drag the handle down to dismiss, or tap Close.
+            </text>
+            <VyButton color="neutral" variant="solid" label="Close" block @tap="close()" />
+          </view>
+        </template>
       </VyDrawer>
     </view>
 

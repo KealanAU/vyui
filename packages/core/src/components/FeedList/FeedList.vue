@@ -91,6 +91,13 @@ export interface FeedListProps<T = unknown> {
   /** Initial loading-more state when uncontrolled. */
   defaultLoadingMore?: boolean
   /**
+   * No more data to load. Shows the `noMoreDataFooter` slot (end-of-list). Until
+   * this is `true` — and while not `loadingMore` — no footer renders, so a list
+   * with more pages to fetch never displays an "end of list" message.
+   * @defaultValue `false`
+   */
+  noMoreData?: boolean
+  /**
    * Items from the bottom that triggers `load-more`.
    * @defaultValue `2`
    */
@@ -144,6 +151,7 @@ const props = withDefaults(defineProps<FeedListProps<T>>(), {
   enableBounce: false,
   enableLoadMore: false,
   defaultLoadingMore: false,
+  noMoreData: false,
   loadMoreThresholdItemCount: 2,
   upperThresholdItemCount: 0,
 })
@@ -503,7 +511,10 @@ const itemSnapValue = computed(() => {
 })
 
 const isEmpty = computed(() => props.items.length === 0)
-const hasFooter = computed(() => props.enableLoadMore)
+// Footer row only exists when there's something to show: the load-more spinner
+// while fetching, or the end-of-list footer once `noMoreData`. Otherwise no
+// footer renders, so "No more items" never shows while more pages remain.
+const hasFooter = computed(() => props.enableLoadMore && (loadingMore.value || props.noMoreData))
 
 defineExpose({ scrollToIndex, refreshState })
 </script>
