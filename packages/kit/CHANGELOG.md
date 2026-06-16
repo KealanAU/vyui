@@ -1,5 +1,37 @@
 # @vyui/kit
 
+## 0.0.4
+
+### Patch Changes
+
+- FeedList wrapper: forward the full pull-to-refresh surface to core ([#76](https://github.com/KealanAU/vyui/pull/76))
+  (`enableRefresh`, `v-model:refreshing`, `refreshThreshold`, `enableBounce`, the
+  `refresh` / `refreshStateChange` emits, and the `refreshHeader` slot with
+  `{ state, progress }`). Also forward the new `itemSnap` prop (`true` for
+  full-screen `item-snap` paging, or a custom `{ factor, offset }`) and the new
+  `snap` emit (native `bindsnap`; `event.detail.position` = settled index), and
+  align the `loadMoreFooter` slot with core's new no-arg signature (core renders
+  the footer only while loading, so `loading` is always `true` in that slot).
+
+- Add Sonner-style stacking to Toast. ([#73](https://github.com/KealanAU/vyui/pull/73))
+
+  `@vyui/core`:
+
+  - `ToastRoot` now binds its own `@layoutchange`, so the measured toast height feeds `heightBefore` automatically (previously nothing fed the resize observer, leaving the fan-out geometry at 0).
+  - `ToastRoot` exposes two new slot values: `duration` (resolved auto-dismiss ms) and `progress` (`1 → 0` countdown that rides the dismiss timer's start/pause/restart lifecycle, frozen while expanded).
+  - New `ToastSwipe` component — a main-thread swipe-to-dismiss layer (modeled on `SwipeAction`) that dismisses the surrounding `ToastRoot` when flung past a distance/velocity threshold. Exports `decideDismiss` for the unit-tested release policy.
+
+  `@vyui/kit`: `VyToast` gains:
+
+  - `stacked` — collapses toasts into an overlapping pile (front toast fully visible, the rest peeking scaled-down behind it) and fans them out under each other when expanded; tap a toast to toggle. Pair `stackFrom` (`top` | `bottom`, default `bottom`) with the `ToastViewport` position.
+  - `swipe` (+ `swipeDirection`) — fling a toast sideways to dismiss it. The card renders on an inner `ToastSwipe` layer so the swipe transform never collides with the stacking transform.
+  - `progress` — a thin countdown bar along the bottom edge that drains with the auto-dismiss timer (pauses while expanded, hidden when `duration: 0`).
+
+  All off by default; a plain `VyToast` still renders as a single gapped-column card.
+
+- Updated dependencies [[`fc9b621`](https://github.com/KealanAU/vyui/commit/fc9b621ba9e37e5920fb4b78062e25f65249a0b6), [`30a6732`](https://github.com/KealanAU/vyui/commit/30a6732cd908d2d248318bf6023af549963dd6f6), [`30a6732`](https://github.com/KealanAU/vyui/commit/30a6732cd908d2d248318bf6023af549963dd6f6), [`30a6732`](https://github.com/KealanAU/vyui/commit/30a6732cd908d2d248318bf6023af549963dd6f6), [`30a6732`](https://github.com/KealanAU/vyui/commit/30a6732cd908d2d248318bf6023af549963dd6f6), [`30a6732`](https://github.com/KealanAU/vyui/commit/30a6732cd908d2d248318bf6023af549963dd6f6), [`fc9b621`](https://github.com/KealanAU/vyui/commit/fc9b621ba9e37e5920fb4b78062e25f65249a0b6), [`fc9b621`](https://github.com/KealanAU/vyui/commit/fc9b621ba9e37e5920fb4b78062e25f65249a0b6), [`fc9b621`](https://github.com/KealanAU/vyui/commit/fc9b621ba9e37e5920fb4b78062e25f65249a0b6), [`f9366e3`](https://github.com/KealanAU/vyui/commit/f9366e332c8bd78f3191523c25f51ee6e43aa79c)]:
+  - @vyui/core@0.0.6
+
 ## 0.0.3
 
 ### Patch Changes
