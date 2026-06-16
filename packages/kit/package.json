@@ -1,7 +1,7 @@
 {
   "name": "@vyui/kit",
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Styled Vue-Lynx components built on @vyui/core",
   "license": "MIT",
   "author": "Kealan Clarke",
