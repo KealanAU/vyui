@@ -258,6 +258,54 @@ function _pruneRing(now: number) {
   while (ring.length > 2 && ring[0][1] < now - 50) ring.shift()
 }
 
+// Start a settle / dismiss transition that is GUARANTEED to animate from the
+// live drag position. CSS transitions interpolate from the property's last
+// COMMITTED value; on a fast flick — touchstart → touchmove → touchend all
+// land in one frame — the per-`touchmove` `translateY(pos)` writes never
+// commit a baseline, so a transition started in `_onTouchEnd` interpolates
+// from `translateY(0)` instead: the panel flashes back to full size for a
+// frame before sliding off. (Slow drags paint across many frames, commit a
+// baseline, and never hit this.) So: frame 1 re-pins the panel + backdrop to
+// the live position with `transition: none`, then `requestAnimationFrame`
+// crosses a frame boundary so that pin commits, and frame 2 runs the eased
+// move from there. Mirrors the explicit-from keyframes SwipeAction builds for
+// the same reason. `toTransform` is the literal end transform (dismiss uses
+// `translateY(100%)`; settles use `translateY(<target>px)`).
+function _settleTo(
+  target: number,
+  toTransform: string,
+  ms: number,
+  easing: string,
+  clearAnim: boolean,
+) {
+  'main thread'
+  const hpx = panelHeightPxRef.current
+  // Frame 1: pin to where the finger left the panel (kills any keyframe too).
+  _setStyle({ animation: 'none', transition: 'none', transform: `translateY(${posRef.current}px)` })
+  let p0 = hpx > 0 ? 1 - posRef.current / hpx : 1
+  if (p0 < 0) p0 = 0
+  if (p0 > 1) p0 = 1
+  _setBackdropStyle({ transition: 'none', opacity: String(p0) })
+  posRef.current = target
+  let progress = hpx > 0 ? 1 - target / hpx : 1
+  if (progress < 0) progress = 0
+  if (progress > 1) progress = 1
+  progressRef.current = progress
+  // Frame 2: baseline is now committed — run the eased settle from it.
+  function apply() {
+    _setStyle({
+      animation: clearAnim ? '' : 'none',
+      transition: `transform ${ms}ms ${easing}`,
+      transform: toTransform,
+    })
+    _setBackdropStyle({
+      transition: `opacity ${ms}ms ${easing}`,
+      opacity: String(progress),
+    })
+  }
+  requestAnimationFrame(apply)
+}
+
 function _onTouchStart(e: { detail: { y: number } }) {
   'main thread'
   isDraggingRef.current = true
@@ -344,24 +392,13 @@ function _onTouchEnd() {
   // the full duration; dismiss is a slightly quicker 0.9× cut (matches the
   // previous hardcoded 280 / 250ms feel at the default duration).
   if (shouldDismiss) {
-    posRef.current = hpx
     const dismissMs = Math.round(durationMs * 0.9)
-    // Suppress the `.ui-leaving` keyframe with inline `animation: none` so
-    // the slide-off transitions smoothly from the current drag position
-    // instead of snapping back to translateY(0) first. The
-    // `@transitionend` listener then advances Presence to `Left`.
-    _setStyle({
-      animation: 'none',
-      transition: `transform ${dismissMs}ms ease-in`,
-      transform: 'translateY(100%)',
-    })
-    // Fade the backdrop out alongside the slide-off. Presence unmounts it
-    // once the close completes, so the inline opacity can't stick around.
-    progressRef.current = 0
-    _setBackdropStyle({
-      transition: `opacity ${dismissMs}ms ease-in`,
-      opacity: '0',
-    })
+    // Slide off from the live drag position (`animation: none` suppresses the
+    // `.ui-leaving` keyframe so it can't snap to translateY(0) first; the
+    // frame-1 re-pin in `_settleTo` guards the flick case). `@transitionend`
+    // then advances Presence to `Left`, which unmounts the backdrop too — so
+    // the inline opacity we fade to 0 here can't leak into the next open.
+    _settleTo(hpx, 'translateY(100%)', dismissMs, 'ease-in', false)
     runOnBackground(_emitClose as any)()
   }
   else {
@@ -376,26 +413,12 @@ function _onTouchEnd() {
       }
     }
     const target = positions.length > 0 ? positions[idx] : 0
-    posRef.current = target
     // Below fully open, inline `animation: none` stays on the panel so a
     // later non-drag close can't start `.ui-leaving` from translateY(0)
     // (`_slideOffFromCurrent` drives those closes). At fully open the
     // inline animation is cleared so the keyframe paths apply again.
     // DEVICE-VERIFY: clearing via empty-string setStyleProperty value.
-    _setStyle({
-      animation: target === 0 ? '' : 'none',
-      transition: `transform ${durationMs}ms ease-out`,
-      transform: `translateY(${target}px)`,
-    })
-    // Move the backdrop dim in step with the settle.
-    let progress = hpx > 0 ? 1 - target / hpx : 1
-    if (progress < 0) progress = 0
-    if (progress > 1) progress = 1
-    progressRef.current = progress
-    _setBackdropStyle({
-      transition: `opacity ${durationMs}ms ease-out`,
-      opacity: String(progress),
-    })
+    _settleTo(target, `translateY(${target}px)`, durationMs, 'ease-out', target === 0)
     runOnBackground(_settle as any)(idx)
   }
 }
@@ -406,24 +429,12 @@ function _onTouchCancel() {
   isDraggingRef.current = false
   // Cancel returns to the position the drag STARTED from (always a snap),
   // faster than a deliberate release — 0.7× the settle duration (matches
-  // the previous hardcoded 200ms at the 280ms default).
+  // the previous hardcoded 200ms at the 280ms default). Goes through
+  // `_settleTo` so a cancelled flick animates from the live position rather
+  // than flashing back to full size first.
   const target = touchStartPosRef.current
-  const hpx = panelHeightPxRef.current
-  posRef.current = target
   const cancelMs = Math.round(durationMsRef.current * 0.7)
-  _setStyle({
-    animation: target === 0 ? '' : 'none',
-    transition: `transform ${cancelMs}ms ease-out`,
-    transform: `translateY(${target}px)`,
-  })
-  let progress = hpx > 0 ? 1 - target / hpx : 1
-  if (progress < 0) progress = 0
-  if (progress > 1) progress = 1
-  progressRef.current = progress
-  _setBackdropStyle({
-    transition: `opacity ${cancelMs}ms ease-out`,
-    opacity: String(progress),
-  })
+  _settleTo(target, `translateY(${target}px)`, cancelMs, 'ease-out', target === 0)
 }
 
 // Programmatic move (BG `snapIndex` watch / post-enter sync). Skips while
