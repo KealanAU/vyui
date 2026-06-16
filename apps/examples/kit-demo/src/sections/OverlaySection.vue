@@ -209,7 +209,7 @@ const fruitItems = [
        context. Bindings are null-safe — the portal can re-render the captured
        slot once `activeToast` flips back to null, before the v-if unmounts. -->
   <ToastProvider v-if="activeToast">
-    <ToastViewport position="top" :style="{ paddingTop: '16px', zIndex: 60 }">
+    <ToastViewport position="top" :style="{ paddingTop: '60px', zIndex: 60 }">
       <VyToast
         :title="activeToast?.title"
         :description="activeToast?.detail"
@@ -223,7 +223,7 @@ const fruitItems = [
        toast opts in with `stacked` and matches the viewport edge via
        `stack-from`. Tapping a toast toggles the provider's expanded state. -->
   <ToastProvider v-if="stackedToasts.length">
-    <ToastViewport position="top" :style="{ paddingTop: '16px', zIndex: 60 }">
+    <ToastViewport position="top" :style="{ paddingTop: '60px', zIndex: 60 }">
       <VyToast
         v-for="t in stackedToasts"
         :key="t.key"
