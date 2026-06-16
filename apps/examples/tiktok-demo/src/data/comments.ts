@@ -13,7 +13,7 @@ export interface Comment {
 export const SEED_COMMENTS: Comment[] = [
   { id: 'c1',  author: '@rin',    text: 'This is insane — shipping on mobile feels like cheating now 🚀', likes: 892, time: '2m' },
   { id: 'c2',  author: '@tycho',  text: 'The worklet animation is buttery smooth, no jank at all',        likes: 541, time: '5m' },
-  { id: 'c3',  author: '@lena',   text: 'Finally a UI kit that treats Lynx as a first-class target ❤️',  likes: 379, time: '8m' },
+  { id: 'c3',  author: '@lena',   text: 'Finally a UI kit that treats Lynx as a first-class target 💖',  likes: 379, time: '8m' },
   { id: 'c4',  author: '@marc',   text: 'How does the pull-to-refresh feel on device vs simulator?',       likes: 210, time: '12m' },
   { id: 'c5',  author: '@sora',   text: 'The sheet multi-snap is exactly what vaul does on web — nice 👏', likes: 188, time: '18m' },
 ]

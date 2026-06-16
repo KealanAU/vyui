@@ -34,7 +34,7 @@ export interface FeedListProps<T = unknown> {
   scrollBarEnable?: boolean
   /** Disable scrolling. */
   disabled?: boolean
-  /** Enable the custom rubber-band pull-to-refresh (gesture-arbitrated). */
+  /** Enable the custom rubber-band pull-to-refresh (touch worklets). */
   enableRefresh?: boolean
   /** Controlled refreshing state. Bind with `v-model:refreshing`. */
   refreshing?: boolean

@@ -5,9 +5,9 @@ import { describe, expect, it, vi } from 'vitest'
 
 // FeedList's pull-to-refresh worklets fire on a device only — under vitest we
 // verify the unit-testable parts: the `keyFor` helper, the SFC's PTR wiring
-// (gesture-arbitrated, no native `<refresh>`), and the pure refresh
-// state-machine transitions. Keep the hygienic vue-lynx mock used elsewhere to
-// avoid `internal/ops` source-map noise.
+// (touch worklets on a bare `<list>`, no native `<refresh>`), and the pure
+// refresh state-machine transitions. Keep the hygienic vue-lynx mock used
+// elsewhere to avoid `internal/ops` source-map noise.
 vi.mock('vue-lynx', async () => {
   const actual = await vi.importActual<typeof import('vue-lynx')>('vue-lynx')
   return { ...actual }
@@ -56,13 +56,13 @@ describe('FeedList — keyFor', () => {
   })
 })
 
-// Pull-to-refresh is now a custom rubber-band driven by a gesture-arbitrated
-// NativeGesture on a BARE `<list>` (no native `<refresh>` wrapper). The MT
-// gesture cannot run under vitest, so assert the SFC wiring by inspecting the
-// template/script source: enableRefresh gates a translated wrapper + the
-// refreshHeader slot exposes `{ state, progress }`, the gesture detector is
-// installed manually, and the public API matches the demo-facing contract.
-describe('FeedList — PTR wiring (gesture-arbitrated)', () => {
+// Pull-to-refresh is a custom rubber-band driven by `:main-thread-bindtouch*`
+// worklets on a BARE `<list>` (no native `<refresh>` wrapper, no
+// gesture-runtime). The MT worklets cannot run under vitest, so assert the SFC
+// wiring by inspecting the template/script source: enableRefresh gates a
+// translated wrapper + the refreshHeader slot exposes `{ state, progress }`,
+// the touch handlers are bound, and the public API matches the demo contract.
+describe('FeedList — PTR wiring (touch worklets)', () => {
   async function readSfc(): Promise<string> {
     const fs = await import('node:fs')
     const path = await import('node:path')
@@ -79,9 +79,9 @@ describe('FeedList — PTR wiring (gesture-arbitrated)', () => {
     // No native refresh element anymore.
     expect(template).not.toMatch(/<refresh[\s>]/)
     expect(template).not.toMatch(/<refresh-header[\s>]/)
-    // The PTR branch is gated on enableRefresh and wraps the list in a
-    // main-thread-ref'd wrapper that the worklets translate.
-    expect(template).toMatch(/v-else-if="enableRefresh"/)
+    // The PTR/bounce branch is gated on enableRefresh || enableBounce and wraps
+    // the list in a main-thread-ref'd wrapper that the worklets translate.
+    expect(template).toMatch(/v-else-if="enableRefresh \|\| enableBounce"/)
     expect(template).toMatch(/:main-thread-ref="wrapperRef"/)
     expect(template).toMatch(/:main-thread-ref="listRef"/)
     expect(template).toMatch(/data-vyui-feed-list\b/)
@@ -92,19 +92,21 @@ describe('FeedList — PTR wiring (gesture-arbitrated)', () => {
     expect(sfc).toMatch(/name="refreshHeader"\s+:state="refreshState"\s+:progress="pullProgress"/)
   })
 
-  it('installs the gesture detector manually (vue-lynx has no gesture transform)', async () => {
+  it('drives PTR via :main-thread-bindtouch* worklets, not gesture-runtime', async () => {
     const sfc = await readSfc()
-    // The install worklet is inlined in the SFC (a .ts-resident worklet crashes
-    // at card load). __SetGestureDetector is reached via `globalThis.` so the
-    // worklet transform treats it as a global (not a captured BG var) and takes
-    // the raw `.element`; attributes go through the worklet Element wrapper's
-    // `setAttribute` method (passing the wrapper to a global PAPI throws
-    // "param 0 should be RefCounted").
-    expect(sfc).toMatch(/globalThis\.__SetGestureDetector\(\s*el\.element/)
-    expect(sfc).toMatch(/el\.setAttribute\(\s*'has-react-gesture'/)
-    // The new-gesture path is enabled via the vue-lynx patch, not a template
-    // prop — assert no gesture-binding ATTRIBUTE is used (scan the template).
     const template = sfc.match(/<template>[\s\S]*<\/template>/)?.[0] ?? ''
+    // Touch worklets are bound on the PTR list; scroll offset is tracked to gate
+    // the pull to the top edge.
+    expect(template).toMatch(/:main-thread-bindtouchstart="_onTouchStart"/)
+    expect(template).toMatch(/:main-thread-bindtouchmove="_onTouchMove"/)
+    expect(template).toMatch(/:main-thread-bindtouchend="_onTouchEnd"/)
+    expect(template).toMatch(/:main-thread-bindscroll="_onScrollMT"/)
+    // Native bounce is forced off on the PTR list so the top pull isn't stolen.
+    expect(template).toMatch(/:bounces="false"/)
+    // No gesture-runtime: no manual detector install call, no gesture bind attr.
+    // (The header comment may mention `__SetGestureDetector` in prose to explain
+    // why it's avoided — assert there's no actual *call* to it.)
+    expect(sfc).not.toMatch(/__SetGestureDetector\s*\(/)
     expect(template).not.toMatch(/:?main-thread:gesture=|:main-thread-gesture=|:gesture=/)
   })
 

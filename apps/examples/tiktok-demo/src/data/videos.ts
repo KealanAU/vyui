@@ -56,7 +56,7 @@ export const SEED_VIDEOS: Video[] = [
   {
     id: 'v5',
     gradient: 'linear-gradient(160deg, #fa709a 0%, #fee140 100%)',
-    caption: 'Worklet animations run on the main thread ⚡️',
+    caption: 'Worklet animations run on the main thread ⚡',
     author: '@vyui',
     likes: 18900,
     comments: 412,
@@ -65,7 +65,7 @@ export const SEED_VIDEOS: Video[] = [
   {
     id: 'v6',
     gradient: 'linear-gradient(160deg, #a18cd1 0%, #fbc2eb 100%)',
-    caption: 'VyFeedList virtualised scroll — 10k items 🗂️',
+    caption: 'VyFeedList virtualised scroll — 10k items 📁',
     author: '@kealan',
     likes: 5400,
     comments: 74,
@@ -74,7 +74,7 @@ export const SEED_VIDEOS: Video[] = [
   {
     id: 'v7',
     gradient: 'linear-gradient(160deg, #ffecd2 0%, #fcb69f 100%)',
-    caption: 'Island components: floating docks done right 🏝️',
+    caption: 'Island components: floating docks done right 🌴',
     author: '@ada',
     likes: 14200,
     comments: 301,
@@ -151,7 +151,7 @@ export const LOAD_MORE_VIDEOS: Video[] = [
   {
     id: 'lm5',
     gradient: 'linear-gradient(160deg, #96fbc4 0%, #f9f586 100%)',
-    caption: 'VySwipeAction: swipe-to-delete gestures 🗑️',
+    caption: 'VySwipeAction: swipe-to-delete gestures ❌',
     author: '@ada',
     likes: 9500,
     comments: 208,

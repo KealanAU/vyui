@@ -1,102 +1,75 @@
-# FeedList pull-to-refresh — physics & gesture arbitration
+# FeedList pull-to-refresh — physics & the touch-vs-scroll arbitration
 
-> Verdict (was "not feasible"): **implemented via `@lynx-js/gesture-runtime`
-> gesture arbitration.** Builds and unit-tests green; the gesture binding and
-> rubber-band physics are **device-only verifiable** (see the checklist at the
-> end). This note records why the obvious approaches fail and how the working
-> one is wired, so the next person doesn't re-derive it.
+> Verdict: **implemented via `:main-thread-bindtouch*` worklets**, gated to the
+> top edge — the gesture-runtime arbitration route was abandoned (blocked on a
+> missing vue-lynx binding, see "Upstream gap" below). Builds and unit-tests
+> green; the touch binding and rubber-band physics are **device-only verifiable**
+> (checklist at the end). This note records why the obvious approaches fail and
+> how the working one is wired.
 
 ## The problem: gesture ownership
 
-A native `<list>` / `<scroll-view>` **consumes its own vertical scroll
-gesture**. If you hand-roll a rubber-band — listen for touch, paint a
-`translateY` via `setStyleProperty` on overscroll — the native scroller keeps
-claiming the touch stream the moment the user drags past the top edge, and the
-custom transform never wins. Custom pull-to-refresh and overscroll bounce both
-hit this wall. You cannot fix it from the BG thread or with plain
-`:main-thread-bindtouch*` worklets: those see the touches, but they cannot take
-*ownership* away from the native scroller.
+A native `<list>` / `<scroll-view>` **runs its own scroll gesture recognizer**.
+When the user drags, the scroller can claim the touch stream and the custom
+`translateY` rubber-band never wins. Two routes can take ownership back:
 
-The supported fix is **gesture arbitration**: register a gesture recognizer on
-the element and, from its main-thread callbacks, tell the engine frame-by-frame
-whether *you* own the touch (`consumeGesture` / `interceptGesture`) or the
-native scroller does. This is what `@lynx-js/gesture-runtime` + the engine's
-"new gesture" pipeline provide.
+1. **Gesture arbitration** (`@lynx-js/gesture-runtime`): register a recognizer
+   and `consumeGesture`/`interceptGesture` frame-by-frame. The *correct* general
+   answer — but **blocked in vue-lynx**: it has no `:main-thread-gesture` binding
+   to attach the callback worklets on the main thread, so the engine fires the
+   callbacks against an empty `worklet_info` and nothing runs (see "Upstream gap"
+   below).
+2. **Plain touch worklets** (`:main-thread-bindtouch*`): vue-lynx fully supports
+   these (ScrollView, Swiper, Slider, SwipeAction, Draggable all use them). They
+   *see* every touch but **cannot consume the gesture** from a native scroller.
 
-## Why the easy paths don't work under vue-lynx
+We use route 2 — because at the **top edge specifically**, ownership isn't
+needed:
 
-### Native `<refresh>` wrapper
-Works, but: no control over header physics/threshold, and crashes on some iOS
-`<list>` configs (`LynxCreateUIException: refresh-header ui not found` when the
-header is a direct `<list>` child). It also can't do custom overscroll bounce.
-Acceptable as a fallback, not as the product.
+## The arbitration bet (why touch is enough at the top)
 
-### React's `main-thread:gesture={g}` — **not available in vue-lynx**
-In React-Lynx, `main-thread:gesture` is a **compiler** feature. The JSX
-transform emits `updateGesture(...)` into the component snapshot, which calls
-`processGesture` →
-`__SetGestureDetector(dom, id, type, config, relationMap)` plus
-`__SetAttribute(dom, 'has-react-gesture', true)` and `flatten=false`, and
-registers each callback as a worklet ctx (`onWorkletCtxUpdate`).
+At `scrollTop === 0`, pulling **down**, with the inner list's native `bounces`
+forced **off**, there is *nothing for the scroller to scroll to* — so it doesn't
+claim the gesture, and `touchmove` keeps arriving. The worklet reads the live
+scroll offset (`:main-thread-bindscroll` → `scrollTopRef`), and only paints the
+rubber-band while `atTop && (pullingDown || offset > 0)`. Any other state
+(scrolled down, flicking up) is left entirely to the native scroller, so normal
+scrolling and load-more are untouched.
 
-**vue-lynx ships none of this.** Its template compiler has no gesture
-transform, and its runtime `patchProp`
-(`vue-lynx/runtime/dist/node-ops.js`) only understands `main-thread-ref`,
-`main-thread-bind<event>` (→ `SET_WORKLET_EVENT`), and generic `SET_PROP`.
-A `:main-thread-gesture` / `:gesture` attribute would fall through to a no-op
-(or a meaningless `SET_PROP`). So **the React gesture DSL does not work here.**
+- **iOS**: at the top with `bounces=false` the scroller is idle; touch wins. No
+  extra work.
+- **Android**: the edge/overscroll effect can still fire native scroll mid-pull,
+  so while we own the pull we toggle `enable-scroll=false` on the list (mirrors
+  `ScrollView`'s `_mtEnableScroll`), restoring it on touch-end.
 
-### `enableNewGesture` is hardcoded off
-Even the native path is gated: vue-lynx's build plugin
-(`plugin/dist/index.js`, in the `LynxTemplatePlugin` options block) sets
-`enableNewGesture: false`. We flip it to `true` by extending
-`patches/vue-lynx@0.4.0.patch` (pnpm `patchedDependencies`).
+This is a **bet**, not a guarantee — see the device checklist. If a target
+platform delivers `touchcancel` the instant the finger moves (handing the
+gesture to the scroller before we can gate), the fallback is the native
+`<refresh>` wrapper, or contributing the `:main-thread-gesture` binding upstream.
 
 ## How vyui wires it
 
-`enableNewGesture: true` is **necessary but not sufficient** — vue-lynx never
-emits `__SetGestureDetector`. So we install the detector **ourselves** from a
-main-thread worklet, against the raw element behind a `:main-thread-ref` (its
-`.current` inside a worklet IS the live Lynx element — the same handle
-`setStyleProperty` is called on; confirmed in vue-lynx
-`main-thread/dist/worklet-apply.js` `applySetMtRef`).
+All in `FeedList.vue` (worklets must be inlined in the SFC — vue-lynx's loader
+skips MT functions imported from a workspace `.ts`, which then crash the card at
+load):
 
-Split, dictated by the project's worklet constraints:
+- `:main-thread-bindscroll="_onScrollMT"` + `:main-thread-bindscrolltoupper`
+  track the edge. `atTopRef` is driven by the `scrolltoupper` event, not the raw
+  `scrollTop`: with item-snap the final settle frame can report a small non-zero
+  offset, so the raw value goes stale and the pull would never re-engage after a
+  scroll. `:main-thread-bindlayoutchange` + the scroll event's `scrollHeight`
+  give the viewport/content heights for bottom-edge (`enableBounce`) detection.
+- `:main-thread-bindtouchstart/move/end/cancel` — `_onTouchStart` records the
+  `pageY` origin; `_onTouchMove` decides ownership (top: refresh or bounce;
+  bottom: bounce only), re-bases the origin on take-over (no jump), paints
+  `_rubber(delta)` (signed, so the bottom bounces up) via `setStyleProperty` on
+  the `:main-thread-ref` wrapper, and hops pull progress to BG on a downward
+  pull; `_onTouchEnd` animates to threshold + fires `refresh`, else springs back.
+- `:bounces="false"` on the list — the load-bearing half of the bet.
 
-- **`@/shared/gesture/gestureArbitration.ts`** (shared `.ts`): types, the pure
-  consume-vs-intercept policy (`shouldInterceptGesture`), and
-  `installGestureDetector` — a `'main thread'` function that calls
-  `__SetAttribute(el, 'has-react-gesture', true)` / `flatten=false` and
-  `__SetGestureDetector(el, id, 7 /* NATIVE */, config, relationMap)`. It does
-  no per-frame work and resolves no cross-file callbacks, so importing it into a
-  worklet is safe. `GestureTypeInner.NATIVE` is inlined as the literal `7`
-  because vue-lynx's worklet loader does **not** follow bare package imports
-  into the MT realm.
-- **`FeedList.vue`** (SFC): the gesture's touch callbacks
-  (`onBegin`/`onUpdate`/`onEnd`) are **inlined `'main thread'` worklets** —
-  vue-lynx's loader skips MT functions imported from workspace `.ts`, so they
-  must live in the SFC. They paint the rubber-band (`setStyleProperty`), call
-  `interceptGesture`/`consumeGesture` to own/release the touch, and hop pull
-  progress + trigger events back to BG. Only PURE maths is mirrored from
-  `physics.ts` (`rubberEffect`), kept in sync by hand (a unit test pins it).
-
-The detector is installed in `onMounted` via `runOnMainThread(_installGesture)`
-once the element-ref / worklet-ctx ops have flushed to MT.
-
-### Consume vs intercept (SDK branch)
-Mirrors lynx-ui's `useRefresh`: on SDK `< 3.3` the inner `consumeGesture(own)`
-call is used; on `>= 3.3` the outer `interceptGesture(own)` call (which takes
-ownership from the *native* scroller) is correct. The SDK is read on MT in
-`_installGesture` (inlined `SystemInfo.engineVersion` parse, mirroring
-`mtsNativeLynxSDKVersionLessThan('3.3')`) and stored in an MT ref the callbacks
-read.
-
-### `selectorMT`
-lynx-ui's `selectorMT(id)` resolves an element from the MT registry. vue-lynx
-does not export that registry, and `:main-thread-ref` already gives us the
-element directly — so we deliberately **do not** add `@lynx-js/lynx-ui-common`.
-The ref-unwrap is the `selectorMT` equivalent. A future sibling-by-id lookup
-would use vue-lynx `querySelector('#id')` (BG) or an extra `:main-thread-ref`.
+Only PURE maths is mirrored from `physics.ts` (`rubberEffect`), kept in sync by
+hand (a unit test pins it). BG→MT config is pushed via `runOnMainThread` setter
+worklets (BG writes to `.current` are dropped in vue-lynx 0.4.0).
 
 ## Public API (matches the demo-facing contract)
 
@@ -113,47 +86,51 @@ would use vue-lynx `querySelector('#id')` (BG) or an extra `:main-thread-ref`.
   `loadMoreFooter` / `noMoreDataFooter` slots, virtualization,
   `listType` / `spanCount` / `scrollOrientation` / `bounces`.
 
-Lifecycle: consumer sets `refreshing = false` to end → engine springs the
-header closed → state goes `'done'` then `'idle'`.
+Lifecycle: consumer sets `refreshing = false` to end → header springs closed →
+state goes `'done'` then `'idle'`.
 
 ## Device-verification checklist (CANNOT run under vitest — no device)
 
-The build and unit tests cover: the state machine, prop/emit/slot wiring, the
-consume-vs-intercept policy, and the rubber-band maths. They do **not** and
-cannot cover anything that needs the real gesture/MT engine. Verify on an
-**iOS simulator** (and ideally Android):
+Build + unit tests cover the state machine, prop/emit/slot wiring, and the
+rubber-band maths. They do **not** cover the gesture/MT engine. Verify on iOS
+(and Android):
 
-1. **Gesture binds at all.** That `__SetGestureDetector` installed from a
-   vue-lynx worklet actually registers a recognizer (the whole approach hinges
-   on this — it is reverse-engineered from React-Lynx's `processGesture`, never
-   run). If `onUpdate` never fires, the binding failed.
-2. **Worklet-ctx callbacks dispatch.** That the inline SFC worklets passed as
-   `config.callbacks[].callback` are invoked by the engine with
-   `(event, stateManager)` and that `stateManager.interceptGesture/consumeGesture`
-   exist and work.
-3. **`event.params` shape.** That `params.deltaY`, `params.isAtStart` are
-   populated as assumed (typed from gesture-runtime's `NativeGestureChangeEvent`,
-   not observed).
-4. **Arbitration correctness.** Pulling down at the top owns the touch and shows
-   the rubber-band; normal scrolling and load-more still work (gesture released
-   when not at top / not pulling).
-5. **Threshold + release.** Cross `refreshThreshold` → `refresh` fires once,
+1. **`<list>` delivers `bindtouch*` worklets** at all (proven for `<scroll-view>`;
+   assumed equivalent for `<list>`). If `_onTouchMove` never paints, it doesn't.
+2. **The top-edge bet holds.** Pulling down at the top shows the rubber-band and
+   `touchmove` keeps firing (the scroller doesn't steal it with `bounces=false`).
+3. **No regression off the top.** Normal scrolling and load-more still work when
+   not at the top; the pull never hijacks a mid-list drag.
+4. **`scrollTop` shape.** `event.detail.scrollTop` (iOS) / `event.params.scrollTop`
+   (Android) populate as assumed.
+5. **Android `enable-scroll` toggle** stops native scroll mid-pull and restores
+   it cleanly on release (no stuck-disabled list).
+6. **Threshold + release.** Cross `refreshThreshold` → `refresh` fires once,
    header holds; release below → springs back to idle.
-6. **End-of-refresh spring.** Setting `refreshing = false` springs the header
+7. **End-of-refresh spring.** Setting `refreshing = false` springs the header
    closed and lands on `idle` (via `done`).
-7. **`enableBounce`** overscroll at both edges (the bounce branch is wired but
-   the most lightly exercised).
-8. **SDK branch** on both an SDK `< 3.3` and `>= 3.3` runtime.
+8. **`enableBounce`** overscroll at both edges (most lightly exercised path).
 
-## Uncertainty / open risks
+## Upstream gap (the proper fix, if the bet fails)
 
-- **vue-lynx gesture-binding syntax**: there is **no** `:main-thread-gesture`
-  template syntax in vue-lynx (confirmed by reading its runtime + plugin). The
-  manual `__SetGestureDetector` install is the intended substitute, but it is
-  unverified on device (item 1 above). If it proves not to register, the
-  fallback is the native `<refresh>` wrapper (still crash-prone on iOS) or
-  contributing a real gesture transform upstream to vue-lynx.
-- **Callback worklet registration**: React-Lynx registers gesture callbacks via
-  `onWorkletCtxUpdate`; we rely on the worklet ctxs being transferable as
-  `runOnMainThread` params. This matches how vue-lynx serializes worklet ctxs,
-  but the engine-side `__SetGestureDetector` consuming them is unproven here.
+The clean answer is a `:main-thread-gesture` binding in vue-lynx. In React-Lynx
+`main-thread:gesture={g}` is a compiler+runtime feature wired through the element
+snapshot: the BG side calls `processGestureBackground` → `registerWorkletCtx` per
+callback, and the MT side calls `processGesture` → `onWorkletCtxUpdate` +
+`__SetAttribute(has-react-gesture/flatten)` + `__SetGestureDetector`. Both halves
+run against the same element + worklet ctx, so the native side has a runnable
+`worklet_info`. vue-lynx ships none of it: calling `__SetGestureDetector` from a
+runtime worklet registers the *detector* but never attaches the callback worklets
+on MT (`registerWorkletCtx` alone only covers BG function resolution) — hence the
+device error `TriggerFiberElementWorklet failed since worklet_info is empty`
+(LynxExplorer SDK 1.4.0, iOS, 2026-06-15).
+
+Everything else is present: vue-lynx's `patchProp` already handles
+`main-thread-ref` (`SET_MT_REF`) and `main-thread-bind<event>`
+(`registerWorkletCtx` + `SET_WORKLET_EVENT` → `__AddEvent`). The PR is to add a
+`gesture` case mirroring that: BG `registerWorkletCtx` on each `value.callbacks[*]`
++ `pushOp(SET_GESTURE_DETECTOR, …)`; MT a `SET_GESTURE_DETECTOR` op running the
+`processGesture` equivalent. Then FeedList consumes
+`:main-thread-gesture="useGesture(NativeGesture).onUpdate(cb)…"` (as lynx-ui
+does) and drops the touch workaround. This also unlocks the cases the top-edge
+trick can't cover (mid-scroll arbitration, mid-scroller custom bounce).

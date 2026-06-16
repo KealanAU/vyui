@@ -15,11 +15,11 @@
 //   TikTok mechanic. FeedList also handles load-more on scrolltolower, so one
 //   component covers both surface features (paging + load-more).
 //
-//   Pull-to-refresh is DISABLED here: FeedList's gesture-arbitrated PTR is
-//   blocked on a missing vue-lynx `:main-thread-gesture` binding (the engine
-//   fires the callbacks but their worklets aren't attached on the main thread).
-//   See docs/upstream/vue-lynx-gesture-binding.md. Re-enable `enable-refresh`
-//   once that lands.
+//   Pull-to-refresh is ENABLED here via FeedList's touch-worklet PTR
+//   (`:main-thread-bindtouch*` + the `isAtStart` top-edge gate — no
+//   gesture-runtime). Pull down at the top of the feed to reload. See
+//   @vyui/core FeedList/REFRESH-PHYSICS.md for why touch replaced the
+//   blocked gesture binding.
 
 import { ref } from 'vue'
 import { VyFeedList } from '@vyui/kit'
@@ -38,6 +38,7 @@ const emit = defineEmits<{
 const videos = ref<Video[]>([...SEED_VIDEOS])
 const loadingMore = ref(false)
 const allLoaded = ref(false)
+const refreshing = ref(false)
 
 // Full-screen paging height. A Lynx `<list-item>` sizes to its CONTENT, not to
 // the list viewport — so a child `h-full` collapses and the card's absolutely
@@ -64,6 +65,20 @@ function onScroll(event: unknown) {
   if (typeof top !== 'number' || screenH <= 0) return
   const idx = Math.round(top / screenH)
   currentIndex.value = Math.max(0, Math.min(idx, videos.value.length - 1))
+}
+
+// Pull-to-refresh: FeedList sets `refreshing` true and emits `refresh`; we
+// reshuffle the feed (mocking a fresh batch) and flip it false to close the
+// header. The list is keyed positionally (see `slot-${index}` below), so a
+// shuffle updates each cell's content in place rather than recreating it — which
+// avoids both Lynx's "can't reorder item-keys" diff crash and the blank top cell
+// that a full key swap leaves until the next scroll.
+function onRefresh() {
+  setTimeout(() => {
+    videos.value = [...videos.value].sort(() => Math.random() - 0.5)
+    currentIndex.value = 0
+    refreshing.value = false
+  }, 1200)
 }
 
 function onLoadMore() {
@@ -95,19 +110,41 @@ function onLoadMore() {
     </view>
 
     <!-- Vertical paging feed. `:item-snap="true"` = native paging (one video
-         per swipe). Pull-to-refresh is intentionally not enabled — see the
-         file header / docs/upstream/vue-lynx-gesture-binding.md. -->
+         per swipe). Pull-to-refresh is enabled via touch worklets — pull down
+         at the top to reload. See @vyui/core FeedList/REFRESH-PHYSICS.md. -->
     <VyFeedList
+      v-model:refreshing="refreshing"
       :items="videos"
-      item-key-field="id"
+      :item-key="(_, index) => `slot-${index}`"
       scroll-orientation="vertical"
       :item-snap="true"
+      enable-refresh
+      enable-bounce
+      :refresh-threshold="120"
       :enable-load-more="!allLoaded"
       :load-more-threshold-item-count="2"
       class="w-full h-full"
+      @refresh="onRefresh"
       @load-more="onLoadMore"
       @scroll="onScroll"
     >
+      <!-- Pull-to-refresh header. Padded down past the status bar / Dynamic
+           Island so the spinner isn't clipped. `state`/`progress` from FeedList. -->
+      <template #refreshHeader="{ state, progress }">
+        <view
+          class="w-full h-full flex flex-col items-center justify-center gap-2"
+          :style="{ paddingTop: '56px' }"
+        >
+          <Spinner v-if="state === 'refreshing'" :size="32" color="#ffffff" />
+          <text
+            v-else
+            class="text-white text-sm font-medium"
+            :style="{ opacity: String(Math.max(0.4, progress)) }"
+          >
+            {{ state === 'releaseReady' ? 'Release to refresh' : 'Pull to refresh' }}
+          </text>
+        </view>
+      </template>
       <template #item="{ item }">
         <!-- Pin each item to one screen height (see screenH) so the card's
              absolute overlays anchor correctly and the list pages one video
