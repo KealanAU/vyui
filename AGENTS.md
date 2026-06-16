@@ -22,6 +22,8 @@ Publishing never happens on merge to main. The flow is:
 2. The changesets action opens a **"chore: release packages"** PR — merge it.
 3. Run the **Release** workflow again to publish to npm (OIDC trusted publishing, no token).
 
+The version step (`pnpm version-packages`) also runs `tools/gen-changelog-docs.ts`, which writes a docs changelog entry (`apps/docs/content/changelog/<pkg>-<version>.md`) for each newly bumped version so the docs site timeline stays in sync. It's generate-if-missing: hand-write a curated entry before releasing to override the auto-generated one. Backfill history with `tsx tools/gen-changelog-docs.ts --all` (auto-entries get today's date — fix `date:` by hand if order matters).
+
 ## Pre-PR checks
 
 - `pnpm --filter @vyui/core test` / `pnpm --filter @vyui/kit test` for touched packages.
