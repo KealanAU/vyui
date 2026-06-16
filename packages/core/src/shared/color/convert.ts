@@ -111,7 +111,7 @@ export function convertToHsb(color: Color): HSBColor {
 /**
  * Converts RGB to HSL.
  */
-function rgbToHsl(rgb: RGBColor): HSLColor {
+export function rgbToHsl(rgb: RGBColor): HSLColor {
   const r = rgb.r / 255
   const g = rgb.g / 255
   const b = rgb.b / 255
@@ -151,7 +151,7 @@ function rgbToHsl(rgb: RGBColor): HSLColor {
 /**
  * Converts HSL to RGB.
  */
-function hslToRgb(hsl: HSLColor): RGBColor {
+export function hslToRgb(hsl: HSLColor): RGBColor {
   const h = hsl.h / 360
   const s = hsl.s / 100
   const l = hsl.l / 100
@@ -195,7 +195,7 @@ function hslToRgb(hsl: HSLColor): RGBColor {
 /**
  * Converts RGB to HSB.
  */
-function rgbToHsb(rgb: RGBColor): HSBColor {
+export function rgbToHsb(rgb: RGBColor): HSBColor {
   const r = rgb.r / 255
   const g = rgb.g / 255
   const b = rgb.b / 255
@@ -235,7 +235,7 @@ function rgbToHsb(rgb: RGBColor): HSBColor {
 /**
  * Converts HSB to RGB.
  */
-function hsbToRgb(hsb: HSBColor): RGBColor {
+export function hsbToRgb(hsb: HSBColor): RGBColor {
   const h = hsb.h / 360
   const s = hsb.s / 100
   const v = hsb.b / 100

@@ -4,13 +4,6 @@ import { resolveColors } from '../theme/colors'
 import { useAppConfig } from './useAppConfig'
 
 /**
- * The shape of a theme object accepted by `tailwind-variants`' `tv` — the
- * first arg of `tv`. We pull it off `Parameters<typeof tv>[0]` so any future
- * upstream type tweaks ride along automatically.
- */
-export type TVOptions = Parameters<typeof tv>[0]
-
-/**
  * The factory returned by calling `tv(theme)`. Calling it with variant props
  * yields the slot map (or class string for slotless themes).
  */
@@ -42,8 +35,7 @@ export type ResolveTheme<T> = T extends (...args: never[]) => infer R ? R : T
 /**
  * Build a per-app-config `tv` factory for a styled component. Merges the
  * package default theme with any user override at `appConfig.ui[name]` and
- * returns the invoked slot map (under `ui`) plus the raw factory (under
- * `tvFactory`) for callers that need to invoke it with different variants.
+ * returns the invoked slot map (under `ui`).
  *
  * Accepts either a builder theme (`(colors) => themeObject`, invoked with the
  * resolved color list) or a plain theme object (used as-is). Builder detection
@@ -68,7 +60,6 @@ export function useStyledComponent<TTheme>(
   variants: MaybeRefOrGetter<Record<string, unknown>>,
 ): {
   ui: ComputedRef<TVInvoked>
-  tvFactory: ComputedRef<TVFactory>
 } {
   const appConfig = useAppConfig()
   const tvFactory = computed(() => {
@@ -86,16 +77,8 @@ export function useStyledComponent<TTheme>(
     return tv({ extend: tv(base as never), ...(overrides || {}) } as never) as unknown as TVFactory
   })
   const ui = computed(() => tvFactory.value(toValue(variants) as Parameters<TVFactory>[0]))
-  return { ui, tvFactory }
+  return { ui }
 }
-
-/**
- * Helper for the standard `ui` prop on styled components. Given the invoked
- * factory type (`ReturnType<ReturnType<typeof tv<typeof theme>>>`), produces
- * the matching `Partial<Record<slotKey, ClassValue>>` shape used to override
- * individual slot classes from the call site.
- */
-export type StyledSlotsProp<TUI> = Partial<Record<keyof TUI, any>>
 
 /**
  * Type-only helper for deriving the `tv` factory return type from a theme

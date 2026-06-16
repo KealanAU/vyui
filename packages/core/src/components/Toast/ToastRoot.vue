@@ -28,7 +28,7 @@ export const [injectToastRootContext, provideToastRootContext]
 </script>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
 import { useA11y, useResizeObserver, useStandardVModelOf } from '@/shared/composables'
@@ -58,6 +58,15 @@ defineSlots<{
     expanded: boolean
     /** Combined height (px) of the toasts in front of this one. */
     heightBefore: number
+    /** Resolved auto-dismiss duration (ms); `0` when auto-dismiss is off. */
+    duration: number
+    /**
+     * Remaining auto-dismiss time as a fraction: `1` at the start of the
+     * countdown, `0` at dismissal. Frozen while the stack is expanded (the
+     * timer is paused). Always `1` when `duration` is `0`. Drive a progress
+     * bar from this.
+     */
+    progress: number
     expand: () => void
     collapse: () => void
     toggleExpanded: () => void
@@ -85,23 +94,48 @@ const { onLayoutChange } = useResizeObserver((rect) => {
   provider.setToastHeight(id, rect.height)
 })
 
+const resolvedDuration = computed(() => props.duration ?? provider.duration.value)
+
+// `progress` ticks 1 → 0 over the active duration for a consumer-rendered
+// countdown bar. It rides the same start/clear/pause lifecycle as the
+// dismiss timer, so the bar can't drift from the actual dismissal. ~30ms
+// ticks (~33fps) — smooth enough for a thin bar without per-frame churn.
+const progress = ref(1)
+const PROGRESS_TICK_MS = 30
+
 let timer: ReturnType<typeof setTimeout> | undefined
+let progressTimer: ReturnType<typeof setInterval> | undefined
 
 function clearTimer() {
   if (timer) {
     clearTimeout(timer)
     timer = undefined
   }
+  if (progressTimer) {
+    clearInterval(progressTimer)
+    progressTimer = undefined
+  }
 }
 
 function startTimer() {
   clearTimer()
-  // Auto-dismiss pauses while the stack is expanded (Sonner-style).
+  // Auto-dismiss pauses while the stack is expanded (Sonner-style). Leaving
+  // `progress` at its current value freezes the bar mid-drain.
   if (provider.expanded.value)
     return
-  const duration = props.duration ?? provider.duration.value
-  if (duration > 0)
+  const duration = resolvedDuration.value
+  if (duration > 0) {
     timer = setTimeout(() => { open.value = false }, duration)
+    progress.value = 1
+    const startAt = Date.now()
+    progressTimer = setInterval(() => {
+      const next = 1 - (Date.now() - startAt) / duration
+      progress.value = next <= 0 ? 0 : next
+    }, PROGRESS_TICK_MS)
+  }
+  else {
+    progress.value = 1
+  }
 }
 
 function onClose() {
@@ -147,6 +181,7 @@ const a11y = useA11y(() => ({
     :as-child="asChild"
     v-bind="a11y"
     :class="{ 'ui-open': open, 'ui-closed': !open }"
+    @layoutchange="onLayoutChange"
     :data-state="open ? 'open' : 'closed'"
     :data-type="type"
     :data-front="isFront ? '' : undefined"
@@ -159,6 +194,8 @@ const a11y = useA11y(() => ({
       :is-front="isFront"
       :expanded="provider.expanded.value"
       :height-before="heightBefore"
+      :duration="resolvedDuration"
+      :progress="progress"
       :expand="provider.expand"
       :collapse="provider.collapse"
       :toggle-expanded="provider.toggleExpanded"
