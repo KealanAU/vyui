@@ -63,6 +63,13 @@ export type TextareaEmits = {
   'blur': [value: string]
   'confirm': [value: string]
   'selectionChange': [selectionStart: number, selectionEnd: number]
+  /**
+   * Software-keyboard show/hide while focused. Normalized from Lynx's raw
+   * `{ show, keyBoardHeight, safeAreaBottom }` element event — see `Input.vue`
+   * for why this element event (not the global emitter) is the keyboard signal
+   * under vue-lynx.
+   */
+  'keyboard': [info: { visible: boolean, height: number, safeAreaBottom: number }]
 }
 </script>
 
@@ -235,6 +242,17 @@ function handleSelection(event: any) {
   emit('selectionChange', detail.selectionStart ?? 0, detail.selectionEnd ?? 0)
 }
 
+// Normalize Lynx's raw `{ show, keyBoardHeight, safeAreaBottom }` keyboard
+// payload — see `Input.vue`'s `keyboard` emit for the rationale.
+function handleKeyboard(event: any) {
+  const d = event?.detail ?? {}
+  emit('keyboard', {
+    visible: d.show === 1 || d.show === true,
+    height: Number(d.keyBoardHeight ?? d.keyboardHeight ?? d.height ?? 0) || 0,
+    safeAreaBottom: Number(d.safeAreaBottom ?? 0) || 0,
+  })
+}
+
 defineExpose<TextareaExposed>({
   focus,
   blur,
@@ -272,6 +290,7 @@ defineExpose<TextareaExposed>({
     @blur="handleBlur"
     @confirm="handleConfirm"
     @selection="handleSelection"
+    @keyboard="handleKeyboard"
   >
     <slot />
   </Primitive>

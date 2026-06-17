@@ -55,8 +55,6 @@ export interface SortableRootContext<T = unknown> {
   autoScrollSpeedMT: MainThreadRef<number>
 
   // ── BG callbacks invoked from MT worklets ────────────────────────────────
-  /** Register a freshly mounted item; returns an unregister fn for onBeforeUnmount. */
-  register: (handle: SortableItemHandle) => () => void
   /** Commit a reorder from `from` → `to`. Emits `update:modelValue` + `reorder`. */
   commitReorder: (from: number, to: number) => void
   /** Mark drag started (sets `draggingIndex` for slot reactivity). */

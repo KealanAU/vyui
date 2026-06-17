@@ -15,7 +15,7 @@ export interface SortableItemProps {
 </script>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, watch } from 'vue'
+import { onBeforeUnmount, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import type { SortableItemHandle } from './sortableContext'
@@ -41,12 +41,13 @@ const indexRef = useMainThreadRef<number>(props.index)
 const itemDisabledRef = useMainThreadRef<boolean>(props.disabled)
 const lastTargetRef = useMainThreadRef<number>(-1)
 const liftedDyRef = useMainThreadRef<number>(0)
-// Long-press timer id, MT-local. The activation delay is timed on the main
-// thread (via the worklet `setTimeout`) so a touch never has to round-trip
-// MT→BG→setTimeout→MT before the row can lift — that cross-channel hop is the
-// documented-fragile path (see useDragGesture onMounted) and on-device it was
-// dropping the activation entirely, so drag never started. 0 = no timer.
-const activationTimerRef = useMainThreadRef<number>(0)
+// Long-press activation is timed on the main thread by polling
+// `requestAnimationFrame`, NOT `setTimeout`. The MT worklet runtime does not
+// expose `setTimeout`/`clearTimeout` — they're commented out as internal in
+// @lynx-js/types (main-thread/lynx.d.ts) — so the old timer threw inside the
+// worklet and the row never lifted (iOS + web). The rAF poller (`_activationTick`)
+// checks elapsed time against `longPressMs` each frame and is cancelled
+// implicitly when `armedRef` clears (move-disarm / touchend / unmount).
 
 // Velocity tracker (Y) — drives the velocity-aware drop: a fast toss lands one
 // row further in the flick direction than the raw pointer offset (mirrors
@@ -54,37 +55,66 @@ const activationTimerRef = useMainThreadRef<number>(0)
 const posQueueRef = useMainThreadRef<number[]>([])
 const timeQueueRef = useMainThreadRef<number[]>([])
 
-watch(() => props.index, (v) => { indexRef.current = v })
-watch(() => props.disabled, (v) => { itemDisabledRef.current = v })
+// Index / disabled live on the MT and gate the touch worklets. BG writes to a
+// MainThreadRef.current are no-ops in vue-lynx 0.4.0, so push updates through a
+// setter worklet rather than assigning `.current` from this (BG) thread.
+watch(() => props.index, (v) => { runOnMainThread(_syncIndexMT as any)(v) })
+watch(() => props.disabled, (v) => { runOnMainThread(_syncDisabledMT as any)(v) })
 
-// ── Registry handle (BG side; .current populated at mount) ─────────────────
-const elementRef: SortableItemHandle['elementRef'] = { current: null }
-let handle: SortableItemHandle | null = null
-let unregister: (() => void) | null = null
-
-onMounted(() => {
-  elementRef.current = (containerRef as unknown as {
-    current: { setStyleProperty?(k: string, v: string): void } | null
-  }).current
-  handle = { index: props.index, elementRef }
-  unregister = ctx.register(handle)
-})
-
-watch(() => props.index, (v) => {
-  if (handle) handle.index = v
-})
+// ── Registry handle (MT side) ──────────────────────────────────────────────
+// The handle (element + logical index) MUST be appended ON the main thread:
+// `ctx.itemHandlesMT` is a MainThreadRef and BG writes to it are dropped by
+// vue-lynx 0.4.0. The previous `onMounted` registration ran on the BG thread,
+// so the registry stayed empty — the lifted row never moved, siblings never
+// shifted, and the drop saw `count === 0`, so no reorder ever committed.
+// Registration now happens in `_registerMT` (bound to `main-thread-binduiappear`,
+// where this item's MT element ref is populated) and teardown in `_unregisterMT`.
+const handleRef = useMainThreadRef<SortableItemHandle | null>(null)
 
 onBeforeUnmount(() => {
-  // Cancel a pending long-press on the MT (BG `.current` writes are dropped).
+  // All teardown runs on the MT (BG `.current` writes are dropped): cancel any
+  // pending long-press and drop this item from the registry.
   runOnMainThread(_cancelActivation as any)()
-  if (unregister) {
-    unregister()
-    unregister = null
-  }
-  handle = null
+  runOnMainThread(_unregisterMT as any)()
 })
 
 // ── Worklets ────────────────────────────────────────────────────────────────
+
+/**
+ * Append this item to the MT registry. Bound to `main-thread-binduiappear` so
+ * the element ref is guaranteed populated. Guarded against the repeat appears
+ * Lynx fires when a row scrolls back into view.
+ */
+function _registerMT() {
+  'main thread'
+  if (handleRef.current) return
+  const el = (containerRef as unknown as { current: any }).current
+  const handle: SortableItemHandle = { index: indexRef.current, elementRef: { current: el } }
+  handleRef.current = handle
+  ctx.itemHandlesMT.current = [...ctx.itemHandlesMT.current, handle]
+}
+
+/** Remove this item from the MT registry on unmount. */
+function _unregisterMT() {
+  'main thread'
+  const h = handleRef.current
+  if (!h) return
+  ctx.itemHandlesMT.current = ctx.itemHandlesMT.current.filter(x => x !== h)
+  handleRef.current = null
+}
+
+/** Push a new logical index to the MT (ref + registry handle). */
+function _syncIndexMT(v: number) {
+  'main thread'
+  indexRef.current = v
+  if (handleRef.current) handleRef.current.index = v
+}
+
+/** Push the per-row disabled flag to the MT. */
+function _syncDisabledMT(v: boolean) {
+  'main thread'
+  itemDisabledRef.current = v
+}
 
 function _setTransform(
   el: { setStyleProperty?(k: string, v: string): void } | null,
@@ -189,8 +219,27 @@ function _activate() {
   ctx.draggingIndexMT.current = indexRef.current
   lastTargetRef.current = indexRef.current
   // Paint a small lift so the user sees the row engage even before they move.
-  _setTransform(elementRef.current, 0)
+  _setTransform((containerRef as unknown as { current: any }).current, 0)
   runOnBackground(_emitDragStart as any)(indexRef.current)
+}
+
+/**
+ * Main-thread long-press poller. Scheduled via `requestAnimationFrame` from
+ * touchstart; lifts the row once the press outlives `longPressMs`. Bails (and
+ * stops rescheduling) as soon as the gesture disarms, the row is already
+ * dragging, or another item has claimed the gesture. Uses rAF because the MT
+ * worklet runtime has no `setTimeout`.
+ */
+function _activationTick() {
+  'main thread'
+  if (!armedRef.current || draggingRef.current) return
+  if (ctx.draggingIndexMT.current !== -1) return
+  if (Date.now() - touchStartTimeRef.current >= ctx.longPressMsMT.current) {
+    _activate()
+    return
+  }
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(_activationTick)
+  else (lynx as any).requestAnimationFrame(_activationTick)
 }
 
 function _onTouchStart(e: { touches: Array<{ clientY: number }> }) {
@@ -206,23 +255,18 @@ function _onTouchStart(e: { touches: Array<{ clientY: number }> }) {
   posQueueRef.current = [e.touches[0].clientY]
   timeQueueRef.current = [Date.now()]
   // Defer activation by `longPressMs` so a tap or vertical scroll doesn't lift.
-  // Timed entirely on the main thread — `_onTouchMove` disarms it if the finger
-  // travels before it fires, and `_onTouchEnd` clears it on release. Keeping it
-  // MT-local avoids the MT→BG→setTimeout→MT round-trip that was dropping the
-  // activation on-device.
-  if (activationTimerRef.current) {
-    clearTimeout(activationTimerRef.current)
-    activationTimerRef.current = 0
-  }
+  // Timed entirely on the main thread via an rAF poller — `_onTouchMove` disarms
+  // it if the finger travels before it fires, and `_onTouchEnd` clears it on
+  // release. rAF (not setTimeout) because the MT worklet runtime lacks timers.
   const delay = ctx.longPressMsMT.current
   if (delay <= 0) {
     _activate()
   }
+  else if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(_activationTick)
+  }
   else {
-    activationTimerRef.current = setTimeout(() => {
-      activationTimerRef.current = 0
-      _activate()
-    }, delay) as unknown as number
+    (lynx as any).requestAnimationFrame(_activationTick)
   }
 }
 
@@ -236,11 +280,8 @@ function _onTouchMove(e: { touches: Array<{ clientY: number }> }) {
   // Disarm + cancel the pending long-press so the row never lifts mid-scroll.
   if (!draggingRef.current) {
     if (Math.abs(dy) > 6) {
+      // Disarm: the rAF activation poller bails on its next frame once armed clears.
       armedRef.current = false
-      if (activationTimerRef.current) {
-        clearTimeout(activationTimerRef.current)
-        activationTimerRef.current = 0
-      }
     }
     return
   }
@@ -250,7 +291,7 @@ function _onTouchMove(e: { touches: Array<{ clientY: number }> }) {
   const count = ctx.itemHandlesMT.current.length
 
   liftedDyRef.current = dy
-  _setTransform(elementRef.current, dy)
+  _setTransform((containerRef as unknown as { current: any }).current, dy)
 
   // Velocity sampling — last 50ms window, keep >=2 so a release always has a
   // pair to differentiate.
@@ -283,12 +324,9 @@ function _onTouchEnd() {
   if (!armedRef.current && !draggingRef.current) return
   armedRef.current = false
 
-  // Cancel a still-pending long-press: a quick tap/release must not lift the
-  // row after the finger is already gone.
-  if (activationTimerRef.current) {
-    clearTimeout(activationTimerRef.current)
-    activationTimerRef.current = 0
-  }
+  // A still-pending long-press is cancelled implicitly: `armedRef` is now false,
+  // so the rAF activation poller bails on its next frame — a quick tap/release
+  // never lifts the row after the finger is already gone.
 
   if (!draggingRef.current) {
     // Long-press never confirmed — nothing to do.
@@ -339,14 +377,12 @@ function _emitDragEnd(from: number, to: number) {
   ctx.notifyDragEnd()
 }
 
-// MT teardown — cancel a pending long-press timer when the row unmounts. BG
-// writes to `.current` are dropped, so the clear must happen ON the MT.
+// MT teardown — disarm a pending long-press when the row unmounts. BG writes to
+// `.current` are dropped, so this must happen ON the MT. The rAF poller reads
+// `armedRef` each frame and stops once it's false.
 function _cancelActivation() {
   'main thread'
-  if (activationTimerRef.current) {
-    clearTimeout(activationTimerRef.current)
-    activationTimerRef.current = 0
-  }
+  armedRef.current = false
 }
 </script>
 
@@ -355,6 +391,7 @@ function _cancelActivation() {
     class="vyui-sortable__item"
     data-vyui-sortable-item
     :main-thread-ref="containerRef"
+    :main-thread-binduiappear="_registerMT"
     :main-thread-bindtouchstart="_onTouchStart"
     :main-thread-bindtouchmove="_onTouchMove"
     :main-thread-bindtouchend="_onTouchEnd"

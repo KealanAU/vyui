@@ -18,6 +18,7 @@
     `bindblur`              → `@blur`
     `bindconfirm`           → `@confirm`
     `bindselection`         → `@selection`
+    `bindkeyboard`          → `@keyboard`
   The main-thread `bindinput` variant from the React port is dropped here —
   vue-lynx doesn't surface `main-thread:` event bindings in templates, so we
   use the equivalent background-thread `@input` (same `event.detail` payload).
@@ -93,6 +94,20 @@ export type InputEmits = {
   'confirm': [value: string]
   /** Fires when the user moves the selection caret / changes the selection. */
   'selectionChange': [selectionStart: number, selectionEnd: number]
+  /**
+   * Fires when the software keyboard shows/hides while this input is focused.
+   * Lynx delivers this as an element event on the native `<input>` with the
+   * raw shape `{ show: 0|1, keyBoardHeight, safeAreaBottom }` (note the capital
+   * B in `keyBoardHeight`); it is normalized here to `{ visible, height,
+   * safeAreaBottom }`.
+   *
+   * This is the reliable way to react to the keyboard under vue-lynx: the
+   * global `GlobalEventEmitter` `keyboardstatuschanged` event is emitted by the
+   * native side but is NOT delivered to the vue-lynx background runtime, so
+   * this per-element event is what consumers (and keyboard-aware lifts) should
+   * use. Verified on the iOS simulator; Android payload fields may differ.
+   */
+  'keyboard': [info: { visible: boolean, height: number, safeAreaBottom: number }]
 }
 </script>
 
@@ -326,6 +341,18 @@ function handleSelection(event: any) {
   emit('selectionChange', detail.selectionStart ?? 0, detail.selectionEnd ?? 0)
 }
 
+// Normalize Lynx's raw `{ show, keyBoardHeight, safeAreaBottom }` keyboard
+// payload. See the `keyboard` entry in `InputEmits` for why this element event
+// (not the global emitter) is the keyboard signal under vue-lynx.
+function handleKeyboard(event: any) {
+  const d = event?.detail ?? {}
+  emit('keyboard', {
+    visible: d.show === 1 || d.show === true,
+    height: Number(d.keyBoardHeight ?? d.keyboardHeight ?? d.height ?? 0) || 0,
+    safeAreaBottom: Number(d.safeAreaBottom ?? 0) || 0,
+  })
+}
+
 defineExpose<InputExposed>({
   focus,
   blur,
@@ -360,6 +387,7 @@ defineExpose<InputExposed>({
     @blur="handleBlur"
     @confirm="handleConfirm"
     @selection="handleSelection"
+    @keyboard="handleKeyboard"
   >
     <slot />
   </Primitive>

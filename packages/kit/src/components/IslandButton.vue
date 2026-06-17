@@ -86,6 +86,8 @@ export interface IslandButtonSlots {
 import { computed, useSlots } from 'vue'
 import { Button as CoreButton, Icon as VyIcon } from '@vyui/core'
 import { useStyledComponent } from '../composables/useStyledComponent'
+import { useAppConfig } from '../composables/useAppConfig'
+import { resolveColorHex } from '../utils/resolveColor'
 import { injectIslandContext, type IslandSize } from './islandContext'
 
 const props = withDefaults(defineProps<IslandButtonProps>(), {
@@ -134,6 +136,24 @@ const { ui } = useStyledComponent('islandButton', theme, () => ({
   iconOnly: iconOnly.value,
 }))
 
+const appConfig = useAppConfig()
+
+// Lynx's `<svg>` rasterizes the XML and can't inherit `currentColor`, so the
+// `text-*` utility the theme puts on the `leadingIcon` slot never reaches the
+// glyph (unlike the `<text>` label, which it colors fine). Mirror the
+// Button/Input/Alert pattern: read the foreground utility back off the
+// resolved slot class — including any consumer `ui.leadingIcon` override and
+// the active-state shade — and bake it into the icon `:color`. Returns
+// `undefined` for non-palette colors (e.g. arbitrary `text-[#abc]`) so the
+// icon keeps its `currentColor` default rather than guessing.
+const iconColor = computed(() => {
+  const cls = String(ui.value.leadingIcon({ class: props.ui?.leadingIcon }))
+  if (/\btext-white\b/.test(cls)) return 'white'
+  if (/\btext-black\b/.test(cls)) return 'black'
+  const match = cls.match(/\btext-([a-z]+)-(\d+)\b/)
+  return match ? resolveColorHex(appConfig, match[1], Number(match[2])) : undefined
+})
+
 function onTap() {
   if (props.disabled) return
   if (island) {
@@ -158,6 +178,7 @@ function onTap() {
         v-if="icon"
         :name="icon"
         :size="iconPx"
+        :color="iconColor"
         :class="ui.leadingIcon({ class: props.ui?.leadingIcon })"
       />
     </slot>
