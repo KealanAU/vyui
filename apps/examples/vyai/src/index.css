@@ -1,0 +1,85 @@
+/*
+ * Tailwind entry. `@lynx-js/tailwind-preset` is utility-only for Lynx,
+ * so we only load `base` and `utilities`.
+ */
+@tailwind base;
+@tailwind utilities;
+
+/* @vyui/kit default theme tokens. */
+@import '@vyui/kit/style.css';
+
+/* `animate-spin` isn't in the Lynx tailwind preset, so define the keyframe
+   here (Lynx supports CSS transform keyframes). Used by the thinking dot. */
+@keyframes vyui-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.vyui-spin {
+  animation: vyui-spin 0.8s linear infinite;
+}
+
+/* Soft breathing pulse for the assistant's "listening" / streaming states.
+   Opacity-only so it composites on the main thread. */
+@keyframes vyai-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.vyai-breathe {
+  animation: vyai-breathe 1.4s ease-in-out infinite;
+}
+
+/* Under-sheet conversation drawer. Rather than floating over the page (which
+   meant a full-screen backdrop swallowing taps), the menu is parked BEHIND the
+   app: `.vyai-undersheet` is pinned to the left at z-0, and `.vyai-shell`
+   (which holds the whole app, opaque) covers it. Tapping the burger slides the
+   shell right to reveal the sheet underneath. Lynx animates the transform via
+   the `transition` rule when the `--open` class toggles. */
+.vyai-undersheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 300px;
+  z-index: 0;
+  background-color: #f1f0ef; /* a touch darker than parchment — reads as the surface beneath */
+}
+
+.vyai-shell {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  background-color: #fdfcfc; /* Parchment White — opaque so the under-sheet stays hidden when closed */
+  transform: translateX(0);
+  transition: transform 300ms ease;
+}
+
+/* Floating-island lift. The kit's `bg-white/80` islands now sit parchment-on-
+   parchment, so they blend in. 1px hairlines / inset box-shadows vanish on
+   hi-DPI native (and inset shadows are unreliable in vue-lynx), so the
+   definition leans on a real, visible border — 2px ash — with just a whisper
+   of drop shadow to lift it. Applied to the island row surface via `:ui`. */
+.vyai-float {
+  border: 1.5px solid #ececec;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.06);
+}
+
+.vyai-shell--open {
+  /* Reveal exactly the under-sheet's width. */
+  transform: translateX(300px);
+  /* Soft edge where the shell now overhangs the revealed sheet. */
+  box-shadow: -8px 0 40px rgba(15, 23, 42, 0.18);
+}
