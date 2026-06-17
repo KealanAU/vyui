@@ -96,7 +96,7 @@ const props = withDefaults(defineProps<InputProps>(), {
   autocomplete: 'off',
   autofocusDelay: 0,
 })
-defineEmits(['update:modelValue', 'confirm'])
+defineEmits(['update:modelValue', 'confirm', 'focus', 'blur', 'keyboard'])
 defineSlots<InputSlots>()
 
 const slots = useSlots()
@@ -198,6 +198,9 @@ defineExpose({ inputRef })
         :class="ui.base({ class: ['w-full', props.ui?.base] })"
         @update:model-value="$emit('update:modelValue', $event)"
         @confirm="$emit('confirm', $event)"
+        @focus="$emit('focus', $event)"
+        @blur="$emit('blur', $event)"
+        @keyboard="$emit('keyboard', $event)"
       />
     </view>
     <view

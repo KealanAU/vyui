@@ -83,7 +83,7 @@ const props = withDefaults(defineProps<TextareaProps>(), {
   rows: 3,
   autofocusDelay: 0,
 })
-defineEmits(['update:modelValue'])
+defineEmits(['update:modelValue', 'confirm', 'focus', 'blur', 'keyboard'])
 defineSlots<TextareaSlots>()
 
 const slots = useSlots()
@@ -174,6 +174,10 @@ defineExpose({ textareaRef })
       :max-length="maxLength"
       :class="ui.base({ class: props.ui?.base })"
       @update:model-value="$emit('update:modelValue', $event)"
+      @confirm="$emit('confirm', $event)"
+      @focus="$emit('focus', $event)"
+      @blur="$emit('blur', $event)"
+      @keyboard="$emit('keyboard', $event)"
     />
     <view
       v-if="hasTrailing"
