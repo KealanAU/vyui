@@ -108,8 +108,8 @@ export default (colors: Color[]) => ({
         // Vertical tabs: list+content side-by-side, list stacks triggers
         // vertically. Both flip from the row defaults set in `slots`.
         root: 'flex-row min-h-0',
-        list: 'flex-col',
-        content: 'min-h-0',
+        list: 'flex-col shrink-0',
+        content: 'w-0 flex-1 min-w-0 min-h-0',
         indicator: 'top-0',
       },
     },
