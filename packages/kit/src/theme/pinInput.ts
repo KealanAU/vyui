@@ -7,8 +7,8 @@ import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
-    root: 'relative flex flex-row items-center gap-1.5',
-    base: 'rounded-md placeholder:text-neutral-400 text-center text-neutral-900 disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
+    root: 'relative flex flex-row flex-wrap items-center min-w-0 max-w-full gap-1.5 overflow-hidden',
+    base: 'shrink-0 rounded-md placeholder:text-neutral-400 text-center text-neutral-900 disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
   },
   variants: {
     size: {

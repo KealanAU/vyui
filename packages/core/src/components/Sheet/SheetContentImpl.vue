@@ -58,7 +58,7 @@ export interface SheetContentImplProps {
 </script>
 
 <script setup lang="ts">
-import { computed, inject, watch } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import {
@@ -97,13 +97,27 @@ const dataState = computed(() =>
     : 'open',
 )
 
-// Height of the panel as a CSS `vh` string, derived from the largest snap
-// fraction. e.g. `snapPoints: [0.75]` → `height: 75vh`.
-const panelHeight = computed(() => {
+const maxSnap = computed(() => {
   const snaps = ctx.snapPoints.value
-  const maxSnap = snaps.length > 0 ? snaps[snaps.length - 1] : 1
-  return `${(maxSnap ?? 1) * 100}vh`
+  return snaps.length > 0 ? snaps[snaps.length - 1] ?? 1 : 1
 })
+
+// Height of the panel as a dynamic-viewport string, derived from the largest
+// snap fraction. e.g. `snapPoints: [0.75]` → `height: 75dvh`.
+const panelHeight = computed(() => {
+  return `${maxSnap.value * 100}dvh`
+})
+
+// `SystemInfo` is not reactive, but the panel receives a layout event whenever
+// dynamic viewport units resolve to a new height after rotation. Feed that
+// measured height back into the snap/drag geometry so visual layout and MT
+// physics stay in sync.
+const measuredPanelHeight = ref(0)
+
+function onPanelLayout(event: { detail?: { height?: number } } | undefined) {
+  const height = event?.detail?.height
+  if (typeof height === 'number' && height > 0) measuredPanelHeight.value = height
+}
 
 // Whether the content view should bind touch handlers. `handleOnly` makes
 // `SheetHandle` the only drag surface; props.dragDisabled fully disables drag.
@@ -136,9 +150,8 @@ const progressRef = ctx.progressMTRef
 // progress). Recomputes on rotation / late-resolving SystemInfo /
 // snapPoint changes; the watch below re-syncs it to MT.
 const panelHeightPx = computed(() => {
-  const snaps = ctx.snapPoints.value
-  const maxSnap = snaps.length > 0 ? snaps[snaps.length - 1] ?? 1 : 1
-  return Math.round(ctx.viewportHeight.value * maxSnap)
+  if (measuredPanelHeight.value > 0) return Math.round(measuredPanelHeight.value)
+  return Math.round(ctx.viewportHeight.value * maxSnap.value)
 })
 const panelHeightPxRef = useMainThreadRef<number>(panelHeightPx.value)
 
@@ -146,7 +159,13 @@ const panelHeightPxRef = useMainThreadRef<number>(panelHeightPx.value)
 // the panel is sized to the largest snap). Resolved by the unit-tested
 // helper; mirrored to MT for the release worklet.
 const snapPositionsPx = computed(() =>
-  viewportSnapsToPositions(ctx.snapPoints.value, ctx.viewportHeight.value, panelHeightPx.value),
+  viewportSnapsToPositions(
+    ctx.snapPoints.value,
+    measuredPanelHeight.value > 0
+      ? measuredPanelHeight.value / maxSnap.value
+      : ctx.viewportHeight.value,
+    panelHeightPx.value,
+  ),
 )
 
 // Position (px-from-open) that BG's `snapIndex` points at. `ctx.snapIndex`
@@ -562,6 +581,7 @@ const a11y = useA11y(() => ({
     :main-thread-bindtouchcancel="isDragEnabled ? _onTouchCancel : undefined"
     :event-through="false"
     :style="{ height: panelHeight }"
+    @layoutchange="onPanelLayout"
     @animationstart="handlers?.handleKFStart"
     @animationend="handlers?.handleKFEnd"
     @animationcancel="handlers?.handleKFCancel"

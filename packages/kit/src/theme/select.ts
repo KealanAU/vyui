@@ -26,9 +26,11 @@ export default (colors: Color[]) => ({
     value: 'flex-1 min-w-0 truncate text-start text-neutral-900',
     placeholder: 'flex-1 min-w-0 truncate text-start text-neutral-400',
     arrow: 'fill-neutral-200',
-    content: 'max-h-60 w-full bg-white rounded-md border border-neutral-200 overflow-hidden pointer-events-auto',
-    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-2 mb-1',
-    viewport: 'divide-y divide-neutral-100 scroll-py-1',
+    content: 'max-h-[100dvh] w-full bg-white rounded-md border border-neutral-200 overflow-hidden pointer-events-auto',
+    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
+    sheetHeader: 'px-4 pt-2 pb-1',
+    sheetTitle: 'text-neutral-500 text-xs font-semibold uppercase',
+    viewport: 'flex-1 min-h-0 px-2 py-1 overflow-y-auto divide-y divide-neutral-100 scroll-py-1',
     group: 'p-1',
     empty: 'py-2 text-center text-sm text-neutral-500',
     label: 'font-semibold text-neutral-900',
@@ -37,7 +39,7 @@ export default (colors: Color[]) => ({
     // `itemLabel` (the SelectItemText <text>): CSS inheritance is OFF in the
     // Lynx build (`enableCSSInheritance: false`), so a `text-*` on the row
     // <view> never reaches the label <text>.
-    item: 'group relative w-full flex flex-row items-center select-none rounded-md ui-disabled:cursor-not-allowed ui-disabled:opacity-75 transition-colors',
+    item: 'group relative w-full flex flex-row items-center select-none rounded-md ui-disabled:cursor-not-allowed ui-disabled:opacity-75 transition-colors px-3 py-2.5',
     itemLeadingIcon: 'shrink-0 transition-colors',
     itemLeadingAvatar: 'shrink-0',
     itemTrailing: 'ms-auto flex flex-row gap-1.5 items-center',

@@ -9,11 +9,11 @@ import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
-    root: 'flex flex-row items-start gap-2',
+    root: 'flex flex-row items-start min-w-0 max-w-full gap-2',
     base: 'shrink-0 flex flex-row items-center justify-center rounded transition-colors',
     indicator: 'flex flex-row items-center justify-center',
     icon: 'shrink-0 text-white',
-    wrapper: 'flex flex-col',
+    wrapper: 'flex-1 min-w-0 flex flex-col',
     label: 'text-sm font-medium text-neutral-900',
     description: 'text-xs text-neutral-500',
   },

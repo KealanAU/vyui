@@ -63,10 +63,10 @@ export function iconFg(color: string, variant: Variant, on: boolean): { semantic
 export default (colors: Color[]) => ({
   slots: {
     // `root` direction is set per orientation variant (flex-row/flex-col).
-    root: 'flex',
+    root: 'flex min-w-0 max-w-full',
     // `group` so children can read the item's `data-state` via
     // `group-ui-on:*` (Lynx won't cascade `text-*`).
-    item: 'group flex flex-row items-center justify-center font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+    item: 'group flex flex-row items-center justify-center min-w-0 max-w-full font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
     leadingIcon: 'shrink-0',
     label: 'truncate',
   },
@@ -81,7 +81,7 @@ export default (colors: Color[]) => ({
     },
     orientation: {
       horizontal: {
-        root: 'flex-row -space-x-px',
+        root: 'flex-row flex-wrap -space-x-px',
         item: 'first:rounded-s-md last:rounded-e-md',
       },
       vertical: {

@@ -6,5 +6,5 @@
  * is intentionally minimal.
  */
 export default {
-  base: 'w-full h-full',
+  base: 'w-full h-full min-w-0 min-h-0 max-w-full overflow-hidden',
 }

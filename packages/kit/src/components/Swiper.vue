@@ -24,8 +24,8 @@ export interface SwiperProps {
    */
   items?: any[]
   /**
-   * Width of each item in px. Required by the core primitive — items snap on
-   * multiples of this width.
+   * Width of each item in px. When omitted, the swiper measures its container
+   * and uses the available width so slides follow viewport rotation.
    */
   itemWidth?: number
   /** Navigate circularly: dragging/autoplay past the last item wraps around. */
@@ -59,12 +59,11 @@ export interface SwiperSlots {
 </script>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed, ref, useSlots } from 'vue'
 import { SwiperItem, SwiperRoot } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 
 const props = withDefaults(defineProps<SwiperProps>(), {
-  itemWidth: 300,
   direction: 'horizontal',
   showIndicators: false,
   loop: false,
@@ -76,6 +75,7 @@ defineSlots<SwiperSlots>()
 
 const appConfig = useAppConfig()
 const slots = useSlots()
+const containerWidth = ref(0)
 
 const ui = computed(() => buildSwiper(appConfig)({
   direction: props.direction,
@@ -94,42 +94,54 @@ const itemCount = computed(() => {
 // also implies autoplay is on. Split into the two core props.
 const autoplayEnabled = computed(() => props.autoplay !== false && props.autoplay != null)
 const autoplayInterval = computed(() => (typeof props.autoplay === 'number' ? props.autoplay : undefined))
+const resolvedItemWidth = computed(() => props.itemWidth ?? (containerWidth.value || 300))
+
+function onLayoutChange(event: { detail?: { width?: number } } | undefined) {
+  const width = event?.detail?.width
+  if (typeof width === 'number' && width > 0) containerWidth.value = width
+}
 </script>
 
 <template>
-  <SwiperRoot
-    :model-value="modelValue"
-    :item-width="itemWidth"
-    :item-count="itemCount"
-    :loop="loop"
-    :axis-lock="axisLock"
-    :autoplay="autoplayEnabled"
-    :interval="autoplayInterval"
+  <view
     :class="ui.root({ class: [props.class, props.ui?.root] })"
-    @update:model-value="emit('update:modelValue', $event)"
+    @layoutchange="onLayoutChange"
   >
-    <template v-if="items">
-      <SwiperItem
-        v-for="(it, index) in items"
-        :key="index"
-        :class="ui.item({ class: props.ui?.item })"
-      >
-        <slot name="item" :item="it" :index="index" />
-      </SwiperItem>
-    </template>
-    <slot v-else />
+    <SwiperRoot
+      :model-value="modelValue"
+      :item-width="resolvedItemWidth"
+      :container-width="containerWidth || resolvedItemWidth"
+      :item-count="itemCount"
+      :loop="loop"
+      :axis-lock="axisLock"
+      :autoplay="autoplayEnabled"
+      :interval="autoplayInterval"
+      class="w-full"
+      @update:model-value="emit('update:modelValue', $event)"
+    >
+      <template v-if="items">
+        <SwiperItem
+          v-for="(it, index) in items"
+          :key="index"
+          :class="ui.item({ class: props.ui?.item })"
+        >
+          <slot name="item" :item="it" :index="index" />
+        </SwiperItem>
+      </template>
+      <slot v-else />
 
-    <template v-if="showIndicators && itemCount > 1" #overlay>
-      <view :class="ui.indicators({ class: props.ui?.indicators })">
-        <view
-          v-for="i in itemCount"
-          :key="i"
-          :class="[
-            ui.indicator({ class: props.ui?.indicator }),
-            modelValue === i - 1 && ui.indicatorActive({ class: props.ui?.indicatorActive }),
-          ]"
-        />
-      </view>
-    </template>
-  </SwiperRoot>
+      <template v-if="showIndicators && itemCount > 1" #overlay>
+        <view :class="ui.indicators({ class: props.ui?.indicators })">
+          <view
+            v-for="i in itemCount"
+            :key="i"
+            :class="[
+              ui.indicator({ class: props.ui?.indicator }),
+              modelValue === i - 1 && ui.indicatorActive({ class: props.ui?.indicatorActive }),
+            ]"
+          />
+        </view>
+      </template>
+    </SwiperRoot>
+  </view>
 </template>

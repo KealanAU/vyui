@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import { runOnBackground } from 'vue-lynx'
 import { OverlayRoot } from '@vyui/core'
 import { VyTabs } from '@vyui/kit'
 import ThemeSection from './sections/ThemeSection.vue'
@@ -26,6 +27,20 @@ const colorPalettes = reactive<Record<string, string>>({
 })
 const neutralPalette = ref<string>('slate')
 const radius = ref<number>(0.25)
+const isLandscape = ref(false)
+
+function updateViewport(width: number, height: number): void {
+  isLandscape.value = width > height
+}
+
+function onViewportLayoutChange(event: any): void {
+  'main thread'
+  const width = event?.detail?.width ?? event?.params?.width
+  const height = event?.detail?.height ?? event?.params?.height
+  if (typeof width === 'number' && typeof height === 'number') {
+    runOnBackground(updateViewport as any)(width, height)
+  }
+}
 
 // One `${color}-${palette}` class per entry (defined in index.css), plus the
 // neutral class — a flat `string[]` so it satisfies the Lynx `<view>` class
@@ -58,6 +73,37 @@ const tabItems = computed(() => allTabItems)
 // we disable the outer scroll so the inner surface owns the gesture.
 const FULL_BLEED_TABS = ['gestures', 'feed', 'scroll']
 const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
+const pageClass = computed(() => {
+  if (isLandscape.value) {
+    return pageScrolls.value
+      ? 'flex flex-col w-full min-h-[100dvh] p-3'
+      : 'flex flex-col w-full h-[100dvh] min-h-0 p-3'
+  }
+  return pageScrolls.value
+    ? 'flex flex-col gap-4 px-5 pt-16 pb-10'
+    : 'flex flex-col w-full h-[100dvh] min-h-0 gap-2 px-3 pt-2 pb-2'
+})
+const tabsUi = computed(() => {
+  if (isLandscape.value) {
+    // Vertical rail (fixed width, pinned to the top via `self-start`) + content
+    // filling the rest of the width. A scrolling tab lets the whole rail+content
+    // block grow past the viewport (the outer `<scroll-view>` owns the scroll);
+    // a full-bleed tab caps to the viewport so its inner surface owns gestures.
+    return {
+      root: pageScrolls.value ? 'min-h-[calc(100dvh-1.5rem)]' : 'flex-1 min-h-0',
+      list: 'w-36 shrink-0 self-start',
+      content: pageScrolls.value
+        ? 'flex-1 min-w-0 ps-3'
+        : 'flex-1 min-w-0 min-h-0 ps-3 overflow-hidden',
+    }
+  }
+  return pageScrolls.value
+    ? {}
+    : {
+        root: 'flex-1 min-h-0',
+        content: 'flex-1 min-h-0 overflow-hidden',
+      }
+})
 
 // ActionSheet header trigger removed for now: ActionSheet wraps the core
 // `Sheet*` primitives whose main-thread worklet currently throws "cannot read
@@ -69,6 +115,7 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
   <view
     :class="rootClass"
     :style="{ '--ui-radius': `${radius}rem` }"
+    :main-thread-bindlayoutchange="onViewportLayoutChange"
   >
     <OverlayRoot />
 
@@ -80,11 +127,11 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
          a `<scroll-view>` getting stuck non-scrollable after a prop flip. -->
     <component
       :is="pageScrolls ? 'scroll-view' : 'view'"
-      class="w-full h-full"
+      class="w-full h-full min-h-0"
       scroll-orientation="vertical"
     >
-      <view class="flex flex-col gap-4 px-5 pt-16 pb-10">
-        <view class="flex flex-col gap-1">
+      <view :class="pageClass">
+        <view v-if="pageScrolls && !isLandscape" class="flex flex-col gap-1">
           <text class="text-slate-900 text-2xl font-bold">@vyui/kit demo</text>
           <text class="text-slate-500 text-sm">Styled components on top of @vyui/core primitives.</text>
         </view>
@@ -94,7 +141,9 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
           :items="tabItems"
           variant="pill"
           size="sm"
-          direction="stacked"
+          :orientation="isLandscape ? 'vertical' : 'horizontal'"
+          :direction="isLandscape || !pageScrolls ? 'inline' : 'stacked'"
+          :ui="tabsUi"
         >
           <template #theme>
             <ThemeSection
@@ -133,7 +182,7 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
           </template>
         </VyTabs>
 
-        <view class="flex flex-col items-center pt-4 pb-2">
+        <view v-if="pageScrolls && !isLandscape" class="flex flex-col items-center pt-4 pb-2">
           <text class="text-slate-400 text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
         </view>
       </view>

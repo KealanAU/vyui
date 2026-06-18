@@ -26,14 +26,14 @@
 export default {
   slots: {
     overlay: 'fixed inset-0 bg-neutral-900/50',
-    content: 'relative overflow-hidden bg-white divide-y divide-neutral-200 flex flex-col w-[calc(100vw-2rem)] max-w-lg max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-4rem)] rounded-lg border border-neutral-200',
-    header: 'flex flex-row items-center gap-1.5 p-4 sm:px-6 min-h-16',
+    content: 'relative overflow-hidden bg-white divide-y divide-neutral-200 flex flex-col w-[calc(100vw-2rem)] max-w-lg max-h-[calc(100dvh-1rem)] rounded-lg border border-neutral-200',
+    header: 'flex flex-row items-center gap-1.5 px-4 py-3 min-h-12',
     wrapper: '',
-    body: 'flex-1 overflow-y-auto p-4 sm:p-6',
-    footer: 'flex flex-row items-center gap-1.5 p-4 sm:px-6',
+    body: 'flex-1 min-h-0 overflow-y-auto p-4',
+    footer: 'flex flex-row flex-wrap items-center gap-1.5 px-4 py-3',
     title: 'text-neutral-900 font-semibold',
     description: 'mt-1 text-neutral-500 text-sm',
-    close: 'absolute top-4 end-4',
+    close: 'absolute top-3 end-4',
   },
   variants: {
     transition: {

@@ -26,7 +26,7 @@ export const TRAILING_ICON_FG = { semantic: 'neutral', shade: 400 } as const
 
 export default (colors: Color[]) => ({
   slots: {
-    content: 'min-w-32 bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 divide-y divide-neutral-200 overflow-y-auto',
+    content: 'min-w-32 max-w-[calc(100vw-1rem)] max-h-[calc(100dvh-1rem)] bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 divide-y divide-neutral-200 overflow-y-auto',
     group: 'p-1',
     label: 'w-full flex flex-row items-center font-semibold text-neutral-900',
     separator: '-mx-1 my-1 h-px bg-neutral-200',

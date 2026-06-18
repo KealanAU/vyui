@@ -56,12 +56,12 @@ export default (colors: Color[]) => ({
     //
     // `w-full` on root ensures it spans its parent when the parent is itself a
     // flex container — Lynx defaults a `<view>` width to its content otherwise.
-    root: 'flex flex-col w-full gap-2',
-    list: 'relative flex flex-row p-1 group',
+    root: 'flex flex-col w-full min-w-0 max-w-full gap-2',
+    list: 'relative flex flex-row min-w-0 max-w-full overflow-hidden p-1 group',
     indicator: 'absolute transition-[translate,width] duration-200',
     trigger:
       'group relative flex flex-row items-center shrink-0 min-w-0 font-medium rounded-md disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
-    content: 'w-full',
+    content: 'w-full min-w-0',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',
     label: 'truncate',
@@ -107,8 +107,14 @@ export default (colors: Color[]) => ({
       vertical: {
         // Vertical tabs: list+content side-by-side, list stacks triggers
         // vertically. Both flip from the row defaults set in `slots`.
-        root: 'flex-row',
-        list: 'flex-col',
+        // `flex-none` cancels the `pill` variant's `flex-1` (an equal-WIDTH
+        // device for horizontal rows — along a column it would stretch each
+        // trigger's HEIGHT to fill the rail). `justify-start` left-aligns the
+        // icon+label so the rail reads as a sidebar list, not centered chips.
+        root: 'flex-row min-h-0',
+        list: 'flex-col shrink-0',
+        trigger: 'flex-none justify-start',
+        content: 'w-0 flex-1 min-w-0 min-h-0',
         indicator: 'top-0',
       },
     },

@@ -11,15 +11,15 @@ import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
-    root: 'relative',
+    root: 'relative min-w-0 max-w-full',
     // `fieldset` direction is set per orientation variant (flex-row/flex-col).
-    fieldset: 'flex',
+    fieldset: 'flex min-w-0 max-w-full',
     legend: 'mb-1 block font-medium text-neutral-900',
-    item: 'flex flex-row items-start',
+    item: 'flex flex-row items-start min-w-0',
     base: 'shrink-0 flex flex-row items-center justify-center rounded-full bg-white border border-neutral-300 transition-colors',
     indicator: 'flex flex-row items-center justify-center rounded-full bg-white',
     container: 'flex flex-row items-center',
-    wrapper: 'ms-2 flex flex-col',
+    wrapper: 'ms-2 flex flex-col min-w-0',
     label: 'block font-medium text-neutral-900',
     description: 'text-neutral-500',
   },
@@ -27,7 +27,7 @@ export default (colors: Color[]) => ({
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     orientation: {
       horizontal: {
-        fieldset: 'flex-row',
+        fieldset: 'flex-row flex-wrap',
         wrapper: 'me-2',
       },
       vertical: {

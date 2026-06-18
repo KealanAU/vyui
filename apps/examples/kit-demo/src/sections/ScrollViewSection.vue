@@ -13,14 +13,14 @@ import { ScrollView } from '@vyui/core'
 </script>
 
 <template>
-  <view class="flex flex-col gap-4 pt-2">
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+  <view class="flex flex-col flex-1 min-h-0">
+    <view class="bg-white border border-slate-200 rounded-lg p-3 flex flex-col flex-1 min-h-0 gap-2">
       <text class="text-slate-900 text-base font-semibold">ScrollView</text>
       <text class="text-slate-500 text-xs">
         Scroll the panel; overscroll past either edge for the native rubber-band bounce.
       </text>
 
-      <view :style="{ height: '460px' }">
+      <view class="flex-1 min-h-0">
         <ScrollView class="h-full">
           <view class="flex flex-col">
             <view

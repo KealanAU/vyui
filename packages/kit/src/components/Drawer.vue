@@ -198,6 +198,7 @@ const ui = computed(() => buildDrawer(appConfig)({
         <component
           :is="keyboardAware ? KeyboardAwareRoot : 'view'"
           :force-attach="keyboardAware ? keyboardAwareForceAttach : undefined"
+          :class="ui.scaffold({ class: props.ui?.scaffold })"
         >
           <view :class="ui.header({ class: props.ui?.header })">
             <slot name="header" :close="close">

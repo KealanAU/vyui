@@ -9,12 +9,12 @@ import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
-    root: 'flex flex-row items-center gap-2',
+    root: 'flex flex-row items-center min-w-0 max-w-full gap-2',
     // `items-center` centers the thumb vertically — without it, the thumb
     // (`h-4` < rail's `h-5`) pins to the cross-axis start (top edge) on Lynx.
     base: 'relative flex flex-row items-center shrink-0 rounded-full transition-colors',
     thumb: 'pointer-events-none flex flex-row items-center justify-center rounded-full bg-white shadow transform transition-transform',
-    wrapper: 'flex flex-col',
+    wrapper: 'flex-1 min-w-0 flex flex-col',
     label: 'text-sm font-medium text-neutral-900',
     description: 'text-xs text-neutral-500',
     icon: 'shrink-0',

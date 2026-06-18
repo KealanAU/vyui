@@ -24,14 +24,14 @@ export const ICON_FG_SHADE = 500
 // pixel values instead of via custom-property indirection.
 export default (colors: Color[]) => ({
   slots: {
-    root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 p-4 flex flex-row gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
-    wrapper: 'w-0 flex-1 flex flex-col',
+    root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 p-4 flex flex-row min-w-0 gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
+    wrapper: 'w-0 min-w-0 flex-1 flex flex-col',
     title: 'text-sm font-medium text-neutral-900',
     description: 'text-sm text-neutral-500',
     icon: 'shrink-0 size-5',
     avatar: 'shrink-0',
     avatarSize: '2xl' as const,
-    actions: 'flex flex-row gap-1.5 shrink-0',
+    actions: 'flex flex-row flex-wrap max-w-full gap-1.5 shrink-0',
     progress: 'absolute inset-x-0 bottom-0 h-1 z-10',
     close: 'shrink-0'
   },
