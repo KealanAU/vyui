@@ -38,14 +38,14 @@ export default {
     // Layout shim — owns positioning + the gap between row and panel.
     // No background of its own by default; gains chrome in `attached` mode
     // (see compoundVariants).
-    root: 'flex flex-col',
+    root: 'flex flex-col max-w-[calc(100vw-1rem)]',
     // Independently styled row pill. `floating` mode keeps the chrome here;
     // `attached + open` strips it (chrome shifts to root).
-    row: `flex flex-row items-center ${PILL_SURFACE} rounded-full`,
+    row: `flex flex-row items-center max-w-full ${PILL_SURFACE} rounded-full`,
     // Independently styled panel surface — a wider rounded-rectangle
     // floating in front of the row when `open === true`. Stripped of chrome
     // in `attached` mode.
-    panel: `flex flex-col ${PILL_SURFACE} rounded-3xl`,
+    panel: `flex flex-col max-w-full max-h-[calc(100dvh-4rem)] overflow-y-auto ${PILL_SURFACE} rounded-3xl`,
   },
   variants: {
     // Which viewport edge to float against — only takes effect when

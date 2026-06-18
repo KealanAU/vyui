@@ -10,7 +10,7 @@
  */
 export default {
   slots: {
-    root: 'flex',
+    root: 'flex max-w-full',
   },
   variants: {
     // Which viewport edge to float against — only takes effect when

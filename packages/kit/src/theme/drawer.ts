@@ -17,12 +17,13 @@
 export default {
   slots: {
     overlay: 'fixed inset-0 bg-neutral-900/50',
-    content: 'fixed bg-white border border-neutral-200 flex flex-col',
-    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-2 mb-1',
-    header: 'flex flex-row items-center gap-1.5 p-4 min-h-16',
+    content: 'fixed bg-white border border-neutral-200 flex flex-col overflow-hidden max-h-[100dvh]',
+    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
+    scaffold: 'flex flex-col flex-1 min-h-0',
+    header: 'flex flex-row items-center gap-1.5 px-4 py-3 min-h-12',
     wrapper: 'flex flex-col',
-    body: 'flex-1 overflow-y-auto p-4',
-    footer: 'flex flex-row items-center gap-1.5 p-4',
+    body: 'flex-1 min-h-0 overflow-y-auto p-4',
+    footer: 'flex flex-row flex-wrap items-center gap-1.5 px-4 py-3',
     title: 'text-neutral-900 font-semibold',
     description: 'mt-1 text-neutral-500 text-sm',
     close: 'absolute top-4 end-4',
@@ -30,13 +31,13 @@ export default {
   variants: {
     side: {
       top: {
-        content: 'inset-x-0 top-0 max-h-full',
+        content: 'inset-x-0 top-0 max-h-[100dvh]',
       },
       right: {
         content: 'right-0 inset-y-0 w-full max-w-md',
       },
       bottom: {
-        content: 'inset-x-0 bottom-0 max-h-full',
+        content: 'inset-x-0 bottom-0 max-h-[100dvh]',
       },
       left: {
         content: 'left-0 inset-y-0 w-full max-w-md',

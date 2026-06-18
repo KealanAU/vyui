@@ -242,18 +242,18 @@ const displayLabel = computed(() => {
         </ComboboxTrigger>
 
         <SheetBackdrop dismiss-on-tap />
-        <SheetContent>
+        <SheetContent :class="ui.content({ class: props.ui?.content })">
           <SheetHandle v-if="handle" :class="ui.handle({ class: props.ui?.handle })" />
 
-          <view v-if="placeholder" class="px-4 pt-4 pb-2">
-            <text class="text-neutral-500 text-xs font-semibold uppercase">{{ placeholder }}</text>
+          <view v-if="placeholder" :class="ui.sheetHeader({ class: props.ui?.sheetHeader })">
+            <text :class="ui.sheetTitle({ class: props.ui?.sheetTitle })">{{ placeholder }}</text>
           </view>
 
-          <view v-if="searchable" class="flex flex-row items-center gap-2 px-3 py-2 border-b border-neutral-200">
+          <view v-if="searchable" :class="ui.search({ class: props.ui?.search })">
             <VyIcon
               :name="resolvedSearchIcon"
               :color="iconColor"
-              class="size-5 shrink-0"
+              :class="ui.searchIcon({ class: props.ui?.searchIcon })"
             />
             <ComboboxInput
               v-model="searchTerm"
@@ -263,7 +263,7 @@ const displayLabel = computed(() => {
             />
           </view>
 
-          <view class="flex-1 p-2 overflow-y-auto">
+          <view :class="ui.viewport({ class: props.ui?.viewport })">
             <ComboboxEmpty :class="ui.empty({ class: props.ui?.empty })">
               <slot name="empty" :search-term="searchTerm">
                 <text>No results</text>
@@ -290,7 +290,7 @@ const displayLabel = computed(() => {
 
                 <CoreComboboxItem
                   v-else
-                  :class="ui.item({ class: [props.ui?.item, 'px-3 py-3'] })"
+                  :class="ui.item({ class: props.ui?.item })"
                   :disabled="isObjectItem(item) && item.disabled"
                   :value="itemValue(item)"
                 >
