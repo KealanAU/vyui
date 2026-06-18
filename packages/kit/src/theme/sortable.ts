@@ -7,8 +7,8 @@
  */
 export default {
   slots: {
-    root: 'w-full flex flex-col',
-    item: 'flex flex-row items-center gap-2 bg-white border-b border-neutral-200 last:border-b-0',
+    root: 'w-full min-w-0 max-w-full overflow-hidden flex flex-col',
+    item: 'flex flex-row items-center min-w-0 max-w-full overflow-hidden gap-2 bg-white border-b border-neutral-200 last:border-b-0',
     handle: 'shrink-0 text-neutral-400',
   },
   variants: {

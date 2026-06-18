@@ -14,11 +14,11 @@ import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
-    root: 'flex flex-row items-start w-full rounded-md transition-colors',
+    root: 'flex flex-row items-start w-full min-w-0 max-w-full overflow-hidden rounded-md transition-colors',
     // Typed-text color sits on `base` (the <textarea>), not `root`: CSS
     // inheritance is OFF in the Lynx build (`enableCSSInheritance: false`), so a
     // `text-*` on the root <view> never reaches the textarea element.
-    base: 'flex-1 min-w-0 bg-transparent text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75 align-top',
+    base: 'flex-1 min-w-0 min-h-0 max-w-full bg-transparent text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75 align-top',
     leading: 'flex flex-row items-center shrink-0',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',

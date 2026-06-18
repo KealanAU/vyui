@@ -56,12 +56,12 @@ export default (colors: Color[]) => ({
     //
     // `w-full` on root ensures it spans its parent when the parent is itself a
     // flex container — Lynx defaults a `<view>` width to its content otherwise.
-    root: 'flex flex-col w-full gap-2',
-    list: 'relative flex flex-row p-1 group',
+    root: 'flex flex-col w-full min-w-0 max-w-full gap-2',
+    list: 'relative flex flex-row min-w-0 max-w-full overflow-hidden p-1 group',
     indicator: 'absolute transition-[translate,width] duration-200',
     trigger:
       'group relative flex flex-row items-center shrink-0 min-w-0 font-medium rounded-md disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
-    content: 'w-full',
+    content: 'w-full min-w-0',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',
     label: 'truncate',
@@ -107,8 +107,9 @@ export default (colors: Color[]) => ({
       vertical: {
         // Vertical tabs: list+content side-by-side, list stacks triggers
         // vertically. Both flip from the row defaults set in `slots`.
-        root: 'flex-row',
+        root: 'flex-row min-h-0',
         list: 'flex-col',
+        content: 'min-h-0',
         indicator: 'top-0',
       },
     },

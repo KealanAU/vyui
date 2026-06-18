@@ -6,11 +6,11 @@
  */
 export default {
   slots: {
-    root: 'flex flex-col',
-    wrapper: 'flex flex-col',
-    labelWrapper: 'flex flex-row items-center justify-between',
+    root: 'flex flex-col min-w-0 max-w-full',
+    wrapper: 'flex flex-col min-w-0',
+    labelWrapper: 'flex flex-row flex-wrap items-center justify-between min-w-0',
     label: 'font-medium text-neutral-900',
-    container: 'mt-1',
+    container: 'min-w-0 max-w-full mt-1',
     description: 'text-neutral-500',
     error: 'mt-2 text-error-500',
     hint: 'text-neutral-500',

@@ -6,10 +6,10 @@
 
 export default {
   slots: {
-    root: 'rounded-lg',
-    header: 'p-4',
-    body: 'p-4',
-    footer: 'p-4',
+    root: 'min-w-0 max-w-full overflow-hidden rounded-lg',
+    header: 'min-w-0 p-4',
+    body: 'min-w-0 p-4',
+    footer: 'min-w-0 p-4',
   },
   variants: {
     variant: {

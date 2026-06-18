@@ -7,9 +7,9 @@
  */
 export default {
   slots: {
-    root: 'relative overflow-hidden',
-    actions: 'flex flex-row items-stretch bg-neutral-100',
-    content: 'flex flex-row items-center bg-white',
+    root: 'relative min-w-0 max-w-full overflow-hidden',
+    actions: 'flex flex-row items-stretch min-w-0 max-w-full overflow-hidden bg-neutral-100',
+    content: 'flex flex-row items-center min-w-0 max-w-full overflow-hidden bg-white',
   },
   variants: {
     side: {

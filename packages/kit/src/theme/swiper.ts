@@ -8,9 +8,9 @@
  */
 export default {
   slots: {
-    root: 'relative w-full',
-    item: 'w-full',
-    indicators: 'absolute bottom-2 left-0 right-0 flex flex-row items-center justify-center',
+    root: 'relative w-full min-w-0 max-w-full overflow-hidden',
+    item: 'w-full min-w-0 max-w-full overflow-hidden',
+    indicators: 'absolute bottom-2 left-0 right-0 flex flex-row flex-wrap items-center justify-center max-w-full overflow-hidden',
     indicator: 'rounded-full bg-neutral-300',
     indicatorActive: 'bg-primary-500',
   },

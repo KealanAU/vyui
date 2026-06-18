@@ -34,7 +34,7 @@ const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 
 export default (colors: Color[]) => ({
   slots: {
-    base: 'rounded-md font-medium flex flex-row items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+    base: 'min-w-0 max-w-full rounded-md font-medium flex flex-row items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-50',
     icon: 'shrink-0',
   },
   variants: {

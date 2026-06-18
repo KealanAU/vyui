@@ -8,10 +8,10 @@ import type { Color } from './colors'
 export default (colors: Color[]) => ({
   slots: {
     // `root` + `header` directions are flipped per orientation variant.
-    root: 'flex gap-4',
-    header: 'flex',
-    item: 'group text-center relative w-full',
-    container: 'relative',
+    root: 'flex min-w-0 max-w-full gap-4',
+    header: 'flex min-w-0 max-w-full',
+    item: 'group text-center relative w-full min-w-0',
+    container: 'relative min-w-0',
     // `enableCSSInheritance: false`: the foreground (`text-*`) must sit on the
     // indicator content (`icon` slot / the step-number <text>), not the
     // `trigger` <view> — color there never reaches the nested icon/number. The
@@ -21,23 +21,23 @@ export default (colors: Color[]) => ({
     indicator: 'flex flex-row items-center justify-center size-full',
     icon: 'shrink-0 group-ui-completed:text-white group-ui-active:text-white text-neutral-500',
     separator: 'absolute rounded-full group-ui-disabled:opacity-75 bg-neutral-200',
-    wrapper: '',
+    wrapper: 'min-w-0',
     title: 'font-medium text-neutral-900',
     description: 'text-neutral-500 text-wrap',
-    content: 'size-full',
+    content: 'size-full min-w-0 min-h-0',
   },
   variants: {
     orientation: {
       horizontal: {
         root: 'flex-col',
-        header: 'flex-row',
+        header: 'flex-row overflow-hidden',
         container: 'flex flex-row justify-center',
         separator: 'top-[calc(50%-2px)] h-0.5',
         wrapper: 'mt-1',
       },
       vertical: {
-        header: 'flex-col gap-4',
-        item: 'flex flex-row text-start',
+        header: 'flex-col min-h-0 gap-4',
+        item: 'flex flex-row min-h-0 text-start',
         separator: 'start-[calc(50%-1px)] -bottom-[10px] w-0.5',
       },
     },

@@ -52,17 +52,17 @@ function resetFeed(): void {
 </script>
 
 <template>
-  <view class="flex flex-col gap-4 pt-2">
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+  <view class="flex flex-col flex-1 min-h-0">
+    <view class="bg-white border border-slate-200 rounded-lg p-3 flex flex-col flex-1 min-h-0 gap-2">
       <view class="flex flex-row items-center justify-between">
         <text class="text-slate-900 text-base font-semibold">FeedList</text>
         <text class="text-slate-500 text-xs">{{ feedItems.length }} items</text>
       </view>
       <text class="text-slate-500 text-xs">Pull down to refresh; scroll to the bottom to load more.</text>
 
-      <!-- Tall, bounded region so load-more is actually exercisable.
-           The native `<list>` owns scrolling inside this height. -->
-      <view :style="{ height: '440px' }">
+      <!-- Fill the viewport space left by the tabs and controls. The native
+           `<list>` owns scrolling inside this flex-bounded region. -->
+      <view class="flex-1 min-h-0">
         <VyFeedList
           v-model:refreshing="refreshing"
           :items="feedItems"
@@ -98,7 +98,7 @@ function resetFeed(): void {
         </VyFeedList>
       </view>
 
-      <view class="flex flex-row items-center justify-center pt-1">
+      <view class="flex flex-row items-center justify-center">
         <VyButton variant="ghost" size="sm" @click="resetFeed">
           Reset feed
         </VyButton>

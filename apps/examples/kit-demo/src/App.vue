@@ -58,6 +58,15 @@ const tabItems = computed(() => allTabItems)
 // we disable the outer scroll so the inner surface owns the gesture.
 const FULL_BLEED_TABS = ['gestures', 'feed', 'scroll']
 const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
+const pageClass = computed(() => pageScrolls.value
+  ? 'flex flex-col gap-4 px-5 pt-16 pb-10'
+  : 'flex flex-col w-full h-[100dvh] min-h-0 gap-2 px-3 pt-2 pb-2')
+const tabsUi = computed(() => pageScrolls.value
+  ? {}
+  : {
+      root: 'flex-1 min-h-0',
+      content: 'flex-1 min-h-0 overflow-hidden',
+    })
 
 // ActionSheet header trigger removed for now: ActionSheet wraps the core
 // `Sheet*` primitives whose main-thread worklet currently throws "cannot read
@@ -80,11 +89,11 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
          a `<scroll-view>` getting stuck non-scrollable after a prop flip. -->
     <component
       :is="pageScrolls ? 'scroll-view' : 'view'"
-      class="w-full h-full"
+      class="w-full h-full min-h-0"
       scroll-orientation="vertical"
     >
-      <view class="flex flex-col gap-4 px-5 pt-16 pb-10">
-        <view class="flex flex-col gap-1">
+      <view :class="pageClass">
+        <view v-if="pageScrolls" class="flex flex-col gap-1">
           <text class="text-slate-900 text-2xl font-bold">@vyui/kit demo</text>
           <text class="text-slate-500 text-sm">Styled components on top of @vyui/core primitives.</text>
         </view>
@@ -94,7 +103,8 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
           :items="tabItems"
           variant="pill"
           size="sm"
-          direction="stacked"
+          :direction="pageScrolls ? 'stacked' : 'inline'"
+          :ui="tabsUi"
         >
           <template #theme>
             <ThemeSection
@@ -133,7 +143,7 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
           </template>
         </VyTabs>
 
-        <view class="flex flex-col items-center pt-4 pb-2">
+        <view v-if="pageScrolls" class="flex flex-col items-center pt-4 pb-2">
           <text class="text-slate-400 text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
         </view>
       </view>

@@ -102,8 +102,8 @@ export function iconFg(color: string, variant: Variant): { semantic: string, sha
 // consumer's exact configured union when custom colors are added (true parity).
 export default (colors: Color[]) => ({
   slots: {
-    base: 'rounded-md font-medium flex flex-row items-center disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
-    label: 'truncate',
+    base: 'min-w-0 max-w-full rounded-md font-medium flex flex-row items-center disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
+    label: 'min-w-0 truncate',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',
     // Not a class — holds the `<VyAvatar size>` token for the active size (read
