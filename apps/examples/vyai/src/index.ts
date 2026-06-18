@@ -15,6 +15,7 @@ import iconParkSolid from '@iconify-json/icon-park-solid/icons.json'
 import lucide from '@iconify-json/lucide/icons.json'
 import tabler from '@iconify-json/tabler/icons.json'
 import App from './App.vue'
+import { brandLogos } from './data/brand-icons'
 import './index.css'
 
 installIntlPolyfill()
@@ -23,6 +24,8 @@ registerIconSet('lucide', lucide)
 registerIconSet('icon-park-outline', iconParkOutline)
 registerIconSet('icon-park-solid', iconParkSolid)
 registerIconSet('tabler', tabler)
+// Just the Claude / OpenAI marks for the model picker — a trimmed `logos` set.
+registerIconSet('logos', brandLogos)
 
 const app = createApp(App)
 app.use(VyUI)

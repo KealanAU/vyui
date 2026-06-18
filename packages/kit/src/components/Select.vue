@@ -135,8 +135,9 @@ const ui = computed(() => buildSelect(appConfig)({
   trailing: true,
 }))
 
-// Lynx SVG can't inherit currentColor — bake the resolved hex into icons.
-const iconColor = computed(() => resolveColorHex(appConfig, props.color))
+// Lynx SVG can't inherit currentColor — bake the hex. Trigger icons default to
+// neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
+const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
 // Shared open state bridges `SelectRoot` (item-tap closes it; SelectTrigger
 // toggles it) and `SheetRoot` (drag-to-close, backdrop-tap). Whichever side

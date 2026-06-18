@@ -120,9 +120,9 @@ const ui = computed(() => buildTextarea(appConfig)({
   trailing: hasTrailing.value,
 }))
 
-// Lynx SVG can't inherit currentColor — bake the resolved hex into the icon
-// at render time so theme palette swaps cascade through to the icon fill.
-const iconColor = computed(() => resolveColorHex(appConfig, props.color))
+// Lynx SVG can't inherit currentColor — bake the hex. Icons default to
+// neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
+const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
 onMounted(() => {
   if (!props.autofocus) return

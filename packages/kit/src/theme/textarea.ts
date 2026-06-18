@@ -20,10 +20,10 @@ export default (colors: Color[]) => ({
     // `text-*` on the root <view> never reaches the textarea element.
     base: 'flex-1 min-w-0 min-h-0 max-w-full bg-transparent text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75 align-top',
     leading: 'flex flex-row items-center shrink-0',
-    leadingIcon: 'shrink-0',
+    leadingIcon: 'shrink-0 text-neutral-400',
     leadingAvatar: 'shrink-0',
     trailing: 'flex flex-row items-center shrink-0',
-    trailingIcon: 'shrink-0'
+    trailingIcon: 'shrink-0 text-neutral-400'
   },
   variants: {
     size: {
@@ -55,9 +55,9 @@ export default (colors: Color[]) => ({
     // Surface only (bg/border) on `root`; typed-text color lives on `base`
     // (the <textarea>) — see the `slots.base` note re `enableCSSInheritance: false`.
     variant: {
-      outline: { root: 'bg-white border' },
+      outline: { root: 'bg-white border border-neutral-200' },
       soft: { root: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
-      subtle: { root: 'bg-neutral-100 border' },
+      subtle: { root: 'bg-neutral-100 border border-neutral-200' },
       ghost: { root: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent' },
       none: { root: 'bg-transparent' }
     },
@@ -68,25 +68,15 @@ export default (colors: Color[]) => ({
     highlight: { true: '' }
   },
   compoundVariants: [
-    // Border colors land on `root` since the chrome moved off `base`.
-    ...colors.flatMap(c => [
-      { color: c, variant: 'outline' as const, class: { root: `border-${c}-500` } },
-      { color: c, variant: 'subtle' as const, class: { root: `border-${c}-500` } }
-    ]),
+    // Resting border is neutral; the colored border is opt-in via `highlight`
+    // (no focus state on Lynx).
     ...colors.map(c => ({
       color: c,
       highlight: true,
       class: { root: `border border-${c}-500` }
     })),
-    // Theme-driven icon color (Lynx SVG can't inherit currentColor; the
-    // Textarea component bakes the resolved hex into `<VyIcon :color>` too).
-    ...colors.map(c => ({
-      color: c,
-      class: {
-        leadingIcon: `text-${c}-500`,
-        trailingIcon: `text-${c}-500`
-      }
-    })),
+    // Icons default to neutral (dimmed), decoupled from `color`; override via
+    // the `leading` / `trailing` slots.
     { loading: true, leading: true, class: { leadingIcon: 'animate-spin' } },
     { loading: true, leading: false, trailing: true, class: { trailingIcon: 'animate-spin' } }
   ],

@@ -7,11 +7,31 @@ import VyMark from './VyMark.vue'
 const props = defineProps<{ turn: ChatTurn }>()
 
 // Lynx <text> does not reflow on raw \n, so split into lines and render each
-// as its own <text>. Blank lines (paragraph gaps) become small spacers.
+// as its own <text>. Blank lines (paragraph gaps) become small spacers. Used
+// for the FINISHED answer (clean native text flow).
 const lines = computed(() => (props.turn.text ?? '').split('\n'))
 const isUser = computed(() => props.turn.role === 'user')
 const isThinking = computed(() => props.turn.state === 'thinking')
 const isStreaming = computed(() => props.turn.state === 'streaming')
+
+// While STREAMING, render the answer down to individual LETTER elements so each
+// new letter can fade in as it lands (see `.vyai-letter-in`). Structure is
+// paragraph (blank line = gap) → word → letter. Words are the wrap unit (a word
+// never breaks mid-way); letters within a word cascade via a per-letter
+// animation delay set inline below. Stable `li-wi-ci` keys mean already-rendered
+// letters keep their element (and don't re-animate) — only newly-appended
+// letters mount and play their fade. On completion the bubble switches to the
+// `lines` rendering above for clean, final text flow.
+const streamParagraphs = computed(() =>
+  (props.turn.text ?? '').split('\n').map((line, li) => ({
+    key: line === '' ? `b${li}` : `p${li}`,
+    blank: line === '',
+    words: line.split(/\s+/).filter(Boolean).map((word, wi) => ({
+      key: `${li}-${wi}`,
+      letters: [...word].map((ch, ci) => ({ key: `${li}-${wi}-${ci}`, ch })),
+    })),
+  })),
+)
 
 // Reasoning trace, split into discrete steps. Models emit it as prose with
 // newlines (often numbered) — one bullet per non-empty line reads as a step
@@ -85,12 +105,40 @@ const visibleSteps = computed(() =>
         </view>
       </view>
 
-      <view v-for="(line, i) in lines" :key="i">
-        <view v-if="line === ''" class="h-2" />
-        <text v-else class="text-slate-900 text-[15px] leading-6">{{ line }}</text>
-      </view>
-      <!-- Blinking caret while streaming. -->
-      <view v-if="isStreaming" class="h-1 w-2 mt-1 rounded-full bg-slate-900 vyai-breathe" />
+      <!-- Streaming: per-letter fade-in. Each letter is its own element so a
+           freshly appended letter plays `.vyai-letter-in` while earlier ones
+           stay put. Words are the wrap unit and carry the inter-word margin
+           (flex `gap` isn't reliably applied to wrapped rows on Lynx); letters
+           inside a word butt together. -->
+      <template v-if="isStreaming">
+        <view v-for="para in streamParagraphs" :key="para.key">
+          <view v-if="para.blank" class="h-2" />
+          <view v-else class="flex flex-row flex-wrap items-baseline">
+            <view
+              v-for="word in para.words"
+              :key="word.key"
+              class="flex flex-row mr-1"
+            >
+              <text
+                v-for="(letter, ci) in word.letters"
+                :key="letter.key"
+                class="text-slate-900 text-[15px] leading-6 vyai-letter-in"
+                :style="{ animationDelay: `${ci * 18}ms` }"
+              >{{ letter.ch }}</text>
+            </view>
+          </view>
+        </view>
+        <!-- Blinking caret — a slim cursor bar that ticks on/off. -->
+        <view class="h-4 w-[3px] mt-1 rounded-sm bg-slate-900 vyai-blink" />
+      </template>
+
+      <!-- Finished: clean native text flow (one <text> per line). -->
+      <template v-else>
+        <view v-for="(line, i) in lines" :key="i">
+          <view v-if="line === ''" class="h-2" />
+          <text v-else class="text-slate-900 text-[15px] leading-6">{{ line }}</text>
+        </view>
+      </template>
     </view>
   </view>
 </template>

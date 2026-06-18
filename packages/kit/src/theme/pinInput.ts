@@ -18,9 +18,9 @@ export default (colors: Color[]) => ({
       xl: { base: 'size-11 text-lg' },
     },
     variant: {
-      outline: 'bg-white border',
+      outline: 'bg-white border border-neutral-200',
       soft: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50',
-      subtle: 'bg-neutral-100 border',
+      subtle: 'bg-neutral-100 border border-neutral-200',
       ghost: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent',
       none: 'bg-transparent',
     },
@@ -30,13 +30,8 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
-    // outline / subtle border colors per semantic color.
-    ...colors.map(color => ({
-      color,
-      variant: ['outline' as const, 'subtle' as const],
-      class: `border-${color}-300`,
-    })),
-    // `highlight` paints a static border matching the color (no focus needed).
+    // Resting border is neutral; the colored border is opt-in via `highlight`
+    // (no focus state on Lynx).
     ...colors.map(color => ({
       color,
       highlight: true,
