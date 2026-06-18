@@ -107,8 +107,13 @@ export default (colors: Color[]) => ({
       vertical: {
         // Vertical tabs: list+content side-by-side, list stacks triggers
         // vertically. Both flip from the row defaults set in `slots`.
+        // `flex-none` cancels the `pill` variant's `flex-1` (an equal-WIDTH
+        // device for horizontal rows — along a column it would stretch each
+        // trigger's HEIGHT to fill the rail). `justify-start` left-aligns the
+        // icon+label so the rail reads as a sidebar list, not centered chips.
         root: 'flex-row min-h-0',
         list: 'flex-col shrink-0',
+        trigger: 'flex-none justify-start',
         content: 'w-0 flex-1 min-w-0 min-h-0',
         indicator: 'top-0',
       },

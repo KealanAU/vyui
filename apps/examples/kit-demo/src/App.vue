@@ -85,10 +85,13 @@ const pageClass = computed(() => {
 })
 const tabsUi = computed(() => {
   if (isLandscape.value) {
+    // Vertical rail (fixed width, pinned to the top via `self-start`) + content
+    // filling the rest of the width. A scrolling tab lets the whole rail+content
+    // block grow past the viewport (the outer `<scroll-view>` owns the scroll);
+    // a full-bleed tab caps to the viewport so its inner surface owns gestures.
     return {
       root: pageScrolls.value ? 'min-h-[calc(100dvh-1.5rem)]' : 'flex-1 min-h-0',
       list: 'w-36 shrink-0 self-start',
-      trigger: 'w-full justify-start',
       content: pageScrolls.value
         ? 'flex-1 min-w-0 ps-3'
         : 'flex-1 min-w-0 min-h-0 ps-3 overflow-hidden',
