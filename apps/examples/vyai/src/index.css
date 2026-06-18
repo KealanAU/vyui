@@ -39,6 +39,64 @@
   animation: vyai-breathe 1.4s ease-in-out infinite;
 }
 
+/* Message entrance — each turn rises and fades in once on mount. Keyed by
+   `turn.id`, so streaming text mutations don't re-trigger it. The overshoot
+   ease (a soft back-out) gives the bubble a little settle instead of a flat
+   slide. */
+@keyframes vyai-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vyai-rise {
+  animation: vyai-rise 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Typing caret — a crisp on/off blink (steps, no fade) reads as a real text
+   cursor while the reply streams in. Distinct from `vyai-breathe`, which is the
+   softer "thinking/listening" pulse. */
+@keyframes vyai-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.vyai-blink {
+  animation: vyai-blink 1s steps(1, end) infinite;
+}
+
+/* Per-letter reveal — each freshly-streamed letter fades in with a whisper of
+   leftward drift. A small per-letter delay (set inline) cascades the letters of
+   a newly-arrived word left-to-right; the ~450ms fade overlaps the next letters,
+   so the leading edge reads as a soft gradient the way the hosted models
+   materialize tokens. `both` holds the hidden `from` state through the delay so
+   delayed letters don't flash visible first. Runs once on mount. */
+@keyframes vyai-letter-in {
+  from {
+    opacity: 0;
+    transform: translateX(-0.1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.vyai-letter-in {
+  animation: vyai-letter-in 400ms ease-out both;
+}
+
 /* Under-sheet conversation drawer. Rather than floating over the page (which
    meant a full-screen backdrop swallowing taps), the menu is parked BEHIND the
    app: `.vyai-undersheet` is pinned to the left at z-0, and `.vyai-shell`
@@ -64,7 +122,9 @@
   z-index: 1;
   background-color: #fdfcfc; /* Parchment White — opaque so the under-sheet stays hidden when closed */
   transform: translateX(0);
-  transition: transform 300ms ease;
+  /* iOS sheet curve — a fast, decisive start that eases long into the settle.
+     Reads far more native than a flat `ease`. */
+  transition: transform 380ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* Floating-island lift. The kit's `bg-white/80` islands now sit parchment-on-
@@ -81,5 +141,5 @@
   /* Reveal exactly the under-sheet's width. */
   transform: translateX(300px);
   /* Soft edge where the shell now overhangs the revealed sheet. */
-  box-shadow: -8px 0 40px rgba(15, 23, 42, 0.18);
+  box-shadow: -4px 0 20px rgba(15, 23, 42, 0.08);
 }

@@ -15,11 +15,14 @@ export default (colors: Color[]) => ({
     // `fieldset` direction is set per orientation variant (flex-row/flex-col).
     fieldset: 'flex min-w-0 max-w-full',
     legend: 'mb-1 block font-medium text-neutral-900',
-    item: 'flex flex-row items-start min-w-0',
+    // `gap-2` separates the control from the label here — Lynx doesn't honor
+    // logical inline margins (`ms-*`/`me-*`), so the old `ms-2` on `wrapper`
+    // collapsed the dot and text together. Mirrors the Checkbox theme.
+    item: 'flex flex-row items-start min-w-0 gap-2',
     base: 'shrink-0 flex flex-row items-center justify-center rounded-full bg-white border border-neutral-300 transition-colors',
     indicator: 'flex flex-row items-center justify-center rounded-full bg-white',
     container: 'flex flex-row items-center',
-    wrapper: 'ms-2 flex flex-col min-w-0',
+    wrapper: 'flex flex-col min-w-0',
     label: 'block font-medium text-neutral-900',
     description: 'text-neutral-500',
   },

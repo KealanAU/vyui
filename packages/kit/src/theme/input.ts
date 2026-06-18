@@ -28,10 +28,10 @@ export default (colors: Color[]) => ({
     // `text-*` on the root <view> never reaches the input element.
     base: 'flex-1 min-w-0 bg-transparent text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
     leading: 'flex flex-row items-center shrink-0',
-    leadingIcon: 'shrink-0',
+    leadingIcon: 'shrink-0 text-neutral-400',
     leadingAvatar: 'shrink-0',
     trailing: 'flex flex-row items-center shrink-0',
-    trailingIcon: 'shrink-0'
+    trailingIcon: 'shrink-0 text-neutral-400'
   },
   variants: {
     size: {
@@ -63,9 +63,9 @@ export default (colors: Color[]) => ({
     // Surface only (bg/border) on `root`; typed-text color lives on `base`
     // (the <input>) — see the `slots.base` note re `enableCSSInheritance: false`.
     variant: {
-      outline: { root: 'bg-white border' },
+      outline: { root: 'bg-white border border-neutral-200' },
       soft: { root: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
-      subtle: { root: 'bg-neutral-100 border' },
+      subtle: { root: 'bg-neutral-100 border border-neutral-200' },
       ghost: { root: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent' },
       none: { root: 'bg-transparent' }
     },
@@ -76,27 +76,19 @@ export default (colors: Color[]) => ({
     highlight: { true: '' }
   },
   compoundVariants: [
-    // Border colors live on `root` since the chrome moved off `base`.
-    ...colors.flatMap(c => [
-      { color: c, variant: 'outline' as const, class: { root: `border-${c}-500` } },
-      { color: c, variant: 'subtle' as const, class: { root: `border-${c}-500` } }
-    ]),
+    // Resting border is neutral regardless of `color` — Lynx has no focus
+    // state, so the colored chrome is reserved for the opt-in `highlight` prop
+    // (validation) below, not the default look.
     // `highlight` paints a static border matching the color (no focus needed).
     ...colors.map(c => ({
       color: c,
       highlight: true,
       class: { root: `border border-${c}-500` }
     })),
-    // Theme-driven icon color class (kept for web/CSS-var palette swap; Lynx
-    // SVG fill colors are baked via the `:color` prop on `<VyIcon>` from the
-    // component, since Lynx rasterizes SVG XML and can't inherit currentColor).
-    ...colors.map(c => ({
-      color: c,
-      class: {
-        leadingIcon: `text-${c}-500`,
-        trailingIcon: `text-${c}-500`
-      }
-    })),
+    // Icons default to neutral (dimmed), decoupled from `color` like the
+    // border — see `slots.leadingIcon` / `trailingIcon`. Override per-icon via
+    // the `leading` / `trailing` slots (the Lynx fill is baked from the
+    // component's neutral `iconColor`; pass your own `:color` to change it).
     // Loading spinner animation lives on the icon slot, not the wrapper.
     { loading: true, leading: true, class: { leadingIcon: 'animate-spin' } },
     { loading: true, leading: false, trailing: true, class: { trailingIcon: 'animate-spin' } }

@@ -134,9 +134,10 @@ const ui = computed(() => buildInput(appConfig)({
 }))
 
 // Lynx SVG can't inherit currentColor — bake the resolved hex into the icon
-// at render time. Tracks the input's `color` prop so theme palette swaps and
-// per-input color overrides cascade through to the icon fill.
-const iconColor = computed(() => resolveColorHex(appConfig, props.color))
+// at render time. Icons default to neutral (dimmed), decoupled from `color`
+// like the border; override per-icon by passing your own `:color` via the
+// `leading` / `trailing` slots (they receive this as `iconColor`).
+const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
 onMounted(() => {
   if (!props.autofocus) return

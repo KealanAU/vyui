@@ -4,6 +4,7 @@ import ChatThread from './sections/ChatThread.vue'
 import TopBar from './sections/TopBar.vue'
 import Composer from './sections/Composer.vue'
 import ConversationsDrawer from './components/ConversationsDrawer.vue'
+import SettingsSheet from './components/SettingsSheet.vue'
 import { useDrawer } from './composables/useDrawer'
 
 const { open: drawerOpen, close: closeDrawer } = useDrawer()
@@ -38,5 +39,9 @@ const { open: drawerOpen, close: closeDrawer } = useDrawer()
         @tap="closeDrawer"
       />
     </view>
+
+    <!-- Settings sheet floats above the shell (z-60) so it covers the whole
+         screen, including the slid-over app. -->
+    <SettingsSheet />
   </view>
 </template>

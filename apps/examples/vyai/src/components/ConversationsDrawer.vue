@@ -2,13 +2,21 @@
 import { VyIcon } from '@vyui/kit'
 import { useChat } from '../composables/useChat'
 import { useDrawer } from '../composables/useDrawer'
+import { useSettings } from '../composables/useSettings'
 import VyMark from './VyMark.vue'
 
 const { conversations, activeConversationId, newChat, openConversation } = useChat()
 const { close } = useDrawer()
+const { openSettings } = useSettings()
 
 function startNewChat() {
   newChat()
+  close()
+}
+
+// Slide the shell back, then float the settings sheet over everything.
+function showSettings() {
+  openSettings()
   close()
 }
 
@@ -66,5 +74,17 @@ function pick(id: number) {
         </view>
       </view>
     </scroll-view>
+
+    <!-- Settings — pinned to the bottom of the sidebar. -->
+    <view class="h-px bg-slate-200 mx-3" />
+    <view class="px-3 py-2 pb-6">
+      <view
+        class="flex flex-row items-center gap-2.5 px-3 py-2.5 rounded-xl active:bg-slate-200"
+        @tap="showSettings"
+      >
+        <VyIcon name="i-tabler-settings" :size="20" color="#334155" />
+        <text class="text-slate-900 text-[15px] font-medium">Settings</text>
+      </view>
+    </view>
   </view>
 </template>

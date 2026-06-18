@@ -162,7 +162,10 @@ const ui = computed(() => buildCombobox(appConfig)({
 }))
 
 // Lynx SVG can't inherit currentColor — bake the resolved hex into icons.
-const iconColor = computed(() => resolveColorHex(appConfig, props.color))
+// Trigger icons default to neutral (dimmed), decoupled from `color` like the
+// border; override via the `leading` / `trailing` slots (they receive this as
+// `iconColor`).
+const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
 // Shared open state bridges `ComboboxRoot` (item-tap closes it; trigger
 // toggles it) and `SheetRoot` (drag-to-close, backdrop-tap). Whichever side

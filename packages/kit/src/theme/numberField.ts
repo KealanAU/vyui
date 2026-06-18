@@ -56,21 +56,18 @@ export default (colors: Color[]) => ({
     // (`enableCSSInheritance: false`), so a `text-*` on the root <view> never
     // reaches the input element.
     variant: {
-      outline: { root: 'bg-white border' },
+      outline: { root: 'bg-white border border-neutral-200' },
       soft: { root: 'bg-neutral-100/50 disabled:bg-neutral-100/50 border-transparent' },
-      subtle: { root: 'bg-neutral-100 border' },
+      subtle: { root: 'bg-neutral-100 border border-neutral-200' },
       ghost: { root: 'bg-transparent disabled:bg-transparent border-transparent' },
       none: { root: 'bg-transparent border-transparent' },
     },
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
   },
-  compoundVariants: [
-    // Border colors live on `root` for the bordered variants.
-    ...colors.flatMap(color => [
-      { color, variant: 'outline' as const, class: { root: `border-${color}-500` } },
-      { color, variant: 'subtle' as const, class: { root: `border-${color}-500` } },
-    ]),
-  ],
+  // Resting border is neutral regardless of `color` (set on the `outline` /
+  // `subtle` variants above) — Lynx has no focus state, so there is no colored
+  // chrome to swap in. `NumberField` doesn't expose a `highlight` prop.
+  compoundVariants: [],
   defaultVariants: {
     size: 'md' as const,
     variant: 'outline' as const,

@@ -16,15 +16,25 @@ export interface Model {
    * `composables/useOllama.ts`.
    */
   ollamaModel?: string
+  /**
+   * Hosted brand model. When set AND a matching API key is saved in Settings,
+   * replies come from the real provider (see `composables/useProviders.ts`);
+   * otherwise the model falls back to the canned mock engine below.
+   */
+  provider?: 'anthropic' | 'openai'
+  /** Provider model id override (e.g. `claude-opus-4-8`). Defaults per provider. */
+  apiModel?: string
 }
 
-// Three tongue-in-cheek "vyui" tiers, aping the usual mini / standard / pro
-// model ladder, plus a real local model served by Ollama. `vyai` is the
-// default middle tier; pick "qwen3.5 (local)" to chat with your own machine.
+// The picker leads with two recognizable brand models (mock — the demo doesn't
+// hold API keys), then the house `vyai` model, then a real local model served
+// by Ollama. `vyai` is the default; pick "qwen3.5 (local)" to chat with your
+// own machine. The Claude / OpenAI marks come from the trimmed `logos` set
+// registered in index.ts — Claude renders in its baked brand clay, OpenAI mono.
 export const MODELS: Model[] = [
-  { id: 'vyai-mini', name: 'vyai mini', blurb: 'Fastest — great for quick taps', icon: 'i-tabler-bolt' },
-  { id: 'vyai', name: 'vyai', blurb: 'Smart, balanced, the daily driver', icon: 'i-tabler-sparkles' },
-  { id: 'vyai-max', name: 'vyai max', blurb: 'Deepest reasoning, slower replies', icon: 'i-tabler-brain' },
+  { id: 'claude', name: 'Claude', blurb: 'Anthropic — thoughtful, strong at code', icon: 'i-logos-claude-icon', provider: 'anthropic' },
+  { id: 'gpt-5', name: 'GPT-5', blurb: 'OpenAI — fast and broadly capable', icon: 'i-logos-openai-icon', provider: 'openai' },
+  { id: 'vyai', name: 'vyai', blurb: 'The house model — smart and balanced', icon: 'i-tabler-sparkles' },
   { id: 'ollama-qwen', name: 'qwen3.5 (local)', blurb: 'Runs on your machine via Ollama', icon: 'i-tabler-cpu', ollamaModel: 'qwen3.5:9b' },
 ]
 

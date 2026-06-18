@@ -76,7 +76,10 @@ const resolvedIncrementIcon = computed(() => props.incrementIcon || appConfig.ui
 const resolvedDecrementIcon = computed(() => props.decrementIcon || appConfig.ui.icons?.minus || 'i-lucide-minus')
 
 // Lynx SVG can't inherit currentColor — bake the resolved hex into the icon.
-const iconColor = computed(() => resolveColorHex(appConfig, props.color))
+// Increment/decrement icons default to neutral (dimmed), decoupled from
+// `color` like the border; override via the `increment` / `decrement` slots
+// (they receive this as `iconColor`).
+const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
 const ui = computed(() => buildNumberField(appConfig)({
   color: props.color,

@@ -46,17 +46,17 @@ export default (colors: Color[]) => ({
     itemTrailingIcon: 'shrink-0',
     itemLabel: 'truncate text-neutral-700 group-ui-checked:text-neutral-900',
     leading: 'flex flex-row items-center shrink-0',
-    leadingIcon: 'shrink-0',
+    leadingIcon: 'shrink-0 text-neutral-400',
     leadingAvatar: 'shrink-0',
     trailing: 'flex flex-row items-center shrink-0 ms-auto',
-    trailingIcon: 'shrink-0',
+    trailingIcon: 'shrink-0 text-neutral-400',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: {
-      outline: { base: 'bg-white border' },
+      outline: { base: 'bg-white border border-neutral-200' },
       soft: { base: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
-      subtle: { base: 'bg-neutral-100 border' },
+      subtle: { base: 'bg-neutral-100 border border-neutral-200' },
       ghost: { base: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent' },
       none: { base: 'bg-transparent' },
     },
@@ -104,26 +104,18 @@ export default (colors: Color[]) => ({
     highlight: { true: '' },
   },
   compoundVariants: [
-    // outline / subtle border colors per semantic color.
-    ...colors.flatMap(color => [
-      { color, variant: 'outline' as const, class: { base: `border-${color}-500` } },
-      { color, variant: 'subtle' as const, class: { base: `border-${color}-500` } },
-    ]),
+    // Resting border is neutral regardless of `color` — Lynx has no focus
+    // state, so the colored chrome is reserved for the opt-in `highlight` prop
+    // below, not the default look.
     // `highlight` paints a static border matching the color.
     ...colors.map(color => ({ color, highlight: true, class: { base: `border border-${color}-500` } })),
     // Loading spinner animation on icon slot.
     { loading: true, leading: true, class: { leadingIcon: 'animate-spin' } },
     { loading: true, leading: false, trailing: true, class: { trailingIcon: 'animate-spin' } },
-    // Theme-driven leading/trailing icon color per semantic select color
-    // (Lynx SVG can't inherit currentColor — the Select component also bakes
-    // the resolved hex into `<VyIcon :color>`).
-    ...colors.map(color => ({
-      color,
-      class: {
-        leadingIcon: `text-${color}-500`,
-        trailingIcon: `text-${color}-500`,
-      },
-    })),
+    // Trigger leading/trailing icons default to neutral (dimmed), decoupled
+    // from `color` like the border — see `slots.leadingIcon` / `trailingIcon`.
+    // Override via the `leading` / `trailing` slots (the Lynx fill is baked
+    // from the component's neutral `iconColor`).
   ],
   defaultVariants: {
     color: 'primary' as const,

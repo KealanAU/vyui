@@ -11,10 +11,15 @@ defineProps<{
 
 <template>
   <view class="flex flex-col gap-5">
-    <ChatBubble
+    <!-- Wrapper carries the entrance animation so it runs once per turn on
+         mount (keyed by id) — ChatBubble's branching roots don't each need the
+         class, and streaming text mutations don't re-trigger it. -->
+    <view
       v-for="turn in messages"
       :key="turn.id"
-      :turn="turn"
-    />
+      class="vyai-rise"
+    >
+      <ChatBubble :turn="turn" />
+    </view>
   </view>
 </template>
