@@ -64,9 +64,8 @@ export default (colors: Color[]) => ({
     },
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
   },
-  // Resting border is neutral regardless of `color` (set on the `outline` /
-  // `subtle` variants above) — Lynx has no focus state, so there is no colored
-  // chrome to swap in. `NumberField` doesn't expose a `highlight` prop.
+  // Resting border is neutral (set on the variants above); no `highlight` prop
+  // here, so nothing colored to swap in.
   compoundVariants: [],
   defaultVariants: {
     size: 'md' as const,

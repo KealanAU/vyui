@@ -133,10 +133,8 @@ const ui = computed(() => buildInput(appConfig)({
   trailing: hasTrailing.value,
 }))
 
-// Lynx SVG can't inherit currentColor — bake the resolved hex into the icon
-// at render time. Icons default to neutral (dimmed), decoupled from `color`
-// like the border; override per-icon by passing your own `:color` via the
-// `leading` / `trailing` slots (they receive this as `iconColor`).
+// Lynx SVG can't inherit currentColor — bake the hex. Icons default to
+// neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
 onMounted(() => {

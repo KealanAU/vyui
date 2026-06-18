@@ -101,16 +101,13 @@ export default (colors: Color[]) => ({
     multiple: { true: { root: 'flex-wrap' } },
   },
   compoundVariants: [
-    // Resting border is neutral regardless of `color` — Lynx has no focus
-    // state, so the colored chrome is reserved for the opt-in `highlight` prop
-    // below, not the default look.
+    // Resting border is neutral; the colored border is opt-in via `highlight`
+    // (no focus state on Lynx).
     ...colors.map(color => ({ color, highlight: true, class: { base: `border border-${color}-500` } })),
     { loading: true, leading: true, class: { leadingIcon: 'animate-spin' } },
     { loading: true, leading: false, trailing: true, class: { trailingIcon: 'animate-spin' } },
-    // Leading/trailing icons default to neutral (dimmed), decoupled from
-    // `color` like the border — see `slots.leadingIcon` / `trailingIcon`.
-    // Override via the `leading` / `trailing` slots (the Lynx fill is baked
-    // from the component's neutral `iconColor`).
+    // Icons default to neutral (dimmed), decoupled from `color`; override via
+    // the `leading` / `trailing` slots.
   ],
   defaultVariants: {
     color: 'primary' as const,

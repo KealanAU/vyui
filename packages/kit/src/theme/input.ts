@@ -76,20 +76,15 @@ export default (colors: Color[]) => ({
     highlight: { true: '' }
   },
   compoundVariants: [
-    // Resting border is neutral regardless of `color` — Lynx has no focus
-    // state, so the colored chrome is reserved for the opt-in `highlight` prop
-    // (validation) below, not the default look.
-    // `highlight` paints a static border matching the color (no focus needed).
+    // Resting border is neutral; the colored border is opt-in via `highlight`
+    // (no focus state on Lynx).
     ...colors.map(c => ({
       color: c,
       highlight: true,
       class: { root: `border border-${c}-500` }
     })),
-    // Icons default to neutral (dimmed), decoupled from `color` like the
-    // border — see `slots.leadingIcon` / `trailingIcon`. Override per-icon via
-    // the `leading` / `trailing` slots (the Lynx fill is baked from the
-    // component's neutral `iconColor`; pass your own `:color` to change it).
-    // Loading spinner animation lives on the icon slot, not the wrapper.
+    // Icons default to neutral (dimmed), decoupled from `color`; override via
+    // the `leading` / `trailing` slots. Loading spinner animates the icon slot.
     { loading: true, leading: true, class: { leadingIcon: 'animate-spin' } },
     { loading: true, leading: false, trailing: true, class: { trailingIcon: 'animate-spin' } }
   ],

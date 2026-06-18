@@ -30,10 +30,8 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
-    // Resting border is neutral regardless of `color` — Lynx has no focus
-    // state, so the colored chrome is reserved for the opt-in `highlight` prop
-    // below, not the default look.
-    // `highlight` paints a static border matching the color (no focus needed).
+    // Resting border is neutral; the colored border is opt-in via `highlight`
+    // (no focus state on Lynx).
     ...colors.map(color => ({
       color,
       highlight: true,
