@@ -7,10 +7,16 @@ const url = useRequestURL()
 // requested explicitly to appear on navigation nodes.
 const { data: navigation } = await useAsyncData('navigation', () => queryCollectionNavigation('docs', ['package']))
 
+// Canonical = configured site origin + path only. Using siteUrl (not url.origin,
+// which is localhost during static prerender) keeps the production host; dropping
+// the query string and trailing slash stops ?foo=bar and /path vs /path/ from
+// splitting ranking signals.
+const canonical = `${siteUrl}${url.pathname.replace(/\/$/, '')}`
+
 useHead({
   htmlAttrs: { lang: 'en' },
   link: [
-    { rel: 'canonical', href: url.href },
+    { rel: 'canonical', href: canonical },
   ],
 })
 
@@ -18,7 +24,7 @@ useSeoMeta({
   titleTemplate: `%s — ${seo?.siteName}`,
   ogSiteName: seo?.siteName,
   ogType: 'website',
-  ogUrl: url.href,
+  ogUrl: canonical,
   twitterCard: 'summary_large_image',
   twitterSite: '@vyui_dev',
 })

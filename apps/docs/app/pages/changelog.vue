@@ -18,6 +18,11 @@ useSeoMeta({
     title: "Changelog",
     description: "Release notes for Vy UI — @vyui/core and @vyui/kit.",
 });
+
+defineOgImageComponent("Default", {
+    title: "Changelog",
+    description: "Release notes for Vy UI — @vyui/core and @vyui/kit.",
+});
 </script>
 
 <template>

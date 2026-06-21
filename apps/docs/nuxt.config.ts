@@ -1,7 +1,20 @@
 export default defineNuxtConfig({
-  modules: ['@nuxt/ui', '@nuxt/content', '@nuxt/image', 'nuxt-llms'],
+  modules: ['@nuxt/ui', '@nuxt/content', '@nuxt/image', 'nuxt-llms', '@nuxtjs/sitemap', 'nuxt-og-image'],
   css: ['~/assets/css/main.css'],
   devtools: { enabled: true },
+
+  // Shared site config consumed by @nuxtjs/sitemap + nuxt-og-image
+  // (canonical host, sitemap URLs, absolute og:image URLs).
+  site: {
+    url: 'https://vyui.dev',
+    name: 'Vy UI',
+  },
+
+  // Adds <lastmod> (last git commit per doc) to auto-discovered routes; see
+  // server/api/__sitemap__/urls.ts.
+  sitemap: {
+    sources: ['/api/__sitemap__/urls'],
+  },
 
   // Generates /llms.txt only. Sections are auto-populated from @nuxt/content
   // via its llms:generate hook; omitting `full` skips /llms-full.txt.

@@ -33,6 +33,9 @@ useSeoMeta({
   ogDescription: description,
 })
 
+// Per-page social card (rendered to PNG at build time).
+defineOgImageComponent('Default', { title, description })
+
 const headline = computed(() => findPageHeadline(navigation?.value, page.value?.path))
 
 const links = computed(() => toc?.bottom?.links || [])
