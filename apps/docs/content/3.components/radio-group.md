@@ -15,9 +15,10 @@ links:
 
 `VyRadioGroup` renders a themed single-choice field from strings, numbers, or item objects. It supports controlled and uncontrolled state, legends, descriptions, horizontal or vertical layout, semantic colors, four sizes, disabled items, required styling, and custom text slots.
 
-::component-playground
+::component-code
 ---
-name: radio-group
+name: radio-group-example
+height: 240px
 ---
 ::
 

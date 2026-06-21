@@ -15,7 +15,11 @@ links:
 
 `VySortable` renders a styled, vertically reorderable list on top of the `@vyui/core` Sortable primitives. A long press lifts a row, movement shifts neighboring rows on the main thread, and release writes the new array order through `v-model`.
 
-::component-playground{name="sortable"}
+::component-code
+---
+name: sortable-example
+height: 280px
+---
 ::
 
 ::callout{icon="i-lucide-box"}

@@ -15,41 +15,34 @@ links:
 
 `VyPlaceholder` renders an empty, dashed panel with a subtle diagonal hatch. It is intended for wireframes, documentation examples, and layout stubs rather than loading state.
 
-::component-playground{name="placeholder"}
+::component-code
+---
+name: placeholder-example
+height: 240px
+---
 ::
 
 ## Usage
 
 Give the component explicit dimensions so its empty root is visible.
 
-```vue
-<script setup lang="ts">
-import { VyPlaceholder } from '@vyui/kit'
-</script>
-
-<template>
-  <VyPlaceholder class="h-40 w-full" />
-</template>
-```
+::component-code
+---
+name: placeholder-example
+height: 240px
+---
+::
 
 ### Layout composition
 
 Use placeholders to establish the shape and spacing of a screen before its real content is available.
 
-```vue
-<template>
-  <view class="flex flex-col gap-4">
-    <VyPlaceholder class="h-16 w-full" />
-
-    <view class="flex flex-row gap-4">
-      <VyPlaceholder class="size-24 shrink-0" />
-      <VyPlaceholder class="h-24 flex-1" />
-    </view>
-
-    <VyPlaceholder class="h-48 w-full rounded-xl" />
-  </view>
-</template>
-```
+::component-code
+---
+name: placeholder-layout
+height: 420px
+---
+::
 
 ### Square or fixed-ratio regions
 

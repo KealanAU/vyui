@@ -15,7 +15,11 @@ links:
 
 `VySkeleton` renders a neutral, rounded `view` with a pulse animation. Give it explicit dimensions to reserve the same space as the content it replaces, or place custom placeholder content inside it.
 
-::component-playground{name="skeleton"}
+::component-code
+---
+name: skeleton-example
+height: 140px
+---
 ::
 
 ## Usage

@@ -15,9 +15,10 @@ links:
 
 `VyRating` is a styled integer rating control built on the `@vyui/core` rating primitives. It supports a configurable item count, semantic active color, four sizes, a custom Iconify glyph, disabled state, and controlled state through `v-model`.
 
-::component-playground
+::component-code
 ---
-name: rating
+name: rating-example
+height: 140px
 ---
 ::
 

@@ -19,7 +19,11 @@ links:
 
 `VyPinInput` renders a fixed number of single-character fields for PINs and verification codes. It wraps the `@vyui/core` pin-input primitives with a flat string model, semantic colors, surface variants, sizes, masking, and completion events.
 
-::component-playground{name="pin-input"}
+::component-code
+---
+name: pin-input-example
+height: 160px
+---
 ::
 
 ## Usage

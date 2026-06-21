@@ -15,7 +15,11 @@ links:
 
 `VyModal` presents a centered dialog over a full-screen backdrop. It is intended for short blocking alerts and confirmations with a title, concise description, and one or two actions. Use `VyDrawer` for forms, pickers, long content, drag-to-dismiss interaction, or full-screen presentations.
 
-::component-playground{name="modal"}
+::component-code
+---
+name: modal-example
+height: 120px
+---
 ::
 
 ::callout{icon="i-lucide-box"}

@@ -21,24 +21,21 @@ links:
 
 No icon collection is bundled or registered by default. Register the prefixes your application uses before rendering string names.
 
-::component-playground{name="icon"}
+::component-code
+---
+name: icon-example
+height: 160px
+---
 ::
 
 ## Usage
 
-```vue
-<script setup lang="ts">
-import { VyIcon } from '@vyui/kit'
-</script>
-
-<template>
-  <VyIcon
-    name="i-lucide-sparkles"
-    :size="24"
-    color="#6366f1"
-  />
-</template>
-```
+::component-code
+---
+name: icon-example
+height: 160px
+---
+::
 
 You can import the primitive and resolver utilities directly from core.
 
@@ -136,17 +133,23 @@ An unregistered prefix, missing icon, or unparseable name resolves to `null` and
 
 `size` controls both SVG dimensions in pixels. Numbers and numeric strings are accepted; an invalid value falls back to `16`.
 
-```vue
-<view class="flex flex-row items-center gap-3">
-  <VyIcon name="lucide:circle-check" :size="16" color="#16a34a" />
-  <VyIcon name="lucide:circle-check" :size="24" color="rgb(22 163 74)" />
-  <VyIcon name="lucide:circle-check" size="32" color="hsl(142 71% 45%)" />
-</view>
-```
+::component-code
+---
+name: icon-size
+height: 160px
+---
+::
 
 Lynx SVG cannot inherit `currentColor`. The resolver replaces `currentColor` inside the registered SVG data with the explicit `color` value. Icons that use fixed fills or strokes are not recolored by this replacement.
 
 Safe CSS color syntaxes such as named colors, hex, `rgb()`, and `hsl()` are accepted. A value containing SVG-markup characters is ignored and produces a development warning.
+
+::component-code
+---
+name: icon-color
+height: 160px
+---
+::
 
 ### Theme-resolved colors
 

@@ -15,9 +15,10 @@ links:
 
 `VyIslandGroup` lays out multiple `VyIsland` surfaces and owns their shared viewport placement. Use it for a main dock with a separate action pill, paired top controls, or stacked companion islands.
 
-::component-playground
+::component-code
 ---
-name: island-group
+name: island-group-example
+height: 260px
 ---
 ::
 

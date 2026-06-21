@@ -15,7 +15,11 @@ links:
 
 `VyActionSheet` presents actions in a bottom-anchored sheet. It supports drag-to-dismiss, an optional backdrop and handle, grouped items, semantic row colors, avatars, custom item slots, and controlled or uncontrolled open state.
 
-::component-playground{name="action-sheet"}
+::component-code
+---
+name: action-sheet-example
+height: 520px
+---
 ::
 
 ::callout{icon="i-lucide-box"}
@@ -24,31 +28,12 @@ Built on the headless [`Sheet`](/components/sheet) primitive from `@vyui/core`. 
 
 ## Usage
 
-```vue
-<script setup lang="ts">
-import { VyActionSheet, VyButton } from '@vyui/kit'
-import { ref } from 'vue'
-
-const open = ref(false)
-const items = [
-  { label: 'Edit', icon: 'i-lucide-pencil', value: 'edit' },
-  { label: 'Duplicate', icon: 'i-lucide-copy', value: 'duplicate' },
-  { label: 'Delete', icon: 'i-lucide-trash-2', color: 'error', value: 'delete' },
-]
-</script>
-
-<template>
-  <VyActionSheet
-    v-model:open="open"
-    title="Actions"
-    :items="items"
-    cancel
-    @select="item => console.log(item.value)"
-  >
-    <VyButton>Open actions</VyButton>
-  </VyActionSheet>
-</template>
-```
+::component-code
+---
+name: action-sheet-example
+height: 520px
+---
+::
 
 The default slot is wrapped in the core `SheetTrigger`; tapping it opens the sheet. Do not also set the open state from a tap handler on the slotted child.
 
@@ -56,29 +41,12 @@ The default slot is wrapped in the core `SheetTrigger`; tapping it opens the she
 
 Pass nested arrays to insert separators between groups.
 
-```vue
-<script setup lang="ts">
-import { VyActionSheet, VyButton } from '@vyui/kit'
-import { ref } from 'vue'
-
-const open = ref(false)
-const groups = [
-  [
-    { label: 'Share', icon: 'i-lucide-share-2' },
-    { label: 'Copy link', icon: 'i-lucide-link' },
-  ],
-  [
-    { label: 'Remove', icon: 'i-lucide-trash-2', color: 'error' },
-  ],
-]
-</script>
-
-<template>
-  <VyActionSheet v-model="open" :items="groups" cancel="Not now">
-    <VyButton>More</VyButton>
-  </VyActionSheet>
-</template>
-```
+::component-code
+---
+name: action-sheet-grouped
+height: 520px
+---
+::
 
 ### Custom rows
 

@@ -15,7 +15,18 @@ links:
 
 `VySlider` is a themed wrapper around the `@vyui/core` slider primitives. It supports a single numeric value or multiple thumbs, horizontal and vertical tracks, step snapping, minimum thumb spacing, inversion, semantic colors, and controlled or uncontrolled state.
 
-::component-playground{name="slider"}
+::component-code
+---
+name: slider-example
+height: 120px
+---
+::
+
+::component-code
+---
+name: slider-range
+height: 120px
+---
 ::
 
 ## Usage

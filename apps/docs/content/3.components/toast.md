@@ -17,7 +17,11 @@ links:
 
 Every toast must be rendered inside the core `ToastProvider`. Use `ToastViewport` when the toast should float at a screen edge through the app's `OverlayRoot`.
 
-::component-playground{name="toast"}
+::component-code
+---
+name: toast-example
+height: 160px
+---
 ::
 
 ## Usage

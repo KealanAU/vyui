@@ -15,36 +15,39 @@ links:
 
 `VyAvatar` displays a circular image and falls back to explicit text, initials derived from `alt`, or an icon. It can also render a `VyChip` status marker and inherit size and color from `VyAvatarGroup`.
 
-::component-playground{name="avatar"}
+::component-code
+---
+name: avatar-example
+height: 180px
+---
 ::
 
 ## Usage
 
-```vue
-<script setup lang="ts">
-import { VyAvatar } from '@vyui/kit'
-</script>
+::component-code
+---
+name: avatar-example
+height: 180px
+---
+::
 
-<template>
-  <VyAvatar
-    src="https://github.com/kealanau.png"
-    alt="Kealan Clarke"
-  />
-</template>
-```
+### Sizes
 
-### Fallbacks and status
+::component-code
+---
+name: avatar-sizes
+height: 180px
+---
+::
 
-```vue
-<template>
-  <view class="flex flex-row gap-3">
-    <VyAvatar text="KC" color="primary" />
-    <VyAvatar alt="Ada Lovelace" color="secondary" />
-    <VyAvatar icon="i-lucide-user" color="neutral" />
-    <VyAvatar alt="Online user" :chip="{ color: 'success', position: 'bottom-right' }" />
-  </view>
-</template>
-```
+### Status chips
+
+::component-code
+---
+name: avatar-chip
+height: 180px
+---
+::
 
 Fallback priority is explicit `text`, initials derived from `alt`, then `icon`. A custom `fallback` slot replaces all three.
 

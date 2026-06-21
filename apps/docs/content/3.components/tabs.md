@@ -15,7 +15,11 @@ links:
 
 `VyTabs` renders an animated tab indicator, selectable triggers, and optional content panels on top of the `@vyui/core` tabs primitives. It supports horizontal and vertical layouts, pill and link treatments, controlled or uncontrolled state, icons, disabled items, static content, and named content slots.
 
-::component-playground{name="tabs"}
+::component-code
+---
+name: tabs-example
+height: 220px
+---
 ::
 
 ## Usage

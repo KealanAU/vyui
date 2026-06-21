@@ -15,7 +15,11 @@ links:
 
 `VySeparator` renders a horizontal or vertical divider on top of the `@vyui/core` separator primitive. It supports semantic colors, four thicknesses, solid or patterned borders, and centered label, icon, or custom content.
 
-::component-playground{name="separator"}
+::component-code
+---
+name: separator-example
+height: 220px
+---
 ::
 
 ## Usage

@@ -15,30 +15,21 @@ links:
 
 `VyInput` is the styled single-line input for Vue-Lynx. It combines the core native input with semantic colors, surface variants, sizes, loading state, leading or trailing content, and delayed autofocus.
 
-::component-playground{name="input"}
+::component-code
+---
+name: input-example
+height: 180px
+---
 ::
 
 ## Usage
 
-```vue
-<script setup lang="ts">
-import { VyInput } from '@vyui/kit'
-import { ref } from 'vue'
-
-const email = ref('')
-</script>
-
-<template>
-  <VyInput
-    v-model="email"
-    id="email"
-    name="email"
-    type="email"
-    autocomplete="email"
-    placeholder="you@example.com"
-  />
-</template>
-```
+::component-code
+---
+name: input-example
+height: 180px
+---
+::
 
 The model accepts a `string` or `number`, but native edits are emitted as strings.
 
@@ -65,29 +56,12 @@ Available input types are `text`, `number`, `digit`, `tel`, `email`, and `passwo
 
 `icon` is leading by default. Set `trailing` to route the shorthand to the trailing side, or use the explicit icon props.
 
-```vue
-<view class="flex flex-col gap-3">
-  <VyInput
-    v-model="query"
-    icon="i-lucide-search"
-    placeholder="Search projects"
-  />
-
-  <VyInput
-    v-model="username"
-    :avatar="{ src: user.avatar, alt: user.name }"
-    trailing-icon="i-lucide-circle-check"
-    placeholder="Username"
-  />
-
-  <VyInput
-    v-model="value"
-    loading
-    loading-icon="i-lucide-loader-circle"
-    placeholder="Checking availability…"
-  />
-</view>
-```
+::component-code
+---
+name: input-icon
+height: 180px
+---
+::
 
 The loading spinner takes precedence over an avatar and leading icon. An explicit `leadingIcon` or `trailingIcon` takes precedence over the `icon` shorthand.
 
@@ -97,17 +71,25 @@ Icon names only resolve after their Iconify set has been registered. See [`Icon`
 
 Use `highlight` to paint a static semantic border regardless of focus.
 
-```vue
-<VyInput
-  v-model="username"
-  color="error"
-  variant="subtle"
-  highlight
-  placeholder="Username"
-/>
-```
+::component-code
+---
+name: input-variants
+height: 320px
+---
+::
 
 `highlight` is visual only. It does not set an invalid state or provide an error message, so pair it with a visible label and validation text.
+
+### Disabled
+
+Set `disabled` to prevent editing and apply the disabled visual treatment.
+
+::component-code
+---
+name: input-disabled
+height: 180px
+---
+::
 
 ### Custom leading and trailing content
 

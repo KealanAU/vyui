@@ -15,7 +15,11 @@ links:
 
 `VyStepper` renders a styled sequence on top of the `@vyui/core` Stepper primitives. It supports horizontal and vertical layouts, linear or free navigation, semantic colors, four sizes, disabled steps, icons, and custom indicator, title, and description slots.
 
-::component-playground{name="stepper"}
+::component-code
+---
+name: stepper-example
+height: 240px
+---
 ::
 
 ## Usage

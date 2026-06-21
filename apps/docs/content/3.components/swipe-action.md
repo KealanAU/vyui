@@ -15,7 +15,11 @@ links:
 
 `VySwipeAction` places an action panel behind a foreground row. A leftward drag reveals the panel, a short rightward flick closes it, and a sufficiently long or fast leftward swipe emits `commit`.
 
-::component-playground{name="swipe-action"}
+::component-code
+---
+name: swipe-action-example
+height: 160px
+---
 ::
 
 ## Usage

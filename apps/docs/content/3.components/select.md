@@ -15,7 +15,11 @@ links:
 
 `VySelect` combines the `@vyui/core` select and sheet primitives into a touch-oriented single-value picker. It supports primitive or object items, groups, labels, separators, disabled options, custom item slots, semantic trigger variants, and configurable sheet snap points.
 
-::component-playground{name="select"}
+::component-code
+---
+name: select-example
+height: 120px
+---
 ::
 
 ## Usage

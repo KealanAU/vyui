@@ -15,7 +15,11 @@ links:
 
 `VyNumberField` combines a numeric input with decrement and increment controls. It supports controlled and uncontrolled values, minimum and maximum bounds, step snapping, decimal values, disabled and read-only states, semantic colors, and custom stepper content.
 
-::component-playground{name="number-field"}
+::component-code
+---
+name: number-field-example
+height: 140px
+---
 ::
 
 ## Usage

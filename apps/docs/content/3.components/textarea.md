@@ -15,7 +15,11 @@ links:
 
 `VyTextarea` is the styled multi-line input for Vue-Lynx. It combines the core native textarea behavior with semantic colors, surface variants, sizes, loading state, leading or trailing content, and delayed autofocus.
 
-::component-playground{name="textarea"}
+::component-code
+---
+name: textarea-example
+height: 180px
+---
 ::
 
 ## Usage

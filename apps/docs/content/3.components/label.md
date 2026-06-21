@@ -15,7 +15,11 @@ links:
 
 `VyLabel` renders styled text for a form control. It supports four text sizes, a visual required marker, a control identifier, and local or global theme overrides.
 
-::component-playground{name="label"}
+::component-code
+---
+name: label-example
+height: 140px
+---
 ::
 
 ## Usage

@@ -15,7 +15,11 @@ links:
 
 `VySwiper` is the styled carousel wrapper around the `@vyui/core` `SwiperRoot` and `SwiperItem` primitives. It supports controlled index state, data-driven or manual slides, measured full-width pages, seamless looping, autoplay, horizontal gesture locking, and optional indicators.
 
-::component-playground{name="swiper"}
+::component-code
+---
+name: swiper-example
+height: 280px
+---
 ::
 
 ## Usage

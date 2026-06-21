@@ -15,25 +15,21 @@ links:
 
 `VyAspectRatio` is the `@vyui/core` `AspectRatio` primitive re-exported by `@vyui/kit`. It renders one primitive element at `width: 100%` and applies the native CSS `aspect-ratio` property.
 
-::component-playground{name="aspect-ratio"}
+::component-code
+---
+name: aspect-ratio-example
+height: 260px
+---
 ::
 
 ## Usage
 
-```vue
-<script setup lang="ts">
-import { VyAspectRatio } from '@vyui/kit'
-</script>
-
-<template>
-  <VyAspectRatio :ratio="16 / 9">
-    <image
-      src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
-      class="h-full w-full object-cover"
-    />
-  </VyAspectRatio>
-</template>
-```
+::component-code
+---
+name: aspect-ratio-example
+height: 260px
+---
+::
 
 You can also import the unprefixed alias and public type.
 
@@ -73,11 +69,12 @@ This component does not emit events.
 
 `VyAspectRatio` is not themeable through `appConfig.ui` and has no `ui` prop, slots, variants, or kit theme file. Style the component with forwarded `class` or `style`, and style its child so it fills the available box.
 
-```vue
-<VyAspectRatio :ratio="4 / 3" class="overflow-hidden rounded-xl bg-neutral-100">
-  <view class="h-full w-full" />
-</VyAspectRatio>
-```
+::component-code
+---
+name: aspect-ratio-variants
+height: 220px
+---
+::
 
 ## Accessibility
 

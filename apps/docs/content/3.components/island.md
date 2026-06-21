@@ -15,9 +15,10 @@ links:
 
 `VyIsland` is a Linear-inspired container for compact navigation and actions. It can float at a viewport edge or participate in normal layout, and it coordinates three independent state axes for child `VyIslandButton` components: selected `value`, active row `mode`, and expanded `open` state.
 
-::component-playground
+::component-code
 ---
-name: island
+name: island-example
+height: 160px
 ---
 ::
 

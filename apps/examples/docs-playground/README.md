@@ -23,8 +23,9 @@ asset paths.
 ## Add an example
 
 1. Add a Vue SFC under `src/examples/<component>/`.
-2. Register its kebab-case id in `src/examples/index.ts`.
-3. Embed it in an MDC page:
+2. Use a globally unique PascalCase filename. The generated example id is the
+   kebab-case filename (`InputIcon.vue` becomes `input-icon`).
+3. Embed that id with the live `component-code` block:
 
    ```md
    ::component-code
@@ -34,6 +35,9 @@ asset paths.
    ---
    ::
    ```
+
+`src/examples/index.ts` and the docs source manifest are generated files; do
+not edit either by hand.
 
 4. Build and sync the playground:
 

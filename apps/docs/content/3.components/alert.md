@@ -15,48 +15,45 @@ links:
 
 `VyAlert` displays a title, description, leading icon, actions, and an optional close control. Semantic color and visual variants make it suitable for informational, success, warning, and error messages.
 
-::component-playground{name="alert"}
+::component-code
+---
+name: alert-example
+height: 220px
+---
 ::
 
 ## Usage
 
-```vue
-<script setup lang="ts">
-import { VyAlert } from '@vyui/kit'
-</script>
-
-<template>
-  <VyAlert
-    title="Update available"
-    description="Restart the app to install the latest version."
-    icon="i-lucide-download"
-    color="info"
-    variant="soft"
-  />
-</template>
-```
+::component-code
+---
+name: alert-example
+height: 220px
+---
+::
 
 ### Actions and dismissal
 
 `orientation="vertical"` places actions below the copy. Horizontal orientation places them at the trailing edge.
 
-```vue
-<VyAlert
-  title="Unsaved changes"
-  description="Your edits will be lost if you leave."
-  color="warning"
-  variant="subtle"
-  orientation="horizontal"
-  close
-  @update:open="open = $event"
->
-  <template #actions>
-    <VyButton size="sm">Save</VyButton>
-  </template>
-</VyAlert>
-```
+::component-code
+---
+name: alert-closable
+height: 220px
+---
+::
 
 The alert does not manage or hide itself. When the close control is tapped it emits `update:open(false)`; the parent decides whether to remove it.
+
+### Variants
+
+Combine semantic colors with `solid`, `soft`, `outline`, `subtle`, or `ghost`.
+
+::component-code
+---
+name: alert-variants
+height: 520px
+---
+::
 
 ## Features and behavior
 

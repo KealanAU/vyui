@@ -15,7 +15,18 @@ links:
 
 `VySwitch` is a styled boolean control built on the `@vyui/core` switch primitives. It supports labels, descriptions, semantic colors, four sizes, checked and unchecked icons, loading state, disabled state, and a static highlight ring.
 
-::component-playground{name="switch"}
+::component-code
+---
+name: switch-example
+height: 120px
+---
+::
+
+::component-code
+---
+name: switch-colors
+height: 160px
+---
 ::
 
 ## Usage

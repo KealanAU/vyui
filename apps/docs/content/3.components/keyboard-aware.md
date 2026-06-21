@@ -12,7 +12,11 @@ The keyboard-aware primitives coordinate focused inputs with a movable or scroll
 
 Use them for drawers, forms, chat composers, and other layouts where the iOS or Android keyboard can cover the focused control.
 
-::component-playground{name="keyboard-aware"}
+::component-code
+---
+name: keyboard-aware-example
+height: 160px
+---
 ::
 
 ## Usage

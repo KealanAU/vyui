@@ -15,46 +15,32 @@ links:
 
 `VyAvatarGroup` overlaps avatars in a compact row, propagates a shared size and color, and can replace hidden children with a `+N` overflow avatar.
 
-::component-playground{name="avatar-group"}
+::component-code
+---
+name: avatar-group-example
+height: 180px
+---
 ::
 
 ## Usage
 
-```vue
-<script setup lang="ts">
-import { VyAvatar, VyAvatarGroup } from '@vyui/kit'
-
-const people = [
-  { name: 'Ada Lovelace', src: 'https://example.com/ada.jpg' },
-  { name: 'Grace Hopper', src: 'https://example.com/grace.jpg' },
-  { name: 'Margaret Hamilton', src: 'https://example.com/margaret.jpg' },
-  { name: 'Katherine Johnson', src: 'https://example.com/katherine.jpg' },
-]
-</script>
-
-<template>
-  <VyAvatarGroup size="lg" color="primary" :max="3">
-    <VyAvatar
-      v-for="person in people"
-      :key="person.name"
-      :src="person.src"
-      :alt="person.name"
-    />
-  </VyAvatarGroup>
-</template>
-```
+::component-code
+---
+name: avatar-group-example
+height: 180px
+---
+::
 
 Child avatars inherit the group's `size` and `color` unless they set their own values.
 
 ### Mixed avatar styles
 
-```vue
-<VyAvatarGroup size="md">
-  <VyAvatar src="https://example.com/one.jpg" alt="One" />
-  <VyAvatar text="AB" color="secondary" />
-  <VyAvatar icon="i-lucide-user" />
-</VyAvatarGroup>
-```
+::component-code
+---
+name: avatar-group-mixed
+height: 180px
+---
+::
 
 ## Features and behavior
 

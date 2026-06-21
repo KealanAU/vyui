@@ -15,9 +15,17 @@ links:
 
 `VyToggleGroup` renders connected toggle buttons from an items array. It supports single or multiple selection, controlled and uncontrolled values, horizontal or vertical layout, disabled items, icons, labels, and a custom item slot.
 
-::component-playground
+::component-code
 ---
-name: toggle-group
+name: toggle-group-example
+height: 120px
+---
+::
+
+::component-code
+---
+name: toggle-group-multiple
+height: 120px
 ---
 ::
 

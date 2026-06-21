@@ -19,25 +19,23 @@ links:
 
 `VyProgress` displays determinate or indeterminate completion as a themed bar. It supports horizontal and vertical layouts, semantic colors, six sizes, percentage status text, reversed direction, animated indeterminate states, and an array-based stepped mode.
 
-::component-playground{name="progress"}
+::component-code
+---
+name: progress-example
+height: 180px
+---
 ::
 
 ## Usage
 
 Bind a numeric value with `v-model` and set the maximum value.
 
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-import { VyProgress } from '@vyui/kit'
-
-const uploaded = ref(68)
-</script>
-
-<template>
-  <VyProgress v-model="uploaded" :max="100" />
-</template>
-```
+::component-code
+---
+name: progress-example
+height: 180px
+---
+::
 
 Progress is a display component rather than an input. The binding is useful when application state changes the value; users do not directly edit it.
 
@@ -45,16 +43,12 @@ Progress is a display component rather than an input. The binding is useful when
 
 Set `status` to show the rounded percentage above the bar.
 
-```vue
-<template>
-  <VyProgress
-    :model-value="42"
-    :max="60"
-    status
-    color="success"
-  />
-</template>
-```
+::component-code
+---
+name: progress-status
+height: 180px
+---
+::
 
 Use the `status` slot to replace the default percentage text.
 
@@ -72,11 +66,12 @@ Use the `status` slot to replace the default percentage text.
 
 Omit `modelValue`, or set it to `null`, when the amount of work is unknown.
 
-```vue
-<template>
-  <VyProgress color="info" animation="swing" />
-</template>
-```
+::component-code
+---
+name: progress-indeterminate
+height: 180px
+---
+::
 
 The status and step labels are hidden while progress is indeterminate.
 
@@ -84,28 +79,12 @@ The status and step labels are hidden while progress is indeterminate.
 
 Pass an array to `max` to use its entries as step labels. The numeric value becomes the active zero-based step index, and the effective maximum is `max.length - 1`.
 
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-import { VyProgress } from '@vyui/kit'
-
-const step = ref(1)
-const steps = ['Details', 'Review', 'Payment', 'Complete']
-</script>
-
-<template>
-  <VyProgress
-    v-model="step"
-    :max="steps"
-    color="primary"
-    status
-  >
-    <template #step-1="{ step: label }">
-      <text>Current: {{ label }}</text>
-    </template>
-  </VyProgress>
-</template>
-```
+::component-code
+---
+name: progress-steps
+height: 240px
+---
+::
 
 Each entry has a named `step-N` slot. By default, only the active step label is visible.
 
@@ -113,20 +92,12 @@ Each entry has a named `step-N` slot. By default, only the active step label is 
 
 A vertical progress bar needs an explicit height. `inverted` reverses the direction in either orientation.
 
-```vue
-<template>
-  <view class="h-48">
-    <VyProgress
-      :model-value="65"
-      orientation="vertical"
-      inverted
-      size="lg"
-      color="warning"
-      status
-    />
-  </view>
-</template>
-```
+::component-code
+---
+name: progress-vertical
+height: 320px
+---
+::
 
 ## Features and behavior
 

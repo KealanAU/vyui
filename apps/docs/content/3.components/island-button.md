@@ -15,9 +15,10 @@ links:
 
 `VyIslandButton` is a pill-shaped action designed for `VyIsland`. Inside an island it can declaratively select a value, switch the row mode, toggle an expanded panel, or reset the mode. It also works as a standalone button.
 
-::component-playground
+::component-code
 ---
-name: island-button
+name: island-button-example
+height: 140px
 ---
 ::
 
