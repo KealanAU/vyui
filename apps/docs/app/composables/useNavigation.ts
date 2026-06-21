@@ -62,10 +62,11 @@ const COMPONENT_CATEGORY: Record<string, string> = {
   island: 'Dynamic Island',
   'island-button': 'Dynamic Island',
   'island-group': 'Dynamic Island',
-  // Utilities
-  'keyboard-aware': 'Utilities',
   button: 'Buttons',
 }
+
+// Slugs kept out of the Components sidebar (documented but not surfaced yet).
+const HIDDEN_COMPONENT_SLUGS = new Set(['keyboard-aware', 'index', 'components'])
 
 const CATEGORY_ORDER = [
   'Buttons',
@@ -76,44 +77,66 @@ const CATEGORY_ORDER = [
   'Layout',
   'Gestures & Lists',
   'Dynamic Island',
-  'Utilities',
   'Other',
 ]
 
 // The second header bar is a curated set of top categories (not the raw
-// top-level content sections). Each owns one or more content sections, keyed by
-// their top-level slug. Categories that resolve to no content (e.g. Composables
-// until it ships) are hidden automatically.
+// top-level content sections). Each owns one or more content paths — a path can
+// be a whole section (`/getting-started`) or a single nested page
+// (`/packages/core`), which lets the two-layer packages split across tabs:
+// @vyui/core gets its own tab, @vyui/kit rides along with Getting Started.
+// Categories that resolve to no content (e.g. Composables until it ships) are
+// dropped automatically.
 interface CategoryConfig {
   id: string
   title: string
   icon: string
-  sections: string[]
+  paths: string[]
 }
 
 const CATEGORY_CONFIG: CategoryConfig[] = [
-  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', sections: ['getting-started', 'packages'] },
-  { id: 'components', title: 'Components', icon: 'i-lucide-boxes', sections: ['components'] },
-  { id: 'composables', title: 'Composables', icon: 'i-lucide-square-function', sections: ['composables'] },
-  { id: 'styling', title: 'Styling', icon: 'i-lucide-palette', sections: ['theming', 'accessibility', 'i18n', 'roadmap'] },
+  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started', '/packages/kit'] },
+  { id: 'core', title: 'Core', icon: 'i-lucide-box', paths: ['/packages/core'] },
+  { id: 'components', title: 'Components', icon: 'i-lucide-boxes', paths: ['/components'] },
+  { id: 'composables', title: 'Composables', icon: 'i-lucide-square-function', paths: ['/composables'] },
+  { id: 'styling', title: 'Styling', icon: 'i-lucide-palette', paths: ['/theming', '/accessibility', '/i18n', '/roadmap'] },
 ]
 
 const slugOf = (path?: string) => (path ?? '').replace(/\/$/, '').split('/').pop() ?? ''
 
 const stripTrailing = (path?: string) => (path ?? '').replace(/\/$/, '')
 
-// First navigable path within a list of sections (drills into the first child).
+// Find a nav node by exact path, searching the tree (so nested pages like
+// `/packages/core` resolve even though `packages` is the top-level section).
+function findNode(items: ContentNavigationItem[], targetPath: string): ContentNavigationItem | undefined {
+  const target = stripTrailing(targetPath)
+  for (const item of items) {
+    if (stripTrailing(item.path) === target)
+      return item
+    if (item.children?.length) {
+      const found = findNode(item.children, target)
+      if (found)
+        return found
+    }
+  }
+  return undefined
+}
+
+// Tab destination: the category root's own page, falling back to its first child.
 function firstLeaf(items: ContentNavigationItem[]): string {
   const first = items[0]
   if (!first)
     return '/'
-  return first.children?.[0]?.path ?? first.path ?? '/'
+  return first.path ?? first.children?.[0]?.path ?? '/'
 }
 
 function groupByCategory(children: ContentNavigationItem[] = []): ContentNavigationItem[] {
   const groups = new Map<string, ContentNavigationItem[]>()
   for (const child of children) {
-    const cat = COMPONENT_CATEGORY[slugOf(child.path)] ?? 'Other'
+    const slug = slugOf(child.path)
+    if (HIDDEN_COMPONENT_SLUGS.has(slug))
+      continue
+    const cat = COMPONENT_CATEGORY[slug] ?? 'Other'
     if (!groups.has(cat))
       groups.set(cat, [])
     groups.get(cat)!.push(child)
@@ -125,22 +148,24 @@ function groupByCategory(children: ContentNavigationItem[] = []): ContentNavigat
 
 /**
  * Mirrors Nuxt UI's docs `useNavigation`, but the header is driven by a curated
- * set of categories (Getting Started, Components, Composables, Styling) rather
- * than the raw content sections. The sidebar is scoped to the active category;
- * the Components category is grouped into labeled sub-sections.
+ * set of categories (Getting Started, Core, Components, Styling) rather than the
+ * raw content sections. The sidebar is scoped to the active category; the
+ * Components category is grouped into labeled sub-sections.
  */
 export function useNavigation(navigation: Ref<ContentNavigationItem[] | null | undefined>) {
   const route = useRoute()
 
   const sections = computed(() => stripNavIcons(navigation.value ?? []))
 
-  // Curated categories resolved against the real content sections. Empty
-  // categories (no matching content) are dropped.
+  // Curated categories resolved against the real content tree. Empty categories
+  // (no matching content) are dropped.
   const categories = computed(() =>
     CATEGORY_CONFIG
       .map(cfg => ({
         ...cfg,
-        items: sections.value.filter(s => cfg.sections.includes(slugOf(s.path))),
+        items: cfg.paths
+          .map(p => findNode(sections.value, p))
+          .filter((n): n is ContentNavigationItem => !!n),
       }))
       .filter(cat => cat.items.length > 0),
   )
