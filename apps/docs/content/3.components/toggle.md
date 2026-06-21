@@ -15,9 +15,10 @@ links:
 
 `VyToggle` is a two-state button for options such as bold text, favorites, or pinned tools. It wraps the core toggle primitive with semantic colors, four visual variants, responsive sizing, and optional Iconify content.
 
-::component-playground
+::component-code
 ---
-name: toggle
+name: toggle-example
+height: 120px
 ---
 ::
 
@@ -25,46 +26,31 @@ name: toggle
 
 Bind the pressed state with `v-model`. Add an `accessibility-label` when the toggle contains only an icon.
 
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-import { VyToggle } from '@vyui/kit'
-
-const bold = ref(false)
-</script>
-
-<template>
-  <VyToggle
-    v-model="bold"
-    icon="i-lucide-bold"
-    accessibility-label="Bold"
-  />
-</template>
-```
+::component-code
+---
+name: toggle-example
+---
+::
 
 ### Text content
 
 The default slot replaces the built-in icon, so it can contain text or a custom composition.
 
-```vue
-<script setup lang="ts">
-import { ref } from 'vue'
-import { VyToggle } from '@vyui/kit'
+::component-code
+---
+name: toggle-text
+---
+::
 
-const pinned = ref(true)
-</script>
+### Disabled
 
-<template>
-  <VyToggle
-    v-model="pinned"
-    color="warning"
-    variant="soft"
-    size="lg"
-  >
-    Pinned
-  </VyToggle>
-</template>
-```
+Set `disabled` to prevent taps and dim the control, in both the unpressed and pressed states.
+
+::component-code
+---
+name: toggle-disabled
+---
+::
 
 ## Features and behavior
 
@@ -133,6 +119,15 @@ Provide `accessibility-label` for icon-only toggles. Text in the default slot gi
 - The component renders a Lynx `view` through the core primitive and responds to the Lynx `tap` event.
 - Lynx SVG does not inherit `currentColor`, so the theme places foreground classes directly on the built-in icon slot.
 - The default theme is light-mode-only.
+
+## Built on `@vyui/core`
+
+`VyToggle` composes the headless `@vyui/core` toggle primitive. Use it directly when you need full control over markup and styling.
+
+### `Toggle` props
+
+::component-props{name="Toggle"}
+::
 
 ## Related components
 

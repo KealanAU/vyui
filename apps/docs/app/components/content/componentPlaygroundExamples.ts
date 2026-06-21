@@ -208,21 +208,6 @@ import { VyBadge } from '@vyui/kit'
   </VyBadge>
 </template>`,
   },
-  toggle: {
-    label: 'Toggle',
-    package: '@vyui/kit',
-    description: 'Turn a toolbar option on or off.',
-    code: `<script setup lang="ts">
-import { ref } from 'vue'
-import { VyToggle } from '@vyui/kit'
-
-const bold = ref(false)
-<\/script>
-
-<template>
-  <VyToggle v-model="bold" icon="lucide:bold" aria-label="Bold" />
-</template>`,
-  },
   separator: {
     label: 'Separator',
     package: '@vyui/kit',
