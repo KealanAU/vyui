@@ -18,7 +18,10 @@ export default (colors: Color[]) => ({
     // Typed-text color sits on `base` (the <textarea>), not `root`: CSS
     // inheritance is OFF in the Lynx build (`enableCSSInheritance: false`), so a
     // `text-*` on the root <view> never reaches the textarea element.
-    base: 'flex-1 min-w-0 min-h-0 max-w-full bg-transparent text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75 align-top',
+    // `border-0` resets the native <textarea>'s user-agent border (visible as a
+    // black inset border on the web Lynx build); the themed border lives on
+    // `root`.
+    base: 'flex-1 min-w-0 min-h-0 max-w-full bg-transparent border-0 text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75 align-top',
     leading: 'flex flex-row items-center shrink-0',
     leadingIcon: 'shrink-0 text-neutral-400',
     leadingAvatar: 'shrink-0',
