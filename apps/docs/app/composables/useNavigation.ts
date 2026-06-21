@@ -85,13 +85,14 @@ const CORE_SLUGS = new Set([
 ])
 
 const KIT_SLUGS = new Set([
-  'accordion', 'action-sheet', 'alert', 'avatar', 'avatar-group', 'badge',
-  'button', 'card', 'checkbox', 'chip', 'combobox', 'drawer', 'dropdown-menu',
-  'feed-list', 'feedlist', 'form', 'form-field', 'input', 'island',
-  'island-button', 'island-group', 'label', 'modal', 'number-field', 'pin-input',
-  'placeholder', 'popover', 'progress', 'radio-group', 'rating', 'select',
-  'separator', 'skeleton', 'slider', 'sortable', 'stepper', 'swipe-action',
-  'swiper', 'switch', 'tabs', 'textarea', 'toast', 'toggle', 'toggle-group',
+  'accordion', 'action-sheet', 'alert', 'aspect-ratio', 'avatar', 'avatar-group',
+  'badge', 'button', 'card', 'checkbox', 'chip', 'combobox', 'drawer',
+  'dropdown-menu', 'feed-list', 'feedlist', 'form', 'form-field', 'icon', 'input',
+  'island', 'island-button', 'island-group', 'label', 'modal', 'number-field',
+  'pin-input', 'placeholder', 'popover', 'progress', 'radio-group', 'rating',
+  'select', 'separator', 'skeleton', 'slider', 'sortable', 'stepper',
+  'swipe-action', 'swiper', 'switch', 'tabs', 'textarea', 'toast', 'toggle',
+  'toggle-group',
 ])
 
 export type ComponentLayer = 'all' | 'core' | 'kit'
