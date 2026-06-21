@@ -47,8 +47,12 @@ const { copy, copied } = useClipboard({ source })
       />
     </div>
     <ClientOnly v-if="tab === 'preview'">
-      <div class="bg-muted/30 p-4">
-        <LynxPreview :name="name" :height="height" />
+      <div class="preview-canvas">
+        <span class="preview-glow preview-glow-one" />
+        <span class="preview-glow preview-glow-two" />
+        <div class="relative z-[1] w-full">
+          <LynxPreview :name="name" :height="height" />
+        </div>
       </div>
       <template #fallback>
         <div class="flex items-center justify-center text-sm text-muted" :style="{ height }">
@@ -69,6 +73,32 @@ const { copy, copied } = useClipboard({ source })
 </template>
 
 <style scoped>
+/* Grid + glow surface (carried over from the previous playground) so the live
+   preview is visually distinct from the page and the component stands out. */
+.preview-canvas {
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem 1.25rem;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(var(--ui-border-muted) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ui-border-muted) 1px, transparent 1px),
+    color-mix(in srgb, var(--ui-bg-muted) 55%, var(--ui-bg));
+  background-size: 26px 26px;
+}
+.preview-glow {
+  position: absolute;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 999px;
+  filter: blur(55px);
+  opacity: .2;
+  pointer-events: none;
+}
+.preview-glow-one { top: -6rem; left: 8%; background: #42b883; }
+.preview-glow-two { right: 5%; bottom: -7rem; background: #818cf8; }
+
 .component-code-shiki :deep(pre.shiki) {
   margin: 0;
   padding: 1rem;
