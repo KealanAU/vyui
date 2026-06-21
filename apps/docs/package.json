@@ -9,7 +9,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "playground:build": "pnpm --filter @vyui/docs-playground build && tsx ../../tools/sync-playground.ts",
+    "playground:build": "tsx ../../tools/gen-playground-registry.ts && pnpm --filter @vyui/docs-playground build && tsx ../../tools/sync-playground.ts",
     "gen:api": "tsx ../../tools/gen-component-api.ts"
   },
   "dependencies": {
