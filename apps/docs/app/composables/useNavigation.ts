@@ -68,6 +68,38 @@ const COMPONENT_CATEGORY: Record<string, string> = {
 // Slugs kept out of the Components sidebar (documented but not surfaced yet).
 const HIDDEN_COMPONENT_SLUGS = new Set(['keyboard-aware', 'index', 'components'])
 
+// Which package layer(s) export each component, derived from packages/*/src/
+// components. Drives the Core/Kit sub-filter under the Components tab. Keep in
+// sync with the package sources (kebab-cased component names).
+const CORE_SLUGS = new Set([
+  'accordion', 'alert-dialog', 'aspect-ratio', 'avatar', 'button', 'checkbox',
+  'collapsible', 'collection', 'combobox', 'config-provider', 'dialog',
+  'draggable', 'dropdown-menu', 'feed-list', 'feedlist', 'form', 'icon', 'input',
+  'island-container', 'label', 'lazy-component', 'list', 'navigation',
+  'number-field', 'overlay-root', 'pagination', 'pin-input', 'popover',
+  'presence', 'primitive', 'progress', 'radio-group', 'rating', 'scroll-view',
+  'select', 'separator', 'sheet', 'slider', 'sortable', 'stepper', 'swipe-action',
+  'swiper', 'switch', 'tabs', 'toast', 'toggle', 'toggle-group',
+])
+
+const KIT_SLUGS = new Set([
+  'accordion', 'action-sheet', 'alert', 'avatar', 'avatar-group', 'badge',
+  'button', 'card', 'checkbox', 'chip', 'combobox', 'drawer', 'dropdown-menu',
+  'feed-list', 'feedlist', 'form', 'form-field', 'input', 'island',
+  'island-button', 'island-group', 'label', 'modal', 'number-field', 'pin-input',
+  'placeholder', 'popover', 'progress', 'radio-group', 'rating', 'select',
+  'separator', 'skeleton', 'slider', 'sortable', 'stepper', 'swipe-action',
+  'swiper', 'switch', 'tabs', 'textarea', 'toast', 'toggle', 'toggle-group',
+])
+
+export type ComponentLayer = 'all' | 'core' | 'kit'
+
+// Shared selection for the Components Core/Kit sub-filter (header pills drive it,
+// the sidebar reads it).
+export function useComponentLayer() {
+  return useState<ComponentLayer>('vyui-component-layer', () => 'all')
+}
+
 const CATEGORY_ORDER = [
   'Buttons',
   'Form',
@@ -82,11 +114,11 @@ const CATEGORY_ORDER = [
 
 // The second header bar is a curated set of top categories (not the raw
 // top-level content sections). Each owns one or more content paths — a path can
-// be a whole section (`/getting-started`) or a single nested page
-// (`/packages/core`), which lets the two-layer packages split across tabs:
-// @vyui/core gets its own tab, @vyui/kit rides along with Getting Started.
-// Categories that resolve to no content (e.g. Composables until it ships) are
-// dropped automatically.
+// be a whole section (`/getting-started`, `/packages`) or a single nested page.
+// The two package layers (@vyui/core, @vyui/kit) live together under Getting
+// Started; the kit/core split is surfaced as a sub-filter under Components
+// instead. Categories that resolve to no content (e.g. Composables until it
+// ships) are dropped automatically.
 interface CategoryConfig {
   id: string
   title: string
@@ -95,8 +127,7 @@ interface CategoryConfig {
 }
 
 const CATEGORY_CONFIG: CategoryConfig[] = [
-  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started', '/packages/kit'] },
-  { id: 'core', title: 'Core', icon: 'i-lucide-box', paths: ['/packages/core'] },
+  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started', '/packages'] },
   { id: 'components', title: 'Components', icon: 'i-lucide-boxes', paths: ['/components'] },
   { id: 'composables', title: 'Composables', icon: 'i-lucide-square-function', paths: ['/composables'] },
   { id: 'styling', title: 'Styling', icon: 'i-lucide-palette', paths: ['/theming', '/accessibility', '/i18n', '/roadmap'] },
@@ -148,12 +179,14 @@ function groupByCategory(children: ContentNavigationItem[] = []): ContentNavigat
 
 /**
  * Mirrors Nuxt UI's docs `useNavigation`, but the header is driven by a curated
- * set of categories (Getting Started, Core, Components, Styling) rather than the
- * raw content sections. The sidebar is scoped to the active category; the
- * Components category is grouped into labeled sub-sections.
+ * set of categories (Getting Started, Components, Composables, Styling) rather
+ * than the raw content sections. The sidebar is scoped to the active category;
+ * the Components category is grouped into labeled sub-sections and can be
+ * narrowed to a single package layer via the Core/Kit sub-filter.
  */
 export function useNavigation(navigation: Ref<ContentNavigationItem[] | null | undefined>) {
   const route = useRoute()
+  const layer = useComponentLayer()
 
   const sections = computed(() => stripNavIcons(navigation.value ?? []))
 
@@ -193,17 +226,27 @@ export function useNavigation(navigation: Ref<ContentNavigationItem[] | null | u
 
   const isComponents = computed(() => activeCategory.value?.id === 'components')
 
-  // Sidebar navigation for the active category. Components is grouped by
-  // category; everything else shows its owned sections as-is (sections with
-  // children render as collapsible groups, leaf files as single links).
+  // Sidebar navigation for the active category. Components is filtered by the
+  // active package layer then grouped by category; everything else shows its
+  // owned sections as-is (sections with children render as collapsible groups,
+  // leaf files as single links).
   const navigationByCategory = computed<ContentNavigationItem[]>(() => {
     const cat = activeCategory.value
     if (!cat)
       return []
-    if (cat.id === 'components')
-      return groupByCategory(cat.items[0]?.children)
+    if (cat.id === 'components') {
+      const children = (cat.items[0]?.children ?? []).filter((child) => {
+        const slug = slugOf(child.path)
+        if (layer.value === 'core')
+          return CORE_SLUGS.has(slug)
+        if (layer.value === 'kit')
+          return KIT_SLUGS.has(slug)
+        return true
+      })
+      return groupByCategory(children)
+    }
     return cat.items
   })
 
-  return { sections, categories, categoryLinks, activeCategory, isComponents, navigationByCategory }
+  return { sections, categories, categoryLinks, activeCategory, isComponents, navigationByCategory, layer }
 }

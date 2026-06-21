@@ -5,7 +5,7 @@ import { useFilter } from '@nuxt/ui/composables'
 const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
 const route = useRoute()
 const { scoreItem } = useFilter()
-const { navigationByCategory, isComponents } = useNavigation(navigation!)
+const { navigationByCategory, isComponents, layer } = useNavigation(navigation!)
 
 // The filter input only appears inside the Components category.
 const isSearchActive = isComponents
@@ -27,7 +27,7 @@ const filteredNavigation = computed<ContentNavigationItem[]>(() => {
 })
 
 // Re-key so UContentNavigation re-renders (and re-applies highlight) on filter.
-const navigationKey = computed(() => `${route.path}-${searchTerm.value ? 'filtered' : 'unfiltered'}`)
+const navigationKey = computed(() => `${route.path}-${layer.value}-${searchTerm.value ? 'filtered' : 'unfiltered'}`)
 
 watch(() => route.path, () => {
   if (!isSearchActive.value)
