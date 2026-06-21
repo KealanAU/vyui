@@ -1,6 +1,8 @@
 import { computed, ref } from 'vue'
 import { DEFAULT_MODEL_ID, MODELS, replyFor, sampleThinking } from '../data/chat'
 import { ollamaChat, OllamaAbortError, type OllamaMessage } from './useOllama'
+import { anthropicChat, openaiChat, ProviderAbortError } from './useProviders'
+import { useSettings } from './useSettings'
 
 export type ChatRole = 'user' | 'assistant'
 
@@ -34,7 +36,17 @@ export interface Conversation {
 }
 
 const PHRASE_INTERVAL_MS = 420
-const WORD_INTERVAL_MS = 38
+
+// Streaming cadence. The reply reveals a word at a time, but each word's dwell
+// scales with its length (a target characters-per-second) so the flow reads as
+// an even, unhurried stream rather than uneven word bursts — the calm pacing the
+// hosted models have. Punctuation adds a short, human pause on top.
+const STREAM_CPS = 28 // target characters/second — lower = calmer/slower
+const MS_PER_CHAR = 1000 / STREAM_CPS
+const MIN_WORD_MS = 55 // floor so tiny words ("a", "to") don't flicker past
+const SENTENCE_PAUSE_MS = 280 // after . ! ?
+const CLAUSE_PAUSE_MS = 130 // after , ; :
+const NEWLINE_PAUSE_MS = 200 // at paragraph breaks
 
 // Module-level singleton so every section (thread, composer, top bar) reads
 // and writes the SAME conversation without prop-drilling through App.
@@ -196,27 +208,38 @@ function startThinking(idx: number, phrases: string[]) {
   }, PHRASE_INTERVAL_MS)
 }
 
-// Type the finished reply into the bubble word-by-word for the live feel.
+// Reveal the finished reply with a calm, even cadence. Each token is a word
+// WITH its trailing whitespace (so spacing survives and there are no empty
+// "whitespace ticks" that made the old word-by-word feel jerky). A token's dwell
+// is proportional to its length — keeping a steady characters-per-second feel
+// instead of uneven word bursts — with a small extra pause after sentence- and
+// clause-ending punctuation so it breathes like the hosted models do.
 function streamReply(idx: number, reply: string) {
   const t = messages.value[idx]
   if (!t || !isResponding.value) return
   t.text = ''
   t.state = 'streaming'
 
-  const words = (reply ?? '').split(/(\s+)/) // keep whitespace tokens so spacing survives
+  // word(+trailing spaces) | run of whitespace — reproduces the text exactly.
+  const tokens = (reply ?? '').match(/\S+\s*|\s+/g) ?? []
   let w = 0
   const tick = () => {
     const cur = messages.value[idx]
     if (!cur || cur.state !== 'streaming') return
-    cur.text += words[w]
+    const tok = tokens[w]
+    cur.text += tok
     w++
-    if (w < words.length) {
-      setTimeout(tick, WORD_INTERVAL_MS)
-    }
-    else {
+    if (w >= tokens.length) {
       cur.state = 'done'
       isResponding.value = false
+      return
     }
+    let delay = Math.max(MIN_WORD_MS, tok.length * MS_PER_CHAR)
+    const lastVisible = tok.trimEnd().slice(-1)
+    if ('.!?'.includes(lastVisible)) delay += SENTENCE_PAUSE_MS
+    else if (',;:'.includes(lastVisible)) delay += CLAUSE_PAUSE_MS
+    if (tok.includes('\n')) delay += NEWLINE_PAUSE_MS
+    setTimeout(tick, delay)
   }
   tick()
 }
@@ -237,6 +260,48 @@ function send(raw: string) {
   messages.value.push({ id: uid++, role: 'assistant', text: phrases[0], state: 'thinking' })
   isResponding.value = true
   startThinking(idx, phrases)
+
+  // Hosted brand model (Claude / OpenAI). Needs a key from Settings — without
+  // one we fall back to the mock engine so the demo still answers, nudging the
+  // user toward Settings. With a key, call the real provider.
+  const provider = activeModel.value.provider
+  if (provider) {
+    const { anthropicKey, openaiKey } = useSettings()
+    const apiKey = (provider === 'anthropic' ? anthropicKey.value : openaiKey.value).trim()
+    if (!apiKey) {
+      const label = provider === 'anthropic' ? 'Anthropic' : 'OpenAI'
+      const nudge = `Add your ${label} API key in Settings to chat with the real ${activeModel.value.name}. For now, here's the demo engine:\n\n${replyFor(text)}`
+      setTimeout(() => {
+        clearThinking()
+        streamReply(idx, nudge)
+      }, phrases.length * PHRASE_INTERVAL_MS)
+      return
+    }
+    abortController = new AbortController()
+    const call = provider === 'anthropic' ? anthropicChat : openaiChat
+    call({ messages: history, apiKey, model: activeModel.value.apiModel, signal: abortController.signal })
+      .then(({ content }) => {
+        clearThinking()
+        if (!isResponding.value) return // stopped mid-flight
+        const t = messages.value[idx]
+        if (!t) return
+        streamReply(idx, content || '(no response)')
+      })
+      .catch((err: unknown) => {
+        clearThinking()
+        if (err instanceof ProviderAbortError || !isResponding.value) return
+        const t = messages.value[idx]
+        if (t) {
+          t.text = err instanceof Error ? err.message : 'Something went wrong talking to the model.'
+          t.state = 'done'
+        }
+        isResponding.value = false
+      })
+      .finally(() => {
+        abortController = null
+      })
+    return
+  }
 
   const ollamaModel = activeModel.value.ollamaModel
   if (ollamaModel) {

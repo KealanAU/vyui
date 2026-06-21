@@ -29,7 +29,10 @@ defineEmits<{
       class="flex flex-row items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-full bg-parchment-sunken active:bg-ash-border"
       @tap="$emit('tap')"
     >
-      <VyMark :size="18" variant="square" />
+      <!-- Brand models (Claude / OpenAI) wear their own mark — Claude keeps its
+           baked clay colour; the house model wears the vyui mark. -->
+      <VyIcon v-if="model.icon.startsWith('i-logos-')" :name="model.icon" :size="18" />
+      <VyMark v-else :size="18" variant="square" />
       <text class="text-slate-700 text-[13px] font-medium">{{ model.name }}</text>
       <VyIcon
         :name="open ? 'i-tabler-chevron-down' : 'i-tabler-chevron-up'"

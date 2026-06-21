@@ -75,8 +75,9 @@ const appConfig = useAppConfig()
 const resolvedIncrementIcon = computed(() => props.incrementIcon || appConfig.ui.icons?.plus || 'i-lucide-plus')
 const resolvedDecrementIcon = computed(() => props.decrementIcon || appConfig.ui.icons?.minus || 'i-lucide-minus')
 
-// Lynx SVG can't inherit currentColor — bake the resolved hex into the icon.
-const iconColor = computed(() => resolveColorHex(appConfig, props.color))
+// Lynx SVG can't inherit currentColor — bake the hex. Stepper icons default to
+// neutral (dimmed); override via the `increment` / `decrement` slots' `iconColor`.
+const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
 const ui = computed(() => buildNumberField(appConfig)({
   color: props.color,
