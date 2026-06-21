@@ -20,12 +20,12 @@ const items = [
         color="neutral"
         variant="soft"
         :disabled="step === 0"
-        @click="step--"
+        @tap="step--"
       />
       <VyButton
         label="Next"
         :disabled="step === items.length - 1"
-        @click="step++"
+        @tap="step++"
       />
     </view>
   </view>

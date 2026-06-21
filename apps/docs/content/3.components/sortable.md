@@ -22,6 +22,10 @@ height: 280px
 ---
 ::
 
+::callout{icon="i-lucide-pointer" color="warning"}
+Drag-to-reorder isn't wired up in the web preview yet, so the items won't move here — view this on a device or in Lynx Explorer for the real interaction. The code below runs as-is on iOS and Android.
+::
+
 ::callout{icon="i-lucide-box"}
 Styled on top of the `@vyui/core` Sortable primitives, whose underlying gesture is the headless [`Draggable`](/components/draggable) primitive. Reach for those when you need a non-list drag interaction.
 ::

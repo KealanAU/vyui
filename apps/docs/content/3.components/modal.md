@@ -18,7 +18,7 @@ links:
 ::component-code
 ---
 name: modal-example
-height: 120px
+height: 420px
 ---
 ::
 

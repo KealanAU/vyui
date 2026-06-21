@@ -20,7 +20,7 @@ Every toast must be rendered inside the core `ToastProvider`. Use `ToastViewport
 ::component-code
 ---
 name: toast-example
-height: 160px
+height: 220px
 ---
 ::
 

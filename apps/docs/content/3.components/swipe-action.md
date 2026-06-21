@@ -22,6 +22,10 @@ height: 160px
 ---
 ::
 
+::callout{icon="i-lucide-pointer" color="warning"}
+Swipe gestures aren't wired up in the web preview yet, so the row won't slide here — view this on a device or in Lynx Explorer for the real interaction. The code below runs as-is on iOS and Android.
+::
+
 ## Usage
 
 Both `rowWidth` and `actionWidth` are required because the core gesture primitive performs its threshold and translation calculations in pixels.

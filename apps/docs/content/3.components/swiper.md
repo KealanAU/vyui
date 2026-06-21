@@ -22,6 +22,10 @@ height: 280px
 ---
 ::
 
+::callout{icon="i-lucide-pointer" color="warning"}
+Swipe gestures aren't wired up in the web preview yet, so the slides won't drag here — view this on a device or in Lynx Explorer for the real interaction. The code below runs as-is on iOS and Android.
+::
+
 ## Usage
 
 Pass an `items` array and render each slide through the `item` slot.
