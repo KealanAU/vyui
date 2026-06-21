@@ -17,8 +17,24 @@ const host = ref<HTMLElement>()
 const failed = ref(false)
 const errorMessage = ref('')
 let lynxView: LynxViewElement | undefined
+let observer: IntersectionObserver | undefined
 
-onMounted(async () => {
+// Each <lynx-view> boots its own Web Worker + WASM runtime, so mounting every
+// preview on page load is expensive (a page can embed 6+). Defer the boot until
+// the preview scrolls near the viewport; `rootMargin` warms it just before it's
+// visible so it's ready by the time the reader reaches it.
+onMounted(() => {
+  if (!host.value) return
+  observer = new IntersectionObserver((entries) => {
+    if (!entries.some(entry => entry.isIntersecting)) return
+    observer?.disconnect()
+    observer = undefined
+    void mountPreview()
+  }, { rootMargin: '200px' })
+  observer.observe(host.value)
+})
+
+async function mountPreview() {
   try {
     await loadLynxWebRuntime()
 
@@ -47,9 +63,11 @@ onMounted(async () => {
     failed.value = true
     errorMessage.value = error instanceof Error ? error.message : 'The Lynx web runtime could not start.'
   }
-})
+}
 
 onBeforeUnmount(() => {
+  observer?.disconnect()
+  observer = undefined
   lynxView?.remove()
   lynxView = undefined
 })

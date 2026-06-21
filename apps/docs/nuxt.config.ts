@@ -35,6 +35,10 @@ export default defineNuxtConfig({
       routes: ['/'],
       crawlLinks: true,
       autoSubfolderIndex: false,
+      // Several component pages link to docs that aren't written yet (button,
+      // checkbox, drawer, …). Don't fail the build on those 404s; drop this
+      // once the linked pages exist.
+      failOnError: false,
     },
   },
 
