@@ -70,32 +70,14 @@ const COMPONENT_CATEGORY: Record<string, string> = {
 // Slugs kept out of the Components sidebar (documented but not surfaced yet).
 const HIDDEN_COMPONENT_SLUGS = new Set(['keyboard-aware', 'index', 'components'])
 
-// Which package layer(s) export each component, derived from packages/*/src/
-// components. Drives the Core/Kit sub-filter under the Components tab. Keep in
-// sync with the package sources (kebab-cased component names).
-const CORE_SLUGS = new Set([
-  'accordion', 'alert-dialog', 'aspect-ratio', 'avatar', 'button', 'checkbox',
-  'collapsible', 'collection', 'combobox', 'config-provider', 'dialog',
-  'draggable', 'dropdown-menu', 'feed-list', 'feedlist', 'form', 'icon', 'input',
-  'island-container', 'label', 'lazy-component', 'list', 'navigation',
-  'number-field', 'overlay-root', 'pagination', 'pin-input', 'popover',
-  'presence', 'primitive', 'progress', 'radio-group', 'rating', 'scroll-view',
-  'select', 'separator', 'sheet', 'slider', 'sortable', 'stepper', 'swipe-action',
-  'swiper', 'switch', 'tabs', 'toast', 'toggle', 'toggle-group',
-])
-
-const KIT_SLUGS = new Set([
-  'accordion', 'action-sheet', 'alert', 'aspect-ratio', 'avatar', 'avatar-group',
-  'badge', 'button', 'card', 'checkbox', 'chip', 'combobox', 'drawer',
-  'dropdown-menu', 'feed-list', 'feedlist', 'form', 'form-field', 'icon', 'input',
-  'island', 'island-button', 'island-group', 'label', 'modal', 'number-field',
-  'pin-input', 'placeholder', 'popover', 'progress', 'radio-group', 'rating',
-  'select', 'separator', 'skeleton', 'slider', 'sortable', 'stepper',
-  'swipe-action', 'swiper', 'switch', 'tabs', 'textarea', 'toast', 'toggle',
-  'toggle-group',
-])
-
 export type ComponentLayer = 'all' | 'core' | 'kit'
+
+// Each component page declares which layer it documents via its `package`
+// frontmatter (`core` = a headless @vyui/core primitive, `kit` = a styled Vy*
+// component). The Core/Kit sub-filter reads that field, so every page lands in
+// exactly one bucket — no overlap. `package` is surfaced on nav nodes by the
+// `queryCollectionNavigation('docs', ['package'])` call in app.vue.
+type LayeredNavItem = ContentNavigationItem & { package?: 'core' | 'kit' }
 
 // Shared selection for the Components Core/Kit sub-filter (header pills drive it,
 // the sidebar reads it).
@@ -239,12 +221,9 @@ export function useNavigation(navigation: Ref<ContentNavigationItem[] | null | u
       return []
     if (cat.id === 'components') {
       const children = (cat.items[0]?.children ?? []).filter((child) => {
-        const slug = slugOf(child.path)
-        if (layer.value === 'core')
-          return CORE_SLUGS.has(slug)
-        if (layer.value === 'kit')
-          return KIT_SLUGS.has(slug)
-        return true
+        if (layer.value === 'all')
+          return true
+        return (child as LayeredNavItem).package === layer.value
       })
       return groupByCategory(children)
     }

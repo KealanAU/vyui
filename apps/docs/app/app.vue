@@ -3,7 +3,9 @@ const { seo } = useAppConfig()
 const { public: { siteUrl } } = useRuntimeConfig()
 const url = useRequestURL()
 
-const { data: navigation } = await useAsyncData('navigation', () => queryCollectionNavigation('docs'))
+// `package` (kit | core) drives the Components Core/Kit sub-filter; it must be
+// requested explicitly to appear on navigation nodes.
+const { data: navigation } = await useAsyncData('navigation', () => queryCollectionNavigation('docs', ['package']))
 
 useHead({
   htmlAttrs: { lang: 'en' },
