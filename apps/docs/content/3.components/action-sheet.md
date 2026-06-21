@@ -18,6 +18,10 @@ links:
 ::component-playground{name="action-sheet"}
 ::
 
+::callout{icon="i-lucide-box"}
+Built on the headless [`Sheet`](/components/sheet) primitive from `@vyui/core`. Drop down to it when you need full control over the snap behavior and markup.
+::
+
 ## Usage
 
 ```vue

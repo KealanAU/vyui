@@ -18,6 +18,10 @@ links:
 ::component-playground{name="sortable"}
 ::
 
+::callout{icon="i-lucide-box"}
+Styled on top of the `@vyui/core` Sortable primitives, whose underlying gesture is the headless [`Draggable`](/components/draggable) primitive. Reach for those when you need a non-list drag interaction.
+::
+
 ## Usage
 
 `VySortable` is a controlled component in normal use. Bind an array with `v-model` and render each row through the `item` slot.

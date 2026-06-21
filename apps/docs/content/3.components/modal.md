@@ -18,6 +18,10 @@ links:
 ::component-playground{name="modal"}
 ::
 
+::callout{icon="i-lucide-box"}
+Built on the headless [`Dialog`](/components/dialog) primitive from `@vyui/core`. Drop down to it when you need full control over the markup and styling.
+::
+
 ## Usage
 
 ```vue

@@ -12,3 +12,5 @@ Vy UI is pre-alpha. The previews are browser renders of the documented interacti
 ::
 
 Pick a component from the sidebar to get started. New to the two-layer architecture? See the [Introduction](/getting-started).
+
+Use the **Core / Kit** filter above the sidebar to switch layers. Every styled `Vy*` component is built on a `@vyui/core` primitive — each page links down to the primitive it wraps. The **Core** filter lists the standalone primitives that have no styled equivalent (Dialog, Sheet, Collapsible, and friends).
