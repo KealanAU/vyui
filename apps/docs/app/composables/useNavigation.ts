@@ -30,6 +30,7 @@ const COMPONENT_CATEGORY: Record<string, string> = {
   // Overlay
   modal: 'Overlay',
   dialog: 'Overlay',
+  'alert-dialog': 'Overlay',
   drawer: 'Overlay',
   sheet: 'Overlay',
   'action-sheet': 'Overlay',
@@ -47,6 +48,7 @@ const COMPONENT_CATEGORY: Record<string, string> = {
   icon: 'Data Display',
   // Layout
   'aspect-ratio': 'Layout',
+  'scroll-view': 'Layout',
   separator: 'Layout',
   card: 'Layout',
   placeholder: 'Layout',

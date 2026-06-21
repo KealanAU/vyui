@@ -11,7 +11,7 @@
  *
  * Run via `pnpm --filter @vyui/docs playground:build`, which builds first.
  */
-import { copyFileSync, cpSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { copyFileSync, cpSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -36,6 +36,7 @@ const docsRequire = createRequire(resolve(root, 'apps/docs/package.json'))
 const runtimeEntry = docsRequire.resolve('@lynx-js/web-core/client.prod.js')
 const runtimeSrc = resolve(dirname(runtimeEntry), '../..')
 const runtimeDir = resolve(root, 'apps/docs/public/lynx-runtime')
+rmSync(runtimeDir, { recursive: true, force: true })
 cpSync(runtimeSrc, runtimeDir, { recursive: true, force: true })
 
 // 3. Example sources -> generated manifest
