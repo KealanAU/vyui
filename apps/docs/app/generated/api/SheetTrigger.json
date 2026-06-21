@@ -1,0 +1,22 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | undefined",
+      "required": false,
+      "default": "\"view\""
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "Element this container renders as."
+    },
+    {
+      "name": "defaultMode",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"default\"",
+      "description": "Initial mode when uncontrolled."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Initial expanded state when uncontrolled."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | number | null | undefined",
+      "required": false,
+      "default": "null",
+      "description": "Initial value when uncontrolled."
+    },
+    {
+      "name": "expandStyle",
+      "type": "\"attached\" | \"floating\" | undefined",
+      "required": false,
+      "description": "How the expanded panel relates visually to the row:\n - `floating` — panel and row are independent surfaces with a gap\n   between them (default; reads as a menu popping in front of the dock).\n - `attached` — when open, panel + row merge into one continuous\n   rounded-rectangle surface (reads as the dock growing upward)."
+    },
+    {
+      "name": "layer",
+      "type": "\"base\" | \"overlay\" | \"inline\" | undefined",
+      "required": false,
+      "default": "\"overlay\"",
+      "description": "How the island participates in layout / stacking — the primary axis.\n - `overlay` — floats over page content (z-50).\n - `base` — floats at the viewport edge but on a low layer, so\n   higher-tier surfaces (drawers, modals) render over it.\n - `inline` — sits in normal flow; a parent layout (or `<VyIslandGroup>`)\n   owns placement. `position` is ignored."
+    },
+    {
+      "name": "mode",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Active row mode — bind with `v-model:mode`. Free-form string. `'default'`\nrenders the default slot; any other value renders the matching\n`<template #[mode]>` slot. Caller invents the names — common patterns:\n`'fullisland'` (takeover), `'compose'`, `'filter'`, `'reply'`, …"
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Controlled expanded state — bind with `v-model:open`."
+    },
+    {
+      "name": "position",
+      "type": "\"bottom\" | \"top\" | undefined",
+      "required": false,
+      "description": "Which viewport edge to float against — only relevant when the island is\nfloating (`layer !== 'inline'`). Works on Lynx via an inline `style`, so a\nlone `<VyIsland>` hovers with no wrapper. Also sets the panel growth\ndirection (panel grows away from the edge)."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false,
+      "description": "Sizing variant — inherited by children via context."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"row\" | \"panel\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "value",
+      "type": "string | number | null | undefined",
+      "required": false,
+      "description": "Selected tab value — bind with `v-model:value`. Children with a `value`\nprop auto-highlight when this matches them."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    },
+    {
+      "name": "update:mode",
+      "type": "[value: string]"
+    },
+    {
+      "name": "update:value",
+      "type": "[value: string | number | null]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "IslandSlotProps",
+      "description": "Default row content — rendered when `mode === 'default'`."
+    },
+    {
+      "name": "expanded",
+      "type": "IslandSlotProps",
+      "description": "Expandable panel content — rendered when `open === true`."
+    }
+  ]
+}

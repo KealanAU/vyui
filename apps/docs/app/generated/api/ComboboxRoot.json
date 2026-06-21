@@ -1,0 +1,113 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "The open state of the combobox when it is initially rendered."
+    },
+    {
+      "name": "defaultValue",
+      "type": "T | T[] | undefined",
+      "required": false,
+      "description": "The value of the combobox when initially rendered."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, prevents the user from interacting with the Combobox."
+    },
+    {
+      "name": "ignoreFilter",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, disables the default filtering."
+    },
+    {
+      "name": "modelValue",
+      "type": "T | T[] | undefined",
+      "required": false,
+      "default": "undefined",
+      "description": "The controlled value of the Combobox. Can be bound with `v-model`."
+    },
+    {
+      "name": "multiple",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Whether multiple options can be selected."
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "The name of the combobox for form submission."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "undefined",
+      "description": "The controlled open state of the Combobox. Can be bound with `v-model:open`."
+    },
+    {
+      "name": "required",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, indicates that the user must select a value."
+    },
+    {
+      "name": "resetModelValueOnClear",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, the `modelValue` resets to `null` (or `[]` if `multiple`) on clear."
+    },
+    {
+      "name": "resetSearchTermOnBlur",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Whether to reset the searchTerm when the Combobox is closed."
+    },
+    {
+      "name": "resetSearchTermOnSelect",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Whether to reset the searchTerm when the Combobox value is selected."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: T | T[]]"
+    },
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ open: boolean; modelValue: T | T[] | undefined; }"
+    }
+  ]
+}

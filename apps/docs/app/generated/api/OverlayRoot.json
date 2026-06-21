@@ -1,0 +1,12 @@
+{
+  "props": [
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"overlay-root\""
+    }
+  ],
+  "events": [],
+  "slots": []
+}

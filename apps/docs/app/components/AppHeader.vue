@@ -7,6 +7,10 @@ const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
 const { header } = useAppConfig()
 const { desktopLinks, mobileLinks } = useHeader()
 
+// Grouped section nav for the mobile menu body. Top-level section tabs live in
+// the separate <AppDocsNav> bar below the header.
+const { navigationByCategory } = useNavigation(navigation!)
+
 const linkClass = 'hover:bg-transparent! active:bg-transparent! focus-visible:bg-transparent! hover:text-highlighted'
 
 const { y } = useWindowScroll()
@@ -78,7 +82,7 @@ const headerStyle = computed(() => {
 
       <UContentNavigation
         highlight
-        :navigation="navigation"
+        :navigation="navigationByCategory"
       />
     </template>
   </UHeader>

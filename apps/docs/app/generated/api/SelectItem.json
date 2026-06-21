@@ -1,0 +1,37 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, prevents the user from selecting this item."
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "required": true,
+      "description": "The value given when this item is selected. Must not be an empty string."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

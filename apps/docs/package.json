@@ -8,11 +8,15 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "playground:build": "pnpm --filter @vyui/docs-playground build && tsx ../../tools/sync-playground.ts",
+    "gen:api": "tsx ../../tools/gen-component-api.ts"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.40",
     "@iconify-json/simple-icons": "^1.2.30",
+    "@lynx-js/web-core": "0.20.2",
+    "@lynx-js/web-elements": "0.12.0",
     "@nuxt/content": "^3.14.0",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.0.0",

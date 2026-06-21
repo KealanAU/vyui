@@ -1,0 +1,17 @@
+{
+  "props": [
+    {
+      "name": "src",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Image source URL. Renders a Lynx `<image>`."
+    }
+  ],
+  "events": [
+    {
+      "name": "loadingStatusChange",
+      "type": "[status: ImageLoadingStatus]"
+    }
+  ],
+  "slots": []
+}

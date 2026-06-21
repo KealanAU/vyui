@@ -1,0 +1,74 @@
+{
+  "props": [
+    {
+      "name": "autoScrollEdge",
+      "type": "number | undefined",
+      "required": false,
+      "default": "48",
+      "description": "Edge band in px from the top/bottom of the root within which a drag\ntriggers autoscroll. Set to 0 to disable. Requires the root to be a\nscroll container (e.g. `scroll-view` / overflow scroll) for any effect."
+    },
+    {
+      "name": "autoScrollSpeed",
+      "type": "number | undefined",
+      "required": false,
+      "default": "12",
+      "description": "Max autoscroll speed in px per touchmove frame at the very edge."
+    },
+    {
+      "name": "defaultValue",
+      "type": "T[] | undefined",
+      "required": false,
+      "description": "Initial ordering when uncontrolled."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disable all dragging."
+    },
+    {
+      "name": "itemHeight",
+      "type": "number",
+      "required": true,
+      "description": "Fixed item height in px. Required — swap math relies on a uniform row size."
+    },
+    {
+      "name": "longPressMs",
+      "type": "number | undefined",
+      "required": false,
+      "default": "250",
+      "description": "Long-press activation delay in ms. Set to 0 to drag immediately."
+    },
+    {
+      "name": "modelValue",
+      "type": "T[] | undefined",
+      "required": false,
+      "description": "Controlled item ordering. Bind with `v-model`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: T[]]"
+    },
+    {
+      "name": "dragStart",
+      "type": "[index: number]"
+    },
+    {
+      "name": "dragEnd",
+      "type": "[]"
+    },
+    {
+      "name": "reorder",
+      "type": "[payload: { from: number; to: number; }]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ items: T[]; }"
+    }
+  ]
+}

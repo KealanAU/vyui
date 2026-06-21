@@ -1,0 +1,31 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, the button is disabled regardless of form state. When\n`false` (default), the button is disabled only while the form is\nsubmitting OR there is at least one validation error."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ submitting: boolean; disabled: boolean; }"
+    }
+  ]
+}

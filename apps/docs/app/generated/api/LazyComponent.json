@@ -1,0 +1,69 @@
+{
+  "props": [
+    {
+      "name": "bottom",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"10px\"",
+      "description": "Bottom margin past the viewport that still counts as visible."
+    },
+    {
+      "name": "estimatedStyle",
+      "type": "CSSProperties",
+      "required": true,
+      "description": "Inline styles applied to the placeholder before the component mounts.\nMust include `width` and `height` so layout doesn't jump on mount."
+    },
+    {
+      "name": "left",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"10px\"",
+      "description": "Left margin past the viewport that still counts as visible."
+    },
+    {
+      "name": "pid",
+      "type": "string",
+      "required": true,
+      "description": "Per-instance identifier within the scene. Combined with `scene` to pick\nthe right element out of the exposure event stream."
+    },
+    {
+      "name": "right",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"10px\"",
+      "description": "Right margin past the viewport that still counts as visible."
+    },
+    {
+      "name": "scene",
+      "type": "string",
+      "required": true,
+      "description": "Logical scene name. Lynx fires `exposure` / `disexposure` events when an\nelement with `exposure-scene` enters / leaves the viewport. Components\nsharing a scene can be referenced together."
+    },
+    {
+      "name": "top",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"10px\"",
+      "description": "Top margin past the viewport that still counts as visible."
+    },
+    {
+      "name": "unmountOnExit",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Unmount the children on `disexposure` (off-screen) and re-mount on next\n`exposure`. The placeholder view stays mounted to preserve scroll\nposition. Defaults to `false` — once mounted, children stay mounted."
+    }
+  ],
+  "events": [
+    {
+      "name": "show",
+      "type": "[visible: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

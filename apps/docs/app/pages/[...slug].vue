@@ -15,10 +15,12 @@ if (!page.value) {
   throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
 }
 
-const { data: surround } = await useAsyncData(`${route.path}-surround`, () => {
-  return queryCollectionItemSurroundings('docs', route.path, {
+const { data: surround } = await useAsyncData(`${route.path}-surround`, async () => {
+  const items = await queryCollectionItemSurroundings('docs', route.path, {
     fields: ['description'],
   })
+  // Drop icons from the prev/next cards to match the iconless sidebar.
+  return items?.map(item => (item ? { ...item, icon: undefined, navigation: undefined } : item))
 })
 
 const title = page.value.seo?.title || page.value.title
@@ -49,6 +51,7 @@ const links = computed(() => toc?.bottom?.links || [])
           :key="index"
           v-bind="link"
         />
+        <PageActions />
       </template>
     </UPageHeader>
 

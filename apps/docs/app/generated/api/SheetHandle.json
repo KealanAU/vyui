@@ -1,0 +1,17 @@
+{
+  "props": [
+    {
+      "name": "hidden",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Hide the default handle styling."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "props": [
+    {
+      "name": "defaultValues",
+      "type": "Record<string, unknown> | undefined",
+      "required": false,
+      "description": "Initial values, keyed by field name. Used by `reset()`."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, the form (and all fields) is disabled."
+    }
+  ],
+  "events": [
+    {
+      "name": "submit",
+      "type": "[values: Record<string, unknown>]"
+    },
+    {
+      "name": "update:values",
+      "type": "[values: Record<string, unknown>]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ values: Record<string, unknown>; errors: Record<string, string | null>; submitting: boolean; }"
+    }
+  ]
+}

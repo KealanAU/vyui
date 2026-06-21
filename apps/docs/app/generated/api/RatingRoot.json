@@ -1,0 +1,83 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "clearable",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When true, tapping the currently-selected rating clears the value."
+    },
+    {
+      "name": "defaultValue",
+      "type": "number | undefined",
+      "required": false,
+      "description": "The value of the rating when initially rendered. Use when you do not need to control the state."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When true, all interactions are blocked."
+    },
+    {
+      "name": "hoverable",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When true, hovering over items previews the rating (web only — Lynx native has no hover)."
+    },
+    {
+      "name": "length",
+      "type": "number | undefined",
+      "required": false,
+      "default": "5",
+      "description": "Total number of rating items rendered."
+    },
+    {
+      "name": "modelValue",
+      "type": "number | undefined",
+      "required": false,
+      "description": "The controlled value of the rating. Can be bound with `v-model`."
+    },
+    {
+      "name": "orientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"horizontal\"",
+      "description": "Layout direction of the rating items."
+    },
+    {
+      "name": "step",
+      "type": "1 | 0.5 | 0.25 | 0.1 | undefined",
+      "required": false,
+      "default": "1",
+      "description": "Granularity of a single item. Allows half / quarter / tenth stars."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[payload: number]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ modelValue: number | undefined; items: number[]; }"
+    }
+  ]
+}

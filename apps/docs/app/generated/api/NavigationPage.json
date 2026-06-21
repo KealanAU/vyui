@@ -1,0 +1,24 @@
+{
+  "props": [
+    {
+      "name": "keepAlive",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "When `false`, force-unmount even if this page matches the current\nstack key — useful for memory pressure or screen-specific reset."
+    },
+    {
+      "name": "pageKey",
+      "type": "string",
+      "required": true,
+      "description": "Stable identifier for this page. Must match the `key` of an entry in\nthe stack's `entries` for the page to mount."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "any"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "description",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Description text rendered below the label."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false"
+    },
+    {
+      "name": "highlight",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Paints a static ring matching `color`, ignoring focus state."
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the check glyph. Defaults to `appConfig.ui.icons.check`."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying CheckboxRoot."
+    },
+    {
+      "name": "indeterminateIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the indeterminate glyph. Defaults to `appConfig.ui.icons.minus`."
+    },
+    {
+      "name": "label",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Label text rendered next to the checkbox."
+    },
+    {
+      "name": "modelValue",
+      "type": "boolean | \"indeterminate\" | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Controlled checked value. `'indeterminate'` renders the mixed state."
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false
+    },
+    {
+      "name": "required",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying CheckboxRoot."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"description\" | \"root\" | \"label\" | \"icon\" | \"wrapper\" | \"indicator\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "value",
+      "type": "string | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: boolean | \"indeterminate\"]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "label",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "description",
+      "type": "{} | undefined"
+    }
+  ]
+}

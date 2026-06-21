@@ -1,0 +1,18 @@
+{
+  "props": [
+    {
+      "name": "dir",
+      "type": "Direction | undefined",
+      "required": false,
+      "description": "The global reading direction of your application. This will be inherited by all primitives."
+    },
+    {
+      "name": "locale",
+      "type": "string | undefined",
+      "required": false,
+      "description": "The global locale of your application. This will be inherited by all primitives."
+    }
+  ],
+  "events": [],
+  "slots": []
+}

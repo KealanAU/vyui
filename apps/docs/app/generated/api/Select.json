@@ -1,0 +1,150 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Initial value when uncontrolled."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "handle",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Show the drag-handle pill at the top of the sheet."
+    },
+    {
+      "name": "highlight",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Paints a static ring matching `color`, ignoring focus state."
+    },
+    {
+      "name": "items",
+      "type": "SelectItems | undefined",
+      "required": false,
+      "description": "Items to render — flat array, grouped (array of arrays), or string/number primitives."
+    },
+    {
+      "name": "labelKey",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"label\"",
+      "description": "When `items` are objects, which field to use as the label."
+    },
+    {
+      "name": "modelValue",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Controlled value. Bind with `v-model`."
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Form submission name. Forwarded to the core `SelectRoot`."
+    },
+    {
+      "name": "placeholder",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Placeholder rendered when no value is selected. Also used as the sheet title."
+    },
+    {
+      "name": "presentation",
+      "type": "\"anchor\" | \"sheet\" | undefined",
+      "required": false,
+      "default": "\"sheet\"",
+      "description": "Presentation mode — kept for API parity with `VyPopover` /\n`VyDropdownMenu`. Currently only `'sheet'` is wired (native picker UX\nfor touch). An `'anchor'` (tablet popper) variant is tracked separately\nand falls back to `'sheet'` when requested today."
+    },
+    {
+      "name": "selectedIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name rendered next to the selected item. Defaults to `appConfig.ui.icons.check`."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "snapPoints",
+      "type": "number[] | undefined",
+      "required": false,
+      "default": "[0.5]",
+      "description": "Snap fractions forwarded to `SheetRoot`. Default `[0.5]` matches a\nnative picker — half-screen, scrollable list below the placeholder title."
+    },
+    {
+      "name": "trailingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown on the trailing side of the trigger. Defaults to `appConfig.ui.icons.chevronDown`."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"trailingIcon\" | \"base\" | \"root\" | \"item\" | \"content\" | \"leadingIcon\" | \"label\" | \"handle\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemLabel\" | \"itemTrailingIcon\" | \"separator\" | \"leading\" | \"trailing\" | \"leadingAvatar\" | \"value\" | \"placeholder\" | \"arrow\" | \"sheetHeader\" | \"sheetTitle\" | \"viewport\" | \"group\" | \"empty\" | \"itemTrailing\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "valueKey",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"value\"",
+      "description": "When `items` are objects, which field to use as the value."
+    },
+    {
+      "name": "variant",
+      "type": "\"outline\" | \"subtle\" | \"soft\" | \"ghost\" | \"none\" | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: string]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ modelValue?: string | undefined; open: boolean; }"
+    },
+    {
+      "name": "leading",
+      "type": "{ modelValue?: string | undefined; open: boolean; iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the trigger's resolved theme color."
+    },
+    {
+      "name": "trailing",
+      "type": "{ modelValue?: string | undefined; open: boolean; iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the trigger's resolved theme color."
+    },
+    {
+      "name": "item",
+      "type": "{ item: string | number | SelectItem; index: number; }"
+    },
+    {
+      "name": "item-leading",
+      "type": "{ item: string | number | SelectItem; index: number; }"
+    },
+    {
+      "name": "item-label",
+      "type": "{ item: string | number | SelectItem; index: number; }"
+    },
+    {
+      "name": "item-trailing",
+      "type": "{ item: string | number | SelectItem; index: number; }"
+    }
+  ]
+}

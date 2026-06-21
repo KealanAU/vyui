@@ -1,0 +1,68 @@
+{
+  "props": [
+    {
+      "name": "animation",
+      "type": "\"carousel\" | \"carousel-inverse\" | \"swing\" | \"elastic\" | undefined",
+      "required": false
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "inverted",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Reverse the visual direction."
+    },
+    {
+      "name": "max",
+      "type": "number | any[] | undefined",
+      "required": false,
+      "description": "Maximum value, or an array of step labels (length - 1 = max)."
+    },
+    {
+      "name": "modelValue",
+      "type": "number | null | undefined",
+      "required": false,
+      "default": "null",
+      "description": "Current value. `null` (or omitted) renders the indeterminate animation."
+    },
+    {
+      "name": "orientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | \"2xl\" | \"xs\" | undefined",
+      "required": false
+    },
+    {
+      "name": "status",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Show the current value as a percentage label above the bar."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"root\" | \"indicator\" | \"step\" | \"status\" | \"steps\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: number | null]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "status",
+      "type": "{ percent?: number | undefined; }"
+    }
+  ]
+}

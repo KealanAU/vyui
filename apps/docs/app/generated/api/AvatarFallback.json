@@ -1,0 +1,31 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "delayMs",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Delay, in milliseconds, before the fallback is shown. Useful to avoid a\nflash of fallback content while a fast image loads. Defaults to `0` (show\nimmediately when there is no loaded image)."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

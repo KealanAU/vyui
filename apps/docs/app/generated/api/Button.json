@@ -1,0 +1,36 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "Underlying element. Defaults to `view`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Merge props onto the slot child instead of wrapping."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disables tap + active feedback."
+    }
+  ],
+  "events": [
+    {
+      "name": "tap",
+      "type": "[]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ active: boolean; disabled: boolean; }"
+    }
+  ]
+}

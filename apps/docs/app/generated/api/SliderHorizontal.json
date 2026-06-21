@@ -1,0 +1,56 @@
+{
+  "props": [
+    {
+      "name": "dir",
+      "type": "Direction | undefined",
+      "required": false
+    },
+    {
+      "name": "inverted",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "min",
+      "type": "number",
+      "required": true
+    }
+  ],
+  "events": [
+    {
+      "name": "slideEnd",
+      "type": "[]"
+    },
+    {
+      "name": "slideStart",
+      "type": "[value: number]"
+    },
+    {
+      "name": "slideMove",
+      "type": "[value: number]"
+    },
+    {
+      "name": "homeKeyDown",
+      "type": "[event: any]"
+    },
+    {
+      "name": "endKeyDown",
+      "type": "[event: any]"
+    },
+    {
+      "name": "stepKeyDown",
+      "type": "[event: any, direction: number]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

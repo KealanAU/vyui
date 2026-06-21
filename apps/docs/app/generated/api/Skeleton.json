@@ -1,0 +1,10 @@
+{
+  "props": [],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "props": [
+    {
+      "name": "dragDisabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disable dragging."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "props": [
+    {
+      "name": "autoplay",
+      "type": "number | boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "`true` enables autoplay at a default interval; a number sets the interval\nin ms. Autoplay pauses while the user is dragging."
+    },
+    {
+      "name": "axisLock",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Only consume predominantly-horizontal gestures, releasing vertical drags\nto the host scroll surface. Useful for carousels inside a vertical scroll."
+    },
+    {
+      "name": "direction",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "items",
+      "type": "any[] | undefined",
+      "required": false,
+      "description": "Items array. When set, the wrapper renders one `SwiperItem` per entry via\nthe `item` slot. When omitted, the `default` slot is rendered as-is and\nis expected to contain manually-placed `<SwiperItem>` children."
+    },
+    {
+      "name": "itemWidth",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Width of each item in px. When omitted, the swiper measures its container\nand uses the available width so slides follow viewport rotation."
+    },
+    {
+      "name": "loop",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Navigate circularly: dragging/autoplay past the last item wraps around."
+    },
+    {
+      "name": "modelValue",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Controlled active index. Bind with `v-model`."
+    },
+    {
+      "name": "showIndicators",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Show the fixed dot indicator strip. Opt-in."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"item\" | \"indicator\" | \"indicators\" | \"indicatorActive\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: number]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "item",
+      "type": "{ item: any; index: number; }"
+    }
+  ]
+}

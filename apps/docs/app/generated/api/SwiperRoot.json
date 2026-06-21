@@ -1,0 +1,151 @@
+{
+  "props": [
+    {
+      "name": "align",
+      "type": "\"start\" | \"center\" | \"end\" | undefined",
+      "required": false,
+      "default": "\"start\"",
+      "description": "Active-item alignment within the viewport when it is wider than an item.\n`'start'` (default) | `'center'` | `'end'`. Requires `containerWidth`.\nMirrors lynx-ui `modeConfig.align`."
+    },
+    {
+      "name": "autoplay",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Auto-advance through items on an interval. Pauses while dragging."
+    },
+    {
+      "name": "axisLock",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Only consume gestures that are predominantly horizontal (±45°). A\nvertical drag is released to the host scroll surface. Mirrors lynx-ui's\n`experimentalHorizontalSwipeOnly`."
+    },
+    {
+      "name": "circular",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Alias for `loop` — matches lynx-ui's `circular` naming. `loop` wins."
+    },
+    {
+      "name": "containerWidth",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Viewport width, px — needed for `align: center/end` and the end clamp."
+    },
+    {
+      "name": "defaultValue",
+      "type": "number | undefined",
+      "required": false
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false"
+    },
+    {
+      "name": "duration",
+      "type": "number | undefined",
+      "required": false,
+      "default": "300",
+      "description": "Snap animation duration in ms."
+    },
+    {
+      "name": "interval",
+      "type": "number | undefined",
+      "required": false,
+      "default": "3000",
+      "description": "Autoplay step interval in ms (time an item is shown before advancing)."
+    },
+    {
+      "name": "itemCount",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "itemWidth",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "loop",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Navigate circularly: dragging/autoplay past the last item wraps to the\nfirst (and vice-versa) SEAMLESSLY — edge slides are cloned so motion\ncontinues across the seam instead of snap-rewinding. When false, the\ntrack clamps at the ends."
+    },
+    {
+      "name": "mode",
+      "type": "\"normal\" | \"carousel\" | undefined",
+      "required": false,
+      "default": "\"normal\"",
+      "description": "Layout mode. `'normal'` (default) is the standard paged carousel honoring\n`align`. `'carousel'` is an alias kept for forward-compat; treated as\nnormal. Mirrors lynx-ui `mode`."
+    },
+    {
+      "name": "modelValue",
+      "type": "number | undefined",
+      "required": false
+    },
+    {
+      "name": "offsetLimit",
+      "type": "[number, number] | undefined",
+      "required": false,
+      "description": "Explicit `[startLimit, endLimit]` non-loop offset clamp (px past each\nedge the track may rest). Mirrors lynx-ui `offsetLimit`."
+    },
+    {
+      "name": "rtl",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Right-to-left layout. A forward swipe moves visually rightward."
+    },
+    {
+      "name": "spaceBetween",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Gap between adjacent items, px. The snap unit becomes\n`itemWidth + spaceBetween`. Mirrors lynx-ui `modeConfig.spaceBetween`."
+    },
+    {
+      "name": "threshold",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0.3",
+      "description": "Fraction of the snap unit dragged past which the snap rounds up."
+    },
+    {
+      "name": "velocityThreshold",
+      "type": "number | undefined",
+      "required": false,
+      "default": "300",
+      "description": "px/s flick above which a release advances by one item."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: number]"
+    },
+    {
+      "name": "swipeStart",
+      "type": "[]"
+    },
+    {
+      "name": "swipeEnd",
+      "type": "[value: number]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    },
+    {
+      "name": "overlay",
+      "type": "{}"
+    }
+  ]
+}

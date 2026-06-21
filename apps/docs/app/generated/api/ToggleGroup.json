@@ -1,0 +1,73 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "defaultValue",
+      "type": "ToggleGroupValue | ToggleGroupValue[] | undefined",
+      "required": false,
+      "description": "Uncontrolled initial value."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false"
+    },
+    {
+      "name": "items",
+      "type": "ToggleGroupItem[] | undefined",
+      "required": false
+    },
+    {
+      "name": "modelValue",
+      "type": "ToggleGroupValue | ToggleGroupValue[] | undefined",
+      "required": false,
+      "description": "Controlled value. Array when `type === 'multiple'`."
+    },
+    {
+      "name": "orientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "type",
+      "type": "\"single\" | \"multiple\" | undefined",
+      "required": false,
+      "default": "\"single\"",
+      "description": "`single` → string | undefined value, `multiple` → array."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"item\" | \"leadingIcon\" | \"label\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"outline\" | \"subtle\" | \"soft\" | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: ToggleGroupValue | ToggleGroupValue[]]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ item: ToggleGroupItemShape & { value: ToggleGroupValue; }; index: number; iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the item's resolved on/off foreground."
+    }
+  ]
+}

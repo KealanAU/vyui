@@ -1,0 +1,10 @@
+{
+  "props": [],
+  "events": [
+    {
+      "name": "tap",
+      "type": "[]"
+    }
+  ],
+  "slots": []
+}

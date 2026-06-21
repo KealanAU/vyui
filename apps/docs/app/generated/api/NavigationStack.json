@@ -1,0 +1,31 @@
+{
+  "props": [
+    {
+      "name": "direction",
+      "type": "\"replace\" | \"reset\" | \"forward\" | \"back\" | undefined",
+      "required": false,
+      "default": "\"forward\"",
+      "description": "Direction of the last navigation, used by `<NavigationPage>` to pick\nits enter/leave animation. `'forward'` = push, `'back'` = pop,\n`'replace'` / `'reset'` = no animation."
+    },
+    {
+      "name": "entries",
+      "type": "NavigationStackEntry<any>[]",
+      "required": true,
+      "description": "Reactive entries array — typically `stack.entries` from\n`useNavigationStack()`. The top entry's `key` decides which\n`<NavigationPage>` is visible."
+    },
+    {
+      "name": "transition",
+      "type": "\"slide\" | \"none\" | undefined",
+      "required": false,
+      "default": "\"slide\"",
+      "description": "Transition style. `'slide'` mirrors the iOS / Material push-pop slide;\n`'none'` is an instant swap. Slide animations are CSS-driven (see\n`NavigationPage.vue`) — apps can override per-page via slot content."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "any"
+    }
+  ]
+}

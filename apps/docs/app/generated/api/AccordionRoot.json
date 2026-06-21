@@ -1,0 +1,80 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "collapsible",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When type is \"single\", allows closing content when clicking trigger for an open item.\nWhen type is \"multiple\", this prop has no effect."
+    },
+    {
+      "name": "defaultValue",
+      "type": "T | undefined",
+      "required": false,
+      "description": "The default active value of the item(s).\n\nUse when you do not need to control the state of the item(s)."
+    },
+    {
+      "name": "dir",
+      "type": "Direction | undefined",
+      "required": false,
+      "description": "The reading direction of the accordion when applicable. If omitted, assumes LTR (left-to-right) reading mode."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, prevents the user from interacting with the accordion and all its items"
+    },
+    {
+      "name": "modelValue",
+      "type": "T | undefined",
+      "required": false,
+      "description": "The controlled value of the active item(s).\n\nUse this when you need to control the state of the items. Can be bound with `v-model`"
+    },
+    {
+      "name": "orientation",
+      "type": "DataOrientation | undefined",
+      "required": false,
+      "default": "\"vertical\"",
+      "description": "The orientation of the accordion."
+    },
+    {
+      "name": "type",
+      "type": "SingleOrMultipleType | undefined",
+      "required": false,
+      "description": "Determines whether a \"single\" or \"multiple\" items can be selected at a time.\n\nThis prop will overwrite the inferred type from `modelValue` and `defaultValue`."
+    },
+    {
+      "name": "unmountOnHide",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "When `true`, the element will be unmounted on closed state."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: (ExplicitType extends \"single\" ? string : string[]) | undefined]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ modelValue: AcceptableValue | AcceptableValue[] | undefined; }"
+    }
+  ]
+}

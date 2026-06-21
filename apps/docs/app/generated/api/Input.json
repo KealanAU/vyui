@@ -1,0 +1,123 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"input\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "confirmType",
+      "type": "InputConfirmType | undefined",
+      "required": false,
+      "default": "\"send\"",
+      "description": "On-screen return-key label — see `InputConfirmType`."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Initial value when uncontrolled."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, prevents the user from interacting with the input."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false
+    },
+    {
+      "name": "inputFilter",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Regex string filter applied by the native input before the value is\nsurfaced to JS. Passed through unchanged."
+    },
+    {
+      "name": "maxLength",
+      "type": "number | undefined",
+      "required": false,
+      "default": "140",
+      "description": "Maximum number of characters allowed. Defaults to `140` per the Lynx\ndefault — set explicitly to `0` for no limit on platforms that support it."
+    },
+    {
+      "name": "modelValue",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Controlled value — pair with `@update:modelValue` (or `v-model`)."
+    },
+    {
+      "name": "placeholder",
+      "type": "string | undefined",
+      "required": false
+    },
+    {
+      "name": "readonly",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Whether the input renders as read-only."
+    },
+    {
+      "name": "showSoftInputOnFocus",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "When `false`, focus will not raise the software keyboard."
+    },
+    {
+      "name": "type",
+      "type": "InputType | undefined",
+      "required": false,
+      "default": "\"text\"",
+      "description": "Input mode hint — see `InputType`."
+    }
+  ],
+  "events": [
+    {
+      "name": "input",
+      "type": "[value: string, selectionStart: number, selectionEnd: number, isComposing: boolean]"
+    },
+    {
+      "name": "update:modelValue",
+      "type": "[value: string]"
+    },
+    {
+      "name": "focus",
+      "type": "[value: string]"
+    },
+    {
+      "name": "blur",
+      "type": "[value: string]"
+    },
+    {
+      "name": "confirm",
+      "type": "[value: string]"
+    },
+    {
+      "name": "selectionChange",
+      "type": "[selectionStart: number, selectionEnd: number]"
+    },
+    {
+      "name": "keyboard",
+      "type": "[info: { visible: boolean; height: number; safeAreaBottom: number; }]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

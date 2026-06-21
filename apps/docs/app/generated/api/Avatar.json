@@ -1,0 +1,62 @@
+{
+  "props": [
+    {
+      "name": "alt",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Accessible alt text — also used to derive initials when `text` is absent."
+    },
+    {
+      "name": "chip",
+      "type": "boolean | ChipProps | undefined",
+      "required": false,
+      "description": "Decorative chip rendered on top of the avatar. Pass `true` for the\ndefault style, or a `ChipProps` object to customize color / size /\nposition / inset. Defaults to `inset: true` so it isn't clipped by the\navatar's `overflow-hidden` root."
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown when neither `src` nor `text` resolve to content."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | \"2xl\" | \"xs\" | \"3xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "src",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Image source URL. Renders an `<image>`; on load failure it falls back to initials/icon."
+    },
+    {
+      "name": "text",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Explicit fallback text (initials). Trumps `alt`-derived initials."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"icon\" | \"text\" | \"image\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined",
+      "description": "Replaces the entire avatar inner content."
+    },
+    {
+      "name": "fallback",
+      "type": "{} | undefined",
+      "description": "Replaces just the initials/icon fallback (no image)."
+    }
+  ]
+}

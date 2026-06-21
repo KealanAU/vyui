@@ -1,0 +1,86 @@
+{
+  "props": [
+    {
+      "name": "close",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Show a close button to dismiss the alert."
+    },
+    {
+      "name": "closeIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the close button. Defaults to `appConfig.ui.icons.close`."
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "description",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Description text. Overridden by the `description` slot if provided."
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown on the leading side."
+    },
+    {
+      "name": "orientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"vertical\"",
+      "description": "Orientation between content and actions."
+    },
+    {
+      "name": "title",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Title text. Overridden by the `title` slot if provided."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"description\" | \"root\" | \"title\" | \"icon\" | \"close\" | \"wrapper\" | \"actions\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"solid\" | \"outline\" | \"subtle\" | \"soft\" | \"ghost\" | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading",
+      "type": "{ iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the variant's resolved foreground."
+    },
+    {
+      "name": "title",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "description",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "actions",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "close",
+      "type": "{ iconColor: string; }",
+      "description": "Receives `iconColor` so custom close icons can match the variant's resolved foreground."
+    }
+  ]
+}

@@ -44,6 +44,13 @@ export default defineNuxtConfig({
     },
   },
 
+  // `<lynx-view>` is the Lynx web-runtime custom element used by <LynxPreview>.
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag: string) => tag.startsWith('lynx-'),
+    },
+  },
+
   compatibilityDate: '2024-07-11',
 
   icon: {

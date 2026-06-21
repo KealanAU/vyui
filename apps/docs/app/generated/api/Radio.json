@@ -1,0 +1,69 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "checked",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "undefined"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, prevents the user from interacting with the radio item."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "The name of the field. Submitted with its owning form as part of a name/value pair."
+    },
+    {
+      "name": "required",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, indicates that the user must set the value before the owning form can be submitted."
+    },
+    {
+      "name": "value",
+      "type": "AcceptableValue | undefined",
+      "required": false,
+      "description": "The value given as data when submitted with a `name`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:checked",
+      "type": "[value: boolean]"
+    },
+    {
+      "name": "select",
+      "type": "[SelectEvent]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ checked: boolean | undefined; }"
+    }
+  ]
+}

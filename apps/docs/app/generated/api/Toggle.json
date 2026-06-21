@@ -1,0 +1,49 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "defaultValue",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "The pressed state of the toggle when it is initially rendered. Use when you do not need to control its open state."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, prevents the user from interacting with the toggle."
+    },
+    {
+      "name": "modelValue",
+      "type": "boolean | null | undefined",
+      "required": false,
+      "default": "undefined",
+      "description": "The controlled pressed state of the toggle. Can be bind as `v-model`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ modelValue: boolean; state: DataState; pressed: boolean; disabled: boolean; }"
+    }
+  ]
+}

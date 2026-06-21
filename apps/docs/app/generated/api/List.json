@@ -1,0 +1,141 @@
+{
+  "props": [
+    {
+      "name": "bounces",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true"
+    },
+    {
+      "name": "crossAxisGap",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Spacing between columns / waterfall tracks (px)."
+    },
+    {
+      "name": "enableScroll",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true"
+    },
+    {
+      "name": "initialScrollIndex",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Initial scroll position by item index."
+    },
+    {
+      "name": "iosEnableSimultaneousTouch",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "iOS bounces respect a parent ScrollView's gesture chain when `true`."
+    },
+    {
+      "name": "iosScrollsToTop",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true"
+    },
+    {
+      "name": "listId",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Override the auto-generated DOM `id` (used for `lynx.createSelectorQuery`)."
+    },
+    {
+      "name": "listType",
+      "type": "\"single\" | \"flow\" | \"waterfall\" | undefined",
+      "required": false,
+      "default": "\"single\"",
+      "description": "Single column / grid / waterfall. `flow` and `waterfall` need\n`spanCount > 1`."
+    },
+    {
+      "name": "lowerThresholdItemCount",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Item count from the bottom that triggers `scrolltolower`."
+    },
+    {
+      "name": "mainAxisGap",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Spacing between rows along the scroll axis (px)."
+    },
+    {
+      "name": "preloadBufferCount",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "How many cells to preload off-screen."
+    },
+    {
+      "name": "scrollBarEnable",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true"
+    },
+    {
+      "name": "scrollEventThrottle",
+      "type": "number | undefined",
+      "required": false,
+      "default": "200",
+      "description": "Throttle for the native `scroll` event (ms)."
+    },
+    {
+      "name": "scrollOrientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"vertical\""
+    },
+    {
+      "name": "spanCount",
+      "type": "number | undefined",
+      "required": false,
+      "default": "1",
+      "description": "Columns (vertical) or rows (horizontal) for `flow` / `waterfall`."
+    },
+    {
+      "name": "stickyOffset",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Sticky-header offset from the top of the list (px)."
+    },
+    {
+      "name": "upperThresholdItemCount",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Item count from the top that triggers `scrolltoupper`."
+    }
+  ],
+  "events": [
+    {
+      "name": "scrollToLower",
+      "type": "[event: unknown]"
+    },
+    {
+      "name": "scrollToUpper",
+      "type": "[event: unknown]"
+    },
+    {
+      "name": "scroll",
+      "type": "[event: unknown]"
+    },
+    {
+      "name": "scrollStateChange",
+      "type": "[event: unknown]"
+    },
+    {
+      "name": "layoutComplete",
+      "type": "[event: unknown]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "any"
+    }
+  ]
+}

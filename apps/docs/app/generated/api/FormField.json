@@ -1,0 +1,29 @@
+{
+  "props": [
+    {
+      "name": "defaultValue",
+      "type": "unknown",
+      "required": false,
+      "description": "Initial value when the form's `defaultValues` doesn't supply one.\nForm-level `defaultValues` takes precedence."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "description": "Field name — must be unique within the form."
+    },
+    {
+      "name": "validators",
+      "type": "FormFieldValidator[] | undefined",
+      "required": false,
+      "description": "Synchronous validators. Each returns `null` (or `undefined`) for valid,\nor a non-empty string describing the error. Stops at the first error."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ value: unknown; error: string | null; setValue: (value: unknown) => void; disabled: boolean; }"
+    }
+  ]
+}

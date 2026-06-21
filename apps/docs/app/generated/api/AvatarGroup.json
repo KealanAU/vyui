@@ -1,0 +1,32 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "max",
+      "type": "string | number | undefined",
+      "required": false,
+      "description": "Maximum visible avatars before collapsing into a `+N` overflow chip."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | \"2xl\" | \"xs\" | \"3xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"root\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined"
+    }
+  ]
+}

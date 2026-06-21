@@ -1,0 +1,51 @@
+{
+  "props": [
+    {
+      "name": "direction",
+      "type": "\"horizontal\" | \"left\" | \"right\" | undefined",
+      "required": false,
+      "default": "\"horizontal\"",
+      "description": "Which drag directions dismiss the toast. `horizontal` (default) lets the\nuser fling either way; `left` / `right` constrain it to one side."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disable the gesture."
+    },
+    {
+      "name": "duration",
+      "type": "number | undefined",
+      "required": false,
+      "default": "200",
+      "description": "Snap-back / fling animation duration in ms."
+    },
+    {
+      "name": "threshold",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0.45",
+      "description": "Fraction of the toast width a drag must pass (without a flick) to dismiss."
+    },
+    {
+      "name": "velocityThreshold",
+      "type": "number | undefined",
+      "required": false,
+      "default": "600",
+      "description": "px/s flick speed above which a release dismisses regardless of distance."
+    }
+  ],
+  "events": [
+    {
+      "name": "dismiss",
+      "type": "[]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "any"
+    }
+  ]
+}

@@ -56,6 +56,7 @@ export default defineAppConfig({
     colorMode: true,
     quickLinks: [
       { label: 'Docs', to: '/getting-started' },
+      { label: 'Components', to: '/components' },
       { label: 'Packages', to: '/packages/core' },
       { label: 'Theming', to: '/theming' },
       { label: 'Roadmap', to: '/roadmap' },

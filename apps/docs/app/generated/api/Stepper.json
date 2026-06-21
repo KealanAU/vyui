@@ -1,0 +1,76 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "defaultValue",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Initial active step index when uncontrolled."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Disable every step at once."
+    },
+    {
+      "name": "items",
+      "type": "StepperItem[]",
+      "required": true
+    },
+    {
+      "name": "linear",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "When true, steps must be completed in order."
+    },
+    {
+      "name": "modelValue",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Controlled active step index."
+    },
+    {
+      "name": "orientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"description\" | \"root\" | \"item\" | \"header\" | \"trigger\" | \"content\" | \"title\" | \"separator\" | \"icon\" | \"wrapper\" | \"indicator\" | \"container\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: number]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "indicator",
+      "type": "{ item: StepperItem; index: number; }"
+    },
+    {
+      "name": "title",
+      "type": "{ item: StepperItem; index: number; }"
+    },
+    {
+      "name": "description",
+      "type": "{ item: StepperItem; index: number; }"
+    }
+  ]
+}

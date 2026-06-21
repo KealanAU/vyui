@@ -1,0 +1,128 @@
+{
+  "props": [
+    {
+      "name": "close",
+      "type": "boolean | Partial<ButtonProps> | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Display a close button to dismiss the modal. Pass an object to forward\nprops to the underlying `VyButton`."
+    },
+    {
+      "name": "closeIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the close button."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Initial open state when uncontrolled."
+    },
+    {
+      "name": "description",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Modal description text. Overridden by the `description` slot."
+    },
+    {
+      "name": "dismissible",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "When `false`, the modal will not close when interacting outside."
+    },
+    {
+      "name": "modelValue",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Convenience alias for `open` — bind with `v-model`."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Controlled open state — bind with `v-model:open`."
+    },
+    {
+      "name": "overlay",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Render an overlay behind the modal."
+    },
+    {
+      "name": "portal",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Render the modal in a portal. The `@vyui/core` `DialogPortal` is a\ntransparent pass-through on Lynx (portaling is handled by `OverlayRoot`);\nthe prop is kept for API parity but always wraps content in `DialogPortal`\nto keep the render tree shape stable."
+    },
+    {
+      "name": "title",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Modal title text. Overridden by the `title` slot."
+    },
+    {
+      "name": "transition",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Animate the modal when opening or closing."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"description\" | \"header\" | \"content\" | \"body\" | \"title\" | \"overlay\" | \"close\" | \"wrapper\" | \"footer\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: boolean]"
+    },
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ open: boolean; }",
+      "description": "Trigger element — wrapped in `DialogTrigger`. `DialogTrigger` toggles\nopen state on tap; do NOT bind a `@tap` handler on the slotted child\nthat also sets the open state — it will race with the trigger and\ncause a double-toggle. Use `v-model:open` (or `v-model`) instead."
+    },
+    {
+      "name": "content",
+      "type": "{ close: () => void; }",
+      "description": "Full content override — replaces the default header/body/footer layout\n(including the close button, which lives in the header). Matches the\nNuxt UI Modal `#content` escape hatch."
+    },
+    {
+      "name": "header",
+      "type": "{ close: () => void; }",
+      "description": "Header region. Replaces title / description / close."
+    },
+    {
+      "name": "body",
+      "type": "{ close: () => void; }"
+    },
+    {
+      "name": "footer",
+      "type": "{ close: () => void; }"
+    },
+    {
+      "name": "title",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "description",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "close",
+      "type": "{ ui: { overlay: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; content: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; header: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; wrapper: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; body: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; footer: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; title: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; description: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; close: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; } & { overlay: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; content: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; header: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; wrapper: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; body: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; footer: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; title: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; description: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; close: (slotProps?: ({ transition?: boolean | undefined; } & ClassProp<ClassNameValue>) | undefined) => string; } & {}; }",
+      "description": "Override the default close button."
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | number | (string | number)[] | undefined",
+      "required": false,
+      "description": "Initial value when uncontrolled."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "handle",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Show the drag-handle pill at the top of the sheet."
+    },
+    {
+      "name": "highlight",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Paints a static ring matching `color`."
+    },
+    {
+      "name": "items",
+      "type": "ComboboxItems | undefined",
+      "required": false,
+      "description": "Items to render — flat array, grouped (array of arrays), or string/number primitives."
+    },
+    {
+      "name": "labelKey",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"label\"",
+      "description": "When `items` are objects, which field to use as the label."
+    },
+    {
+      "name": "modelValue",
+      "type": "string | number | (string | number)[] | undefined",
+      "required": false,
+      "description": "Controlled value. Bind with `v-model`. Array when `multiple` is true."
+    },
+    {
+      "name": "multiple",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Allow selecting more than one item."
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Form submission name. Forwarded to the core `ComboboxRoot`."
+    },
+    {
+      "name": "placeholder",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Trigger placeholder when no value is selected. Also used as the sheet title."
+    },
+    {
+      "name": "presentation",
+      "type": "\"anchor\" | \"sheet\" | undefined",
+      "required": false,
+      "default": "\"sheet\"",
+      "description": "Presentation mode — kept for API parity with `VyPopover` /\n`VyDropdownMenu`. Currently only `'sheet'` is wired (native picker UX);\n`'anchor'` falls back to sheet today."
+    },
+    {
+      "name": "searchable",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Render the in-sheet search input (`true` by default)."
+    },
+    {
+      "name": "searchIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown in the in-sheet search input. Defaults to `appConfig.ui.icons.search`."
+    },
+    {
+      "name": "searchPlaceholder",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Placeholder text inside the in-sheet search input."
+    },
+    {
+      "name": "selectedIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown next to selected items. Defaults to `appConfig.ui.icons.check`."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "snapPoints",
+      "type": "number[] | undefined",
+      "required": false,
+      "default": "[0.9]",
+      "description": "Snap fractions forwarded to `SheetRoot`. Default `[0.9]` matches a\nnative search-picker — near-full height so the keyboard has room above\nthe search input."
+    },
+    {
+      "name": "trailingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name on the trailing side. Defaults to `appConfig.ui.icons.chevronDown`."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"trailingIcon\" | \"base\" | \"search\" | \"root\" | \"item\" | \"content\" | \"leadingIcon\" | \"label\" | \"handle\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemLabel\" | \"itemTrailingIcon\" | \"separator\" | \"leading\" | \"trailing\" | \"leadingAvatar\" | \"searchIcon\" | \"input\" | \"arrow\" | \"sheetHeader\" | \"sheetTitle\" | \"viewport\" | \"group\" | \"empty\" | \"itemTrailing\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "valueKey",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"value\"",
+      "description": "When `items` are objects, which field to use as the value."
+    },
+    {
+      "name": "variant",
+      "type": "\"outline\" | \"subtle\" | \"soft\" | \"ghost\" | \"none\" | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: any]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ modelValue: any; open: boolean; }",
+      "description": "Trigger value render override. Defaults to label of the selected item(s)."
+    },
+    {
+      "name": "leading",
+      "type": "{ open: boolean; iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the trigger's resolved theme color."
+    },
+    {
+      "name": "trailing",
+      "type": "{ open: boolean; iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the trigger's resolved theme color."
+    },
+    {
+      "name": "empty",
+      "type": "{ searchTerm?: string | undefined; }"
+    },
+    {
+      "name": "item",
+      "type": "{ item: string | number | ComboboxItem; index: number; }"
+    },
+    {
+      "name": "item-leading",
+      "type": "{ item: string | number | ComboboxItem; index: number; }"
+    },
+    {
+      "name": "item-label",
+      "type": "{ item: string | number | ComboboxItem; index: number; }"
+    },
+    {
+      "name": "item-trailing",
+      "type": "{ item: string | number | ComboboxItem; index: number; }"
+    }
+  ]
+}

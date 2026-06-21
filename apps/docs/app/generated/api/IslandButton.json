@@ -1,0 +1,85 @@
+{
+  "props": [
+    {
+      "name": "active",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Explicit active state. Auto-overridden when `value` matches the parent\nisland's `value`."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disable interaction + drop visual emphasis."
+    },
+    {
+      "name": "expand",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Tap toggles the parent island's `open` state."
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown leading the label (or alone, for icon-only)."
+    },
+    {
+      "name": "label",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Optional text label. When set, the button morphs to a label-pill."
+    },
+    {
+      "name": "mode",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Mode name — free-form string. Tap switches the parent island's mode to\nthis. Pair with a `<template #[mode]>` slot on the island defining what\nthe row becomes. Common pattern names: `'fullisland'` (full takeover),\n`'compose'`, `'filter'`, `'reply'`, … any string works."
+    },
+    {
+      "name": "reset",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Tap resets the parent island's mode to `'default'`."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false,
+      "description": "Sizing override. When omitted, the button inherits the parent\n`<VyIsland>`'s `size`. Falls back to `md` standalone."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"leadingIcon\" | \"label\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "value",
+      "type": "string | number | undefined",
+      "required": false,
+      "description": "Tab value — registers this button against the parent island's\n`v-model:value`. Sets active automatically when the values match."
+    }
+  ],
+  "events": [
+    {
+      "name": "tap",
+      "type": "[]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined",
+      "description": "Override the default label slot (icon stays leading)."
+    },
+    {
+      "name": "leading",
+      "type": "{} | undefined",
+      "description": "Override the leading icon slot entirely."
+    }
+  ]
+}

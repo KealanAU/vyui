@@ -46,6 +46,8 @@ provide('navigation', navigation)
 
     <AppHeader />
 
+    <AppDocsNav />
+
     <UMain>
       <NuxtLayout>
         <NuxtPage />

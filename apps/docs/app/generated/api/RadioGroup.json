@@ -1,0 +1,92 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "defaultValue",
+      "type": "RadioGroupValue | undefined",
+      "required": false,
+      "description": "Uncontrolled initial value."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false"
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying root."
+    },
+    {
+      "name": "items",
+      "type": "RadioGroupItem[] | undefined",
+      "required": false,
+      "description": "Items to render. String entries are normalised to `{ label, value }`."
+    },
+    {
+      "name": "legend",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Optional fieldset legend. Overridden by the `legend` slot."
+    },
+    {
+      "name": "modelValue",
+      "type": "RadioGroupValue | undefined",
+      "required": false,
+      "description": "Controlled value."
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying root."
+    },
+    {
+      "name": "orientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"vertical\""
+    },
+    {
+      "name": "required",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"description\" | \"root\" | \"item\" | \"label\" | \"wrapper\" | \"indicator\" | \"container\" | \"legend\" | \"fieldset\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: RadioGroupValue]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "legend",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "label",
+      "type": "{ item: RadioGroupItemShape & { id: string; }; modelValue?: RadioGroupValue | undefined; }"
+    },
+    {
+      "name": "description",
+      "type": "{ item: RadioGroupItemShape & { id: string; }; modelValue?: RadioGroupValue | undefined; }"
+    }
+  ]
+}

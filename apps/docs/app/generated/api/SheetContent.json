@@ -1,0 +1,18 @@
+{
+  "props": [
+    {
+      "name": "dragDisabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disable drag / snap / fling; open and close still animate."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

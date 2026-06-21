@@ -1,0 +1,28 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | undefined",
+      "required": false,
+      "default": "\"view\""
+    },
+    {
+      "name": "modelValue",
+      "type": "string | undefined",
+      "required": false,
+      "description": "The value of the selected radio item."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: string]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

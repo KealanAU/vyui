@@ -1,0 +1,39 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | undefined",
+      "required": false,
+      "default": "\"view\""
+    },
+    {
+      "name": "checked",
+      "type": "boolean | \"indeterminate\" | undefined",
+      "required": false,
+      "default": "false",
+      "description": "The checked state of the checkbox item. Can be `true`, `false`, or `'indeterminate'`."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, prevents the user from interacting with the item."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:checked",
+      "type": "[value: boolean | \"indeterminate\"]"
+    },
+    {
+      "name": "select",
+      "type": "[]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}
