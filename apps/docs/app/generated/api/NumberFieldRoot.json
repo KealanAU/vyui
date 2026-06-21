@@ -1,0 +1,82 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "defaultValue",
+      "type": "number | null | undefined",
+      "required": false,
+      "description": "Initial value when uncontrolled."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, prevents the user from interacting with the field."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Id of the underlying input element."
+    },
+    {
+      "name": "max",
+      "type": "number | undefined",
+      "required": false,
+      "default": "Number.POSITIVE_INFINITY",
+      "description": "Maximum allowed value. Defaults to `Infinity`."
+    },
+    {
+      "name": "min",
+      "type": "number | undefined",
+      "required": false,
+      "default": "Number.NEGATIVE_INFINITY",
+      "description": "Minimum allowed value. Defaults to `-Infinity`."
+    },
+    {
+      "name": "modelValue",
+      "type": "number | null | undefined",
+      "required": false,
+      "description": "The controlled numeric value. Pair with `@update:modelValue` (or `v-model`). `null` represents an empty field."
+    },
+    {
+      "name": "readonly",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, the field renders read-only — value cannot be changed."
+    },
+    {
+      "name": "step",
+      "type": "number | undefined",
+      "required": false,
+      "default": "1",
+      "description": "Increment/decrement step and snapping granularity. Defaults to `1`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: number | null]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ modelValue: number | null; textValue: string; }"
+    }
+  ]
+}

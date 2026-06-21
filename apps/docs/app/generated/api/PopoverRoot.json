@@ -1,0 +1,37 @@
+{
+  "props": [
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "The open state of the popover when it is initially rendered.\nUse when you do not need to control its open state."
+    },
+    {
+      "name": "modal",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "The modality of the popover. When `true` the content registers as a modal\noverlay (scroll-lock / hide-others would apply on the DOM). On Lynx those\nare no-ops, but the flag still selects `PopoverContentModal` vs\n`PopoverContentNonModal` so the structural split matches reka-ui."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "undefined",
+      "description": "The controlled open state of the popover. Can be bound with `v-model`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ open: boolean; close: () => void; }"
+    }
+  ]
+}

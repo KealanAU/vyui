@@ -8,6 +8,11 @@ useSeoMeta({
 })
 
 useHead({ bodyAttrs: { class: 'landing-page' } })
+
+defineOgImageComponent('Default', {
+  title: 'Vy UI',
+  description: 'Styled & headless components for Vue-Lynx — native iOS, Android & web from one codebase.',
+})
 </script>
 
 <template>

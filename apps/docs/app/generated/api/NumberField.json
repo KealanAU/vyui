@@ -1,0 +1,104 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "decrementIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the decrement (`-`) button."
+    },
+    {
+      "name": "defaultValue",
+      "type": "number | null | undefined",
+      "required": false,
+      "description": "Initial value when uncontrolled."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying input."
+    },
+    {
+      "name": "incrementIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the increment (`+`) button."
+    },
+    {
+      "name": "max",
+      "type": "number | undefined",
+      "required": false
+    },
+    {
+      "name": "min",
+      "type": "number | undefined",
+      "required": false
+    },
+    {
+      "name": "modelValue",
+      "type": "number | null | undefined",
+      "required": false,
+      "description": "Controlled numeric value. `null` (or `undefined`) means empty."
+    },
+    {
+      "name": "placeholder",
+      "type": "string | undefined",
+      "required": false
+    },
+    {
+      "name": "readonly",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "step",
+      "type": "number | undefined",
+      "required": false,
+      "default": "1",
+      "description": "Increment/decrement step. Defaults to `1`."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"root\" | \"incrementIcon\" | \"decrementIcon\" | \"increment\" | \"decrement\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"outline\" | \"subtle\" | \"soft\" | \"ghost\" | \"none\" | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: number | null]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "increment",
+      "type": "{ iconColor: string; }",
+      "description": "Override the increment button content."
+    },
+    {
+      "name": "decrement",
+      "type": "{ iconColor: string; }",
+      "description": "Override the decrement button content."
+    }
+  ]
+}

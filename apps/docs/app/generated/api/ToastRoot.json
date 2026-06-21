@@ -1,0 +1,56 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "The open state when initially rendered."
+    },
+    {
+      "name": "duration",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Time in milliseconds before auto-dismissing. Falls back to the provider. `0` disables it."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "undefined",
+      "description": "The controlled open state. Can be bound with `v-model:open`."
+    },
+    {
+      "name": "type",
+      "type": "\"foreground\" | \"background\" | undefined",
+      "required": false,
+      "default": "\"foreground\"",
+      "description": "The toast's importance."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ open: boolean; index: number; count: number; isFront: boolean; expanded: boolean; heightBefore: number; duration: number; progress: number; expand: () => void; collapse: () => void; toggleExpanded: () => void; onLayoutChange: (event: any) => void; }"
+    }
+  ]
+}

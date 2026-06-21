@@ -1,0 +1,45 @@
+{
+  "props": [
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disable dragging on every row."
+    },
+    {
+      "name": "longPressMs",
+      "type": "number | undefined",
+      "required": false,
+      "description": "How long (ms) a press must be held before a row lifts for dragging. The\nhold guards against a tap or a scroll being mistaken for a drag. Set `0`\nfor immediate drag (e.g. when the list is not inside a scroller)."
+    },
+    {
+      "name": "modelValue",
+      "type": "T[] | undefined",
+      "required": false,
+      "description": "Controlled ordered items. Bind with `v-model`."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"item\" | \"handle\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[T[]]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "item",
+      "type": "{ item: T; index: number; }"
+    }
+  ]
+}

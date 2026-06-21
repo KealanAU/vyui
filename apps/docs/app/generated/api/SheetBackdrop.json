@@ -1,0 +1,13 @@
+{
+  "props": [
+    {
+      "name": "dismissOnTap",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Close the sheet when the backdrop is tapped."
+    }
+  ],
+  "events": [],
+  "slots": []
+}

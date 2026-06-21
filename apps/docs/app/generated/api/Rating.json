@@ -1,0 +1,53 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "count",
+      "type": "number | undefined",
+      "required": false,
+      "default": "5",
+      "description": "Total number of rating items rendered. Defaults to 5."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When true, all interactions are blocked."
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the star glyph. Defaults to `appConfig.ui.icons.star`."
+    },
+    {
+      "name": "modelValue",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Controlled rating value. Can be bound with `v-model`."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"root\" | \"icon\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: number]"
+    }
+  ],
+  "slots": []
+}

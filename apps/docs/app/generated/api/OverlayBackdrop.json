@@ -1,0 +1,17 @@
+{
+  "props": [
+    {
+      "name": "backdropStyle",
+      "type": "Record<string, any> | undefined",
+      "required": false,
+      "description": "Style merged onto the full-screen backdrop wrapper — typically used by\nmodal overlays to dim the screen behind the painted content."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

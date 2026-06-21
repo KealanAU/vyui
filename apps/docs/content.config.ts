@@ -13,6 +13,7 @@ export default defineContentConfig({
         exclude: ['index.md', 'changelog/**'],
       },
       schema: z.object({
+        package: z.enum(['core', 'kit']).optional(),
         links: z.array(z.object({
           label: z.string(),
           icon: z.string(),

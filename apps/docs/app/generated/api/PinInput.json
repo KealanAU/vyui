@@ -1,0 +1,97 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false"
+    },
+    {
+      "name": "highlight",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Paints a static ring matching `color`, ignoring focus state."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying core control."
+    },
+    {
+      "name": "length",
+      "type": "number | undefined",
+      "required": false,
+      "default": "5",
+      "description": "Number of input boxes rendered."
+    },
+    {
+      "name": "mask",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, inputs render as password fields."
+    },
+    {
+      "name": "modelValue",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Controlled value as a flat string. Bridges to the core `PinInputRoot`,\nwhich exposes its value as `string[]`."
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying core control."
+    },
+    {
+      "name": "otp",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, enables one-time-code autofill on mobile."
+    },
+    {
+      "name": "placeholder",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Placeholder glyph shown in empty boxes."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "type",
+      "type": "\"numeric\" | \"alphanumeric\" | undefined",
+      "required": false,
+      "default": "\"numeric\"",
+      "description": "Allowed character set for each box."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"root\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"outline\" | \"subtle\" | \"soft\" | \"ghost\" | \"none\" | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: string]"
+    },
+    {
+      "name": "complete",
+      "type": "[value: string]"
+    }
+  ],
+  "slots": []
+}

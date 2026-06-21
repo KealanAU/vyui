@@ -1,0 +1,86 @@
+{
+  "props": [
+    {
+      "name": "collapsible",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "`single`-only: lets the user close the currently open item."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | string[] | undefined",
+      "required": false,
+      "description": "Open value(s) at mount time when uncontrolled."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "items",
+      "type": "AccordionItem[] | undefined",
+      "required": false
+    },
+    {
+      "name": "modelValue",
+      "type": "string | string[] | undefined",
+      "required": false,
+      "description": "Controlled open value(s)."
+    },
+    {
+      "name": "trailingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Default trailing icon. Defaults to `appConfig.ui.icons.chevronDown`."
+    },
+    {
+      "name": "type",
+      "type": "\"single\" | \"multiple\" | undefined",
+      "required": false,
+      "default": "\"single\"",
+      "description": "`'single'` allows one open item; `'multiple'` allows many."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"trailingIcon\" | \"root\" | \"item\" | \"header\" | \"trigger\" | \"content\" | \"body\" | \"bodyText\" | \"leadingIcon\" | \"label\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "unmountOnHide",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Whether closed item content should unmount."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: string | string[] | undefined]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading",
+      "type": "{ item: AccordionItem; index: number; open: boolean; }"
+    },
+    {
+      "name": "default",
+      "type": "{ item: AccordionItem; index: number; open: boolean; }"
+    },
+    {
+      "name": "trailing",
+      "type": "{ item: AccordionItem; index: number; open: boolean; }"
+    },
+    {
+      "name": "content",
+      "type": "{ item: AccordionItem; index: number; open: boolean; }"
+    },
+    {
+      "name": "body",
+      "type": "{ item: AccordionItem; index: number; open: boolean; }"
+    }
+  ]
+}

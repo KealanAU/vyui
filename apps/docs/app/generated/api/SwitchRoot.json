@@ -1,0 +1,86 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "defaultValue",
+      "type": "T | undefined",
+      "required": false,
+      "description": "The state of the switch when it is initially rendered. Use when you do not need to control its state."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, prevents the user from interacting with the switch."
+    },
+    {
+      "name": "falseValue",
+      "type": "T | undefined",
+      "required": false,
+      "default": "(() => false) as unknown as undefined",
+      "description": "The value used when the switch is off. Defaults to `false`."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false
+    },
+    {
+      "name": "modelValue",
+      "type": "T | null | undefined",
+      "required": false,
+      "default": "undefined",
+      "description": "The controlled state of the switch. Can be bind as `v-model`."
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "The name of the field. Submitted with its owning form as part of a name/value pair."
+    },
+    {
+      "name": "required",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, indicates that the user must set the value before the owning form can be submitted."
+    },
+    {
+      "name": "trueValue",
+      "type": "T | undefined",
+      "required": false,
+      "default": "(() => true) as unknown as undefined",
+      "description": "The value used when the switch is on. Defaults to `true`."
+    },
+    {
+      "name": "value",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"on\"",
+      "description": "The value given as data when submitted with a `name`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[payload: T]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ modelValue: T; checked: boolean; }"
+    }
+  ]
+}

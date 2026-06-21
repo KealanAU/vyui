@@ -1,0 +1,87 @@
+{
+  "props": [
+    {
+      "name": "avatar",
+      "type": "AvatarProps | undefined",
+      "required": false,
+      "description": "Avatar to render in the leading slot. Used when there's no explicit\n`leadingIcon`/`icon` to show."
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Shorthand iconify name. Renders as `trailingIcon` when `trailing` is true,\notherwise as `leadingIcon`. Explicit `leadingIcon`/`trailingIcon` props win."
+    },
+    {
+      "name": "label",
+      "type": "string | number | undefined",
+      "required": false,
+      "description": "Text label. Overridden by the default slot if provided."
+    },
+    {
+      "name": "leading",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Position flag for the `icon` shorthand (leading slot)."
+    },
+    {
+      "name": "leadingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown on the leading side."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "square",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Equal padding on all sides — for icon-only / avatar-only badges."
+    },
+    {
+      "name": "trailing",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Position flag for the `icon` shorthand (trailing slot)."
+    },
+    {
+      "name": "trailingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown on the trailing side."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"trailingIcon\" | \"base\" | \"leadingIcon\" | \"label\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"solid\" | \"outline\" | \"subtle\" | \"soft\" | undefined",
+      "required": false
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "leading",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "trailing",
+      "type": "{} | undefined"
+    }
+  ]
+}

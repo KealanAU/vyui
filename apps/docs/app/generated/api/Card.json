@@ -1,0 +1,29 @@
+{
+  "props": [
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"header\" | \"body\" | \"footer\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"solid\" | \"outline\" | \"subtle\" | \"soft\" | undefined",
+      "required": false
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "header",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "default",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "footer",
+      "type": "{} | undefined"
+    }
+  ]
+}

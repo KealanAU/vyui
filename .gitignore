@@ -34,6 +34,7 @@ pnpm-debug.log*
 # cache
 .cache/
 .turbo/
+.pnpm-store/
 
 # Claude Code harness — agent worktrees + local scratch
 .claude/worktrees/

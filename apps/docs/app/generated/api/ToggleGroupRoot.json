@@ -1,0 +1,65 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "defaultValue",
+      "type": "AcceptableValue | AcceptableValue[] | undefined",
+      "required": false,
+      "description": "The default active value of the item(s).\n\nUse when you do not need to control the state of the item(s)."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, prevents the user from interacting with the toggle group and all its items."
+    },
+    {
+      "name": "modelValue",
+      "type": "AcceptableValue | AcceptableValue[] | undefined",
+      "required": false,
+      "description": "The controlled value of the active item(s).\n\nUse this when you need to control the state of the items. Can be bound with `v-model`"
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "The name of the field. Submitted with its owning form as part of a name/value pair."
+    },
+    {
+      "name": "required",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, indicates that the user must set the value before the owning form can be submitted."
+    },
+    {
+      "name": "type",
+      "type": "SingleOrMultipleType | undefined",
+      "required": false,
+      "description": "Determines whether a \"single\" or \"multiple\" items can be selected at a time.\n\nThis prop will overwrite the inferred type from `modelValue` and `defaultValue`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[payload: AcceptableValue | AcceptableValue[]]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ modelValue: AcceptableValue | AcceptableValue[] | undefined; }"
+    }
+  ]
+}

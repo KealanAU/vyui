@@ -1,0 +1,93 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "content",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "When `false`, the content region is not rendered."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | number | undefined",
+      "required": false,
+      "default": "\"0\"",
+      "description": "Active tab value at mount time when uncontrolled."
+    },
+    {
+      "name": "direction",
+      "type": "\"inline\" | \"stacked\" | undefined",
+      "required": false,
+      "description": "Layout inside each trigger. `inline` puts the icon next to the label;\n`stacked` puts the icon above. Stacked is the right call when many\ntriggers crowd a narrow list (e.g. 6 pills on a 360-wide phone)."
+    },
+    {
+      "name": "items",
+      "type": "TabsItem[] | undefined",
+      "required": false
+    },
+    {
+      "name": "modelValue",
+      "type": "string | number | undefined",
+      "required": false,
+      "description": "Controlled active tab value."
+    },
+    {
+      "name": "orientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"trigger\" | \"content\" | \"leadingIcon\" | \"label\" | \"list\" | \"leadingAvatar\" | \"indicator\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "unmountOnHide",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Whether inactive tab content should unmount."
+    },
+    {
+      "name": "variant",
+      "type": "\"link\" | \"pill\" | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: string | number]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading",
+      "type": "{ item: TabsItem; index: number; iconColor?: string | undefined; }",
+      "description": "Always receives `iconColor` (optional only to satisfy the dynamic-slot\nindex signature) so custom icons can match the trigger's resolved\nactive/inactive foreground."
+    },
+    {
+      "name": "default",
+      "type": "{ item: TabsItem; index: number; }"
+    },
+    {
+      "name": "trailing",
+      "type": "{ item: TabsItem; index: number; }"
+    },
+    {
+      "name": "content",
+      "type": "{ item: TabsItem; index: number; }"
+    }
+  ]
+}

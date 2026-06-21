@@ -1,0 +1,131 @@
+{
+  "props": [
+    {
+      "name": "cancel",
+      "type": "string | boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Optional cancel button rendered below the list (iOS pattern). Pass a\nstring to override the label. Linear-style sheets typically omit this."
+    },
+    {
+      "name": "closeOnSelect",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Auto-close after an item is selected."
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Initial open state when uncontrolled."
+    },
+    {
+      "name": "description",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Optional supporting copy rendered below the title."
+    },
+    {
+      "name": "dismissible",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Tapping the overlay or dragging down closes the sheet."
+    },
+    {
+      "name": "handle",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Show the drag handle at the top of the sheet."
+    },
+    {
+      "name": "items",
+      "type": "ActionSheetItem[] | ActionSheetItem[][] | undefined",
+      "required": false,
+      "description": "Items to render. Flat array, OR nested array where each inner array\nbecomes a section separated by a thin divider (Linear-style grouping)."
+    },
+    {
+      "name": "modelValue",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Convenience alias for `open` — bind with `v-model`."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Controlled open state — bind with `v-model:open`."
+    },
+    {
+      "name": "overlay",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Render the dim overlay behind the sheet."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | undefined",
+      "required": false
+    },
+    {
+      "name": "title",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Optional uppercase section heading rendered above the list."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"description\" | \"item\" | \"header\" | \"content\" | \"title\" | \"overlay\" | \"handle\" | \"cancel\" | \"list\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemLabel\" | \"itemTrailingIcon\" | \"separator\" | \"cancelLabel\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: boolean]"
+    },
+    {
+      "name": "cancel",
+      "type": "[]"
+    },
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    },
+    {
+      "name": "select",
+      "type": "[item: ActionSheetItem]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ open: boolean; }",
+      "description": "Trigger content. `SheetTrigger` opens the sheet on tap; do NOT bind a\n`@tap` handler on the slotted child that also sets the open state — use\n`v-model:open` (or `v-model`) instead."
+    },
+    {
+      "name": "header",
+      "type": "{} | undefined",
+      "description": "Header region — replaces the built-in title / description block."
+    },
+    {
+      "name": "item-leading",
+      "type": "{ item: ActionSheetItem; index: number; iconColor: string; }",
+      "description": "Custom rendering for an item's leading slot. Receives `iconColor` so custom icons can match the item's resolved foreground."
+    },
+    {
+      "name": "item-label",
+      "type": "{ item: ActionSheetItem; index: number; }",
+      "description": "Custom rendering for an item's label."
+    },
+    {
+      "name": "item-trailing",
+      "type": "{ item: ActionSheetItem; index: number; iconColor: string; }",
+      "description": "Custom rendering for an item's trailing slot. Receives `iconColor` so custom icons can match the trailing foreground."
+    }
+  ]
+}

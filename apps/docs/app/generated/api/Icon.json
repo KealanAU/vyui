@@ -1,0 +1,25 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Color baked into the SVG (replaces `currentColor`). Required to color an\nicon — Lynx's `<svg>` rasterizes the XML, so `currentColor` can't inherit\nfrom a surrounding `<text>` color the way it does in the DOM."
+    },
+    {
+      "name": "name",
+      "type": "string | Component",
+      "required": true,
+      "description": "Icon to display. Either an Iconify name (`i-lucide-folder`, `lucide:folder`)\nor a Vue component that renders Lynx elements directly.\n\nWhen `name` is a component it's rendered bare as a pure escape hatch — the\nprimitive does not forward `size`, `color`, or `$attrs` into it. Callers\npassing a component own its rendering contract."
+    },
+    {
+      "name": "size",
+      "type": "string | number | undefined",
+      "required": false,
+      "default": "16",
+      "description": "Pixel size applied to both width and height of the resolved SVG. Defaults\nto `16` — the conventional icon baseline (Lucide / Nuxt UI). This is the\none opinionated default on the primitive; override per-call when needed."
+    }
+  ],
+  "events": [],
+  "slots": []
+}

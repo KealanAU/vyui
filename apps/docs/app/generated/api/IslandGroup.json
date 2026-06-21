@@ -1,0 +1,47 @@
+{
+  "props": [
+    {
+      "name": "align",
+      "type": "\"center\" | \"start\" | \"end\" | \"between\" | undefined",
+      "required": false,
+      "description": "Cross-axis alignment of the group when fixed-positioned.\n`'between'` pins the first / last child to the edges."
+    },
+    {
+      "name": "direction",
+      "type": "\"row\" | \"col\" | undefined",
+      "required": false,
+      "description": "Stack direction. `'row'` lays members horizontally; `'col'` vertically."
+    },
+    {
+      "name": "layer",
+      "type": "\"base\" | \"overlay\" | \"inline\" | undefined",
+      "required": false,
+      "default": "\"overlay\"",
+      "description": "How the group participates in layout / stacking — the primary axis.\n - `overlay` — floats over page content (z-50).\n - `base` — floats at the viewport edge but on a low layer, so\n   higher-tier surfaces (drawers, modals) render over it.\n - `inline` — sits in normal flow; a parent layout owns placement.\n   `position` is ignored."
+    },
+    {
+      "name": "position",
+      "type": "\"bottom\" | \"top\" | undefined",
+      "required": false,
+      "description": "Which viewport edge to float against — only relevant when the group is\nfloating (`layer !== 'inline'`). Centered along the cross axis by default\n(tweak with `align`). Works on Lynx via an inline `style`, so no\ncaller-side positioning workaround is needed."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false,
+      "description": "Gap between member islands (and outer edge padding for `start`/`end`/\n`between` alignment)."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined"
+    }
+  ]
+}

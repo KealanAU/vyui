@@ -1,0 +1,159 @@
+{
+  "props": [
+    {
+      "name": "alwaysBouncing",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Allow bouncing even when the content is smaller than the viewport."
+    },
+    {
+      "name": "bounces",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Enable native bounce on iOS / Harmony / PC. Ignored when\n`enableBounces` turns on the custom main-thread bounce."
+    },
+    {
+      "name": "debugLog",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Emit verbose bounce diagnostics to the console."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disable scrolling."
+    },
+    {
+      "name": "enableBounceEventInFling",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Fire `scrollToBounces` when the bounce is reached during a fling, not\nonly during a finger-down drag."
+    },
+    {
+      "name": "enableBounces",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Turn on the custom main-thread bounce/overscroll system. When `false`\n(default) the component is a thin wrapper that only forwards the native\n`bounces` prop."
+    },
+    {
+      "name": "enableRTL",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Mirror horizontal bounce direction for RTL layouts."
+    },
+    {
+      "name": "endBounceTriggerDistance",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Overscroll distance (px) past the lower edge required to fire\n`scrollToBounces` with `{ direction: 'lower' }`."
+    },
+    {
+      "name": "estimatedHeight",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Size hint (px) used by the bounce maths before the first layout pass."
+    },
+    {
+      "name": "estimatedWidth",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Horizontal size hint (px) used before first layout."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Stable id for the scroll container. Required by the bounce system to\nselect the container / bounce wrappers on the main thread. Auto-generated\nwhen omitted."
+    },
+    {
+      "name": "lowerThreshold",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Distance (px) from the lower edge that fires `scrollToLower`."
+    },
+    {
+      "name": "scrollBarEnable",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Show the native scroll bar."
+    },
+    {
+      "name": "scrollOrientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"vertical\"",
+      "description": "Scroll direction."
+    },
+    {
+      "name": "singleSidedBounce",
+      "type": "SingleSidedBounce | undefined",
+      "required": false,
+      "default": "\"both\"",
+      "description": "Which edge(s) may bounce."
+    },
+    {
+      "name": "startBounceTriggerDistance",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Overscroll distance (px) past the upper edge required to fire\n`scrollToBounces` with `{ direction: 'upper' }`."
+    },
+    {
+      "name": "upperThreshold",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Distance (px) from the upper edge that fires `scrollToUpper`."
+    }
+  ],
+  "events": [
+    {
+      "name": "scrollToLower",
+      "type": "[event: unknown]"
+    },
+    {
+      "name": "scrollToUpper",
+      "type": "[event: unknown]"
+    },
+    {
+      "name": "scroll",
+      "type": "[event: unknown]"
+    },
+    {
+      "name": "scrollEnd",
+      "type": "[event: unknown]"
+    },
+    {
+      "name": "scrollToBounces",
+      "type": "[info: ScrollToBouncesInfo]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "any",
+      "description": "Scrollable content."
+    },
+    {
+      "name": "upperBounceItem",
+      "type": "any",
+      "description": "Overscroll indicator shown when pulling past the upper edge."
+    },
+    {
+      "name": "lowerBounceItem",
+      "type": "any",
+      "description": "Overscroll indicator shown when pulling past the lower edge."
+    }
+  ]
+}

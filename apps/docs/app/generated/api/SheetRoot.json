@@ -1,0 +1,94 @@
+{
+  "props": [
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Initial open state when uncontrolled."
+    },
+    {
+      "name": "defaultSnapIndex",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Initial snap index when uncontrolled (defaults to 0). The enter\nanimation always slides fully in first; when this points below the\nlargest snap the sheet then settles down to it. The index persists\nacross close/reopen."
+    },
+    {
+      "name": "dismissVelocity",
+      "type": "number | undefined",
+      "required": false,
+      "default": "600",
+      "description": "Downward velocity (px/s) at which a fling dismisses from any position\n(when `enableDragToClose`)."
+    },
+    {
+      "name": "duration",
+      "type": "number | undefined",
+      "required": false,
+      "default": "280",
+      "description": "Settle animation duration in ms. Drag release snap-back uses it\ndirectly; drag-dismiss and touch-cancel use shorter cuts of it."
+    },
+    {
+      "name": "enableDragToClose",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Allow drag below the most-closed snap to dismiss. When `false` with\nmultiple snap points, drag between snaps still works — only the\ndismiss branch is disabled."
+    },
+    {
+      "name": "handleOnly",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Restrict drag interaction to `<SheetHandle>` only. When `true`, the\n`<SheetContent>` body does not respond to touch."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Controlled open state. Bind with `v-model:open`."
+    },
+    {
+      "name": "snapIndex",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Controlled current snap index. Bind with `v-model:snapIndex`. Indexes\nthe SORTED `snapPoints` (0 = smallest fraction = most closed). Updated\nby drag settles; writing it animates the open sheet to that snap."
+    },
+    {
+      "name": "snapPoints",
+      "type": "number[] | undefined",
+      "required": false,
+      "default": "[1]",
+      "description": "Snap points as fractions of viewport height, low → high. e.g. `[0.25, 0.5, 0.9]`."
+    },
+    {
+      "name": "velocityThreshold",
+      "type": "number | undefined",
+      "required": false,
+      "default": "400",
+      "description": "Absolute velocity (px/s) above which a fling advances by one snap regardless\nof position. Currently unused — the release logic (mirroring\n`pickRelease`) implements flick-advance via a 100ms coast projection\ninstead. Reserved."
+    },
+    {
+      "name": "viewportHeight",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Viewport height in px. If omitted, reads from `SystemInfo.pixelHeight /\npixelRatio` at runtime, falling back to `800`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    },
+    {
+      "name": "update:snapIndex",
+      "type": "[value: number]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ open: boolean; snapIndex: number; }"
+    }
+  ]
+}

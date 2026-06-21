@@ -1,0 +1,83 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | Component | undefined",
+      "required": false,
+      "default": "\"view\"",
+      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
+    },
+    {
+      "name": "asChild",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nRead our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string[] | undefined",
+      "required": false,
+      "description": "The value of the pin input when initially rendered."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, prevents the user from interacting with the pin input."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Id of the element."
+    },
+    {
+      "name": "mask",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, inputs render as password fields."
+    },
+    {
+      "name": "modelValue",
+      "type": "string[] | null | undefined",
+      "required": false,
+      "description": "The controlled value of the pin input. Can be bound with `v-model`."
+    },
+    {
+      "name": "otp",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "When `true`, enables one-time-code autofill on mobile."
+    },
+    {
+      "name": "placeholder",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"\"",
+      "description": "The placeholder character shown in empty inputs."
+    },
+    {
+      "name": "type",
+      "type": "PinInputType | undefined",
+      "required": false,
+      "default": "\"text\"",
+      "description": "The value type for the inputs."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: string[]]"
+    },
+    {
+      "name": "complete",
+      "type": "[value: string[]]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ modelValue: string[]; }"
+    }
+  ]
+}

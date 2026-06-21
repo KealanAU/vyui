@@ -1,0 +1,130 @@
+{
+  "props": [
+    {
+      "name": "actions",
+      "type": "ButtonProps[] | undefined",
+      "required": false,
+      "description": "Action buttons rendered after the body."
+    },
+    {
+      "name": "avatar",
+      "type": "AvatarProps | undefined",
+      "required": false,
+      "description": "Avatar rendered in the leading slot (loses to `icon`)."
+    },
+    {
+      "name": "close",
+      "type": "boolean | Partial<ButtonProps> | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Show a close button. Pass `true` to render the default, or partial\n`ButtonProps` to customize it. Pass `false` to hide."
+    },
+    {
+      "name": "closeIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the close button. Defaults to `appConfig.ui.icons.close`."
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "description",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Description text. Overridden by the `description` slot."
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name rendered in the leading slot."
+    },
+    {
+      "name": "orientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false
+    },
+    {
+      "name": "progress",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Show a thin countdown bar along the bottom edge that drains as the\nauto-dismiss timer runs. Tracks `ToastRoot`'s `progress`, so it pauses\nwhile the stack is expanded and is hidden when auto-dismiss is off\n(`duration: 0`)."
+    },
+    {
+      "name": "stacked",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Sonner-style stacking. When `true`, toasts collapse into an overlapping\npile (front toast fully visible, the rest peeking out scaled-down behind\nit) and fan out under each other when the stack is expanded — tap any\ntoast to toggle. Off by default: toasts render as a plain gapped column.\n\nRequires the surrounding `<ToastProvider>` (it owns the shared stack\norder/expanded state) and a `<ToastViewport>` anchored to match `stackFrom`."
+    },
+    {
+      "name": "stackFrom",
+      "type": "\"bottom\" | \"top\" | undefined",
+      "required": false,
+      "default": "\"bottom\"",
+      "description": "Which edge the stack is pinned to — must match the `ToastViewport`\n`position`. `top` fans toasts downward, `bottom` fans them upward.\nOnly used when `stacked`. Defaults to `bottom` (Sonner's default)."
+    },
+    {
+      "name": "swipe",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Enable swipe-to-dismiss (fling the toast away to close it)."
+    },
+    {
+      "name": "swipeDirection",
+      "type": "\"horizontal\" | \"right\" | \"left\" | undefined",
+      "required": false,
+      "default": "\"horizontal\"",
+      "description": "Directions a swipe may dismiss in. `horizontal` (default) flings either\nway; `left` / `right` constrain it. Only used when `swipe`."
+    },
+    {
+      "name": "title",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Title text. Overridden by the `title` slot."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"description\" | \"root\" | \"title\" | \"icon\" | \"close\" | \"wrapper\" | \"actions\" | \"avatar\" | \"progress\" | \"avatarSize\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "leading",
+      "type": "{ iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the toast's resolved color."
+    },
+    {
+      "name": "title",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "description",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "actions",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "close",
+      "type": "{ ui: any; }"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "props": [
+    {
+      "name": "confirmType",
+      "type": "InputConfirmType | undefined",
+      "required": false,
+      "description": "On-screen return-key label."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Id of the underlying input element. Falls back to the Root's `id`."
+    },
+    {
+      "name": "placeholder",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Placeholder shown when the field is empty."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

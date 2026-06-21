@@ -1,0 +1,44 @@
+{
+  "props": [
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "The open state of the dropdown menu when it is initially rendered."
+    },
+    {
+      "name": "dir",
+      "type": "Direction | undefined",
+      "required": false,
+      "default": "\"ltr\"",
+      "description": "The reading direction of the dropdown menu when applicable."
+    },
+    {
+      "name": "modal",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "When `true`, interaction with outside elements will be disabled and only menu content will be visible to screen readers."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "undefined",
+      "description": "The controlled open state of the dropdown menu. Can be bound with `v-model:open`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ open: boolean; }"
+    }
+  ]
+}

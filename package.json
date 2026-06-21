@@ -20,6 +20,9 @@
     "@changesets/cli": "^2.31.0",
     "@svitejs/changesets-changelog-github-compact": "^1.2.0",
     "pnpm": "^11.0.0",
-    "tsx": "^4.19.2"
+    "shiki": "^4.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.0",
+    "vue-component-meta": "^3.3.2"
   }
 }

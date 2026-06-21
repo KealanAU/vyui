@@ -1,0 +1,36 @@
+{
+  "props": [
+    {
+      "name": "as",
+      "type": "AsTag | undefined",
+      "required": false,
+      "default": "\"view\""
+    },
+    {
+      "name": "backdropStyle",
+      "type": "Record<string, any> | undefined",
+      "required": false,
+      "description": "Style applied to the full-screen backdrop wrapper. No defaults — pass `backgroundColor`, alignment, etc. for sheet/modal dim and dock position."
+    }
+  ],
+  "events": [
+    {
+      "name": "interactOutside",
+      "type": "[event: DismissableLayerEvent]"
+    },
+    {
+      "name": "pointerDownOutside",
+      "type": "[event: DismissableLayerEvent]"
+    },
+    {
+      "name": "escapeKeyDown",
+      "type": "[event: DismissableLayerEvent]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

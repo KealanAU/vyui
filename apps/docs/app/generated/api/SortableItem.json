@@ -1,0 +1,24 @@
+{
+  "props": [
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disable dragging on this specific row."
+    },
+    {
+      "name": "index",
+      "type": "number",
+      "required": true,
+      "description": "Logical index of this item in the SortableRoot's `items` array."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ dragging: boolean; index: number; }"
+    }
+  ]
+}

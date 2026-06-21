@@ -1,0 +1,107 @@
+{
+  "props": [
+    {
+      "name": "checkedIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown inside the thumb when checked."
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "description",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Description text rendered below the label. Overridden by the `description` slot."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false"
+    },
+    {
+      "name": "highlight",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Paints a static ring matching `color`, ignoring focus state."
+    },
+    {
+      "name": "id",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying core control."
+    },
+    {
+      "name": "label",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Label text rendered next to the switch. Overridden by the `label` slot."
+    },
+    {
+      "name": "loading",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Show a loading spinner inside the thumb instead of `checkedIcon`/`uncheckedIcon`."
+    },
+    {
+      "name": "loadingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the spinner. Defaults to `appConfig.ui.icons.loading`."
+    },
+    {
+      "name": "modelValue",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false"
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying core control."
+    },
+    {
+      "name": "required",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying core control."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"description\" | \"root\" | \"label\" | \"icon\" | \"wrapper\" | \"thumb\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "uncheckedIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown inside the thumb when unchecked."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "label",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "description",
+      "type": "{} | undefined"
+    }
+  ]
+}

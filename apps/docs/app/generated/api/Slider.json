@@ -1,0 +1,86 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "defaultValue",
+      "type": "number | number[] | undefined",
+      "required": false,
+      "description": "Initial value when uncontrolled. Same shape rules as `modelValue`."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false"
+    },
+    {
+      "name": "inverted",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Visually invert the track direction."
+    },
+    {
+      "name": "max",
+      "type": "number | undefined",
+      "required": false,
+      "default": "100"
+    },
+    {
+      "name": "min",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0"
+    },
+    {
+      "name": "minStepsBetweenThumbs",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Minimum step distance between adjacent thumbs (multi-thumb only)."
+    },
+    {
+      "name": "modelValue",
+      "type": "number | number[] | undefined",
+      "required": false,
+      "description": "Controlled value. Accepts a single `number` for one thumb or `number[]` for\nmulti-thumb ranges. The shape is preserved end-to-end — pass `50`, get\n`50` back on `update:modelValue`; pass `[10, 90]`, get `[10, 90]` back."
+    },
+    {
+      "name": "name",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying core control."
+    },
+    {
+      "name": "orientation",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
+      "required": false,
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "step",
+      "type": "number | undefined",
+      "required": false,
+      "default": "1"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"track\" | \"range\" | \"thumb\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: number | number[]]"
+    }
+  ],
+  "slots": []
+}

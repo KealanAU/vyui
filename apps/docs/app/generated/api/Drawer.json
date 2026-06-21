@@ -1,0 +1,169 @@
+{
+  "props": [
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Initial open state when uncontrolled."
+    },
+    {
+      "name": "defaultSnapIndex",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Initial snap index when uncontrolled."
+    },
+    {
+      "name": "description",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Header description. Overridden by the `description` slot."
+    },
+    {
+      "name": "direction",
+      "type": "\"bottom\" | \"top\" | \"right\" | \"left\" | undefined",
+      "required": false,
+      "description": "Alias for `side` — matches Nuxt UI's Drawer (vaul) API."
+    },
+    {
+      "name": "dismissible",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "When `false`, tapping the overlay does not close the drawer."
+    },
+    {
+      "name": "dragDisabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Disable dragging on the underlying SheetContent."
+    },
+    {
+      "name": "handle",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Show the drag-handle pill at the top of the drawer."
+    },
+    {
+      "name": "keyboardAware",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, the footer translates upward to stay above the on-screen\nkeyboard on Lynx. Internally wraps the scaffold in `KeyboardAwareRoot`,\nthe footer in `KeyboardAwareResponder`, and the footer slot in\n`KeyboardAwareTrigger` — any focused `VyInput`/`VyTextarea` inside the\nfooter drives the lift. No-op on web/jsdom (no platform keyboard event)."
+    },
+    {
+      "name": "keyboardAwareForceAttach",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Forwarded to `KeyboardAwareRoot.forceAttach`. Defaults to `true` so the\nfooter sticks to the keyboard's top edge (chat-style UX). Set `false`\nfor forms where the input only needs to be barely above the keyboard."
+    },
+    {
+      "name": "modelValue",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "v-model alias for `open` (Nuxt UI parity)."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Controlled open state."
+    },
+    {
+      "name": "overlay",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Render the dim overlay behind the content."
+    },
+    {
+      "name": "portal",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Render the drawer in a portal. Currently advisory — core `SheetContent` mounts in place."
+    },
+    {
+      "name": "side",
+      "type": "\"bottom\" | \"top\" | \"right\" | \"left\" | undefined",
+      "required": false,
+      "default": "\"bottom\"",
+      "description": "Side the drawer slides in from. NOTE: the underlying core `Sheet*` is\na bottom-sheet — this drives `data-side` for styling but the physical\ndrag direction is fixed. Map `direction` from Nuxt UI's Drawer to\nthe same prop for parity."
+    },
+    {
+      "name": "snapPoints",
+      "type": "number[] | undefined",
+      "required": false,
+      "default": "[0.75]",
+      "description": "Snap fractions (0 → 1) forwarded to `SheetRoot`. Defaults to a single\nthree-quarter-height snap so a bottom drawer doesn't take over the entire\nviewport. Pass `[1]` for a full-screen drawer or e.g. `[0.4, 0.9]` for a\nresizable sheet."
+    },
+    {
+      "name": "title",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Header title. Overridden by the `title` slot."
+    },
+    {
+      "name": "transition",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Animate the drawer when opening/closing."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"description\" | \"header\" | \"content\" | \"body\" | \"title\" | \"overlay\" | \"handle\" | \"close\" | \"wrapper\" | \"footer\" | \"scaffold\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: boolean]"
+    },
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ open: boolean; }",
+      "description": "Trigger content. `SheetTrigger` sets open to `true` on tap; do NOT bind\na `@tap` handler on the slotted child that also sets open — use\n`v-model:open` (or `v-model`)."
+    },
+    {
+      "name": "content",
+      "type": "{ close: () => void; }",
+      "description": "Full content override — replaces the default header/body/footer layout.\nMatches the Nuxt UI escape hatch: pass arbitrary children when the\nstandard slot scaffold doesn't fit."
+    },
+    {
+      "name": "header",
+      "type": "{ close: () => void; }",
+      "description": "Header region."
+    },
+    {
+      "name": "title",
+      "type": "{} | undefined",
+      "description": "Override the title text."
+    },
+    {
+      "name": "description",
+      "type": "{} | undefined",
+      "description": "Override the description text."
+    },
+    {
+      "name": "body",
+      "type": "{ close: () => void; }",
+      "description": "Main body content."
+    },
+    {
+      "name": "footer",
+      "type": "{ close: () => void; }",
+      "description": "Footer region."
+    }
+  ]
+}

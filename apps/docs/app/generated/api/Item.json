@@ -1,0 +1,23 @@
+{
+  "props": [
+    {
+      "name": "estimatedSize",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Optional fixed estimated height (vertical) / width (horizontal). Helps\nLynx allocate cells before measure."
+    },
+    {
+      "name": "itemKey",
+      "type": "string",
+      "required": true,
+      "description": "Stable unique key for this row. Required — duplicate or unstable keys\ncause `<list>` to recycle the wrong cell."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "any"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "props": [
+    {
+      "name": "width",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Override the item width inherited from SwiperRoot. Rare — only set when\nan item should occupy a different track segment than the snap unit."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

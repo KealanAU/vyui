@@ -1,0 +1,32 @@
+{
+  "props": [
+    {
+      "name": "duration",
+      "type": "number | undefined",
+      "required": false,
+      "default": "5000",
+      "description": "Time in milliseconds a toast remains visible before auto-dismissing. `0` disables it."
+    },
+    {
+      "name": "expandByDefault",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, the toast stack starts in the expanded state."
+    },
+    {
+      "name": "label",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"Notification\"",
+      "description": "An author-localized label for each toast."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ expanded: boolean; count: number; expand: () => void; collapse: () => void; }"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "props": [
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "inset",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, keep the chip inside the wrapped element (no edge nudge)."
+    },
+    {
+      "name": "position",
+      "type": "\"top-right\" | \"bottom-right\" | \"top-left\" | \"bottom-left\" | undefined",
+      "required": false,
+      "description": "Corner the chip is anchored to. Defaults to `top-right`."
+    },
+    {
+      "name": "show",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Hide the chip itself; the wrapped child still renders. Defaults to `true`."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | \"2xl\" | \"xs\" | \"3xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "standalone",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, render the dot without the relative wrapper (no overlay)."
+    },
+    {
+      "name": "text",
+      "type": "string | number | undefined",
+      "required": false,
+      "description": "Optional text/count rendered inside the chip — turns the dot into a pill."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\" | \"root\" | \"text\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "content",
+      "type": "{} | undefined"
+    }
+  ]
+}

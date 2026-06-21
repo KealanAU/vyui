@@ -1,0 +1,79 @@
+{
+  "props": [
+    {
+      "name": "axis",
+      "type": "DraggableAxis | undefined",
+      "required": false,
+      "default": "\"both\"",
+      "description": "Lock drag to a single axis. `'both'` allows free 2D pan."
+    },
+    {
+      "name": "bounds",
+      "type": "DraggableBounds | undefined",
+      "required": false,
+      "description": "Bounds in px relative to the drag origin. Omitted side = unbounded."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Disable interaction."
+    },
+    {
+      "name": "duration",
+      "type": "number | undefined",
+      "required": false,
+      "default": "220",
+      "description": "Reset animation duration in ms. Only used when `resetOnEnd` is `true`."
+    },
+    {
+      "name": "emitMove",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Emit `drag-move` on every touchmove. Off by default."
+    },
+    {
+      "name": "momentum",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Carry release velocity into a momentum coast: a flick keeps gliding and\ndecelerates to rest (clamped to `bounds`) instead of stopping dead at the\nfinger. Ignored when `resetOnEnd` is `true` (reset wins). Off by default."
+    },
+    {
+      "name": "momentumDecel",
+      "type": "number | undefined",
+      "required": false,
+      "default": "5",
+      "description": "Deceleration rate for `momentum`. Higher = shorter fling. Projected\ncoast distance is `velocity / decel`."
+    },
+    {
+      "name": "resetOnEnd",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Animate back to `(0, 0)` on release."
+    }
+  ],
+  "events": [
+    {
+      "name": "dragStart",
+      "type": "[DraggablePosition]"
+    },
+    {
+      "name": "dragMove",
+      "type": "[DragMovePayload]"
+    },
+    {
+      "name": "dragEnd",
+      "type": "[DragEndPayload]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ dragging: boolean; }"
+    }
+  ]
+}

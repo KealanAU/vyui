@@ -1,0 +1,123 @@
+{
+  "props": [
+    {
+      "name": "checkedIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for checked checkbox items. Defaults to `appConfig.ui.icons.check`."
+    },
+    {
+      "name": "childrenIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the trailing chevron on items with children. Defaults to `appConfig.ui.icons.chevronRight`."
+    },
+    {
+      "name": "content",
+      "type": "DropdownMenuContentSettings | undefined",
+      "required": false,
+      "default": "{ side: \"bottom\", sideOffset: 8, align: \"start\" }",
+      "description": "Positioning settings — `side`, `align`, `sideOffset` control where the\nmenu docks relative to its trigger. (Sheet-presentation pickers belong\non `VySelect` / `VyCombobox` — DropdownMenu is the trigger-anchored\naction menu.)"
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Initial open state when uncontrolled."
+    },
+    {
+      "name": "descriptionKey",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"description\"",
+      "description": "Key on each item used as the rendered description."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Disable the trigger."
+    },
+    {
+      "name": "items",
+      "type": "DropdownMenuItem[] | DropdownMenuItem[][] | undefined",
+      "required": false,
+      "description": "Flat list, OR a nested array where each inner array becomes a group separated by a `<DropdownMenuSeparator>`."
+    },
+    {
+      "name": "labelKey",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"label\"",
+      "description": "Key on each item used as the rendered label."
+    },
+    {
+      "name": "loadingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the loading spinner. Defaults to `appConfig.ui.icons.loading`."
+    },
+    {
+      "name": "modal",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Modality. When `true`, taps outside the menu are blocked from reaching\nthe underlying app."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Controlled open state."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"item\" | \"content\" | \"label\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemLabel\" | \"itemTrailingIcon\" | \"separator\" | \"group\" | \"itemTrailing\" | \"itemLeadingAvatarSize\" | \"itemWrapper\" | \"itemDescription\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ open: boolean; }",
+      "description": "Trigger content. `DropdownMenuTrigger` toggles open state on tap; do NOT\nbind a `@tap` handler on the slotted child that also sets the open state."
+    },
+    {
+      "name": "item",
+      "type": "DropdownMenuItemSlotProps",
+      "description": "Custom rendering for every item (replaces all per-section defaults)."
+    },
+    {
+      "name": "item-leading",
+      "type": "DropdownMenuItemSlotProps",
+      "description": "Custom rendering for every item's leading slot."
+    },
+    {
+      "name": "item-label",
+      "type": "DropdownMenuItemSlotProps",
+      "description": "Custom rendering for every item's label."
+    },
+    {
+      "name": "item-description",
+      "type": "DropdownMenuItemSlotProps",
+      "description": "Custom rendering for every item's description."
+    },
+    {
+      "name": "item-trailing",
+      "type": "DropdownMenuItemSlotProps",
+      "description": "Custom rendering for every item's trailing slot."
+    }
+  ]
+}
