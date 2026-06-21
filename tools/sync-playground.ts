@@ -11,7 +11,8 @@
  *
  * Run via `pnpm --filter @vyui/docs playground:build`, which builds first.
  */
-import { copyFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { copyFileSync, cpSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { codeToHtml } from 'shiki'
@@ -25,7 +26,19 @@ const publicDir = resolve(root, 'apps/docs/public/playground')
 mkdirSync(publicDir, { recursive: true })
 copyFileSync(bundleSrc, resolve(publicDir, 'main.web.bundle'))
 
-// 2. Example sources -> generated manifest
+// 2. Prebuilt Lynx web runtime -> docs public/
+//
+// Keep this asset tree intact. Importing @lynx-js/web-core/client through
+// Nuxt/Vite rewrites its WASM URLs into optimized dependency paths; serving
+// the package's production runtime untouched preserves its relative chunk and
+// WASM URLs, matching the integration used by the official Lynx docs.
+const docsRequire = createRequire(resolve(root, 'apps/docs/package.json'))
+const runtimeEntry = docsRequire.resolve('@lynx-js/web-core/client.prod.js')
+const runtimeSrc = resolve(dirname(runtimeEntry), '../..')
+const runtimeDir = resolve(root, 'apps/docs/public/lynx-runtime')
+cpSync(runtimeSrc, runtimeDir, { recursive: true, force: true })
+
+// 3. Example sources -> generated manifest
 const examplesDir = resolve(playground, 'src/examples')
 
 const toKebab = (name: string) =>
@@ -57,4 +70,4 @@ writeFileSync(
   + `export const examples: Record<string, { source: string, highlighted: string }> = ${JSON.stringify(manifest, null, 2)}\n`,
 )
 
-console.log(`[sync-playground] bundle + ${Object.keys(manifest).length} example sources synced`)
+console.log(`[sync-playground] runtime + bundle + ${Object.keys(manifest).length} example sources synced`)

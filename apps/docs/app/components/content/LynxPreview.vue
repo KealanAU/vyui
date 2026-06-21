@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { LynxViewElement } from '@lynx-js/web-core/client'
+import { loadLynxWebRuntime } from '~/utils/loadLynxWebRuntime'
 
 // Renders a live @vyui/core example by loading the docs-playground web bundle
 // into a Lynx `<lynx-view>` web-runtime element. The `name` selects which
@@ -19,7 +20,7 @@ let lynxView: LynxViewElement | undefined
 
 onMounted(async () => {
   try {
-    await import('@lynx-js/web-core/client')
+    await loadLynxWebRuntime()
 
     if (!host.value) return
     const el = document.createElement('lynx-view') as LynxViewElement
@@ -37,7 +38,8 @@ onMounted(async () => {
     el.style.height = props.height
     el.addEventListener('error', (event) => {
       failed.value = true
-      errorMessage.value = (event as CustomEvent<{ error?: Error }>).detail?.error?.message || 'The Lynx web runtime could not load this example.'
+      const detail = (event as unknown as CustomEvent<{ error?: Error }>).detail
+      errorMessage.value = detail?.error?.message || 'The Lynx web runtime could not load this example.'
     })
     host.value.appendChild(el)
   }
