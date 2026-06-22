@@ -4,6 +4,7 @@
   "default": "default",
   "styles": [
     "default",
-    "rounded"
+    "rounded",
+    "shadcn"
   ]
 }

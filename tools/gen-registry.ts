@@ -61,6 +61,7 @@ interface StyleDef { name: string, overlay?: string }
 const STYLES: StyleDef[] = [
   { name: 'default' },
   { name: 'rounded', overlay: resolve(root, 'styles/rounded') },
+  { name: 'shadcn', overlay: resolve(root, 'styles/shadcn') },
 ]
 
 // ── version resolution ─────────────────────────────────────────────────────

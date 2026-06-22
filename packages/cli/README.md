@@ -52,6 +52,7 @@ change**, registered in the `STYLES` array of `tools/gen-registry.ts`:
 const STYLES = [
   { name: 'default' },                                     // sources from packages/kit/src
   { name: 'rounded', overlay: resolve(root, 'styles/rounded') }, // token-only overlay
+  { name: 'shadcn', overlay: resolve(root, 'styles/shadcn') },   // tokens + one theme overlay
 ]
 ```
 
@@ -65,7 +66,11 @@ const STYLES = [
    its generated `r/rounded/` registry reuses all base components verbatim.
 2. **Full-file overlay (escape hatch).** Drop in a replacement `theme/*.ts` (or
    even a `.vue`) **only** when a slot's classes or structure must differ in a
-   way tokens can't express. The overlay wins per file.
+   way tokens can't express. The overlay wins per file. The shipped `shadcn`
+   style shows this tier: a `style.css` (monochrome `primary`→zinc, `--ui-radius:
+   0.5rem`) **plus** a `theme/button.ts` overlay that flips the default button to
+   the near-black `neutral` solid — every other component is still reused from
+   the base and just inherits the tokens.
 
 > Finer-than-token overrides (changing one slot of one component's theme without
 > rewriting the whole file) currently require a full-file theme overlay.
