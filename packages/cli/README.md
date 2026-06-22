@@ -27,6 +27,7 @@ npx @vyui/cli styles
 | --- | --- |
 | `--registry <url>` | Registry base URL (default `https://vyui.dev/r`) |
 | `--style <name>` | Style to use (`init`; default comes from the registry) |
+| `--base-color <name>` | Neutral/gray palette (`init`; e.g. `slate`, `zinc`, `stone`) |
 | `--all` | Add every component in the registry (`add`) |
 | `--overwrite` | Overwrite files that already exist |
 | `--skip-install` | Don't install npm dependencies |
@@ -40,18 +41,63 @@ canonical kit; the `style` chosen at `init` is stored in `vyui.config.json` and
 every `add` pulls from that namespace. To re-style a project, change `style` in
 the config (then re-`add --overwrite`).
 
-A style is, for most components, just a different set of `theme/*.ts` files plus
-its own `style.css` / Tailwind preset tokens — the component `.vue` files are
-pure structure. Author one by creating an overlay dir mirroring
-`packages/kit/src` (only the files you change) and registering it in the
-`STYLES` array of `tools/gen-registry.ts`:
+### Authoring a style — work from the cheapest layer up
+
+vyui separates **structure** (`.vue`), **appearance** (`theme/*.ts`), and
+**tokens** (`style.css` CSS vars + the Tailwind preset). A new style is an
+overlay dir mirroring `packages/kit/src` containing **only the files you
+change**, registered in the `STYLES` array of `tools/gen-registry.ts`:
 
 ```ts
 const STYLES = [
-  { name: 'default' },                                   // sources from packages/kit/src
-  { name: 'shadcn', overlay: resolve(root, 'styles/shadcn') }, // overlay wins per file
+  { name: 'default' },                                     // sources from packages/kit/src
+  { name: 'rounded', overlay: resolve(root, 'styles/rounded') }, // token-only overlay
 ]
 ```
+
+1. **Token layer (primary).** An overlay with just `style.css` and/or
+   `tailwind.js`. Because every `rounded-*` utility resolves off `--ui-radius`,
+   border weights off the preset's `borderWidth`, the neutral palette off the
+   `--ui-color-neutral-*` block, and icons off `theme/icons`, most restyling —
+   **radius, neutral palette, border weight, icon set** — lives here and reuses
+   every base `.vue` + `theme/*.ts` untouched. The shipped `rounded` style is a
+   worked example: it overlays **only `style.css`** (a larger `--ui-radius`) and
+   its generated `r/rounded/` registry reuses all base components verbatim.
+2. **Full-file overlay (escape hatch).** Drop in a replacement `theme/*.ts` (or
+   even a `.vue`) **only** when a slot's classes or structure must differ in a
+   way tokens can't express. The overlay wins per file.
+
+> Finer-than-token overrides (changing one slot of one component's theme without
+> rewriting the whole file) currently require a full-file theme overlay.
+> Generation-time theme-delta deep-merge is a possible future enhancement — it's
+> not supported today because the copy-source model can't reliably re-serialize
+> builder-function themes.
+
+## Theming: install-time vs runtime
+
+There are two distinct theming axes; they do **not** overlap, so know which one
+you're reaching for.
+
+**Install-time (styles / tokens).** The `style` + `--base-color` you pick at
+`init`, materialised in the copied `style.css` and `vyui-preset.js`. This is
+where **radius, the neutral/gray palette, and border weights** live. `--base-color`
+substitutes the chosen palette (`slate`/`zinc`/`stone`/…) into the
+`--ui-color-neutral-*` ramp and the plugin's `gray` default at copy time. To
+change these after install you edit the CSS vars / preset in your own copy.
+
+**Runtime (`appConfig` via the `VyUI` plugin).** The `ui` options you pass to
+`app.use(VyUI, { ui: { primary, gray, … } })` (and per-component `ui`
+overrides). These flow through `useAppConfig`.
+
+> **Caveat — runtime `primary` is not a full recolor.** `appConfig.ui.primary`
+> only affects (a) the variant **color list** and (b) the **baked SVG icon
+> fills** (Lynx `<svg>` can't inherit `currentColor`, so `resolveColor.ts` bakes
+> the hex at render). The actual `bg-primary-*` / `text-primary-*` Tailwind
+> class surfaces resolve through the `--ui-color-primary-*` **CSS vars**, so
+> setting `primary` at runtime does **not** recolor those surfaces — that
+> requires editing the CSS vars / tokens (the install-time layer). Treat runtime
+> `primary` as "pick from the existing palettes for icons + variants", not
+> "rebrand the whole component set".
 
 ## How it works
 

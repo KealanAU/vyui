@@ -3,6 +3,7 @@
   "registry": "https://vyui.dev/r",
   "default": "default",
   "styles": [
-    "default"
+    "default",
+    "rounded"
   ]
 }

@@ -22,6 +22,7 @@ ${c.bold('Commands')}
 ${c.bold('Options')}
   --registry <url>     Registry base URL (default https://vyui.dev/r)
   --style <name>       Style to use (init; default from the registry)
+  --base-color <name>  Neutral/gray palette (init; e.g. slate, zinc, stone)
   --all                Add every component in the registry (add)
   --overwrite          Overwrite files that already exist
   --skip-install       Don't install npm dependencies
@@ -36,6 +37,7 @@ async function main(): Promise<void> {
     options: {
       registry: { type: 'string' },
       style: { type: 'string' },
+      'base-color': { type: 'string' },
       all: { type: 'boolean' },
       overwrite: { type: 'boolean' },
       'skip-install': { type: 'boolean' },
@@ -61,7 +63,7 @@ async function main(): Promise<void> {
 
   switch (command) {
     case 'init':
-      await init({ ...common, registry: values.registry, style: values.style })
+      await init({ ...common, registry: values.registry, style: values.style, baseColor: values['base-color'] })
       break
     case 'add':
       await add({ ...common, components: rest, all: values.all })

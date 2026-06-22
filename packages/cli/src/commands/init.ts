@@ -10,6 +10,7 @@ const DEFAULT_REGISTRY = 'https://vyui.dev/r'
 export interface InitOptions {
   registry?: string
   style?: string
+  baseColor?: string
   yes?: boolean
   skipInstall?: boolean
   overwrite?: boolean
@@ -55,7 +56,10 @@ export async function init(opts: InitOptions): Promise<void> {
 
   const prefix = opts.yes ? defaultPrefix : await prompt('Import alias prefix?', defaultPrefix)
   const srcDir = opts.yes ? defaultSrcDir : await prompt('Source directory?', defaultSrcDir)
-  const baseColor = opts.yes ? 'slate' : await prompt('Base gray color?', 'slate')
+  // Explicit `--base-color` flag wins; else prompt (default `slate`), or take
+  // the default under `-y`. This is the neutral/gray palette the
+  // `__VYUI_GRAY__` sentinel in `style.css` / `plugin.ts` is substituted for.
+  const baseColor = opts.baseColor ?? (opts.yes ? 'slate' : await prompt('Base gray color?', 'slate'))
 
   // Bundler aliases (vite/webpack) won't show up in tsconfig, so warn rather than fail.
   if (!hasPathsEntryForPrefix(cwd, prefix)) {

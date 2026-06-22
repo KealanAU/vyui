@@ -60,7 +60,14 @@ export function writeFiles(files: RegistryFile[], config: VyuiConfig, projectRoo
       log.step(`${c.yellow('skip')} ${rel(projectRoot, dest)} ${c.dim('(exists, use --overwrite)')}`)
       continue
     }
-    const content = VERBATIM.has(file.type) ? file.content : rewriteImports(file, config)
+    // `rewriteImports` swaps the `@@vyui:` import placeholders for the user's
+    // aliases (skipped for VERBATIM preset/style files). The gray substitution
+    // is orthogonal — it swaps the `__VYUI_GRAY__` neutral-palette sentinel for
+    // the configured `baseColor` — so it runs on EVERY file regardless of
+    // VERBATIM (the sentinel lives in `style.css`, a VERBATIM file, AND in
+    // `plugin.ts`, which goes through rewriteImports).
+    const rewritten = VERBATIM.has(file.type) ? file.content : rewriteImports(file, config)
+    const content = rewritten.replaceAll('__VYUI_GRAY__', config.baseColor)
     mkdirSync(dirname(dest), { recursive: true })
     writeFileSync(dest, content)
     result.written.push(dest)

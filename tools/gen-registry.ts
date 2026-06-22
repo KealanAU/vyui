@@ -10,9 +10,18 @@
  *
  * A style sources its files from `packages/kit/src` (the canonical `default`
  * style) plus an optional overlay dir. For each file the overlay wins if it
- * exists, else the kit base is used — so a new style is usually just a set of
- * `theme/*.ts` + a `style.css` / preset override, since the component `.vue`
- * files are pure structure and the appearance lives in the theme.
+ * exists, else the kit base is used.
+ *
+ * STYLING CASCADE — author from the cheapest layer up:
+ *   1. TOKEN LAYER (primary): an overlay with ONLY `style.css` and/or
+ *      `tailwind.js`. Because vyui separates structure (`.vue`) / appearance
+ *      (`theme/*.ts`) / tokens (CSS vars + preset), most restyling — radius,
+ *      neutral palette, border weight, icon set — is achievable here alone.
+ *      Such an overlay reuses ALL base `.vue` + `theme/*.ts` files verbatim;
+ *      the `rounded` style below is a worked example (radius + neutral only).
+ *   2. FULL-FILE OVERLAY (escape hatch): drop in a replacement `theme/*.ts`
+ *      (or even a `.vue`) ONLY when a slot's classes or structure must differ
+ *      in a way tokens can't express. The overlay wins per file.
  *
  * Each component manifest inlines the SFC + its theme file, the npm
  * `dependencies` it needs, and the `registryDependencies` (other registry
@@ -42,12 +51,16 @@ const SHARED_THEME = new Set(['colors', 'icons', 'color-constants', 'index'])
 
 /**
  * Registered styles. `default` is the canonical kit. Add a new style by
- * creating an overlay dir (mirroring `packages/kit/src`) and registering it:
- *   { name: 'shadcn', overlay: resolve(root, 'styles/shadcn') }
+ * creating an overlay dir (mirroring `packages/kit/src`) and registering it.
+ * Prefer a TOKEN-ONLY overlay (`style.css` / `tailwind.js`) — see the cascade
+ * note at the top of this file. `rounded` is the worked token-only example:
+ * it ships ONLY `style.css` (bigger `--ui-radius`, `zinc` neutral) and reuses
+ * every base `.vue` + `theme/*.ts`.
  */
 interface StyleDef { name: string, overlay?: string }
 const STYLES: StyleDef[] = [
   { name: 'default' },
+  { name: 'rounded', overlay: resolve(root, 'styles/rounded') },
 ]
 
 // ── version resolution ─────────────────────────────────────────────────────
@@ -229,7 +242,7 @@ import icons from './theme/icons'
 
 /** Package-level defaults; user options are deep-merged on top via \`defu\`. */
 const defaultConfig: AppConfig = {
-  ui: { icons, primary: 'green', gray: 'slate' },
+  ui: { icons, primary: 'green', gray: '__VYUI_GRAY__' },
 }
 
 /**
@@ -245,7 +258,24 @@ export const VyUI: Plugin<VyUIPluginOptions> = {
 }
 `
 
-const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: string, content?: string }> = [
+/**
+ * Replace the `slate` palette in the NEUTRAL ramp of `style.css` with the
+ * `__VYUI_GRAY__` sentinel. The CLI substitutes the sentinel for the user's
+ * chosen `baseColor` at write time (mirrors the `@@vyui:` import placeholders),
+ * which is what actually wires the otherwise-dead `baseColor` config field.
+ *
+ * Scoped to the `--ui-color-neutral-*` block ONLY — the other semantic colors
+ * (primary/secondary/…) keep their literal palettes. With `baseColor: 'slate'`
+ * the substituted output is byte-identical to this source.
+ */
+function grayifyNeutralRamp(css: string): string {
+  return css.replace(
+    /(--ui-color-neutral-\d+:\s*theme\('colors\.)slate(\.\d+'\);)/g,
+    '$1__VYUI_GRAY__$2',
+  )
+}
+
+const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: string, content?: string, transform?: (s: string) => string }> = [
   { src: 'composables/useAppConfig.ts', path: 'composables/useAppConfig.ts', target: 'composables/useAppConfig.ts', type: 'registry:lib' },
   { src: 'composables/useStyledComponent.ts', path: 'composables/useStyledComponent.ts', target: 'composables/useStyledComponent.ts', type: 'registry:lib' },
   { src: 'composables/useComponentIcons.ts', path: 'composables/useComponentIcons.ts', target: 'composables/useComponentIcons.ts', type: 'registry:lib' },
@@ -257,7 +287,7 @@ const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: st
   { src: 'theme/color-constants.d.ts', path: 'theme/color-constants.d.ts', target: 'theme/color-constants.d.ts', type: 'registry:lib' },
   { src: 'types.ts', path: 'types.ts', target: 'types.ts', type: 'registry:lib' },
   { path: 'plugin.ts', target: 'plugin.ts', type: 'registry:lib', content: INIT_PLUGIN },
-  { src: 'style.css', path: 'style.css', target: 'style.css', type: 'registry:style' },
+  { src: 'style.css', path: 'style.css', target: 'style.css', type: 'registry:style', transform: grayifyNeutralRamp },
   // Sits at lib/vyui/ root so its relative `./theme/color-constants.js` import
   // resolves to the copied theme dir; the CLI leaves preset imports un-rewritten.
   { src: 'tailwind.js', path: 'tailwind.js', target: 'vyui-preset.js', type: 'registry:preset' },
@@ -376,7 +406,7 @@ function generateStyle(style: StyleDef) {
   // relative imports verbatim (no placeholder rewrite).
   const initDeps = new Set<string>()
   const initFiles: FileEntry[] = INIT_SOURCES.map((s) => {
-    const raw = s.content ?? read(s.src!)
+    const raw = s.transform ? s.transform(s.content ?? read(s.src!)) : (s.content ?? read(s.src!))
     if (s.type === 'registry:lib') {
       for (const ref of specRefsFor(s.path, raw)) {
         if (!ref.spec.startsWith('.')) {
