@@ -1,0 +1,8 @@
+{
+  "$schema": "https://vyui.dev/registry-styles.json",
+  "registry": "https://vyui.dev/r",
+  "default": "default",
+  "styles": [
+    "default"
+  ]
+}

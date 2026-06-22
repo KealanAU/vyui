@@ -1,0 +1,28 @@
+{
+  "name": "@vyui/cli",
+  "version": "0.0.0",
+  "description": "shadcn-style CLI for adding @vyui/kit styled components to a project",
+  "type": "module",
+  "bin": {
+    "vyui": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0"
+  }
+}
