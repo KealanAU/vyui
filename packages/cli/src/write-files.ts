@@ -5,18 +5,45 @@ import type { RegistryFile } from './registry-schema.js'
 import { rewriteImports } from './rewrite-imports.js'
 import { c, log } from './utils.js'
 
-/** Map a file's category-relative `target` to an on-disk path under the project. */
-export function destFor(target: string, config: VyuiConfig, projectRoot: string): string {
-  const [seg0, ...rest] = target.split('/')
-  const tail = rest.join('/')
-  switch (seg0) {
-    case 'composables': return join(projectRoot, config.paths.composables, tail)
-    case 'utils': return join(projectRoot, config.paths.utils, tail)
-    case 'theme': return join(projectRoot, config.paths.theme, tail)
-    default:
-      if (target.endsWith('.vue')) return join(projectRoot, config.paths.components, target)
-      return join(projectRoot, config.paths.lib, target) // types.ts, plugin.ts, style.css, vyui-preset.js
+/**
+ * Map a registry file to its on-disk path under the project. Routing is driven
+ * by `file.type` (the manifest carries it); the leading `target` segment is
+ * only consulted for the `registry:lib` init payload, which mixes categories
+ * (`composables/…`, `utils/…`, `theme/…`, plus root `types.ts` / `plugin.ts`).
+ *
+ *   registry:ui / registry:component → <components>/<target>  (preserves
+ *     subpaths like `internal/DropdownMenuItems.vue`, `islandContext.ts`)
+ *   registry:theme                   → <theme>/<basename-after-theme/>
+ *   registry:preset / registry:style → <lib>/<target>  (verbatim, no rewrite)
+ *   registry:lib                     → routed by leading segment
+ */
+export function destFor(file: RegistryFile, config: VyuiConfig, projectRoot: string): string {
+  const { target, type } = file
+  switch (type) {
+    case 'registry:ui':
+    case 'registry:component':
+      return join(projectRoot, config.paths.components, target)
+    case 'registry:theme':
+      return join(projectRoot, config.paths.theme, stripPrefix(target, 'theme'))
+    case 'registry:preset':
+    case 'registry:style':
+      return join(projectRoot, config.paths.lib, target)
+    case 'registry:lib': {
+      const [seg0, ...rest] = target.split('/')
+      const tail = rest.join('/')
+      switch (seg0) {
+        case 'composables': return join(projectRoot, config.paths.composables, tail)
+        case 'utils': return join(projectRoot, config.paths.utils, tail)
+        case 'theme': return join(projectRoot, config.paths.theme, tail)
+        default: return join(projectRoot, config.paths.lib, target) // types.ts, plugin.ts
+      }
+    }
   }
+}
+
+/** Drop a leading `<prefix>/` segment if present (e.g. `theme/button.ts` → `button.ts`). */
+function stripPrefix(target: string, prefix: string): string {
+  return target.startsWith(`${prefix}/`) ? target.slice(prefix.length + 1) : target
 }
 
 /** Preset + raw style files keep relative imports / have none — never rewrite. */
@@ -27,7 +54,7 @@ export interface WriteResult { written: string[], skipped: string[] }
 export function writeFiles(files: RegistryFile[], config: VyuiConfig, projectRoot: string, overwrite: boolean): WriteResult {
   const result: WriteResult = { written: [], skipped: [] }
   for (const file of files) {
-    const dest = destFor(file.target, config, projectRoot)
+    const dest = destFor(file, config, projectRoot)
     if (existsSync(dest) && !overwrite) {
       result.skipped.push(dest)
       log.step(`${c.yellow('skip')} ${rel(projectRoot, dest)} ${c.dim('(exists, use --overwrite)')}`)

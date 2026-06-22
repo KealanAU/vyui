@@ -26,6 +26,8 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, posix, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parse as parseSfc } from '@vue/compiler-sfc'
+import { init as initLexer, parse as lexImports } from 'es-module-lexer'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const kitSrc = resolve(root, 'packages/kit/src')
@@ -63,43 +65,114 @@ const ASSUMED = new Set(['vue', 'vue-lynx', 'tailwindcss', '@lynx-js/react'])
 function toDep(spec: string): { name: string, range: string } | undefined {
   const name = spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0]
   if (ASSUMED.has(name)) return undefined
-  return { name, range: VERSIONS[name] ?? 'latest' }
+  const range = VERSIONS[name]
+  // No `latest` fallback: a shippable dep MUST be declared in kit's package.json,
+  // otherwise we'd emit an unpinned (supply-chain-unsafe) specifier.
+  if (!range) {
+    throw new Error(
+      `[gen-registry] unresolved dependency "${name}" (from import "${spec}"). `
+      + `Add it to packages/kit/package.json dependencies/peerDependencies, or to ASSUMED.`,
+    )
+  }
+  return { name, range }
 }
 
-// ── import parsing ───────────────────────────────────────────────────────────
-const IMPORT_RE = /(?:from|import)\s+['"]([^'"]+)['"]/g
-
-function parseImports(content: string): string[] {
-  return [...content.matchAll(IMPORT_RE)].map(m => m[1])
-}
+// ── import parsing (AST-based) ──────────────────────────────────────────────
+const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 
 interface FileEntry { path: string, target: string, type: string, content: string }
 
+/** A single import specifier with its exact byte offsets in the source string. */
+interface SpecRef { spec: string, start: number, end: number }
+
 /**
- * Walk a source file's imports and accumulate the npm deps + registry-item deps
- * it pulls in. `srcRel` is the file's path relative to `packages/kit/src`
- * (posix) — the CLI uses the same value to resolve relative imports to aliases.
+ * Extract every import/export specifier (with exact offsets) from a code string.
+ * `es-module-lexer` understands `import … from`, `export … from`, dynamic
+ * `import()` and type-only forms — and, crucially, ignores specifiers that
+ * appear inside comments or strings, so we never rewrite a `from '…'` in a
+ * JSDoc block. `s`/`e` are the offsets of the specifier *inside* the quotes.
  */
-function collect(srcRel: string, content: string, deps: Set<string>, regDeps: Set<string>, themeFiles: Set<string>) {
-  for (const spec of parseImports(content)) {
-    if (!spec.startsWith('.')) {
-      const dep = toDep(spec)
-      if (dep) deps.add(`${dep.name}@${dep.range}`)
-      continue
+function lexSpecRefs(code: string): SpecRef[] {
+  const [imports] = lexImports(code)
+  const refs: SpecRef[] = []
+  for (const imp of imports) {
+    if (imp.s < 0 || imp.e < 0) continue // e.g. `import.meta` — no specifier
+    refs.push({ spec: code.slice(imp.s, imp.e), start: imp.s, end: imp.e })
+  }
+  return refs
+}
+
+/**
+ * For a `.vue` SFC, return each `<script>` / `<script setup>` block's source
+ * along with its absolute offset within the full SFC string, so specifier
+ * offsets discovered inside the block can be mapped back to the whole file.
+ */
+function sfcScriptBlocks(sfc: string): Array<{ content: string, offset: number }> {
+  const { descriptor } = parseSfc(sfc)
+  const blocks = [descriptor.script, descriptor.scriptSetup].filter(Boolean)
+  return blocks.map(b => ({ content: b!.content, offset: b!.loc.start.offset }))
+}
+
+/** Collect import specifier refs from any source file (offsets are file-absolute). */
+function specRefsFor(srcRel: string, content: string): SpecRef[] {
+  if (srcRel.endsWith('.vue')) {
+    const refs: SpecRef[] = []
+    for (const block of sfcScriptBlocks(content)) {
+      for (const r of lexSpecRefs(block.content)) {
+        refs.push({ spec: r.spec, start: r.start + block.offset, end: r.end + block.offset })
+      }
     }
-    const resolved = posix.normalize(posix.join(posix.dirname(srcRel), spec))
-    const [seg0, seg1] = resolved.split('/')
-    if (seg0 === 'components' && seg1?.endsWith('.vue')) {
-      regDeps.add(kebab(seg1.replace(/\.vue$/, '')))
-    }
-    else if (seg0 === 'theme' && seg1 && !SHARED_THEME.has(seg1.replace(/\.\w+$/, ''))) {
-      themeFiles.add(seg1.replace(/\.\w+$/, ''))
-    }
-    // composables/* utils/* types plugin theme/{colors,icons,…} → init payload (no edge to emit)
+    return refs
+  }
+  return lexSpecRefs(content)
+}
+
+/**
+ * Classify a kit-relative module path (posix, relative to `packages/kit/src`)
+ * into the stable `@@vyui:` placeholder the CLI literal-substitutes back to an
+ * alias. Mirrors the alias categories the CLI knows about.
+ */
+function placeholderFor(resolved: string): string {
+  const [seg0, ...rest] = resolved.split('/')
+  const tail = rest.join('/')
+  switch (seg0) {
+    case 'components': return `@@vyui:components/${tail}`
+    case 'theme': return `@@vyui:theme/${tail}`
+    case 'composables': return `@@vyui:composables/${tail}`
+    case 'utils': return `@@vyui:utils/${tail}`
+    default: return `@@vyui:lib/${resolved}` // root-level: types, plugin, …
   }
 }
 
-const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+/** Resolve a relative specifier from `srcRel` to a kit-src-relative posix path. */
+function resolveRel(srcRel: string, spec: string): string {
+  return posix.normalize(posix.join(posix.dirname(srcRel), spec))
+}
+
+/**
+ * Rewrite every RELATIVE import specifier in `content` to its `@@vyui:`
+ * placeholder, using the lexer's exact offsets so comments/strings are never
+ * touched. Bare specifiers are left verbatim. Used for all code files except
+ * preset/style (which keep their relative imports).
+ */
+function placeholderizeImports(srcRel: string, content: string): string {
+  const refs = specRefsFor(srcRel, content).filter(r => r.spec.startsWith('.'))
+  if (refs.length === 0) return content
+  // Apply right-to-left so earlier offsets stay valid as we splice.
+  refs.sort((a, b) => b.start - a.start)
+  let out = content
+  for (const r of refs) {
+    const placeholder = placeholderFor(resolveRel(srcRel, r.spec))
+    out = out.slice(0, r.start) + placeholder + out.slice(r.end)
+  }
+  return out
+}
+
+/** Is `resolved` a top-level registry component (`components/<Name>.vue`)? */
+function isTopLevelComponent(resolved: string): boolean {
+  const parts = resolved.split('/')
+  return parts.length === 2 && parts[0] === 'components' && parts[1].endsWith('.vue')
+}
 
 /** Style-aware file reader: overlay wins, else kit base. */
 function makeReader(style: StyleDef) {
@@ -110,6 +183,29 @@ function makeReader(style: StyleDef) {
     }
     return readFileSync(join(kitSrc, rel), 'utf8')
   }
+}
+
+/** Candidate kit-base path for a (possibly extensionless) relative module. */
+function existsRel(rel: string, style: StyleDef): boolean {
+  return (style.overlay != null && existsSync(join(style.overlay, rel))) || existsSync(join(kitSrc, rel))
+}
+
+const MODULE_EXTS = ['.ts', '.tsx', '.vue', '.js', '.jsx']
+
+/**
+ * Resolve a (possibly extensionless) kit-relative module path to the actual
+ * source file's kit-relative path with extension — mirroring TS/bundler
+ * resolution so `import './islandContext'` finds `islandContext.ts`.
+ */
+function resolveSourceFile(resolved: string, style: StyleDef): string {
+  if (existsRel(resolved, style) && /\.\w+$/.test(resolved)) return resolved
+  for (const ext of MODULE_EXTS) {
+    if (existsRel(resolved + ext, style)) return resolved + ext
+  }
+  for (const ext of MODULE_EXTS) {
+    if (existsRel(posix.join(resolved, `index${ext}`), style)) return posix.join(resolved, `index${ext}`)
+  }
+  throw new Error(`[gen-registry] cannot resolve relative module "${resolved}" to a source file`)
 }
 
 /** Union of component SFC names from the kit base + the style overlay. */
@@ -167,6 +263,82 @@ const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: st
   { src: 'tailwind.js', path: 'tailwind.js', target: 'vyui-preset.js', type: 'registry:preset' },
 ]
 
+/**
+ * Recursively walk a component's import graph from its top-level SFC.
+ *
+ * Starting at `components/<Name>.vue`, for each file we:
+ *  - add npm `dependencies` for bare specifiers,
+ *  - emit a `registryDependencies` edge for *other* top-level components
+ *    (kebab name; NOT inlined — the consumer installs them separately),
+ *  - INLINE co-located helpers (anything else under `components/`, e.g.
+ *    `internal/*.vue`, `*Context.ts`) into this manifest and recurse,
+ *  - INLINE non-shared `theme/<name>` files and recurse,
+ *  - treat composables/utils/types/plugin/shared-theme as init-payload deps
+ *    (no edge — they ship via `init`).
+ * A visited set guards cycles (e.g. Island ↔ islandContext, DropdownMenu ↔
+ * its internal items which back-reference the parent SFC).
+ */
+function walkComponent(
+  style: StyleDef,
+  read: (rel: string) => string,
+  rootName: string,
+  srcRel: string,
+  deps: Set<string>,
+  regDeps: Set<string>,
+  files: Map<string, FileEntry>,
+  visited: Set<string>,
+) {
+  if (visited.has(srcRel)) return
+  visited.add(srcRel)
+  const content = read(srcRel)
+  for (const ref of specRefsFor(srcRel, content)) {
+    const spec = ref.spec
+    if (!spec.startsWith('.')) {
+      const dep = toDep(spec)
+      if (dep) deps.add(`${dep.name}@${dep.range}`)
+      continue
+    }
+    const resolved = resolveRel(srcRel, spec)
+    if (isTopLevelComponent(resolved)) {
+      const depName = kebab(resolved.split('/')[1].replace(/\.vue$/, ''))
+      // Skip self/parent back-references to the component we're generating
+      // (e.g. internal/DropdownMenuItems.vue → ../DropdownMenu.vue).
+      if (depName !== kebab(rootName)) regDeps.add(depName)
+      continue
+    }
+    const seg0 = resolved.split('/')[0]
+    const seg1 = resolveSourceFile(resolved, style).split('/')[1]
+    if (seg0 === 'components') {
+      // Co-located helper: inline (target is its path relative to components/,
+      // with the real file extension) and recurse so its own deps/themes/edges
+      // are captured.
+      const fileRel = resolveSourceFile(resolved, style)
+      if (!files.has(fileRel)) {
+        files.set(fileRel, {
+          path: fileRel,
+          target: fileRel.slice('components/'.length),
+          type: 'registry:component',
+          content: placeholderizeImports(fileRel, read(fileRel)),
+        })
+      }
+      walkComponent(style, read, rootName, fileRel, deps, regDeps, files, visited)
+    }
+    else if (seg0 === 'theme' && seg1 && !SHARED_THEME.has(seg1.replace(/\.\w+$/, ''))) {
+      const themeRel = resolveSourceFile(resolved, style)
+      if (!files.has(themeRel)) {
+        files.set(themeRel, {
+          path: themeRel,
+          target: themeRel,
+          type: 'registry:theme',
+          content: placeholderizeImports(themeRel, read(themeRel)),
+        })
+      }
+      walkComponent(style, read, rootName, themeRel, deps, regDeps, files, visited)
+    }
+    // composables/* utils/* types plugin theme/{colors,icons,…} → init payload (no edge)
+  }
+}
+
 function generateStyle(style: StyleDef) {
   const read = makeReader(style)
   const outDir = join(outRoot, style.name)
@@ -178,18 +350,15 @@ function generateStyle(style: StyleDef) {
   for (const name of names) {
     const deps = new Set<string>()
     const regDeps = new Set<string>()
-    const themeFiles = new Set<string>()
-    const vueSrc = read(`components/${name}.vue`)
-    collect(`components/${name}.vue`, vueSrc, deps, regDeps, themeFiles)
+    const rootRel = `components/${name}.vue`
+    const inlined = new Map<string, FileEntry>() // keyed by kit-relative path
+    walkComponent(style, read, name, rootRel, deps, regDeps, inlined, new Set())
 
+    // The top-level SFC is the manifest's primary `registry:ui` file.
     const files: FileEntry[] = [
-      { path: `components/${name}.vue`, target: `${name}.vue`, type: 'registry:ui', content: vueSrc },
+      { path: rootRel, target: `${name}.vue`, type: 'registry:ui', content: placeholderizeImports(rootRel, read(rootRel)) },
+      ...inlined.values(),
     ]
-    for (const themeName of themeFiles) {
-      const themeSrc = read(`theme/${themeName}.ts`)
-      collect(`theme/${themeName}.ts`, themeSrc, deps, regDeps, themeFiles)
-      files.push({ path: `theme/${themeName}.ts`, target: `theme/${themeName}.ts`, type: 'registry:theme', content: themeSrc })
-    }
 
     const manifest = {
       name: kebab(name),
@@ -202,11 +371,21 @@ function generateStyle(style: StyleDef) {
     catalog.push({ name: manifest.name, type: manifest.type, dependencies: manifest.dependencies, registryDependencies: manifest.registryDependencies })
   }
 
-  // init payload
+  // init payload — these files are flat (no recursion); their relative imports
+  // are placeholderized, bare imports become npm deps. preset/style keep
+  // relative imports verbatim (no placeholder rewrite).
   const initDeps = new Set<string>()
   const initFiles: FileEntry[] = INIT_SOURCES.map((s) => {
-    const content = s.content ?? read(s.src!)
-    if (s.type === 'registry:lib') collect(s.path, content, initDeps, new Set(), new Set())
+    const raw = s.content ?? read(s.src!)
+    if (s.type === 'registry:lib') {
+      for (const ref of specRefsFor(s.path, raw)) {
+        if (!ref.spec.startsWith('.')) {
+          const dep = toDep(ref.spec)
+          if (dep) initDeps.add(`${dep.name}@${dep.range}`)
+        }
+      }
+    }
+    const content = s.type === 'registry:lib' ? placeholderizeImports(s.path, raw) : raw
     return { path: s.path, target: s.target, type: s.type, content }
   })
   initDeps.add(`@vyui/core@${VERSIONS['@vyui/core']}`) // primitive layer every component imports
@@ -229,6 +408,8 @@ function generateStyle(style: StyleDef) {
 }
 
 // ── generate ──────────────────────────────────────────────────────────────────
+await initLexer // es-module-lexer's wasm must be ready before parse()
+
 rmSync(outRoot, { recursive: true, force: true })
 mkdirSync(outRoot, { recursive: true })
 

@@ -1,37 +1,25 @@
-import { posix } from 'node:path'
 import type { VyuiConfig } from './config.js'
 import type { RegistryFile } from './registry-schema.js'
 
-const SPEC_RE = /(from\s+['"])([^'"]+)(['"])/g
+/**
+ * The generator (`tools/gen-registry.ts`) emits every RELATIVE import as a
+ * stable `@@vyui:<category>/<rest>` placeholder, computed from an AST parse of
+ * the source (so comments/strings are never rewritten). The CLI's only job is a
+ * literal substitution of each placeholder prefix to the consumer's alias —
+ * no source parsing, no `file.path` math, no comment hazards.
+ */
+const CATEGORY_PREFIXES = ['components', 'theme', 'composables', 'utils', 'lib'] as const
 
 /**
- * Rewrite a copied kit file's relative imports to the consumer's aliases.
- *
- * Resolution uses `file.path` (the source path relative to `packages/kit/src`)
- * to turn each relative specifier back into a kit-relative module path, then
- * maps it to an alias by its top-level segment:
- *   components/Foo.vue → aliases.components/Foo.vue
- *   theme/foo          → aliases.theme/foo
- *   composables/foo    → aliases.composables/foo
- *   utils/foo          → aliases.utils/foo
- *   types | plugin     → aliases.lib/<name>
- * Bare specifiers (vue, @vyui/core, tailwind-variants, …) are left untouched.
+ * Rewrite a copied kit file's `@@vyui:` import placeholders to the consumer's
+ * aliases. Bare specifiers (vue, @vyui/core, tailwind-variants, …) carry no
+ * placeholder and are left untouched. Preset/style files have no placeholders
+ * (their relative imports are emitted verbatim) so this is a no-op for them.
  */
 export function rewriteImports(file: RegistryFile, config: VyuiConfig): string {
-  const dir = posix.dirname(file.path)
-  return file.content.replace(SPEC_RE, (match, pre: string, spec: string, post: string) => {
-    if (!spec.startsWith('.')) return match
-    const resolved = posix.normalize(posix.join(dir, spec))
-    const [seg0, ...rest] = resolved.split('/')
-    const tail = rest.join('/')
-    let alias: string
-    switch (seg0) {
-      case 'components': alias = `${config.aliases.components}/${tail}`; break
-      case 'theme': alias = `${config.aliases.theme}/${tail}`; break
-      case 'composables': alias = `${config.aliases.composables}/${tail}`; break
-      case 'utils': alias = `${config.aliases.utils}/${tail}`; break
-      default: alias = `${config.aliases.lib}/${resolved}` // root-level: types, plugin
-    }
-    return `${pre}${alias}${post}`
-  })
+  let out = file.content
+  for (const category of CATEGORY_PREFIXES) {
+    out = out.replaceAll(`@@vyui:${category}/`, `${config.aliases[category]}/`)
+  }
+  return out
 }
