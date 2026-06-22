@@ -57,11 +57,29 @@ const SHARED_THEME = new Set(['colors', 'icons', 'color-constants', 'index'])
  * it ships ONLY `style.css` (bigger `--ui-radius`, `zinc` neutral) and reuses
  * every base `.vue` + `theme/*.ts`.
  */
-interface StyleDef { name: string, overlay?: string }
+/**
+ * A style. `overlay` supplies token/file overrides (style.css, preset, or — as
+ * an escape hatch — replacement `theme/*.ts` / `.vue`). `appConfig` bakes
+ * per-component theme overrides + palette choices into the style's plugin
+ * `defaultConfig.ui`; components pick them up at runtime via
+ * `appConfig.ui[name]` → `tv({ extend: tv(base), ...overrides })`, so most
+ * component restyling needs NO file overlay and never drifts from the base.
+ */
+interface StyleDef { name: string, overlay?: string, appConfig?: Record<string, unknown> }
 const STYLES: StyleDef[] = [
   { name: 'default' },
   { name: 'rounded', overlay: resolve(root, 'styles/rounded') },
-  { name: 'shadcn', overlay: resolve(root, 'styles/shadcn') },
+  {
+    name: 'shadcn',
+    overlay: resolve(root, 'styles/shadcn'), // tokens only (style.css): primary→zinc, radius 0.5rem
+    // The shadcn dark default button is a theme override, NOT a file overlay —
+    // merged at runtime via appConfig.ui.button. `primary: 'zinc'` aligns baked
+    // SVG icon fills with the zinc CSS-var palette.
+    appConfig: {
+      primary: 'zinc',
+      button: { defaultVariants: { color: 'neutral' } },
+    },
+  },
 ]
 
 // ── version resolution ─────────────────────────────────────────────────────
@@ -236,14 +254,29 @@ function componentNames(style: StyleDef): string[] {
 // Minimal plugin: only provides the merged AppConfig. The kit plugin's global
 // component auto-registration (`REGISTRY` loop) is dropped — copied components
 // are imported explicitly, so it isn't needed and would reference 48 files.
-const INIT_PLUGIN = `import type { App, Plugin } from 'vue'
+/**
+ * Build the init payload's `plugin.ts` for a style. `icons` (a binding) and
+ * `gray` (the `__VYUI_GRAY__` baseColor sentinel) are emitted literally; every
+ * other `ui` key — `primary` plus any per-component theme overrides from the
+ * style's `appConfig` — is serialized in. These bake the style's look into the
+ * provided `AppConfig`, so copied components render it via `useStyledComponent`
+ * without any theme-file overlay. With no `appConfig`, output matches `default`.
+ */
+function makeInitPlugin(appConfig: Record<string, unknown> = {}): string {
+  const ui: Record<string, unknown> = { primary: 'green', ...appConfig }
+  const entries = Object.entries(ui).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join(', ')
+  return `import type { App, Plugin } from 'vue'
 import { defu } from 'defu'
 import { APP_CONFIG_KEY, type AppConfig, type VyUIPluginOptions } from './types'
 import icons from './theme/icons'
 
-/** Package-level defaults; user options are deep-merged on top via \`defu\`. */
+/**
+ * Package-level defaults; user options are deep-merged on top via \`defu\`.
+ * Per-component theme overrides baked in here are picked up by each component
+ * via \`appConfig.ui[name]\` → \`tv({ extend: tv(base), ...overrides })\`.
+ */
 const defaultConfig: AppConfig = {
-  ui: { icons, primary: 'green', gray: '__VYUI_GRAY__' },
+  ui: { icons, gray: '__VYUI_GRAY__', ${entries} },
 }
 
 /**
@@ -258,6 +291,7 @@ export const VyUI: Plugin<VyUIPluginOptions> = {
   },
 }
 `
+}
 
 /**
  * Replace the `slate` palette in the NEUTRAL ramp of `style.css` with the
@@ -287,7 +321,7 @@ const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: st
   { src: 'theme/color-constants.js', path: 'theme/color-constants.js', target: 'theme/color-constants.js', type: 'registry:lib' },
   { src: 'theme/color-constants.d.ts', path: 'theme/color-constants.d.ts', target: 'theme/color-constants.d.ts', type: 'registry:lib' },
   { src: 'types.ts', path: 'types.ts', target: 'types.ts', type: 'registry:lib' },
-  { path: 'plugin.ts', target: 'plugin.ts', type: 'registry:lib', content: INIT_PLUGIN },
+  { path: 'plugin.ts', target: 'plugin.ts', type: 'registry:lib' }, // content built per-style via makeInitPlugin
   { src: 'style.css', path: 'style.css', target: 'style.css', type: 'registry:style', transform: grayifyNeutralRamp },
   // Sits at lib/vyui/ root so its relative `./theme/color-constants.js` import
   // resolves to the copied theme dir; the CLI leaves preset imports un-rewritten.
@@ -407,7 +441,9 @@ function generateStyle(style: StyleDef) {
   // relative imports verbatim (no placeholder rewrite).
   const initDeps = new Set<string>()
   const initFiles: FileEntry[] = INIT_SOURCES.map((s) => {
-    const raw = s.transform ? s.transform(s.content ?? read(s.src!)) : (s.content ?? read(s.src!))
+    // plugin.ts is generated per-style so the style's appConfig overrides bake in.
+    const source = s.target === 'plugin.ts' ? makeInitPlugin(style.appConfig) : (s.content ?? read(s.src!))
+    const raw = s.transform ? s.transform(source) : source
     if (s.type === 'registry:lib') {
       for (const ref of specRefsFor(s.path, raw)) {
         if (!ref.spec.startsWith('.')) {

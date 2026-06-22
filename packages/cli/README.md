@@ -44,15 +44,20 @@ the config (then re-`add --overwrite`).
 ### Authoring a style — work from the cheapest layer up
 
 vyui separates **structure** (`.vue`), **appearance** (`theme/*.ts`), and
-**tokens** (`style.css` CSS vars + the Tailwind preset). A new style is an
-overlay dir mirroring `packages/kit/src` containing **only the files you
-change**, registered in the `STYLES` array of `tools/gen-registry.ts`:
+**tokens** (`style.css` CSS vars + the Tailwind preset). A style is registered
+in the `STYLES` array of `tools/gen-registry.ts` with an optional overlay dir
+(mirroring `packages/kit/src`, **only the files you change**) and an optional
+`appConfig` of baked-in theme overrides:
 
 ```ts
 const STYLES = [
-  { name: 'default' },                                     // sources from packages/kit/src
+  { name: 'default' },                                          // sources from packages/kit/src
   { name: 'rounded', overlay: resolve(root, 'styles/rounded') }, // token-only overlay
-  { name: 'shadcn', overlay: resolve(root, 'styles/shadcn') },   // tokens + one theme overlay
+  {
+    name: 'shadcn',
+    overlay: resolve(root, 'styles/shadcn'),                    // tokens (style.css)
+    appConfig: { primary: 'zinc', button: { defaultVariants: { color: 'neutral' } } },
+  },
 ]
 ```
 
@@ -64,19 +69,21 @@ const STYLES = [
    every base `.vue` + `theme/*.ts` untouched. The shipped `rounded` style is a
    worked example: it overlays **only `style.css`** (a larger `--ui-radius`) and
    its generated `r/rounded/` registry reuses all base components verbatim.
-2. **Full-file overlay (escape hatch).** Drop in a replacement `theme/*.ts` (or
-   even a `.vue`) **only** when a slot's classes or structure must differ in a
-   way tokens can't express. The overlay wins per file. The shipped `shadcn`
-   style shows this tier: a `style.css` (monochrome `primary`→zinc, `--ui-radius:
-   0.5rem`) **plus** a `theme/button.ts` overlay that flips the default button to
-   the near-black `neutral` solid — every other component is still reused from
-   the base and just inherits the tokens.
+2. **Theme overrides (per-component, no file copy).** Set `appConfig` on the
+   style. The values are baked into that style's `plugin.ts` `defaultConfig.ui`,
+   and each component picks them up at runtime via `appConfig.ui[name]` →
+   `tv({ extend: tv(base), ...overrides })`. This changes slots / variants /
+   `defaultVariants` **without copying a theme file**, so it never drifts from
+   the base. The shipped `shadcn` style uses this: `appConfig.ui.button`
+   flips the default button to the near-black `neutral` solid, and `primary:
+   'zinc'` aligns baked SVG icon fills with the zinc token palette.
+3. **Full-file overlay (escape hatch).** Drop a replacement `theme/*.ts` (or
+   `.vue`) into the overlay dir **only** when a slot's *structure* must differ in
+   a way override data can't express. The overlay wins per file — but you then
+   own that copy and must track base changes, so prefer layers 1–2.
 
-> Finer-than-token overrides (changing one slot of one component's theme without
-> rewriting the whole file) currently require a full-file theme overlay.
-> Generation-time theme-delta deep-merge is a possible future enhancement — it's
-> not supported today because the copy-source model can't reliably re-serialize
-> builder-function themes.
+> See the rendered `default` vs `shadcn` comparison in [`demo/`](../../demo) —
+> open `demo/index.html` in a browser.
 
 ## Theming: install-time vs runtime
 
