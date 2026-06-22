@@ -1,10 +1,17 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import { createInterface } from 'node:readline/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 
 // ── tiny ANSI colors (zero-dep) ───────────────────────────────────────────────
-const wrap = (code: number) => (s: string) => `\x1b[${code}m${s}\x1b[0m`
+// Honor NO_COLOR / FORCE_COLOR and skip ANSI on non-TTY (piped/CI) output so we
+// don't corrupt logs. Computed once at module load.
+const colorEnabled = (() => {
+  if (process.env.FORCE_COLOR) return true
+  if (process.env.NO_COLOR) return false
+  return Boolean(process.stdout.isTTY)
+})()
+const wrap = (code: number) => (s: string) => (colorEnabled ? `\x1b[${code}m${s}\x1b[0m` : s)
 export const c = {
   bold: wrap(1),
   dim: wrap(2),
@@ -46,11 +53,47 @@ export async function prompt(question: string, fallback: string): Promise<string
   }
 }
 
-/** Detect the package manager from a lockfile, walking up from `cwd`. */
-export function detectPackageManager(cwd: string): 'pnpm' | 'yarn' | 'bun' | 'npm' {
-  if (existsSync(join(cwd, 'pnpm-lock.yaml'))) return 'pnpm'
-  if (existsSync(join(cwd, 'yarn.lock'))) return 'yarn'
-  if (existsSync(join(cwd, 'bun.lockb')) || existsSync(join(cwd, 'bun.lock'))) return 'bun'
+type PackageManager = 'pnpm' | 'yarn' | 'bun' | 'npm'
+
+/** Map a corepack/`packageManager` field value (`pnpm@9.0.0`) to a known PM. */
+function pmFromField(value: unknown): PackageManager | undefined {
+  if (typeof value !== 'string') return undefined
+  const name = value.split('@')[0]
+  if (name === 'pnpm' || name === 'yarn' || name === 'bun' || name === 'npm') return name
+  return undefined
+}
+
+/**
+ * Detect the package manager by walking UP from `cwd` through ancestor
+ * directories until a lockfile (or a `package.json` with a `packageManager`
+ * corepack hint) is found. In a monorepo the lockfile lives at the workspace
+ * root, not the package cwd. Falls back to `npm` at the filesystem root.
+ */
+export function detectPackageManager(cwd: string): PackageManager {
+  let dir = cwd
+  for (;;) {
+    if (existsSync(join(dir, 'pnpm-lock.yaml'))) return 'pnpm'
+    if (existsSync(join(dir, 'yarn.lock'))) return 'yarn'
+    if (existsSync(join(dir, 'bun.lockb')) || existsSync(join(dir, 'bun.lock'))) return 'bun'
+    if (existsSync(join(dir, 'package-lock.json'))) return 'npm'
+
+    // Corepack hint in package.json when no lockfile is present.
+    const pkgPath = join(dir, 'package.json')
+    if (existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as { packageManager?: string }
+        const pm = pmFromField(pkg.packageManager)
+        if (pm) return pm
+      }
+      catch {
+        // ignore unreadable/invalid package.json and keep walking up
+      }
+    }
+
+    const parent = dirname(dir)
+    if (parent === dir) break // reached filesystem root
+    dir = parent
+  }
   return 'npm'
 }
 

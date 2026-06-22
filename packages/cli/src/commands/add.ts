@@ -62,13 +62,25 @@ export async function add(opts: AddOptions): Promise<void> {
   log.ok(`Added ${c.bold(resolvedNames.join(', '))}`)
 }
 
-/** Collapse `name@range` specifiers to one per package (first range wins). */
+/**
+ * Collapse `name@range` specifiers to one per package (first range wins).
+ * Warns when two specifiers for the same package disagree on the range.
+ * `lastIndexOf('@')` keeps scoped names intact: `@vyui/core@^0.0.6` → `@vyui/core`.
+ */
 function dedupeDeps(specs: string[]): string[] {
   const byName = new Map<string, string>()
   for (const spec of specs) {
     const at = spec.lastIndexOf('@')
     const name = at > 0 ? spec.slice(0, at) : spec
-    if (!byName.has(name)) byName.set(name, spec)
+    const existing = byName.get(name)
+    if (existing === undefined) {
+      byName.set(name, spec)
+    }
+    else if (existing !== spec) {
+      const existingRange = existing.slice(name.length + 1) || '(unpinned)'
+      const newRange = spec.slice(name.length + 1) || '(unpinned)'
+      log.warn(`Conflicting versions for ${c.bold(name)}: keeping ${c.bold(existingRange)}, ignoring ${newRange}.`)
+    }
   }
   return [...byName.values()].sort()
 }

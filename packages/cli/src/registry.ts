@@ -34,12 +34,22 @@ async function fetchJson<T>(url: string): Promise<T> {
  */
 export async function resolveItems(registry: string, names: string[]): Promise<RegistryItem[]> {
   const seen = new Map<string, RegistryItem>()
-  const visit = async (name: string): Promise<void> => {
-    if (seen.has(name)) return
-    const item = await fetchItem(registry, name)
-    seen.set(name, item)
-    for (const dep of item.registryDependencies) await visit(dep)
+  // Track in-flight fetches so each name is requested at most once and cycles
+  // (A→B→A) terminate. Siblings are fetched in parallel via Promise.all.
+  const pending = new Map<string, Promise<void>>()
+
+  const visit = (name: string): Promise<void> => {
+    const inflight = pending.get(name)
+    if (inflight) return inflight
+    const work = (async () => {
+      const item = await fetchItem(registry, name)
+      seen.set(name, item)
+      await Promise.all(item.registryDependencies.map(visit))
+    })()
+    pending.set(name, work)
+    return work
   }
-  for (const name of names) await visit(name)
+
+  await Promise.all(names.map(visit))
   return [...seen.values()]
 }

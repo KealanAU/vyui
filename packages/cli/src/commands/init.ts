@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { configPath, defaultConfig, readConfig, styleRegistry, writeConfig, type VyuiConfig } from '../config.js'
+import { configPath, defaultConfig, detectTsconfigAlias, hasPathsEntryForPrefix, readConfig, styleRegistry, writeConfig, type VyuiConfig } from '../config.js'
 import { fetchItem, fetchStyles } from '../registry.js'
 import { writeFiles } from '../write-files.js'
 import { confirm, detectPackageManager, installDeps, log, prompt, c } from '../utils.js'
@@ -46,9 +46,21 @@ export async function init(opts: InitOptions): Promise<void> {
   }
   log.info(`Using style ${c.bold(style)}`)
 
-  const srcDir = existsSync(join(cwd, 'src')) ? 'src' : '.'
-  const prefix = opts.yes ? '@' : await prompt('Import alias prefix?', '@')
+  // Prefer the real alias declared in tsconfig/jsconfig `compilerOptions.paths`;
+  // fall back to a hardcoded `@` + an `src`-existence guess when none is found.
+  const detected = detectTsconfigAlias(cwd)
+  if (detected) log.info(`Detected alias ${c.bold(`${detected.prefix}/*`)} → ${c.cyan(`${detected.srcDir}/`)} from tsconfig/jsconfig`)
+  const defaultPrefix = detected?.prefix ?? '@'
+  const defaultSrcDir = detected?.srcDir ?? (existsSync(join(cwd, 'src')) ? 'src' : '.')
+
+  const prefix = opts.yes ? defaultPrefix : await prompt('Import alias prefix?', defaultPrefix)
+  const srcDir = opts.yes ? defaultSrcDir : await prompt('Source directory?', defaultSrcDir)
   const baseColor = opts.yes ? 'slate' : await prompt('Base gray color?', 'slate')
+
+  // Bundler aliases (vite/webpack) won't show up in tsconfig, so warn rather than fail.
+  if (!hasPathsEntryForPrefix(cwd, prefix)) {
+    log.warn(`No tsconfig/jsconfig "paths" entry found for "${prefix}/*". Imports may not resolve unless you have a matching bundler alias.`)
+  }
 
   const config = defaultConfig(registry, style, srcDir, prefix, baseColor)
   writeConfig(cwd, config)
