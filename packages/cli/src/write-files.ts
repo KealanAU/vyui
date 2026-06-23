@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, isAbsolute, relative, resolve, win32 } from 'node:path'
 import type { VyuiConfig } from './config.js'
 import type { RegistryFile } from './registry-schema.js'
 import { rewriteImports } from './rewrite-imports.js'
@@ -22,22 +22,50 @@ export function destFor(file: RegistryFile, config: VyuiConfig, projectRoot: str
   switch (type) {
     case 'registry:ui':
     case 'registry:component':
-      return join(projectRoot, config.paths.components, target)
+      return safeDestination(projectRoot, config.paths.components, target)
     case 'registry:theme':
-      return join(projectRoot, config.paths.theme, stripPrefix(target, 'theme'))
+      return safeDestination(projectRoot, config.paths.theme, stripPrefix(target, 'theme'))
     case 'registry:preset':
     case 'registry:style':
-      return join(projectRoot, config.paths.lib, target)
+      return safeDestination(projectRoot, config.paths.lib, target)
     case 'registry:lib': {
       const [seg0, ...rest] = target.split('/')
       const tail = rest.join('/')
       switch (seg0) {
-        case 'composables': return join(projectRoot, config.paths.composables, tail)
-        case 'utils': return join(projectRoot, config.paths.utils, tail)
-        case 'theme': return join(projectRoot, config.paths.theme, tail)
-        default: return join(projectRoot, config.paths.lib, target) // types.ts, plugin.ts
+        case 'composables': return safeDestination(projectRoot, config.paths.composables, tail)
+        case 'utils': return safeDestination(projectRoot, config.paths.utils, tail)
+        case 'theme': return safeDestination(projectRoot, config.paths.theme, tail)
+        default: return safeDestination(projectRoot, config.paths.lib, target) // types.ts, plugin.ts
       }
     }
+  }
+}
+
+/**
+ * Resolve an untrusted registry target beneath its configured category root.
+ * Both the configured root and final file must remain inside the project.
+ */
+function safeDestination(projectRoot: string, configuredRoot: string, target: string): string {
+  if (!target || target.includes('\0') || isAbsolute(target) || win32.isAbsolute(target)) {
+    throw new Error(`Unsafe registry target: ${JSON.stringify(target)}`)
+  }
+
+  const project = resolve(projectRoot)
+  const base = resolve(project, configuredRoot)
+  assertWithin(project, base, `Configured path "${configuredRoot}" escapes the project root`)
+
+  const destination = resolve(base, target)
+  if (destination === base) {
+    throw new Error(`Registry target "${target}" does not name a file`)
+  }
+  assertWithin(base, destination, `Registry target "${target}" escapes its destination directory`)
+  return destination
+}
+
+function assertWithin(parent: string, child: string, message: string): void {
+  const rel = relative(parent, child)
+  if (rel === '..' || rel.startsWith(`..${win32.sep}`) || rel.startsWith('../') || isAbsolute(rel)) {
+    throw new Error(message)
   }
 }
 

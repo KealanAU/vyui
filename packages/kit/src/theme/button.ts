@@ -58,10 +58,11 @@ const link = (c: string) =>
   ({ base: '', fg: `text-${c}-600 active:text-${c}-700` })
 
 // ── Neutral ─────────────────────────────────────────────────────────────────
-// Nuxt treats neutral specially: solid is near-black (`bg-inverted`), the rest
-// sit on `default`/`elevated`/`accented` surfaces. There are no semantic
-// surface tokens on Lynx, so map onto the neutral ramp: solid → `-900` (white
-// text), outline/subtle → a white/`-100` surface with a faint border, etc.
+// Nuxt treats neutral specially: solid is near-black, the rest sit on
+// default/elevated/accented surfaces. On Lynx the Tailwind preset only emits
+// `theme.colors` utilities (no semantic surface utilities like `bg-elevated`),
+// so map onto the neutral ramp directly. A style re-skins these by overriding
+// the `--ui-color-neutral-*` ramp (the `--base-color` mechanism).
 const neutralVariants = {
   solid: { base: 'bg-neutral-900 active:bg-neutral-800', fg: 'text-white' },
   outline: { base: 'border-2 border-solid border-neutral-300 active:bg-neutral-100', fg: 'text-neutral-700' },

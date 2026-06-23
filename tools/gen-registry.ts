@@ -19,7 +19,10 @@
  *      neutral palette, border weight, icon set — is achievable here alone.
  *      Such an overlay reuses ALL base `.vue` + `theme/*.ts` files verbatim;
  *      the `rounded` style below is a worked example (radius + neutral only).
- *   2. FULL-FILE OVERLAY (escape hatch): drop in a replacement `theme/*.ts`
+ *   2. THEME DELTA: bake serializable `appConfig.ui` overrides into the
+ *      generated plugin. This handles slots, variants, and defaultVariants
+ *      without copying the base theme.
+ *   3. FULL-FILE OVERLAY (escape hatch): drop in a replacement `theme/*.ts`
  *      (or even a `.vue`) ONLY when a slot's classes or structure must differ
  *      in a way tokens can't express. The overlay wins per file.
  *
@@ -37,6 +40,7 @@ import { dirname, join, posix, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parse as parseSfc } from '@vue/compiler-sfc'
 import { init as initLexer, parse as lexImports } from 'es-module-lexer'
+import { writeSchemas } from './gen-schemas.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const kitSrc = resolve(root, 'packages/kit/src')
@@ -50,20 +54,13 @@ const PILOT = ['Chip', 'Avatar', 'Button', 'Accordion', 'Toast']
 const SHARED_THEME = new Set(['colors', 'icons', 'color-constants', 'index'])
 
 /**
- * Registered styles. `default` is the canonical kit. Add a new style by
- * creating an overlay dir (mirroring `packages/kit/src`) and registering it.
- * Prefer a TOKEN-ONLY overlay (`style.css` / `tailwind.js`) — see the cascade
- * note at the top of this file. `rounded` is the worked token-only example:
- * it ships ONLY `style.css` (bigger `--ui-radius`, `zinc` neutral) and reuses
- * every base `.vue` + `theme/*.ts`.
- */
-/**
  * A style. `overlay` supplies token/file overrides (style.css, preset, or — as
  * an escape hatch — replacement `theme/*.ts` / `.vue`). `appConfig` bakes
  * per-component theme overrides + palette choices into the style's plugin
  * `defaultConfig.ui`; components pick them up at runtime via
  * `appConfig.ui[name]` → `tv({ extend: tv(base), ...overrides })`, so most
  * component restyling needs NO file overlay and never drifts from the base.
+ * `default` is the canonical kit; `rounded` demonstrates a token-only overlay.
  */
 interface StyleDef { name: string, overlay?: string, appConfig?: Record<string, unknown> }
 const STYLES: StyleDef[] = [
@@ -264,11 +261,13 @@ function componentNames(style: StyleDef): string[] {
  */
 function makeInitPlugin(appConfig: Record<string, unknown> = {}): string {
   const ui: Record<string, unknown> = { primary: 'green', ...appConfig }
-  const entries = Object.entries(ui).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join(', ')
+  const styleDefaults = JSON.stringify(ui, null, 2)
   return `import type { App, Plugin } from 'vue'
 import { defu } from 'defu'
 import { APP_CONFIG_KEY, type AppConfig, type VyUIPluginOptions } from './types'
 import icons from './theme/icons'
+
+const styleDefaults = ${styleDefaults}
 
 /**
  * Package-level defaults; user options are deep-merged on top via \`defu\`.
@@ -276,7 +275,7 @@ import icons from './theme/icons'
  * via \`appConfig.ui[name]\` → \`tv({ extend: tv(base), ...overrides })\`.
  */
 const defaultConfig: AppConfig = {
-  ui: { icons, gray: '__VYUI_GRAY__', ${entries} },
+  ui: { icons, gray: '__VYUI_GRAY__', ...styleDefaults },
 }
 
 /**
@@ -489,3 +488,7 @@ writeFileSync(resolve(outRoot, 'styles.json'), `${JSON.stringify({
   styles: STYLES.map(s => s.name),
 }, null, 2)}\n`)
 console.log(`[gen-registry] styles=[${STYLES.map(s => s.name).join(', ')}]  →  ${outRoot}`)
+
+// Regenerate the published JSON Schemas alongside the registry so the `$schema`
+// contracts the manifests reference never drift from the CLI types.
+writeSchemas(resolve(outRoot, '..'))

@@ -8,7 +8,7 @@ import type { RegistryFile } from './registry-schema.js'
  * literal substitution of each placeholder prefix to the consumer's alias —
  * no source parsing, no `file.path` math, no comment hazards.
  */
-const CATEGORY_PREFIXES = ['components', 'theme', 'composables', 'utils', 'lib'] as const
+export const CATEGORY_PREFIXES = ['components', 'theme', 'composables', 'utils', 'lib'] as const
 
 /**
  * Rewrite a copied kit file's `@@vyui:` import placeholders to the consumer's

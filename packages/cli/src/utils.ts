@@ -100,8 +100,9 @@ export function detectPackageManager(cwd: string): PackageManager {
 /** Install npm packages with the detected package manager. */
 export function installDeps(pm: string, deps: string[], cwd: string): Promise<void> {
   const args = pm === 'npm' ? ['install', ...deps] : ['add', ...deps]
+  const command = process.platform === 'win32' ? `${pm}.cmd` : pm
   return new Promise((resolvePromise, reject) => {
-    const child = spawn(pm, args, { cwd, stdio: 'inherit', shell: process.platform === 'win32' })
+    const child = spawn(command, args, { cwd, stdio: 'inherit' })
     child.on('error', reject)
     child.on('close', code => (code === 0 ? resolvePromise() : reject(new Error(`${pm} ${args[0]} exited with ${code}`))))
   })

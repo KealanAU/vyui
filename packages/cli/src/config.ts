@@ -116,7 +116,7 @@ export function detectTsconfigAlias(cwd: string): DetectedAlias | undefined {
       if (!target) continue
       const prefix = key.slice(0, -2) // drop trailing `/*`
       // `./src/*` → `src`; `./app/*` → `app`; `./*` → `.`
-      const srcDir = target.replace(/^\.\//, '').replace(/\/\*$/, '') || '.'
+      const srcDir = target.replace(/\/\*$/, '').replace(/^\.\//, '') || '.'
       return { prefix, srcDir }
     }
   }

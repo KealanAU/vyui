@@ -15,7 +15,8 @@
     "version-packages": "changeset version && tsx tools/gen-changelog-docs.ts",
     "release": "pnpm build && changeset publish",
     "new-component": "tsx tools/make-component.ts",
-    "gen:registry": "tsx tools/gen-registry.ts"
+    "gen:registry": "tsx tools/gen-registry.ts",
+    "gen:schemas": "tsx tools/gen-schemas.ts"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
