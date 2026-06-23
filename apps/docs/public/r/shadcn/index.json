@@ -1,0 +1,57 @@
+{
+  "$schema": "https://vyui.dev/registry-index.json",
+  "registry": "https://vyui.dev/r",
+  "style": "shadcn",
+  "components": [
+    {
+      "name": "accordion",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.0.6",
+        "tailwind-variants@^0.3.1"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.0.6",
+        "tailwind-variants@^0.3.1"
+      ],
+      "registryDependencies": [
+        "chip"
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.0.6"
+      ],
+      "registryDependencies": [
+        "avatar"
+      ]
+    },
+    {
+      "name": "chip",
+      "type": "registry:ui",
+      "dependencies": [
+        "tailwind-variants@^0.3.1"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.0.6",
+        "tailwind-variants@^0.3.1"
+      ],
+      "registryDependencies": [
+        "avatar",
+        "button"
+      ]
+    }
+  ]
+}

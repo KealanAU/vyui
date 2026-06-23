@@ -3,13 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm playground:build && nuxt dev",
-    "build": "pnpm playground:build && nuxt build",
-    "generate": "pnpm playground:build && nuxt generate",
+    "dev": "pnpm gen:registry && pnpm playground:build && nuxt dev",
+    "build": "pnpm gen:registry && pnpm playground:build && nuxt build",
+    "generate": "pnpm gen:registry && pnpm playground:build && nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
     "playground:build": "tsx ../../tools/gen-playground-registry.ts && pnpm --filter @vyui/docs-playground build && tsx ../../tools/sync-playground.ts",
+    "gen:registry": "tsx ../../tools/gen-registry.ts",
     "gen:api": "tsx ../../tools/gen-component-api.ts"
   },
   "dependencies": {

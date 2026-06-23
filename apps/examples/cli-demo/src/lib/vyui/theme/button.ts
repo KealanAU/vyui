@@ -26,8 +26,8 @@
 // emits its variants without editing this file. Variant builders take a plain
 // `string` color; there is no local `COLORS` const or closed `SemanticColor`
 // union to keep in sync.
-import type { Color } from './colors'
-import { NEUTRAL } from './color-constants'
+import type { Color } from '@/lib/vyui/theme/colors'
+import { NEUTRAL } from '@/lib/vyui/theme/color-constants'
 
 // Each variant returns the surface classes (`base`: bg/border, applied to the
 // root <view>) separately from the foreground color (`fg`: text-*). CSS

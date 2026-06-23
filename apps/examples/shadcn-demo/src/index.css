@@ -1,0 +1,114 @@
+/*
+ * Tailwind entry. `@lynx-js/tailwind-preset` is utility-only for Lynx, so we
+ * load `base` + `utilities` only.
+ */
+@tailwind base;
+@tailwind utilities;
+
+/*
+ * shadcn style tokens — mirrors styles/shadcn/style.css (the registry overlay).
+ * primary → zinc (monochrome), neutral → slate, radius 0.5rem. Editing these
+ * is how you iterate on the shadcn look; keep in sync with styles/shadcn.
+ */
+:root {
+  /* primary — monochrome (zinc) */
+  --ui-color-primary-50:  theme('colors.zinc.50');
+  --ui-color-primary-100: theme('colors.zinc.100');
+  --ui-color-primary-200: theme('colors.zinc.200');
+  --ui-color-primary-300: theme('colors.zinc.300');
+  --ui-color-primary-400: theme('colors.zinc.400');
+  --ui-color-primary-500: theme('colors.zinc.500');
+  --ui-color-primary-600: theme('colors.zinc.600');
+  --ui-color-primary-700: theme('colors.zinc.700');
+  --ui-color-primary-800: theme('colors.zinc.800');
+  --ui-color-primary-900: theme('colors.zinc.900');
+  --ui-color-primary-950: theme('colors.zinc.950');
+
+  /* secondary */
+  --ui-color-secondary-50:  theme('colors.blue.50');
+  --ui-color-secondary-100: theme('colors.blue.100');
+  --ui-color-secondary-200: theme('colors.blue.200');
+  --ui-color-secondary-300: theme('colors.blue.300');
+  --ui-color-secondary-400: theme('colors.blue.400');
+  --ui-color-secondary-500: theme('colors.blue.500');
+  --ui-color-secondary-600: theme('colors.blue.600');
+  --ui-color-secondary-700: theme('colors.blue.700');
+  --ui-color-secondary-800: theme('colors.blue.800');
+  --ui-color-secondary-900: theme('colors.blue.900');
+  --ui-color-secondary-950: theme('colors.blue.950');
+
+  /* success */
+  --ui-color-success-50:  theme('colors.emerald.50');
+  --ui-color-success-100: theme('colors.emerald.100');
+  --ui-color-success-200: theme('colors.emerald.200');
+  --ui-color-success-300: theme('colors.emerald.300');
+  --ui-color-success-400: theme('colors.emerald.400');
+  --ui-color-success-500: theme('colors.emerald.500');
+  --ui-color-success-600: theme('colors.emerald.600');
+  --ui-color-success-700: theme('colors.emerald.700');
+  --ui-color-success-800: theme('colors.emerald.800');
+  --ui-color-success-900: theme('colors.emerald.900');
+  --ui-color-success-950: theme('colors.emerald.950');
+
+  /* info */
+  --ui-color-info-50:  theme('colors.sky.50');
+  --ui-color-info-100: theme('colors.sky.100');
+  --ui-color-info-200: theme('colors.sky.200');
+  --ui-color-info-300: theme('colors.sky.300');
+  --ui-color-info-400: theme('colors.sky.400');
+  --ui-color-info-500: theme('colors.sky.500');
+  --ui-color-info-600: theme('colors.sky.600');
+  --ui-color-info-700: theme('colors.sky.700');
+  --ui-color-info-800: theme('colors.sky.800');
+  --ui-color-info-900: theme('colors.sky.900');
+  --ui-color-info-950: theme('colors.sky.950');
+
+  /* warning */
+  --ui-color-warning-50:  theme('colors.amber.50');
+  --ui-color-warning-100: theme('colors.amber.100');
+  --ui-color-warning-200: theme('colors.amber.200');
+  --ui-color-warning-300: theme('colors.amber.300');
+  --ui-color-warning-400: theme('colors.amber.400');
+  --ui-color-warning-500: theme('colors.amber.500');
+  --ui-color-warning-600: theme('colors.amber.600');
+  --ui-color-warning-700: theme('colors.amber.700');
+  --ui-color-warning-800: theme('colors.amber.800');
+  --ui-color-warning-900: theme('colors.amber.900');
+  --ui-color-warning-950: theme('colors.amber.950');
+
+  /* error */
+  --ui-color-error-50:  theme('colors.red.50');
+  --ui-color-error-100: theme('colors.red.100');
+  --ui-color-error-200: theme('colors.red.200');
+  --ui-color-error-300: theme('colors.red.300');
+  --ui-color-error-400: theme('colors.red.400');
+  --ui-color-error-500: theme('colors.red.500');
+  --ui-color-error-600: theme('colors.red.600');
+  --ui-color-error-700: theme('colors.red.700');
+  --ui-color-error-800: theme('colors.red.800');
+  --ui-color-error-900: theme('colors.red.900');
+  --ui-color-error-950: theme('colors.red.950');
+
+  /* neutral — slate */
+  --ui-color-neutral-50:  theme('colors.slate.50');
+  --ui-color-neutral-100: theme('colors.slate.100');
+  --ui-color-neutral-200: theme('colors.slate.200');
+  --ui-color-neutral-300: theme('colors.slate.300');
+  --ui-color-neutral-400: theme('colors.slate.400');
+  --ui-color-neutral-500: theme('colors.slate.500');
+  --ui-color-neutral-600: theme('colors.slate.600');
+  --ui-color-neutral-700: theme('colors.slate.700');
+  --ui-color-neutral-800: theme('colors.slate.800');
+  --ui-color-neutral-900: theme('colors.slate.900');
+  --ui-color-neutral-950: theme('colors.slate.950');
+
+  --ui-primary:   var(--ui-color-primary-900);
+  --ui-secondary: var(--ui-color-secondary-500);
+  --ui-success:   var(--ui-color-success-500);
+  --ui-info:      var(--ui-color-info-500);
+  --ui-warning:   var(--ui-color-warning-500);
+  --ui-error:     var(--ui-color-error-500);
+
+  /* shadcn radius default — rescales the whole rounded-* scale */
+  --ui-radius: 0.5rem;
+}

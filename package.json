@@ -14,11 +14,15 @@
     "changeset": "changeset",
     "version-packages": "changeset version && tsx tools/gen-changelog-docs.ts",
     "release": "pnpm build && changeset publish",
-    "new-component": "tsx tools/make-component.ts"
+    "new-component": "tsx tools/make-component.ts",
+    "gen:registry": "tsx tools/gen-registry.ts",
+    "gen:schemas": "tsx tools/gen-schemas.ts"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
     "@svitejs/changesets-changelog-github-compact": "^1.2.0",
+    "@vue/compiler-sfc": "3.5.17",
+    "es-module-lexer": "^2.1.0",
     "pnpm": "^11.0.0",
     "shiki": "^4.1.0",
     "tsx": "^4.19.2",
