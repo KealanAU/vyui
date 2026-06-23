@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import type { RegistryFile, RegistryFileType, RegistryIndex, RegistryItem } from './registry-schema.js'
+import type { RegistryFile, RegistryFileType, RegistryIndex, RegistryItem, RegistryStyles } from './registry-schema.js'
+import { isRecord } from './utils.js'
 
 const REGISTRY_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const PACKAGE_SPEC = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*@[a-z0-9.*+^~_-]+$/i
@@ -53,7 +54,7 @@ export async function fetchIndex(registry: string): Promise<RegistryIndex> {
 }
 
 /** List available styles from the registry root (`<registryBase>/styles.json`). */
-export async function fetchStyles(registryBase: string): Promise<{ default: string, styles: string[] }> {
+export async function fetchStyles(registryBase: string): Promise<Pick<RegistryStyles, 'default' | 'styles'>> {
   const value = await fetchJson(`${registryBase}/styles.json`)
   if (
     !isRecord(value)
@@ -123,10 +124,6 @@ function parseRegistryFile(value: unknown): RegistryFile {
     throw new Error('invalid registry file')
   }
   return value as unknown as RegistryFile
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function isStringArray(value: unknown): value is string[] {

@@ -6,6 +6,7 @@ import {
   defaultConfig,
   detectTsconfigAlias,
   hasPathsEntryForPrefix,
+  resolveRegistryBase,
   styleRegistry,
 } from './config.js'
 
@@ -53,5 +54,10 @@ describe('config', () => {
     expect(config.aliases.theme).toBe('@/lib/vyui/theme')
     expect(config.baseColor).toBe('zinc')
     expect(styleRegistry(config)).toBe('/registry/shadcn')
+  })
+
+  it('resolves local registries relative to the target project', () => {
+    expect(resolveRegistryBase('../registry', '/workspace/apps/demo')).toBe('/workspace/apps/registry')
+    expect(resolveRegistryBase('https://vyui.dev/r/', '/workspace/apps/demo')).toBe('https://vyui.dev/r')
   })
 })

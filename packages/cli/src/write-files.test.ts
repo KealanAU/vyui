@@ -94,4 +94,17 @@ describe('writeFiles', () => {
     writeFiles([second], config, project, true)
     expect(readFileSync(destination, 'utf8')).toBe('second')
   })
+
+  it('previews writes without touching the filesystem', () => {
+    const project = projectDir()
+    const config = defaultConfig('/registry', 'default', 'src', '@', 'slate')
+    const file = registryFile('registry:ui', 'Button.vue', 'button')
+    vi.spyOn(console, 'log').mockImplementation(() => undefined)
+
+    const result = writeFiles([file], config, project, false, true)
+    const destination = resolve(project, 'src/components/vyui/Button.vue')
+
+    expect(result.planned).toEqual([destination])
+    expect(existsSync(destination)).toBe(false)
+  })
 })

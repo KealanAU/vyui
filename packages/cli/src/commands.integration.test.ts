@@ -32,6 +32,15 @@ describe('init + add', () => {
       compilerOptions: { paths: { '~/*': ['./src/*'] } },
     }))
     writeJson(join(registry, 'styles.json'), { default: 'default', styles: ['default', 'shadcn'] })
+    mkdirSync(join(registry, 'shadcn'), { recursive: true })
+    writeJson(join(registry, 'shadcn/index.json'), {
+      registry,
+      style: 'shadcn',
+      components: [
+        { name: 'button', type: 'registry:ui', dependencies: [], registryDependencies: ['icon'] },
+        { name: 'icon', type: 'registry:ui', dependencies: [], registryDependencies: [] },
+      ],
+    })
 
     writeRegistryItem(registry, 'shadcn', {
       name: 'init',
@@ -108,5 +117,19 @@ describe('init + add', () => {
     expect(readFileSync(join(project, 'src/lib/vyui/plugin.ts'), 'utf8')).toContain(`gray = 'zinc'`)
     expect(readFileSync(join(project, 'src/components/vyui/Button.vue'), 'utf8')).toContain(`from '~/components/vyui/Icon.vue'`)
     expect(readFileSync(join(project, 'src/components/vyui/Icon.vue'), 'utf8')).toContain('<view />')
+
+    // Explicit overwrite updates the requested component, but preserves a
+    // transitive dependency the consumer has customized.
+    writeFileSync(join(project, 'src/components/vyui/Button.vue'), 'custom button')
+    writeFileSync(join(project, 'src/components/vyui/Icon.vue'), 'custom icon')
+    await add({
+      cwd: project,
+      components: ['button'],
+      yes: true,
+      skipInstall: true,
+      overwrite: true,
+    })
+    expect(readFileSync(join(project, 'src/components/vyui/Button.vue'), 'utf8')).toContain(`from '~/components/vyui/Icon.vue'`)
+    expect(readFileSync(join(project, 'src/components/vyui/Icon.vue'), 'utf8')).toBe('custom icon')
   })
 })

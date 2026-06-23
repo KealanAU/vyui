@@ -8,18 +8,33 @@ installed npm dependency (the Radix model).
 ## Usage
 
 ```bash
-# 1. Pick a style + set up vyui.config.json, shared files, install @vyui/core
+# 1. Detect the Vue-Lynx project, pick a style, and wire everything up
 npx @vyui/cli init                 # prompts for style when >1 is available
 npx @vyui/cli init --style default
 
 # 2. Add components (their dependencies come along automatically)
 npx @vyui/cli add button
 npx @vyui/cli add toast        # also pulls in button, avatar, chip
+npx @vyui/cli add              # interactive component picker
 npx @vyui/cli add --all        # everything in the registry
 
-# List the styles the registry offers
+# Discover and inspect before installing
+npx @vyui/cli list
+npx @vyui/cli list button
+npx @vyui/cli view button
+npx @vyui/cli info
+npx @vyui/cli add toast --dry-run
+
+# List the styles offered by the registry
 npx @vyui/cli styles
 ```
+
+`init` detects the app entry, Tailwind config, global CSS, import alias, and
+package manager. For a standard Vue-Lynx project it registers the `VyUI` plugin,
+imports the copied design tokens, adds the copied Tailwind preset, and installs
+the required packages. Updates are idempotent; when a project uses an unusual
+configuration the CLI prints the exact remaining manual step instead of making
+an unsafe rewrite.
 
 ### Options
 
@@ -31,8 +46,25 @@ npx @vyui/cli styles
 | `--all` | Add every component in the registry (`add`) |
 | `--overwrite` | Overwrite files that already exist |
 | `--skip-install` | Don't install npm dependencies |
+| `--dry-run` | Preview file and project changes without writing or installing |
+| `--json` | Machine-readable output (`info`) |
 | `-y, --yes` | Accept defaults / skip prompts |
 | `--cwd <dir>` | Run against another directory |
+
+### Existing files and upgrades
+
+Copied files belong to the consumer. `add` therefore preserves existing files
+by default, including transitive component dependencies and the shared library
+payload. `--overwrite` only replaces components explicitly named on the
+command line:
+
+```bash
+# Reinstall Button.vue + its theme, but preserve Avatar/Chip dependencies.
+npx @vyui/cli add button --overwrite
+
+# Preview the operation first.
+npx @vyui/cli add button --overwrite --dry-run
+```
 
 ## Styles
 
@@ -128,6 +160,6 @@ The registry itself is generated from `@vyui/kit` source by
 
 ## After `init`
 
-1. Register the plugin: `app.use(VyUI)` (from your `lib` alias).
-2. Add the Tailwind preset to your `tailwind.config`.
-3. Import `style.css` once in your bundle/CSS entry.
+For a standard Vue-Lynx project, no manual wiring is required. Run
+`npx @vyui/cli info` to see what was detected, then add components with
+`npx @vyui/cli add`.

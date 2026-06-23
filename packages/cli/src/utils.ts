@@ -22,6 +22,10 @@ export const c = {
   gray: wrap(90),
 }
 
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 export const log = {
   info: (m: string) => console.log(`${c.cyan('ℹ')} ${m}`),
   ok: (m: string) => console.log(`${c.green('✔')} ${m}`),

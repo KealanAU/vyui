@@ -77,15 +77,22 @@ function stripPrefix(target: string, prefix: string): string {
 /** Preset + raw style files keep relative imports / have none — never rewrite. */
 const VERBATIM = new Set(['registry:preset', 'registry:style'])
 
-export interface WriteResult { written: string[], skipped: string[] }
+export interface WriteResult { written: string[], skipped: string[], planned: string[] }
 
-export function writeFiles(files: RegistryFile[], config: VyuiConfig, projectRoot: string, overwrite: boolean): WriteResult {
-  const result: WriteResult = { written: [], skipped: [] }
+export function writeFiles(
+  files: RegistryFile[],
+  config: VyuiConfig,
+  projectRoot: string,
+  overwrite: boolean,
+  dryRun = false,
+  logSkipped = true,
+): WriteResult {
+  const result: WriteResult = { written: [], skipped: [], planned: [] }
   for (const file of files) {
     const dest = destFor(file, config, projectRoot)
     if (existsSync(dest) && !overwrite) {
       result.skipped.push(dest)
-      log.step(`${c.yellow('skip')} ${rel(projectRoot, dest)} ${c.dim('(exists, use --overwrite)')}`)
+      if (logSkipped) log.step(`${c.yellow('skip')} ${rel(projectRoot, dest)} ${c.dim('(exists, use --overwrite)')}`)
       continue
     }
     // `rewriteImports` swaps the `@@vyui:` import placeholders for the user's
@@ -96,6 +103,11 @@ export function writeFiles(files: RegistryFile[], config: VyuiConfig, projectRoo
     // `plugin.ts`, which goes through rewriteImports).
     const rewritten = VERBATIM.has(file.type) ? file.content : rewriteImports(file, config)
     const content = rewritten.replaceAll('__VYUI_GRAY__', config.baseColor)
+    if (dryRun) {
+      result.planned.push(dest)
+      log.step(`${c.cyan('plan')} ${rel(projectRoot, dest)}`)
+      continue
+    }
     mkdirSync(dirname(dest), { recursive: true })
     writeFileSync(dest, content)
     result.written.push(dest)
@@ -105,5 +117,5 @@ export function writeFiles(files: RegistryFile[], config: VyuiConfig, projectRoo
 }
 
 function rel(root: string, p: string): string {
-  return p.startsWith(root) ? p.slice(root.length).replace(/^[/\\]/, '') : p
+  return relative(root, p)
 }
