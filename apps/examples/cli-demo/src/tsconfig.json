@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "strict": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "jsx": "preserve",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "vueCompilerOptions": {
+    "plugins": ["vue-lynx/types/volar-plugin"]
+  },
+  "include": ["./**/*"],
+  "exclude": ["../node_modules"]
+}

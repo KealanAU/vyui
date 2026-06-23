@@ -1,0 +1,30 @@
+{
+  "name": "@vyui/cli-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "rspeedy dev",
+    "build": "rspeedy build",
+    "vyui:add": "node ../../../packages/cli/dist/index.js"
+  },
+  "dependencies": {
+    "@vyui/core": "workspace:*",
+    "defu": "^6.1.5",
+    "tailwind-variants": "^0.3.1",
+    "vue-lynx": "^0.4.0"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.2.108",
+    "@lynx-js/rspeedy": "^0.13.5",
+    "@lynx-js/tailwind-preset": "^0.4.0",
+    "@lynx-js/types": "^3.8.0",
+    "@rsbuild/plugin-vue": "^1.2.6",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "rsbuild-plugin-tailwindcss": "^0.2.4",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.0.0",
+    "vue": "3.5.17"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://vyui.dev/schema.json",
+  "registry": "../../docs/public/r",
+  "style": "default",
+  "baseColor": "slate",
+  "aliases": {
+    "components": "@/components/vyui",
+    "lib": "@/lib/vyui",
+    "theme": "@/lib/vyui/theme",
+    "composables": "@/lib/vyui/composables",
+    "utils": "@/lib/vyui/utils"
+  },
+  "paths": {
+    "components": "src/components/vyui",
+    "lib": "src/lib/vyui",
+    "theme": "src/lib/vyui/theme",
+    "composables": "src/lib/vyui/composables",
+    "utils": "src/lib/vyui/utils"
+  },
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "src/index.css"
+  }
+}
