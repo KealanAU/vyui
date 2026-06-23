@@ -68,13 +68,20 @@ const STYLES: StyleDef[] = [
   { name: 'rounded', overlay: resolve(root, 'styles/rounded') },
   {
     name: 'shadcn',
-    overlay: resolve(root, 'styles/shadcn'), // tokens only (style.css): primary→zinc, radius 0.5rem
+    overlay: resolve(root, 'styles/shadcn'), // tokens only (style.css): primary→zinc, radius 0.25rem
     // The shadcn dark default button is a theme override, NOT a file overlay —
     // merged at runtime via appConfig.ui.button. `primary: 'zinc'` aligns baked
     // SVG icon fills with the zinc CSS-var palette.
     appConfig: {
       primary: 'zinc',
-      button: { defaultVariants: { color: 'neutral' } },
+      button: {
+        defaultVariants: { color: 'neutral' },
+        // shadcn solid buttons carry a subtle shadow; ghost/link stay flat, so
+        // target `solid` precisely (appended to the base theme via tv extend).
+        compoundVariants: [
+          { variant: 'solid', class: { base: 'shadow-sm shadow-black/10' } },
+        ],
+      },
     },
   },
 ]

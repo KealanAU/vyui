@@ -5,14 +5,14 @@
  * styling layer — see packages/cli/README.md "Authoring a style"):
  *   • Monochrome accent: `primary` maps to `zinc` (shadcn leans neutral; the
  *     near-black solid button comes from the `neutral` ramp via the button
- *     theme overlay, not from `primary`).
+ *     `appConfig.ui.button` delta, not from `primary`).
  *   • Larger radius: `--ui-radius: 0.5rem` (shadcn's `--radius` default) so the
  *     whole `rounded-*` scale reads softer than the default 0.25rem.
  *   • Neutral ramp stays `slate` so the consumer's `--base-color` still applies
  *     (the generator rewrites this block's palette to the chosen gray at init).
  *
- * Everything else (component .vue + theme/*.ts) is reused from the base style;
- * only this file (plus theme/button.ts) overrides it.
+ * Every component and theme file is reused from the base style. The button's
+ * default color is changed through the generated plugin's baked UI delta.
  */
 :root {
   /* primary — monochrome (zinc) for the shadcn neutral accent */
@@ -114,8 +114,13 @@
   --ui-warning:   var(--ui-color-warning-500);
   --ui-error:     var(--ui-color-error-500);
 
-  /* shadcn `--radius` default — rescales the whole `rounded-*` scale. */
-  --ui-radius: 0.5rem;
+  /*
+   * vyui's radius scale is multiplicative (`rounded-md` = base × 1.5), so a
+   * 0.25rem base yields rounded-md = 0.375rem (shadcn's button radius) and
+   * rounded-xl = 0.75rem/12px (shadcn's card radius). 0.5rem here doubles
+   * everything and reads pill-like — 0.25rem is the shadcn-faithful base.
+   */
+  --ui-radius: 0.25rem;
 }
 
 .dark {

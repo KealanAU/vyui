@@ -25,7 +25,12 @@ const app = createApp(App)
 app.use(VyUI, {
   ui: {
     primary: 'zinc',
-    button: { defaultVariants: { color: 'neutral' } },
+    button: {
+      defaultVariants: { color: 'neutral' },
+      compoundVariants: [
+        { variant: 'solid', class: { base: 'shadow-sm shadow-black/10' } },
+      ],
+    },
   },
 })
 app.mount()

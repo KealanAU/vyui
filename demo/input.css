@@ -62,5 +62,5 @@
   --ui-color-neutral-800: theme('colors.slate.800');
   --ui-color-neutral-900: theme('colors.slate.900');
   --ui-color-neutral-950: theme('colors.slate.950');
-  --ui-radius: 0.5rem;
+  --ui-radius: 0.25rem;
 }

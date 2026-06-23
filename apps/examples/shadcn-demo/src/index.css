@@ -109,6 +109,7 @@
   --ui-warning:   var(--ui-color-warning-500);
   --ui-error:     var(--ui-color-error-500);
 
-  /* shadcn radius default — rescales the whole rounded-* scale */
-  --ui-radius: 0.5rem;
+  /* vyui radius scale is multiplicative (rounded-md = base × 1.5), so 0.25rem
+     yields the shadcn button (0.375rem) + card (rounded-xl = 0.75rem) radii. */
+  --ui-radius: 0.25rem;
 }
