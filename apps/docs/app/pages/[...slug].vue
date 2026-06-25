@@ -39,6 +39,14 @@ defineOgImageComponent('Default', { title, description })
 const headline = computed(() => findPageHeadline(navigation?.value, page.value?.path))
 
 const links = computed(() => toc?.bottom?.links || [])
+
+const componentCliCommand = computed(() => {
+  if (!page.value?.path?.startsWith('/components/') || page.value.package !== 'kit')
+    return undefined
+
+  const name = page.value.path.split('/').pop()
+  return name ? `npx @vyui/cli add ${name}` : undefined
+})
 </script>
 
 <template>
@@ -59,6 +67,21 @@ const links = computed(() => toc?.bottom?.links || [])
     </UPageHeader>
 
     <UPageBody>
+      <div
+        v-if="componentCliCommand"
+        class="not-prose mb-8 rounded-lg border border-default bg-elevated/40 p-4"
+      >
+        <div class="mb-3 flex items-center gap-2 text-sm font-medium text-highlighted">
+          <UIcon
+            name="i-lucide-terminal"
+            class="size-4 text-primary"
+          />
+          Install with the CLI
+        </div>
+
+        <pre class="overflow-x-auto rounded-md bg-inverted px-3 py-2 text-sm text-inverted"><code>{{ componentCliCommand }}</code></pre>
+      </div>
+
       <ContentRenderer
         v-if="page"
         :value="page"
