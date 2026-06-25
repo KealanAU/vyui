@@ -5,6 +5,8 @@ node_modules/
 
 # build outputs
 dist/
+!packages/cli/dist/
+!packages/cli/dist/index.js
 *.bundle
 *.lynx.bundle
 *.web.bundle

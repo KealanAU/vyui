@@ -1,0 +1,46 @@
+{
+  "name": "@vyui/cli",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "CLI for adding Vy UI styled components to Vue-Lynx projects",
+  "license": "MIT",
+  "author": "Kealan Clarke",
+  "homepage": "https://vyui.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KealanAU/vyui.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/KealanAU/vyui/issues"
+  },
+  "keywords": [
+    "vue",
+    "lynx",
+    "vue-lynx",
+    "ui",
+    "components",
+    "cli",
+    "registry"
+  ],
+  "bin": {
+    "vyui": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node --check dist/index.js",
+    "prepublishOnly": "pnpm build"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
