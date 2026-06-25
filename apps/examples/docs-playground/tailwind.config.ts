@@ -1,6 +1,6 @@
 import type { Config } from 'tailwindcss'
 import lynxPreset from '@lynx-js/tailwind-preset'
-import vyuiPreset from '@vyui/kit/tailwind'
+import vyuiPreset from '../../../packages/kit/src/tailwind.js'
 
 const config: Config = {
   content: [
