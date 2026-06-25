@@ -26,7 +26,7 @@ export default (colors: Color[]) => ({
     value: 'flex-1 min-w-0 truncate text-start text-neutral-900',
     placeholder: 'flex-1 min-w-0 truncate text-start text-neutral-400',
     arrow: 'fill-neutral-200',
-    content: 'max-h-[100dvh] w-full bg-white rounded-md border border-neutral-200 overflow-hidden pointer-events-auto',
+    content: 'max-h-[100vh] w-full bg-white rounded-md border border-neutral-200 overflow-hidden pointer-events-auto',
     handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
     sheetHeader: 'px-4 pt-2 pb-1',
     sheetTitle: 'text-neutral-500 text-xs font-semibold uppercase',

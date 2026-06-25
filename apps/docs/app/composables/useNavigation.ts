@@ -113,6 +113,7 @@ interface CategoryConfig {
 
 const CATEGORY_CONFIG: CategoryConfig[] = [
   { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started', '/packages'] },
+  { id: 'cli', title: 'CLI', icon: 'i-lucide-terminal', paths: ['/cli'] },
   { id: 'components', title: 'Components', icon: 'i-lucide-boxes', paths: ['/components'] },
   { id: 'composables', title: 'Composables', icon: 'i-lucide-square-function', paths: ['/composables'] },
   { id: 'styling', title: 'Styling', icon: 'i-lucide-palette', paths: ['/theming', '/accessibility', '/i18n', '/roadmap'] },

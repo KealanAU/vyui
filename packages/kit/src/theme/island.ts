@@ -45,7 +45,7 @@ export default {
     // Independently styled panel surface — a wider rounded-rectangle
     // floating in front of the row when `open === true`. Stripped of chrome
     // in `attached` mode.
-    panel: `flex flex-col max-w-full max-h-[calc(100dvh-4rem)] overflow-y-auto ${PILL_SURFACE} rounded-3xl`,
+    panel: `flex flex-col max-w-full max-h-[calc(100vh-4rem)] overflow-y-auto ${PILL_SURFACE} rounded-3xl`,
   },
   variants: {
     // Which viewport edge to float against — only takes effect when

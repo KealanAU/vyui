@@ -1,8 +1,28 @@
 {
   "name": "@vyui/cli",
+  "type": "module",
   "version": "0.0.0",
   "description": "shadcn-style CLI for adding @vyui/kit styled components to a project",
-  "type": "module",
+  "license": "MIT",
+  "author": "Kealan Clarke",
+  "homepage": "https://vyui.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KealanAU/vyui.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/KealanAU/vyui/issues"
+  },
+  "keywords": [
+    "vue",
+    "lynx",
+    "vue-lynx",
+    "ui",
+    "components",
+    "cli",
+    "registry"
+  ],
   "bin": {
     "vyui": "./dist/index.js"
   },
@@ -10,11 +30,15 @@
     "dist",
     "README.md"
   ],
+  "exports": {
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsup",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
   },
   "engines": {
     "node": ">=18.3.0"
