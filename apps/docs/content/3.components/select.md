@@ -18,7 +18,7 @@ links:
 ::component-code
 ---
 name: select-example
-height: 120px
+height: 240px
 ---
 ::
 

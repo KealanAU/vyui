@@ -1,0 +1,7 @@
+/*
+ * Tailwind entry. `@lynx-js/tailwind-preset` is utility-only for Lynx, so we
+ * load `base` + `utilities` only. The vyui design tokens (CSS vars + radius)
+ * live in the CLI-installed `@/lib/vyui/style.css`, imported from `index.ts`.
+ */
+@tailwind base;
+@tailwind utilities;

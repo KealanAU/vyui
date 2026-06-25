@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vyui.dev/schema.json",
+  "title": "vyui.config.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "registry",
+    "style",
+    "baseColor",
+    "aliases",
+    "paths",
+    "tailwind"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "registry": {
+      "type": "string",
+      "minLength": 1
+    },
+    "style": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseColor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "aliases": {
+      "$ref": "#/$defs/categories"
+    },
+    "paths": {
+      "$ref": "#/$defs/categories"
+    },
+    "tailwind": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "config",
+        "css"
+      ],
+      "properties": {
+        "config": {
+          "type": "string",
+          "minLength": 1
+        },
+        "css": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "$defs": {
+    "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "components",
+        "theme",
+        "composables",
+        "utils",
+        "lib"
+      ],
+      "properties": {
+        "components": {
+          "type": "string",
+          "minLength": 1
+        },
+        "theme": {
+          "type": "string",
+          "minLength": 1
+        },
+        "composables": {
+          "type": "string",
+          "minLength": 1
+        },
+        "utils": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lib": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

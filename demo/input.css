@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Per-style design tokens, scoped to a wrapper class instead of :root so both
+ * styles can render side by side on one page. Each column inherits its own
+ * `--ui-color-*` / `--ui-radius`, and the SAME utility classes
+ * (`bg-primary-500`, `rounded-md`, …) resolve differently via the CSS-var
+ * cascade — exactly how a real project picks up a style. Mirrors the relevant
+ * slice of each style's style.css.
+ */
+
+/* default style — primary → green, radius 0.25rem */
+.s-default {
+  --ui-color-primary-50:  theme('colors.green.50');
+  --ui-color-primary-100: theme('colors.green.100');
+  --ui-color-primary-200: theme('colors.green.200');
+  --ui-color-primary-300: theme('colors.green.300');
+  --ui-color-primary-400: theme('colors.green.400');
+  --ui-color-primary-500: theme('colors.green.500');
+  --ui-color-primary-600: theme('colors.green.600');
+  --ui-color-primary-700: theme('colors.green.700');
+  --ui-color-primary-800: theme('colors.green.800');
+  --ui-color-primary-900: theme('colors.green.900');
+  --ui-color-primary-950: theme('colors.green.950');
+  --ui-color-neutral-50:  theme('colors.slate.50');
+  --ui-color-neutral-100: theme('colors.slate.100');
+  --ui-color-neutral-200: theme('colors.slate.200');
+  --ui-color-neutral-300: theme('colors.slate.300');
+  --ui-color-neutral-400: theme('colors.slate.400');
+  --ui-color-neutral-500: theme('colors.slate.500');
+  --ui-color-neutral-600: theme('colors.slate.600');
+  --ui-color-neutral-700: theme('colors.slate.700');
+  --ui-color-neutral-800: theme('colors.slate.800');
+  --ui-color-neutral-900: theme('colors.slate.900');
+  --ui-color-neutral-950: theme('colors.slate.950');
+  --ui-radius: 0.25rem;
+}
+
+/* shadcn style — primary → zinc (monochrome), radius 0.5rem */
+.s-shadcn {
+  --ui-color-primary-50:  theme('colors.zinc.50');
+  --ui-color-primary-100: theme('colors.zinc.100');
+  --ui-color-primary-200: theme('colors.zinc.200');
+  --ui-color-primary-300: theme('colors.zinc.300');
+  --ui-color-primary-400: theme('colors.zinc.400');
+  --ui-color-primary-500: theme('colors.zinc.500');
+  --ui-color-primary-600: theme('colors.zinc.600');
+  --ui-color-primary-700: theme('colors.zinc.700');
+  --ui-color-primary-800: theme('colors.zinc.800');
+  --ui-color-primary-900: theme('colors.zinc.900');
+  --ui-color-primary-950: theme('colors.zinc.950');
+  --ui-color-neutral-50:  theme('colors.slate.50');
+  --ui-color-neutral-100: theme('colors.slate.100');
+  --ui-color-neutral-200: theme('colors.slate.200');
+  --ui-color-neutral-300: theme('colors.slate.300');
+  --ui-color-neutral-400: theme('colors.slate.400');
+  --ui-color-neutral-500: theme('colors.slate.500');
+  --ui-color-neutral-600: theme('colors.slate.600');
+  --ui-color-neutral-700: theme('colors.slate.700');
+  --ui-color-neutral-800: theme('colors.slate.800');
+  --ui-color-neutral-900: theme('colors.slate.900');
+  --ui-color-neutral-950: theme('colors.slate.950');
+  --ui-radius: 0.5rem;
+}
