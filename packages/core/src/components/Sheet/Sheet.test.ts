@@ -261,3 +261,25 @@ describe('SheetBackdrop — Presence wiring', () => {
     expect(open.value).toBe(false)
   })
 })
+
+// Regression: the panel's inline `height` (and any viewport-sized CSS) MUST use
+// `vh`, never `dvh`. Lynx native silently drops the dynamic-viewport unit, which
+// collapses the sheet to its content height — the drawer "won't open fully" bug
+// (#79). SheetContentImpl can't mount under vitest (MTS touch bindings crash the
+// renderer — see the file header), so guard the unit at the source level.
+describe('SheetContentImpl — viewport height unit (no dvh)', () => {
+  async function readImpl(): Promise<string> {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const here = path.dirname(new URL(import.meta.url).pathname)
+    return fs.readFileSync(path.join(here, 'SheetContentImpl.vue'), 'utf8')
+  }
+
+  it('sizes the panel with vh, never the unsupported dvh', async () => {
+    const sfc = await readImpl()
+    expect(sfc).toMatch(/\$\{maxSnap\.value \* 100\}vh/)
+    // Match `dvh` only where it's used as a unit (after a digit or `}`), so the
+    // explanatory comment that names the forbidden unit doesn't trip this.
+    expect(sfc).not.toMatch(/[\d}]dvh/)
+  })
+})

@@ -17,7 +17,7 @@
 export default {
   slots: {
     overlay: 'fixed inset-0 bg-neutral-900/50',
-    content: 'fixed bg-white border border-neutral-200 flex flex-col overflow-hidden max-h-[100dvh]',
+    content: 'fixed bg-white border border-neutral-200 flex flex-col overflow-hidden max-h-[100vh]',
     handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
     scaffold: 'flex flex-col flex-1 min-h-0',
     header: 'flex flex-row items-center gap-1.5 px-4 py-3 min-h-12',
@@ -31,13 +31,13 @@ export default {
   variants: {
     side: {
       top: {
-        content: 'inset-x-0 top-0 max-h-[100dvh]',
+        content: 'inset-x-0 top-0 max-h-[100vh]',
       },
       right: {
         content: 'right-0 inset-y-0 w-full max-w-md',
       },
       bottom: {
-        content: 'inset-x-0 bottom-0 max-h-[100dvh]',
+        content: 'inset-x-0 bottom-0 max-h-[100vh]',
       },
       left: {
         content: 'left-0 inset-y-0 w-full max-w-md',

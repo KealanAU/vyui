@@ -25,7 +25,7 @@ const fgClass = (fg: { semantic: string, shade: number }) => `text-${fg.semantic
 export default (colors: Color[]) => ({
   slots: {
     overlay: 'fixed inset-0 bg-neutral-900/40',
-    content: 'flex flex-col max-h-[100dvh] overflow-hidden',
+    content: 'flex flex-col max-h-[100vh] overflow-hidden',
     handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
     header: 'flex flex-col gap-0.5 px-4 py-2',
     title: 'text-neutral-500 text-xs font-semibold uppercase tracking-wider',

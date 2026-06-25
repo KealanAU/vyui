@@ -102,10 +102,12 @@ const maxSnap = computed(() => {
   return snaps.length > 0 ? snaps[snaps.length - 1] ?? 1 : 1
 })
 
-// Height of the panel as a dynamic-viewport string, derived from the largest
-// snap fraction. e.g. `snapPoints: [0.75]` → `height: 75dvh`.
+// Height of the panel as a viewport string, derived from the largest snap
+// fraction. e.g. `snapPoints: [0.75]` → `height: 75vh`. NOTE: must be `vh`,
+// not `dvh` — Lynx native drops the dynamic-viewport unit, which collapses
+// the panel to its content height.
 const panelHeight = computed(() => {
-  return `${maxSnap.value * 100}dvh`
+  return `${maxSnap.value * 100}vh`
 })
 
 // `SystemInfo` is not reactive, but the panel receives a layout event whenever

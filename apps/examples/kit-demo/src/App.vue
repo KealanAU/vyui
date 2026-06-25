@@ -76,12 +76,12 @@ const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
 const pageClass = computed(() => {
   if (isLandscape.value) {
     return pageScrolls.value
-      ? 'flex flex-col w-full min-h-[100dvh] p-3'
-      : 'flex flex-col w-full h-[100dvh] min-h-0 p-3'
+      ? 'flex flex-col w-full min-h-[100vh] p-3'
+      : 'flex flex-col w-full h-[100vh] min-h-0 p-3'
   }
   return pageScrolls.value
     ? 'flex flex-col gap-4 px-5 pt-16 pb-10'
-    : 'flex flex-col w-full h-[100dvh] min-h-0 gap-2 px-3 pt-2 pb-2'
+    : 'flex flex-col w-full h-[100vh] min-h-0 gap-2 px-3 pt-2 pb-2'
 })
 const tabsUi = computed(() => {
   if (isLandscape.value) {
@@ -90,7 +90,7 @@ const tabsUi = computed(() => {
     // block grow past the viewport (the outer `<scroll-view>` owns the scroll);
     // a full-bleed tab caps to the viewport so its inner surface owns gestures.
     return {
-      root: pageScrolls.value ? 'min-h-[calc(100dvh-1.5rem)]' : 'flex-1 min-h-0',
+      root: pageScrolls.value ? 'min-h-[calc(100vh-1.5rem)]' : 'flex-1 min-h-0',
       list: 'w-36 shrink-0 self-start',
       content: pageScrolls.value
         ? 'flex-1 min-w-0 ps-3'
