@@ -4,8 +4,6 @@
 
 **Vy UI** brings a Radix-style primitives layer to the Vue-Lynx ecosystem. Build native mobile apps for iOS, Android, and Web from a single Vue codebase, with components you own and can modify.
 
-> **Vy** is Swedish for **view** — a triple nod to Lynx's `<view>`-based rendering model, to Vue itself (French for *view*), and to the **vy** sitting inside Vue + Lynx.
-
 > ⚠️ **Status: pre-alpha.** Vue-Lynx itself is pre-alpha. APIs will change. Not production-ready.
 
 ***
@@ -205,11 +203,6 @@ porting, and adapting from them.
 Some styled component templates may be ported from or inspired by shadcn/ui,
 Nuxt UI, and Reka UI. Where this is the case, original MIT license terms and
 attribution are preserved in each component file.
-
-## Name
-
-"Vy" is Swedish for *view* — a nod to Vue's French root with the same meaning.
-The library name continues that lineage in the Lynx ecosystem.
 
 ## License
 
