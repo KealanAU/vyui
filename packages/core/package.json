@@ -18,6 +18,8 @@
     "vue",
     "lynx",
     "vue-lynx",
+    "native",
+    "mobile",
     "headless",
     "ui",
     "components",
