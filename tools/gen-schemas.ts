@@ -7,7 +7,7 @@
  *   apps/docs/public/registry-styles.json  ← styles.json        (RegistryStyles)
  *
  * These are derived (not hand-maintained): the alias categories come from the
- * CLI's `CATEGORY_PREFIXES`, so adding a category flows into the config schema
+ * CLI's `ALIAS_CATEGORIES`, so adding a category flows into the config schema
  * automatically, and a drift test (`packages/cli/src/schemas.test.ts`) fails if
  * a committed file diverges from this generator. Run standalone via
  * `pnpm gen:schemas`; also invoked at the end of `pnpm gen:registry`.
@@ -15,7 +15,7 @@
 import { writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { CATEGORY_PREFIXES } from '../packages/cli/src/rewrite-imports.js'
+import { ALIAS_CATEGORIES } from '../packages/cli/src/config.js'
 
 const BASE = 'https://vyui.dev'
 const DRAFT = 'https://json-schema.org/draft/2020-12/schema'
@@ -30,8 +30,8 @@ function categories() {
   return {
     type: 'object',
     additionalProperties: false,
-    required: [...CATEGORY_PREFIXES],
-    properties: Object.fromEntries(CATEGORY_PREFIXES.map(key => [key, nonEmptyString])),
+    required: [...ALIAS_CATEGORIES],
+    properties: Object.fromEntries(ALIAS_CATEGORIES.map(key => [key, nonEmptyString])),
   }
 }
 
