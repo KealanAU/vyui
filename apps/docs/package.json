@@ -34,6 +34,7 @@
     "better-sqlite3": "^12.10.0",
     "nuxt-llms": "^0.2.0",
     "nuxt-og-image": "^6.6.0",
+    "nuxt-schema-org": "^6.2.3",
     "vue-tsc": "3.2.6"
   }
 }

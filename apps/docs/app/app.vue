@@ -7,6 +7,11 @@ const url = useRequestURL()
 // requested explicitly to appear on navigation nodes.
 const { data: navigation } = await useAsyncData('navigation', () => queryCollectionNavigation('docs', ['package']))
 
+// Full-text sections for the ⌘K command palette (<UContentSearch>). Client-only
+// + lazy so the search index isn't shipped in the prerendered HTML or blocking
+// first paint; it loads when the palette is first opened.
+const { data: searchSections } = useLazyAsyncData('search-sections', () => queryCollectionSearchSections('docs'), { server: false })
+
 // Canonical = configured site origin + path only. Using siteUrl (not url.origin,
 // which is localhost during static prerender) keeps the production host; dropping
 // the query string and trailing slash stops ?foo=bar and /path vs /path/ from
@@ -25,6 +30,8 @@ useSeoMeta({
   ogSiteName: seo?.siteName,
   ogType: 'website',
   ogUrl: canonical,
+  ogLocale: 'en_US',
+  ogImageAlt: 'Vy UI — components for Vue-Lynx',
   twitterCard: 'summary_large_image',
   twitterSite: '@vyui_dev',
 })
@@ -53,6 +60,14 @@ provide('navigation', navigation)
     />
 
     <AppHeader />
+
+    <ClientOnly>
+      <LazyUContentSearch
+        :files="searchSections"
+        :navigation="navigation"
+        :fuse="{ resultLimit: 42 }"
+      />
+    </ClientOnly>
 
     <AppDocsNav />
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ContentNavigationItem } from '@nuxt/content'
-import { findPageHeadline } from '@nuxt/content/utils'
+import { findPageBreadcrumb, findPageHeadline } from '@nuxt/content/utils'
 
 definePageMeta({
   layout: 'docs',
@@ -32,6 +32,25 @@ useSeoMeta({
   description,
   ogDescription: description,
 })
+
+// Mark every docs page as a TechArticle so it's eligible for richer dev-content
+// treatment; headline/description carry the page's Vue-Lynx / native framing.
+// BreadcrumbList mirrors the sidebar hierarchy so search results can show the
+// section trail (e.g. Components > Accordion) instead of a bare URL.
+const breadcrumb = computed(() =>
+  (findPageBreadcrumb(navigation?.value, page.value?.path) ?? [])
+    .filter(item => item.path)
+    .map(item => ({ name: item.title, item: item.path })),
+)
+
+useSchemaOrg([
+  defineArticle({
+    '@type': 'TechArticle',
+    headline: title,
+    description,
+  }),
+  defineBreadcrumb({ itemListElement: breadcrumb.value }),
+])
 
 // Per-page social card (rendered to PNG at build time).
 defineOgImageComponent('Default', { title, description })

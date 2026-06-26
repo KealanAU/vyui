@@ -1,0 +1,13 @@
+{
+  "name": "Vy UI",
+  "short_name": "Vy UI",
+  "description": "Accessible Vue-Lynx component library — headless primitives plus a styled kit that render natively to iOS, Android, and web from one Vue codebase.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#42b883",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
