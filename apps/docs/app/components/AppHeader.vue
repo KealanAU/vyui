@@ -56,6 +56,11 @@ const headerStyle = computed(() => {
     />
 
     <template #right>
+      <UContentSearchButton
+        v-if="header?.search"
+        :class="linkClass"
+      />
+
       <UColorModeButton
         v-if="header?.colorMode"
         :class="linkClass"

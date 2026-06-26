@@ -52,7 +52,7 @@ export default defineAppConfig({
   header: {
     title: '',
     to: '/',
-    search: false,
+    search: true,
     colorMode: true,
     quickLinks: [
       { label: 'Docs', to: '/getting-started' },

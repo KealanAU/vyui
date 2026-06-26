@@ -30,3 +30,5 @@ allowBuilds:
   vue-demi: false
 patchedDependencies:
   vue-lynx@0.4.0: patches/vue-lynx@0.4.0.patch
+minimumReleaseAgeExclude:
+  - nuxt-schema-org@6.2.3
