@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { BASE_COLORS, DEFAULT_BASE_COLOR, DEFAULT_REGISTRY, configPath, defaultConfig, detectTsconfigAlias, hasPathsEntryForPrefix, readConfig, resolveRegistryBase, styleRegistry, writeConfig } from '../config.js'
+import { BASE_COLORS, DEFAULT_BASE_COLOR, configPath, defaultConfig, detectTsconfigAlias, hasPathsEntryForPrefix, readConfig, resolveRegistry, styleRegistry, writeConfig } from '../config.js'
 import { detectProject } from '../project-info.js'
 import { fetchItem, fetchStyles } from '../registry.js'
 import { applyProjectUpdates, planProjectUpdates } from '../update-project.js'
@@ -32,7 +32,7 @@ export async function init(opts: InitOptions): Promise<void> {
     overwrite = true
   }
 
-  const registry = resolveRegistryBase(opts.registry ?? existing?.registry ?? DEFAULT_REGISTRY, cwd)
+  const registry = resolveRegistry(cwd, { registry: opts.registry }, existing).base
 
   // Resolve the style: explicit flag, else prompt from the registry's catalog.
   let available: { default: string, styles: string[] } | undefined
