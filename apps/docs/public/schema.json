@@ -59,13 +59,17 @@
       "additionalProperties": false,
       "required": [
         "components",
+        "lib",
         "theme",
         "composables",
-        "utils",
-        "lib"
+        "utils"
       ],
       "properties": {
         "components": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lib": {
           "type": "string",
           "minLength": 1
         },
@@ -78,10 +82,6 @@
           "minLength": 1
         },
         "utils": {
-          "type": "string",
-          "minLength": 1
-        },
-        "lib": {
           "type": "string",
           "minLength": 1
         }

@@ -16,6 +16,25 @@ export const BASE_COLORS: readonly string[] = ['slate', 'gray', 'zinc', 'neutral
 /** Default neutral palette when none is configured or passed via `--base-color`. */
 export const DEFAULT_BASE_COLOR = 'slate'
 
+/**
+ * The alias/path categories shared across the CLI: config (`aliases`/`paths`),
+ * import rewriting (`@@vyui:<category>/` placeholders), and file routing. This
+ * is the single source of truth — adding a category here flows to every loop
+ * that iterates them. (Routing switches in `write-files`/`gen-registry` still
+ * need a per-category branch since their handling differs.)
+ */
+export const ALIAS_CATEGORIES = ['components', 'lib', 'theme', 'composables', 'utils'] as const
+export type AliasCategory = typeof ALIAS_CATEGORIES[number]
+
+/** Subpath (relative to the source dir) each category lives under. */
+const CATEGORY_SUBPATHS: Record<AliasCategory, string> = {
+  components: 'components/vyui',
+  lib: 'lib/vyui',
+  theme: 'lib/vyui/theme',
+  composables: 'lib/vyui/composables',
+  utils: 'lib/vyui/utils',
+}
+
 export interface VyuiConfig {
   $schema?: string
   /** Base registry URL, e.g. `https://vyui.dev/r`. */
@@ -25,21 +44,9 @@ export interface VyuiConfig {
   /** Default semantic gray palette. */
   baseColor: string
   /** Import-specifier aliases used when rewriting copied source. */
-  aliases: {
-    components: string
-    lib: string
-    theme: string
-    composables: string
-    utils: string
-  }
+  aliases: Record<AliasCategory, string>
   /** On-disk directories (relative to project root) the aliases resolve to. */
-  paths: {
-    components: string
-    lib: string
-    theme: string
-    composables: string
-    utils: string
-  }
+  paths: Record<AliasCategory, string>
   tailwind: {
     config: string
     css: string
@@ -155,20 +162,35 @@ export function resolveRegistryBase(registry: string, cwd: string): string {
   return resolve(cwd, registry)
 }
 
+/** Style-qualified registry built from an already-resolved config. */
 export function styleRegistry(config: Pick<VyuiConfig, 'registry' | 'style'>, cwd = process.cwd()): string {
   return `${resolveRegistryBase(config.registry, cwd)}/${config.style}`
 }
 
+export interface ResolvedRegistry {
+  /** Registry root (where `styles.json` lives), e.g. `https://vyui.dev/r`. */
+  base: string
+  /** Selected style namespace, e.g. `default`. */
+  style: string
+  /** Style-qualified registry, `${base}/${style}`. */
+  styled: string
+}
+
 /**
- * Resolve the style-qualified registry for read-only commands (`list`, `view`).
- * Explicit `--registry`/`--style` flags win, then an existing config, then the
- * built-in defaults — so a flag always overrides a saved config consistently.
+ * Resolve the effective registry from flags + config + defaults, applying one
+ * precedence rule everywhere it's needed: explicit `--registry`/`--style` flags
+ * win, then an existing config, then the built-in defaults. `base` feeds
+ * style-listing (`styles`, `init`); `styled` feeds item fetches (`list`, `view`,
+ * `add`). Pass `config` when it's already loaded to avoid re-reading it.
  */
-export function resolveStyleRegistry(cwd: string, flags: { registry?: string, style?: string }): string {
-  const config = readConfig(cwd)
+export function resolveRegistry(
+  cwd: string,
+  flags: { registry?: string, style?: string } = {},
+  config = readConfig(cwd),
+): ResolvedRegistry {
   const base = resolveRegistryBase(flags.registry ?? config?.registry ?? DEFAULT_REGISTRY, cwd)
   const style = flags.style ?? config?.style ?? DEFAULT_STYLE
-  return `${base}/${style}`
+  return { base, style, styled: `${base}/${style}` }
 }
 
 export function readConfig(cwd: string): VyuiConfig | undefined {
@@ -191,6 +213,13 @@ export function writeConfig(cwd: string, config: VyuiConfig): void {
   writeFileSync(configPath(cwd), `${JSON.stringify(config, null, 2)}\n`)
 }
 
+/** Map each category's subpath through `fn` into a category-keyed record. */
+function mapCategories(fn: (subpath: string) => string): Record<AliasCategory, string> {
+  return Object.fromEntries(
+    ALIAS_CATEGORIES.map(category => [category, fn(CATEGORY_SUBPATHS[category])]),
+  ) as Record<AliasCategory, string>
+}
+
 /**
  * Build a default config from a source dir + import prefix. Components live
  * under `<prefix>/components/vyui`, support files under `<prefix>/lib/vyui`.
@@ -203,27 +232,13 @@ export function defaultConfig(
   baseColor: string,
   detected?: { tailwindConfig?: string, css?: string },
 ): VyuiConfig {
-  const a = (sub: string) => `${prefix}/${sub}`
-  const p = (sub: string) => join(srcDir, sub)
   return {
     $schema: 'https://vyui.dev/schema.json',
     registry,
     style,
     baseColor,
-    aliases: {
-      components: a('components/vyui'),
-      lib: a('lib/vyui'),
-      theme: a('lib/vyui/theme'),
-      composables: a('lib/vyui/composables'),
-      utils: a('lib/vyui/utils'),
-    },
-    paths: {
-      components: p('components/vyui'),
-      lib: p('lib/vyui'),
-      theme: p('lib/vyui/theme'),
-      composables: p('lib/vyui/composables'),
-      utils: p('lib/vyui/utils'),
-    },
+    aliases: mapCategories(subpath => `${prefix}/${subpath}`),
+    paths: mapCategories(subpath => join(srcDir, subpath)),
     tailwind: {
       config: detected?.tailwindConfig ?? 'tailwind.config.js',
       css: detected?.css ?? join(srcDir, 'style.css'),
@@ -231,17 +246,16 @@ export function defaultConfig(
   }
 }
 
-function hasStringKeys(value: unknown, keys: string[]): value is Record<string, string> {
+function hasStringKeys(value: unknown, keys: readonly string[]): value is Record<string, string> {
   return isRecord(value) && keys.every(key => typeof value[key] === 'string' && value[key].length > 0)
 }
 
 function isVyuiConfig(value: unknown): value is VyuiConfig {
   if (!isRecord(value)) return false
-  const categories = ['components', 'lib', 'theme', 'composables', 'utils']
   return typeof value.registry === 'string'
     && typeof value.style === 'string'
     && typeof value.baseColor === 'string'
-    && hasStringKeys(value.aliases, categories)
-    && hasStringKeys(value.paths, categories)
+    && hasStringKeys(value.aliases, ALIAS_CATEGORIES)
+    && hasStringKeys(value.paths, ALIAS_CATEGORIES)
     && hasStringKeys(value.tailwind, ['config', 'css'])
 }

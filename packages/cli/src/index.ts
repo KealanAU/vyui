@@ -2,9 +2,10 @@ import { parseArgs } from 'node:util'
 import { resolve } from 'node:path'
 import { add } from './commands/add.js'
 import { init } from './commands/init.js'
-import { fetchIndex, fetchItem, fetchStyles } from './registry.js'
-import { DEFAULT_REGISTRY, readConfig, resolveRegistryBase, resolveStyleRegistry } from './config.js'
-import { detectProject } from './project-info.js'
+import { list } from './commands/list.js'
+import { view } from './commands/view.js'
+import { info } from './commands/info.js'
+import { styles } from './commands/styles.js'
 import { c, log } from './utils.js'
 
 const HELP = `${c.bold('vyui')} — add @vyui/kit styled components to your project
@@ -89,67 +90,18 @@ async function main(): Promise<void> {
       })
       break
     case 'list':
-    case 'search': {
-      const registry = resolveStyleRegistry(cwd, { registry: values.registry, style: values.style })
-      const index = await fetchIndex(registry)
-      const query = rest.join(' ').toLowerCase()
-      const components = index.components.filter(component => !query || component.name.includes(query))
-      if (!components.length) throw new Error(`No components found${query ? ` for "${query}"` : ''}.`)
-      log.info(`${components.length} component${components.length === 1 ? '' : 's'} in ${c.dim(registry)}:`)
-      for (const component of components) {
-        const deps = component.registryDependencies.length ? c.dim(` → ${component.registryDependencies.join(', ')}`) : ''
-        console.log(`  ${c.cyan('•')} ${component.name}${deps}`)
-      }
+    case 'search':
+      await list({ cwd, query: rest.join(' '), registry: values.registry, style: values.style })
       break
-    }
-    case 'view': {
-      if (!rest.length) throw new Error('Specify at least one component to view.')
-      const registry = resolveStyleRegistry(cwd, { registry: values.registry, style: values.style })
-      for (const name of rest) {
-        const item = await fetchItem(registry, name.toLowerCase())
-        console.log(c.bold(`\n# ${item.name}`))
-        for (const file of item.files) {
-          console.log(c.cyan(`\n--- ${file.target} ---\n`))
-          console.log(file.content)
-        }
-      }
+    case 'view':
+      await view({ cwd, components: rest, registry: values.registry, style: values.style })
       break
-    }
-    case 'info': {
-      const project = detectProject(cwd)
-      const config = readConfig(cwd)
-      const output = { project, config: config ?? null }
-      if (values.json) {
-        console.log(JSON.stringify(output, null, 2))
-        break
-      }
-      console.log(`${c.bold('Project')}
-  directory:       ${cwd}
-  Vue-Lynx:        ${project.isVueLynx ? 'yes' : 'not detected'}
-  app entry:       ${project.appEntry ?? 'not detected'}
-  Tailwind config: ${project.tailwindConfig ?? 'not detected'}
-  global CSS:      ${project.css ?? 'not detected'}
-  import alias:    ${project.alias ? `${project.alias.prefix}/* → ${project.alias.srcDir}/*` : 'not detected'}
-
-${c.bold('VyUI')}
-  initialized:     ${config ? 'yes' : 'no'}
-  style:           ${config?.style ?? '—'}
-  base color:      ${config?.baseColor ?? '—'}
-  registry:        ${config?.registry ?? DEFAULT_REGISTRY}`)
+    case 'info':
+      info({ cwd, json: values.json })
       break
-    }
-    case 'styles': {
-      const config = readConfig(cwd)
-      const registry = resolveRegistryBase(values.registry ?? config?.registry ?? DEFAULT_REGISTRY, cwd)
-      const current = config?.style
-      const { default: def, styles } = await fetchStyles(registry)
-      log.info(`Styles available at ${c.dim(registry)}:`)
-      for (const s of styles) {
-        const tags = [s === def ? c.dim('(default)') : '', s === current ? c.green('(current)') : ''].filter(Boolean).join(' ')
-        console.log(`  ${c.cyan('•')} ${s} ${tags}`)
-      }
+    case 'styles':
+      await styles({ cwd, registry: values.registry })
       break
-    }
     default:
       log.err(`Unknown command: ${command}`)
       console.log(HELP)
