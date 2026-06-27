@@ -121,7 +121,7 @@ describe('resolveIconSvg (color sanitisation)', () => {
 describe('Icon (component name)', () => {
   it('renders the supplied Vue component directly instead of an <svg>', () => {
     const Marker = defineComponent({
-      name: 'Marker',
+      name: 'IconMarkerStub',
       setup() {
         return () => h('view', { 'data-testid': 'marker-component' })
       },

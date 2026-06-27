@@ -4,6 +4,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+
+# Cancel superseded runs, except on main.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   typecheck:
     runs-on: ubuntu-latest
@@ -15,10 +21,6 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      # Build core first so its `dist/*.d.ts` exist — rslib emits no types
-      # (`dts: false`); `build` runs the separate `build-types` (vue-tsc) step.
-      - run: pnpm --filter @vyui/core build
-      - run: pnpm --filter @vyui/core typecheck
-      # Type-lock: fixture-consumer resolves @vyui/core's PUBLISHED dist types,
-      # so a regression in the emitted surface fails here. Must run after build.
-      - run: pnpm --filter @vyui/fixture-consumer typecheck
+      # Build first: kit/docs/fixture typecheck resolve core's emitted dist types.
+      - run: pnpm build
+      - run: pnpm typecheck

@@ -42,7 +42,8 @@
     "prepublishOnly": "pnpm build",
     "dev": "rslib build --watch",
     "typecheck": "vue-tsc --noEmit",
-    "test": "vitest",
+    "test": "vitest run",
+    "test-watch": "vitest",
     "test-update": "vitest -u",
     "lint": "eslint src"
   },
@@ -104,6 +105,7 @@
     "@testing-library/vue": "^8.1.0",
     "@types/node": "^24.0.0",
     "@vitejs/plugin-vue": "^5.2.4",
+    "eslint": "^10.5.0",
     "@vue/compiler-sfc": "^3.5.17",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.7.0",

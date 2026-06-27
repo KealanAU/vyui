@@ -38,6 +38,11 @@ const props = withDefaults(defineProps<IconProps>(), {
 // even if a future refactor adds wrapper elements or sets `inheritAttrs: false`.
 const attrs = useAttrs()
 
+// Hoisted out of the template: the inline TS union cast (`|`) trips the parser.
+const fallthroughClass = computed(
+  () => attrs.class as string | Record<string, unknown> | (string | Record<string, unknown>)[],
+)
+
 const sizePx = computed(() => {
   const n = typeof props.size === 'number' ? props.size : Number.parseInt(props.size, 10)
   return Number.isFinite(n) ? n : 16
@@ -63,7 +68,7 @@ const content = computed(() => {
   <component :is="name" v-if="typeof name !== 'string'" />
   <svg
     v-else-if="content"
-    :class="attrs.class as string | Record<string, unknown> | (string | Record<string, unknown>)[]"
+    :class="fallthroughClass"
     :content="content"
     :style="{ width: `${sizePx}px`, height: `${sizePx}px` }"
   />
