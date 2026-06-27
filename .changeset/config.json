@@ -8,7 +8,6 @@
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@vyui/native-demo",
     "@vyui/kit-demo",
     "@vyui/linear-demo",
     "@vyui/docs",

@@ -99,7 +99,6 @@ vyui/
 └── apps/
     └── examples/
         ├── kit-demo/           # styled-component showcase
-        ├── native-demo/       # broader primitive showcase
         ├── web-demo/          # web-target preview
         └── …
 ```

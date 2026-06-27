@@ -13,7 +13,6 @@ packages/
 apps/examples/
   phase5-debug/   broken-component sandbox (Slider + 8 Phase 5 primitives)
   kit-demo/        styled-component showcase (exercises @vyui/kit)
-  native-demo/    broader primitive showcase across @vyui/core
   web-demo/       web-target preview
   …
 ```
@@ -45,9 +44,6 @@ which historically crashed MT with
 
    # Styled-component showcase
    pnpm --filter @vyui/kit-demo dev
-
-   # Broader primitive showcase
-   pnpm --filter @vyui/native-demo dev
    ```
 
 3. Where to test:
@@ -58,8 +54,6 @@ which historically crashed MT with
      card. See `apps/examples/phase5-debug/README.md`.
    - **`kit-demo`** — styled-component showcase. Use this for `@vyui/kit`
      work and for verifying styled-component output across targets.
-   - **`native-demo`** — broader primitive showcase. Use this when you
-     need to exercise multiple `@vyui/core` primitives together.
 
 4. How to edit core for the demos: edit files in `packages/core/src/`. The
    demos pick changes up via the workspace alias declared in their
