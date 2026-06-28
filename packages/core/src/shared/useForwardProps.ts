@@ -26,7 +26,6 @@ type WithOptionalBooleans<T> = {
  */
 export function useForwardProps<T extends Record<string, any>>(props: MaybeRefOrGetter<T>) {
   const vm = getCurrentInstance()
-  // Default value for declared props
   const defaultProps = Object.keys(vm?.type.props ?? {}).reduce((prev, curr) => {
     const defaultValue = (vm?.type.props[curr] as PropOptions).default
     if (defaultValue !== undefined)
@@ -43,7 +42,6 @@ export function useForwardProps<T extends Record<string, any>>(props: MaybeRefOr
       preservedProps[camelize(key) as keyof T] = assignedProps[key]
     })
 
-    // Only return value from the props parameter
     return Object.keys({ ...defaultProps, ...preservedProps }).reduce((prev, curr) => {
       if (refProps.value[curr] !== undefined)
         (prev as Record<string, any>)[curr] = refProps.value[curr]

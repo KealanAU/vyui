@@ -4,7 +4,6 @@ import type { ContentNavigationItem } from '@nuxt/content'
 // frontmatter, no edits to the fleet-authored .md files). Unmapped slugs fall
 // into "Other" — add them here as new components are documented.
 const COMPONENT_CATEGORY: Record<string, string> = {
-  // Form
   input: 'Form',
   textarea: 'Form',
   select: 'Form',
@@ -20,14 +19,12 @@ const COMPONENT_CATEGORY: Record<string, string> = {
   label: 'Form',
   rating: 'Form',
   form: 'Form',
-  // Navigation & Disclosure
   tabs: 'Navigation',
   accordion: 'Navigation',
   stepper: 'Navigation',
   collapsible: 'Navigation',
   pagination: 'Navigation',
   navigation: 'Navigation',
-  // Overlay
   modal: 'Overlay',
   dialog: 'Overlay',
   'alert-dialog': 'Overlay',
@@ -38,7 +35,6 @@ const COMPONENT_CATEGORY: Record<string, string> = {
   tooltip: 'Overlay',
   'dropdown-menu': 'Overlay',
   toast: 'Overlay',
-  // Data Display
   avatar: 'Data Display',
   'avatar-group': 'Data Display',
   alert: 'Data Display',
@@ -46,21 +42,18 @@ const COMPONENT_CATEGORY: Record<string, string> = {
   chip: 'Data Display',
   progress: 'Data Display',
   icon: 'Data Display',
-  // Layout
   'aspect-ratio': 'Layout',
   'scroll-view': 'Layout',
   separator: 'Layout',
   card: 'Layout',
   placeholder: 'Layout',
   skeleton: 'Layout',
-  // Gestures & Lists
   'swipe-action': 'Gestures & Lists',
   swiper: 'Gestures & Lists',
   sortable: 'Gestures & Lists',
   draggable: 'Gestures & Lists',
   feedlist: 'Gestures & Lists',
   'feed-list': 'Gestures & Lists',
-  // Dynamic Island
   island: 'Dynamic Island',
   'island-button': 'Dynamic Island',
   'island-group': 'Dynamic Island',

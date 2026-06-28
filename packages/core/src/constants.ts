@@ -224,7 +224,6 @@ export const components = {
     'ToggleGroupItem',
   ] as const,
 
-  // Utility components
   configProvider: [
     'ConfigProvider',
   ] as const,

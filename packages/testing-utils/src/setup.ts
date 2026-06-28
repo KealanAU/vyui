@@ -24,8 +24,6 @@ const jsdom = new JSDOM('<!DOCTYPE html><html><body></body></html>')
 installLynxTestingEnv(globalThis as any, { window: jsdom.window as any })
 const lynxTestingEnv = (globalThis as any).lynxTestingEnv
 
-// --- Capture main-thread runtime fns ---
-
 lynxTestingEnv.switchToMainThread()
 
 // vue-lynx/main-thread references registerWorkletInternal at import time; stub it
@@ -44,8 +42,6 @@ const mainThreadFns = {
   updateGlobalProps: (globalThis as any).updateGlobalProps,
   registerWorkletInternal: (globalThis as any).registerWorkletInternal,
 }
-
-// --- Capture background-thread runtime fns ---
 
 lynxTestingEnv.switchToBackgroundThread()
 

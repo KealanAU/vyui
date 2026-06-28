@@ -132,7 +132,6 @@ const isDragEnabled = computed(() =>
   && (ctx.enableDragToClose.value || ctx.snapPoints.value.length > 1),
 )
 
-// ---- MT refs for drag state -------------------------------------------
 // All read/written only inside `'main thread'` worklets that fire on user
 // input. By that time, the `INIT_MT_REF` ops below have been flushed.
 const containerRef = useMainThreadRef<any>(null)
@@ -195,7 +194,6 @@ const posRef = useMainThreadRef<number>(0)
 // Position the active drag started from (drags can begin at any snap).
 const touchStartPosRef = useMainThreadRef<number>(0)
 
-// ---- Config sync BG → MT ----------------------------------------------
 // vue-lynx@0.4.0 silently drops BG-thread writes to `MainThreadRef.current`
 // (only the constructor's INIT_MT_REF transfers a value BG → MT), so these
 // syncs have to hop through `runOnMainThread`. That's safe here: watch
@@ -232,8 +230,6 @@ watch(ctx.dismissVelocity, (v) => { void runOnMainThread(_setDismissVelocity as 
 watch(ctx.duration, (v) => { void runOnMainThread(_setDurationMs as any)(v) })
 watch(snapPositionsPx, (v) => { void runOnMainThread(_setSnapPositions as any)(v) })
 watch(ctx.enableDragToClose, (v) => { void runOnMainThread(_setEnableDragToClose as any)(v) })
-
-// ---- Touch worklets ---------------------------------------------------
 
 function _setStyle(decl: Record<string, string>) {
   'main thread'

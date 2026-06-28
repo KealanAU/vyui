@@ -31,7 +31,6 @@ defineSlots<{
 
 const ctx = injectSortableRootContext()
 
-// ── MT refs ────────────────────────────────────────────────────────────────
 const containerRef = useMainThreadRef<any>(null)
 const touchStartYRef = useMainThreadRef<number>(0)
 const touchStartTimeRef = useMainThreadRef<number>(0)
@@ -61,7 +60,6 @@ const timeQueueRef = useMainThreadRef<number[]>([])
 watch(() => props.index, (v) => { runOnMainThread(_syncIndexMT as any)(v) })
 watch(() => props.disabled, (v) => { runOnMainThread(_syncDisabledMT as any)(v) })
 
-// ── Registry handle (MT side) ──────────────────────────────────────────────
 // The handle (element + logical index) MUST be appended ON the main thread:
 // `ctx.itemHandlesMT` is a MainThreadRef and BG writes to it are dropped by
 // vue-lynx 0.4.0. The previous `onMounted` registration ran on the BG thread,
@@ -77,8 +75,6 @@ onBeforeUnmount(() => {
   runOnMainThread(_cancelActivation as any)()
   runOnMainThread(_unregisterMT as any)()
 })
-
-// ── Worklets ────────────────────────────────────────────────────────────────
 
 /**
  * Append this item to the MT registry. Bound to `main-thread-binduiappear` so
@@ -365,8 +361,6 @@ function _onTouchEnd() {
   ctx.draggingIndexMT.current = -1
   runOnBackground(_emitDragEnd as any)(startIdx, target)
 }
-
-// ── BG callbacks ───────────────────────────────────────────────────────────
 
 function _emitDragStart(idx: number) {
   ctx.notifyDragStart(idx)

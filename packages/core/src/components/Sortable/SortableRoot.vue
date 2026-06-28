@@ -74,14 +74,12 @@ const itemHeight = computed(() => props.itemHeight)
 const disabled = computed(() => props.disabled)
 const draggingIndex = ref(-1)
 
-// ── MT-shared state ─────────────────────────────────────────────────────────
 const itemHandlesMT = useMainThreadRef<SortableItemHandle[]>([])
 const itemHeightMT = useMainThreadRef<number>(props.itemHeight)
 const disabledMT = useMainThreadRef<boolean>(props.disabled)
 const draggingIndexMT = useMainThreadRef<number>(-1)
 const longPressMsMT = useMainThreadRef<number>(props.longPressMs)
 
-// ── Autoscroll (MT) ─────────────────────────────────────────────────────────
 const rootRef = useMainThreadRef<any>(null)
 const scrollRefMT = useMainThreadRef<any>(null)
 const viewportTopMT = useMainThreadRef<number>(0)

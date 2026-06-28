@@ -41,7 +41,6 @@ const props = withDefaults(defineProps<SliderImplMTSProps>(), {
 const root = injectSliderRootContext()
 const orientation = injectSliderOrientationContext()
 
-// --- Track MT refs ----------------------------------------------------------
 const trackRef = useMainThreadRef<any>(null)
 
 // Track rect, refreshed on `layoutchange` and on first `touchstart`. Stored as
@@ -52,7 +51,6 @@ const rectYRef = useMainThreadRef<number>(0)
 const rectWRef = useMainThreadRef<number>(0)
 const rectHRef = useMainThreadRef<number>(0)
 
-// --- Orientation MT mirrors -------------------------------------------------
 // 0 = horizontal (read clientX, paint translateX), 1 = vertical.
 const axisRef = useMainThreadRef<0 | 1>(orientation.size === 'width' ? 0 : 1)
 const startEdgeRef = useMainThreadRef<StartEdgeCode>(encodeStartEdge(orientation.startEdge.value))
@@ -61,15 +59,10 @@ watch(() => orientation.startEdge.value, (v) => {
   startEdgeRef.current = encodeStartEdge(v)
 })
 
-// --- Drag state -------------------------------------------------------------
 const activeIndexRef = useMainThreadRef<number>(-1)
 // Snapshot of all thumb values at touchstart — used to compute each thumb's
 // stable BG-anchor position so paint deltas are relative to it.
 const startValuesRef = useMainThreadRef<number[]>([])
-
-// ---------------------------------------------------------------------------
-// Worklets
-// ---------------------------------------------------------------------------
 
 function _measureRect() {
   'main thread'
