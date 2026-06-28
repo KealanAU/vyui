@@ -35,7 +35,6 @@ export function useForwardExpose<T extends ComponentPublicInstance>() {
   const localExpose: Record<string, any> | null = Object.assign({}, instance.exposed)
   const ret: Record<string, any> = {}
 
-  // retrieve props for current instance
   for (const key in instance.props) {
     Object.defineProperty(ret, key, {
       enumerable: true,
@@ -44,7 +43,6 @@ export function useForwardExpose<T extends ComponentPublicInstance>() {
     })
   }
 
-  // retrieve default exposed value
   if (Object.keys(localExpose).length > 0) {
     for (const key in localExpose) {
       Object.defineProperty(ret, key, {
@@ -55,7 +53,6 @@ export function useForwardExpose<T extends ComponentPublicInstance>() {
     }
   }
 
-  // retrieve original first root element
   Object.defineProperty(ret, '$el', {
     enumerable: true,
     configurable: true,
@@ -69,7 +66,6 @@ export function useForwardExpose<T extends ComponentPublicInstance>() {
     if (!ref)
       return
 
-    // retrieve the forwarded element
     Object.defineProperty(ret, '$el', {
       enumerable: true,
       configurable: true,

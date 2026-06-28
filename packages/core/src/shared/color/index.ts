@@ -1,7 +1,5 @@
-// Channel operations
 export { getChannelName, getChannelRange, getChannelValue, setChannelValue, setChannelValues } from './channel'
 
-// Conversion
 export {
   colorToHex,
   colorToHsb,
@@ -13,13 +11,10 @@ export {
   convertToRgb,
 } from './convert'
 
-// Gradients
 export { getAreaBackgroundStyle, getAreaGradient, getSliderBackgroundStyle, getSliderGradient } from './gradient'
 
-// Parsing
 export { isValidColor, normalizeColor, parseColor } from './parse'
 
-// Types
 export type {
   ChannelRange,
   Color,

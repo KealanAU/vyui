@@ -107,7 +107,6 @@ export default (colors: Color[]) => ({
     // Resting border is neutral; the colored border is opt-in via `highlight`
     // (no focus state on Lynx).
     ...colors.map(color => ({ color, highlight: true, class: { base: `border border-${color}-500` } })),
-    // Loading spinner animation on icon slot.
     { loading: true, leading: true, class: { leadingIcon: 'animate-spin' } },
     { loading: true, leading: false, trailing: true, class: { trailingIcon: 'animate-spin' } },
     // Trigger icons default to neutral (dimmed), decoupled from `color`;

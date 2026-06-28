@@ -68,7 +68,6 @@ function isExtrapolate(value: string): value is Extrapolation {
 // if type is correct, converts it to ExtrapolationConfig
 function validateType(type: ExtrapolationType): RequiredExtrapolationConfig {
   'main thread'
-  // initialize extrapolationConfig with default extrapolation
   const extrapolationConfig: RequiredExtrapolationConfig = {
     extrapolateLeft: Extrapolation.EXTEND,
     extrapolateRight: Extrapolation.EXTEND,
@@ -90,7 +89,6 @@ function validateType(type: ExtrapolationType): RequiredExtrapolationConfig {
     return extrapolationConfig
   }
 
-  // otherwise type is extrapolation config object
   if (
     (type.extrapolateLeft && !isExtrapolate(type.extrapolateLeft))
     || (type.extrapolateRight && !isExtrapolate(type.extrapolateRight))

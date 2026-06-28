@@ -20,7 +20,6 @@ import { codeToHtml } from 'shiki'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const playground = resolve(root, 'apps/examples/docs-playground')
 
-// 1. Web bundle -> docs public/
 const bundleSrc = resolve(playground, 'dist/main.web.bundle')
 const publicDir = resolve(root, 'apps/docs/public/playground')
 mkdirSync(publicDir, { recursive: true })
@@ -39,7 +38,6 @@ const runtimeDir = resolve(root, 'apps/docs/public/lynx-runtime')
 rmSync(runtimeDir, { recursive: true, force: true })
 cpSync(runtimeSrc, runtimeDir, { recursive: true, force: true })
 
-// 3. Example sources -> generated manifest
 const examplesDir = resolve(playground, 'src/examples')
 
 const toKebab = (name: string) =>

@@ -79,7 +79,6 @@ const STYLES: StyleDef[] = [
   },
 ]
 
-// ── version resolution ─────────────────────────────────────────────────────
 const kitPkg = JSON.parse(readFileSync(resolve(root, 'packages/kit/package.json'), 'utf8'))
 const corePkg = JSON.parse(readFileSync(resolve(root, 'packages/core/package.json'), 'utf8'))
 const VERSIONS: Record<string, string> = {
@@ -106,7 +105,6 @@ function toDep(spec: string): { name: string, range: string } | undefined {
   return { name, range }
 }
 
-// ── import parsing (AST-based) ──────────────────────────────────────────────
 const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 
 interface FileEntry { path: string, target: string, type: string, content: string }
@@ -473,7 +471,6 @@ function generateStyle(style: StyleDef) {
   console.log(`[gen-registry] style "${style.name}"  components=${catalog.length}  init-files=${initFiles.length}`)
 }
 
-// ── generate ──────────────────────────────────────────────────────────────────
 await initLexer // es-module-lexer's wasm must be ready before parse()
 
 rmSync(outRoot, { recursive: true, force: true })

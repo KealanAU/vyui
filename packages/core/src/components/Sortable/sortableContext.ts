@@ -30,7 +30,6 @@ export interface SortableRootContext<T = unknown> {
   /** Currently lifted index (BG-side, drives slot `dragging` flag). -1 if none. */
   draggingIndex: Ref<number>
 
-  // ── MT-shared state ──────────────────────────────────────────────────────
   /** MT-shared registry of every mounted item's handle. */
   itemHandlesMT: MainThreadRef<SortableItemHandle[]>
   /** MT mirror of `itemHeight`. */
@@ -42,7 +41,6 @@ export interface SortableRootContext<T = unknown> {
   /** Long-press activation delay in ms. */
   longPressMsMT: MainThreadRef<number>
 
-  // ── Autoscroll (MT) ──────────────────────────────────────────────────────
   /** Scroll container element (the root view). null when not yet mounted. */
   scrollRefMT: MainThreadRef<{ scrollTop?: number, scrollHeight?: number, clientHeight?: number, scrollTo?(o: { top?: number, behavior?: string }): void } | null>
   /** Viewport top in page coords, px. Measured on mount. */

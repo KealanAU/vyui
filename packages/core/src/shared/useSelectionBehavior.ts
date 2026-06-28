@@ -10,7 +10,6 @@ export function useSelectionBehavior<T>(
   const firstValue = ref()
 
   const onSelectItem = (val: T, condition: (existingValue: T) => boolean) => {
-    // multiple select
     if (props.multiple && Array.isArray(modelValue.value)) {
       if (props.selectionBehavior === 'replace') {
         modelValue.value = [val]
@@ -24,7 +23,6 @@ export function useSelectionBehavior<T>(
           modelValue.value = [...modelValue.value, val]
       }
     }
-    // single select
     else {
       if (props.selectionBehavior === 'replace') {
         modelValue.value = { ...val }

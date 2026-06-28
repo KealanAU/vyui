@@ -229,7 +229,6 @@ export function createYearRange({ start, end }: DateRange): DateValue[] {
 
   while (current.compare(end) <= 0) {
     years.push(current)
-    // Move to the first day of the next year
     current = startOfYear(current.add({ years: 1 }))
   }
 

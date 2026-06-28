@@ -27,7 +27,6 @@ export {
   type VyuiColorRegistry,
 } from './theme/colors'
 
-// Component re-exports.
 export { default as Accordion, default as VyAccordion } from './components/Accordion.vue'
 export { default as ActionSheet, default as VyActionSheet } from './components/ActionSheet.vue'
 export { default as Alert, default as VyAlert } from './components/Alert.vue'

@@ -14,7 +14,6 @@ const REPO_ROOT = path.resolve(__dirname, '..')
 const COMPONENTS_DIR = path.join(REPO_ROOT, 'packages/core/src/components')
 const BARREL_FILE = path.join(REPO_ROOT, 'packages/core/src/index.ts')
 
-// ---------- arg parsing ----------
 const args = process.argv.slice(2)
 const flags = new Set(args.filter(a => a.startsWith('--')))
 const positional = args.filter(a => !a.startsWith('--'))
@@ -37,7 +36,6 @@ if (fs.existsSync(targetDir)) {
   process.exit(1)
 }
 
-// ---------- templates ----------
 function rootSfc(n: string): string {
   return `<script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
@@ -135,7 +133,6 @@ describe('${n}', () => {
 `
 }
 
-// ---------- plan ----------
 const files: Array<{ rel: string; content: string }> = [
   { rel: `${name}/index.ts`, content: indexTs(name) },
   { rel: `${name}/${name}Root.vue`, content: rootSfc(name) },
@@ -145,7 +142,6 @@ const files: Array<{ rel: string; content: string }> = [
 
 const barrelLine = `export * from './components/${name}'\n`
 
-// ---------- execute ----------
 if (dryRun) {
   console.log(`[dry-run] would create:`)
   for (const f of files) console.log(`  ${path.join('packages/core/src/components', f.rel)}`)
