@@ -22,10 +22,8 @@ export interface DrawerProps {
   /** Initial open state when uncontrolled. */
   defaultOpen?: boolean
   /**
-   * Side the drawer slides in from. NOTE: the underlying core `Sheet*` is
-   * a bottom-sheet — this drives `data-side` for styling but the physical
-   * drag direction is fixed. Map `direction` from Nuxt UI's Drawer to
-   * the same prop for parity.
+   * Side the drawer slides in from. Map `direction` from Nuxt UI's Drawer
+   * to the same prop for parity.
    */
   side?: DrawerVariants['side']
   /** Alias for `side` — matches Nuxt UI's Drawer (vaul) API. */
@@ -166,6 +164,7 @@ const ui = computed(() => buildDrawer(appConfig)({
   <SheetRoot
     :open="resolvedOpen"
     :default-open="defaultOpen"
+    :side="resolvedSide"
     :snap-points="snapPoints"
     :default-snap-index="defaultSnapIndex"
     :enable-drag-to-close="dismissible"

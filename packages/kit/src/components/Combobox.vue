@@ -12,6 +12,7 @@
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/combobox'
 import { resolveColors } from '../theme/colors'
+import type { SheetDirection } from '@vyui/core'
 import type { AppConfig } from '../types'
 
 /**
@@ -78,6 +79,11 @@ export interface ComboboxProps {
    * @defaultValue 'sheet'
    */
   presentation?: 'sheet' | 'anchor'
+  /**
+   * Edge the picker sheet slides and drags from.
+   * @defaultValue `'bottom'`
+   */
+  side?: SheetDirection
   /**
    * Snap fractions forwarded to `SheetRoot`. Default `[0.9]` matches a
    * native search-picker — near-full height so the keyboard has room above
@@ -218,6 +224,7 @@ const displayLabel = computed(() => {
     <template #default="{ open, modelValue: rootValue }">
       <SheetRoot
         :open="localOpen"
+        :side="side"
         :snap-points="snapPoints"
         @update:open="localOpen = $event"
       >

@@ -4,6 +4,8 @@
      vyui original. Snap / drag logic adapted from `lynx-family/lynx-ui`
      `packages/lynx-ui-sheet/src/hooks/useSnap.ts` + `useDrag.ts` (Apache 2.0). -->
 <script lang="ts">
+import type { SheetDirection } from '../../shared/composables'
+
 export interface SheetRootProps {
   /** Controlled open state. Bind with `v-model:open`. */
   open?: boolean
@@ -23,7 +25,14 @@ export interface SheetRootProps {
    */
   defaultSnapIndex?: number
   /**
-   * Snap points as fractions of viewport height, low → high. e.g. `[0.25, 0.5, 0.9]`.
+   * Edge the sheet is anchored to. Controls enter/exit animation and drag axis.
+   * @defaultValue `'bottom'`
+   */
+  side?: SheetDirection
+  /**
+   * Snap points as fractions of viewport extent on the sheet axis, low → high.
+   * e.g. `[0.25, 0.5, 0.9]`. For `top`/`bottom` this is viewport height;
+   * for `left`/`right` this is viewport width.
    * @defaultValue `[1]`
    */
   snapPoints?: number[]
@@ -32,6 +41,11 @@ export interface SheetRootProps {
    * pixelRatio` at runtime, falling back to `800`.
    */
   viewportHeight?: number
+  /**
+   * Viewport width in px. If omitted, reads from `SystemInfo.pixelWidth /
+   * pixelRatio` at runtime, falling back to `400`.
+   */
+  viewportWidth?: number
   /**
    * Absolute velocity (px/s) above which a fling advances by one snap regardless
    * of position. Currently unused — the release logic (mirroring
@@ -85,6 +99,7 @@ import { provideSheetRootContext } from './sheetContext'
 const props = withDefaults(defineProps<SheetRootProps>(), {
   defaultOpen: false,
   defaultSnapIndex: 0,
+  side: 'bottom',
   snapPoints: () => [1],
   velocityThreshold: 400,
   dismissVelocity: 600,
@@ -119,6 +134,15 @@ const viewportHeight = computed(() => {
   return 800
 })
 
+const viewportWidth = computed(() => {
+  if (typeof props.viewportWidth === 'number') return props.viewportWidth
+  const sys: any = (globalThis as any).SystemInfo
+  if (sys && typeof sys.pixelWidth === 'number' && typeof sys.pixelRatio === 'number') {
+    return sys.pixelWidth / sys.pixelRatio
+  }
+  return 400
+})
+
 // MT drag progress (1 fully open → 0 dragged to dismiss; only written
 // during drag — see sheetContext). Lives at the root so the backdrop can
 // read it without injecting through SheetContent.
@@ -147,8 +171,10 @@ watch(open, (isOpen) => {
 provideSheetRootContext({
   open,
   snapIndex,
+  side: computed(() => props.side),
   snapPoints,
   viewportHeight,
+  viewportWidth,
   velocityThreshold: computed(() => props.velocityThreshold),
   dismissVelocity: computed(() => props.dismissVelocity),
   duration: computed(() => props.duration),

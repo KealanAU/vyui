@@ -9,10 +9,9 @@
  * later in the cascade overrides them with undefined keyframes — the
  * drawer then snaps open with no slide.
  *
- * NOTE: the core `Sheet*` primitive is a bottom-sheet — the `side` prop
- * here drives a `data-side` attribute on the content for styling, but
- * physical drag direction remains bottom. Snap/dismiss physics live in
- * `SheetRoot`.
+ * Core `Sheet*` owns the side-aware slide, snap, and dismiss physics.
+ * The `side` variant here handles edge placement and dimensions for the
+ * styled drawer chrome.
  */
 export default {
   slots: {

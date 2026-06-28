@@ -102,6 +102,19 @@ describe('SheetRoot — v-model:open / v-model:snapIndex', () => {
     expect(ctx.viewportHeight.value).toBe(999)
   })
 
+  it('viewportWidth prop wins over runtime SystemInfo', async () => {
+    const { ctx } = await mountRoot({ viewportWidth: 444 })
+    expect(ctx.viewportWidth.value).toBe(444)
+  })
+
+  it('defaults side to bottom and exposes side from props', async () => {
+    const bottom = await mountRoot()
+    expect(bottom.ctx.side.value).toBe('bottom')
+
+    const left = await mountRoot({ side: 'left' })
+    expect(left.ctx.side.value).toBe('left')
+  })
+
   // SheetContent's release worklets read these via MT refs synced from the
   // context — assert the context carries the prop values (and defaults)
   // rather than hardcoded physics.
@@ -277,9 +290,19 @@ describe('SheetContentImpl — viewport height unit (no dvh)', () => {
 
   it('sizes the panel with vh, never the unsupported dvh', async () => {
     const sfc = await readImpl()
-    expect(sfc).toMatch(/\$\{maxSnap\.value \* 100\}vh/)
+    expect(sfc).toMatch(/\$\{maxSnap\.value \* 100\}\$\{axis\.value === 'x' \? 'vw' : 'vh'\}/)
     // Match `dvh` only where it's used as a unit (after a digit or `}`), so the
     // explanatory comment that names the forbidden unit doesn't trip this.
     expect(sfc).not.toMatch(/[\d}]dvh/)
+  })
+
+  it('includes side-specific slide keyframes', async () => {
+    const sfc = await readImpl()
+    expect(sfc).toContain('vyui-sheet-slide-in-from-top')
+    expect(sfc).toContain('vyui-sheet-slide-out-to-top')
+    expect(sfc).toContain('vyui-sheet-slide-in-from-right')
+    expect(sfc).toContain('vyui-sheet-slide-out-to-right')
+    expect(sfc).toContain('vyui-sheet-slide-in-from-left')
+    expect(sfc).toContain('vyui-sheet-slide-out-to-left')
   })
 })
