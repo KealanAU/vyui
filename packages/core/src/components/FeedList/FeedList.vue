@@ -58,7 +58,6 @@ export interface FeedListProps<T = unknown> {
   /** Disable scrolling and refresh interactions. */
   disabled?: boolean
 
-  // Pull-to-refresh
   /**
    * Enable the rubber-band pull-to-refresh. Off → a bare `<list>`, no touch
    * handlers.
@@ -83,7 +82,6 @@ export interface FeedListProps<T = unknown> {
    */
   enableBounce?: boolean
 
-  // Load-more
   /** Enable load-more on scroll-to-lower. */
   enableLoadMore?: boolean
   /** Controlled loading-more state. Bind with `v-model:loadingMore`. */
@@ -424,8 +422,6 @@ function _onTouchEnd() {
   }
 }
 
-// BG callbacks.
-
 function _onPull(progress: number, releaseReady: boolean) {
   pullProgress.value = progress
   if (refreshing.value) return
@@ -450,8 +446,6 @@ function _onClosed() {
   setRefreshState('done')
   setRefreshState('idle')
 }
-
-// Helpers / public API.
 
 function keyFor(item: T, index: number): string {
   if (typeof props.itemKey === 'function') return props.itemKey(item, index)

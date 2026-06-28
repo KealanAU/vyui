@@ -1,4 +1,3 @@
-// Theme barrel.
 export { default as icons } from './icons'
 export { ALL_COLORS, COLORS, NEUTRAL, resolveColors, type Color, type VyuiColorRegistry } from './colors'
 

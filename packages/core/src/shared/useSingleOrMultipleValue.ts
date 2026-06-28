@@ -22,7 +22,7 @@ function validateProps({ type, defaultValue, modelValue }: SingleOrMultipleProps
   if (canTypeBeInferred)
     return Array.isArray(value) ? 'multiple' : 'single'
   else
-    return type ?? 'single' // always fallback to `single`
+    return type ?? 'single'
 }
 
 function getDefaultType({ type, defaultValue, modelValue }: SingleOrMultipleProps) {

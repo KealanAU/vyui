@@ -35,7 +35,7 @@ export function destFor(file: RegistryFile, config: VyuiConfig, projectRoot: str
         case 'composables': return safeDestination(projectRoot, config.paths.composables, tail)
         case 'utils': return safeDestination(projectRoot, config.paths.utils, tail)
         case 'theme': return safeDestination(projectRoot, config.paths.theme, tail)
-        default: return safeDestination(projectRoot, config.paths.lib, target) // types.ts, plugin.ts
+        default: return safeDestination(projectRoot, config.paths.lib, target)
       }
     }
   }

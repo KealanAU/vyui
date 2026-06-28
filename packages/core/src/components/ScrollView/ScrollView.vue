@@ -219,14 +219,12 @@ const containerIdRef = useMainThreadRef<string>(containerId.value)
 const upperWrapperIdRef = useMainThreadRef<string>(upperWrapperId.value)
 const lowerWrapperIdRef = useMainThreadRef<string>(lowerWrapperId.value)
 
-// Touch bookkeeping.
 const startTouch = useMainThreadRef<any>(null)
 const prevTouch = useMainThreadRef<any>(null)
 const startBouncingTouch = useMainThreadRef<any>(null)
 const startTouchBouncingDelta = useMainThreadRef<any>(0)
 const bouncingTouchStartPosition = useMainThreadRef<any>(0)
 
-// Scroll velocity tracking.
 const scrollVelocity = useMainThreadRef<number>(0)
 const prevScroll = useMainThreadRef<any>(null)
 
@@ -527,8 +525,6 @@ function _mtFlingBounce() {
   flingEndWithBouncingEnableFlag.current = true
 }
 
-// ── Public handler worklets (bound in the template) ──
-
 function _mtTouchStart(event: any) {
   'main thread'
   startTouch.current = event.touches
@@ -665,8 +661,6 @@ function _mtLowerDisexposure() {
   'main thread'
   toLower.current = false
 }
-
-// ── Native BG event forwards ──
 
 function onScrollToLower(event: unknown): void {
   emits('scrollToLower', event)

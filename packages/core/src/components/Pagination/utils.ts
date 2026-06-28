@@ -39,7 +39,6 @@ export function getRange(currentPage: number, pageCount: number, siblingCount: n
     const itemCount = totalPageNumbers - 2 // 2 stands for one ellipsis and either first or last page
 
     const showLeftEllipsis
-      // default condition
       = leftSiblingIndex > firstPageIndex + 2
       // if the current page is towards the end of the list
         && Math.abs(lastPageIndex - itemCount - firstPageIndex + 1) > 2
@@ -47,7 +46,6 @@ export function getRange(currentPage: number, pageCount: number, siblingCount: n
         && Math.abs(leftSiblingIndex - firstPageIndex) > 2
 
     const showRightEllipsis
-      // default condition
       = rightSiblingIndex < lastPageIndex - 2
       // if the current page is towards the start of the list
         && Math.abs(lastPageIndex - itemCount) > 2

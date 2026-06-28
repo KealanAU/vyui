@@ -4,7 +4,6 @@
 // Swiper, SwipeAction, Draggable, Sortable, ScrollView, FeedList,
 // LazyComponent).
 
-// Overlay infrastructure
 export * from './components/OverlayRoot'
 
 // Overlays + menus (tap-driven; work on Lynx native)
@@ -15,7 +14,6 @@ export * from './components/Popover'
 export * from './components/Select'
 export * from './components/Sheet'
 
-// Form controls
 export * from './components/Combobox'
 
 // vyui originals
@@ -52,7 +50,6 @@ export * from './components/ToggleGroup'
 // Screen-stack navigation (push/pop pages, iOS / Material style)
 export * from './components/Navigation'
 
-// MT-worklet-driven touch/drag family
 export * from './components/Draggable'
 export * from './components/FeedList'
 export * from './components/LazyComponent'
@@ -62,7 +59,6 @@ export * from './components/Sortable'
 export * from './components/SwipeAction'
 export * from './components/Swiper'
 
-// Component / utility registry
 export {
   type Components,
   components,
@@ -79,7 +75,6 @@ export * from './shared/composables'
 // component formats dates / numbers.
 export { installIntlPolyfill } from './shared/intl'
 
-// Shared utilities
 export {
   createContext,
   isNullish,
