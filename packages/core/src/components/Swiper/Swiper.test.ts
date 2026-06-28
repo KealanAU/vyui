@@ -315,7 +315,7 @@ describe('Swiper — RTL direction flip', () => {
 
 describe('Swiper — seamless loop wrap + seam detection', () => {
   function resolve(rawIndex: number, count: number, loop: boolean, fullSize: number) {
-    let wrapped = rawIndex
+    let wrapped: number
     if (loop) wrapped = ((rawIndex % count) + count) % count
     else wrapped = Math.max(0, Math.min(count - 1, rawIndex))
     const rawOffset = -rawIndex * fullSize
