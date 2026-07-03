@@ -1,4 +1,4 @@
-import type { InjectionKey } from 'vue'
+import type { Component, InjectionKey } from 'vue'
 
 /** Recursive `Partial<T>` — every nested property is also optional. */
 export type DeepPartial<T> = {
@@ -32,4 +32,10 @@ export const APP_CONFIG_KEY: InjectionKey<AppConfig> = Symbol('vyui:app-config')
 export interface VyUIPluginOptions {
   /** Override the default `ui` config — deep-merged over the package defaults. */
   ui?: DeepPartial<AppConfig['ui']>
+  /**
+   * Register only this subset of components globally (keyed by tag name, e.g.
+   * `{ VyButton, VyModal }`). Defaults to the full `REGISTRY`. Passing an
+   * explicit set lets the bundler tree-shake the components you don't list.
+   */
+  components?: Record<string, Component>
 }

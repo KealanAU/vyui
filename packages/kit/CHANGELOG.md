@@ -12,6 +12,7 @@
 
 ### Patch Changes
 
+- First working published build. Every prior release (0.0.1–0.0.4) shipped components as self-importing wrappers, so `import { Button } from '@vyui/kit'` resolved to `undefined`; the package now bundles from explicit entries and is guarded by a packed-tarball smoke test + a `.d.ts` resolution check. Also: `provideVyUI` (theme config without eager component registration) and a `components` option for selective global registration; corrected install docs (Tailwind preset wiring, `style.css` via Tailwind, overlay/toast hosts, `vue-lynx` entry); `exports` `types` before `import`; `prepublishOnly` guard.
 - 300e34f: Add small horizontal (landscape) mode support — the work that gets the kit-demo running on mobile in landscape. Compact, viewport-safe layouts for overlays, sheets, menus, tabs, steppers, islands, cards, alerts, and toasts. Select and Combobox sheet structure is now fully themeable for responsive overrides.
 - 0610d70: Input: forward `@focus` and `@blur` events.
 
