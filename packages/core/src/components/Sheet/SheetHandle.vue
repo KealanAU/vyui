@@ -33,14 +33,24 @@ const mergedStyle = computed<VyStyle>(() => ({
   marginBottom: '8px',
   ...(attrs.style as Record<string, any> | undefined),
 }))
+
+// Forward the consumer's class alongside our own. `class`/`style` are bound
+// explicitly (below), so strip them from the attrs spread to avoid binding
+// them twice — and so the element's `class` type stays non-null (Lynx's
+// `<view>` class prop rejects `null`, which a raw attrs spread would admit).
+const forwardedClass = computed(() => ['vyui-sheet__handle', attrs.class as string])
+const restAttrs = computed(() => {
+  const { class: _class, style: _style, ...rest } = attrs
+  return rest
+})
 </script>
 
 <template>
   <view
     v-if="!hidden"
-    class="vyui-sheet__handle"
     data-vyui-sheet-handle
-    v-bind="attrs"
+    v-bind="restAttrs"
+    :class="forwardedClass"
     :main-thread-bindtouchstart="drag?.handleTouchStartMT"
     :main-thread-bindtouchmove="drag?.handleTouchMoveMT"
     :main-thread-bindtouchend="drag?.handleTouchEndMT"
