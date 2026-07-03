@@ -108,7 +108,9 @@ import ToggleGroup from './ToggleGroup.vue'
  * After authoring the wrapper, append it to `REGISTRY` below — the `VyUI`
  * plugin's `install()` loops over this map and calls `app.component(name, comp)`.
  */
-export const REGISTRY: Record<string, Component> = {
+// `satisfies` (not a `: Record<string, Component>` annotation) keeps each key's
+// concrete component type in `typeof REGISTRY` while still checking the shape.
+export const REGISTRY = {
   VyAccordion: Accordion,
   VyActionSheet: ActionSheet,
   VyAlert: Alert,
@@ -155,4 +157,4 @@ export const REGISTRY: Record<string, Component> = {
   VyToast: Toast,
   VyToggle: Toggle,
   VyToggleGroup: ToggleGroup,
-}
+} satisfies Record<string, Component>

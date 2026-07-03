@@ -1,6 +1,7 @@
 // @vyui/kit — styled Vue-Lynx components built on @vyui/core.
 
 export { VyUI } from './plugin'
+export { provideVyUI } from './provide'
 
 export { useAppConfig } from './composables/useAppConfig'
 export { useComponentIcons, type UseComponentIconsProps } from './composables/useComponentIcons'

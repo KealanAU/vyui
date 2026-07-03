@@ -77,6 +77,9 @@ try {
   if (typeof main.VyUI?.install !== 'function') fail('VyUI.install is not a function')
   else ok('VyUI plugin is installable')
 
+  if (typeof main.provideVyUI !== 'function') fail('provideVyUI is not a function')
+  else ok('provideVyUI is exported')
+
   // Spot-check a representative set of components are real component objects.
   for (const name of ['Button', 'Accordion', 'Switch', 'Modal', 'VyButton']) {
     const c = main[name]

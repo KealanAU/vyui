@@ -40,17 +40,18 @@
     "build-only": "rslib build && vue-tsc -p tsconfig.build.json && pnpm copy-dts",
     "copy-dts": "cp src/tailwind.d.ts dist/tailwind.d.ts && cp src/theme/color-constants.d.ts dist/theme/color-constants.d.ts",
     "smoke-test": "node scripts/smoke-test.mjs",
+    "prepublishOnly": "pnpm build",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint src"
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./theme": {
-      "import": "./dist/theme/index.js",
-      "types": "./dist/theme/index.d.ts"
+      "types": "./dist/theme/index.d.ts",
+      "import": "./dist/theme/index.js"
     },
     "./tailwind": {
       "types": "./dist/tailwind.d.ts",
@@ -63,9 +64,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "peerDependencies": {
+    "tailwindcss": "^3.4.0",
     "vue": ">= 3.4.0",
-    "vue-lynx": "^0.4.0",
-    "tailwindcss": "^3.4.0"
+    "vue-lynx": "^0.4.0"
   },
   "dependencies": {
     "@vyui/core": "workspace:^",
@@ -73,12 +74,12 @@
     "tailwind-variants": "^0.3.1"
   },
   "devDependencies": {
-    "@vyui/shared-build-config": "workspace:*",
-    "@vyui/testing-utils": "workspace:*",
     "@rsbuild/plugin-vue": "^1.2.8",
     "@rslib/core": "^0.7.0",
-    "@vue/tsconfig": "^0.7.0",
     "@types/node": "^24.0.0",
+    "@vue/tsconfig": "^0.7.0",
+    "@vyui/shared-build-config": "workspace:*",
+    "@vyui/testing-utils": "workspace:*",
     "eslint": "^10.5.0",
     "tailwindcss": "^3.4.0",
     "vue": "3.5.17",
