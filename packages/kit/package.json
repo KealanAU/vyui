@@ -36,9 +36,10 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "pnpm build-only",
+    "build": "pnpm build-only && pnpm smoke-test",
     "build-only": "rslib build && vue-tsc -p tsconfig.build.json && pnpm copy-dts",
     "copy-dts": "cp src/tailwind.d.ts dist/tailwind.d.ts && cp src/theme/color-constants.d.ts dist/theme/color-constants.d.ts",
+    "smoke-test": "node scripts/smoke-test.mjs",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint src"
   },
