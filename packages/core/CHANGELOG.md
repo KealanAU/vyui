@@ -12,6 +12,7 @@
 
 ### Patch Changes
 
+- Fix unresolvable published types: shipped `.d.ts` imported the internal `@/*` path alias (unresolvable for consumers, which also degraded `@vyui/kit`'s re-exported types). Declaration emit now rewrites `@/*` to relative paths and adds explicit `.js` extensions, so types resolve under both `bundler` and `node16`/`nodenext`. Declared `@lynx-js/types` (optional peer) and `vue-component-type-helpers` (dependency), both used by public types. Added a packed-tarball smoke test and a `.d.ts` resolution check to the build.
 - 0610d70: FeedList: honour a `noMoreData` prop so the end-of-list footer no longer shows while more pages remain.
 
   Previously the core `FeedList` rendered the `noMoreDataFooter` slot whenever `loadingMore` was false, so "no more items" appeared immediately even with pages still loadable (the kit `VyFeedList` already forwarded `noMoreData`, but core ignored it). The footer row now only renders while `loadingMore` (load-more spinner) or once `noMoreData` is `true` (end-of-list); otherwise no footer renders.

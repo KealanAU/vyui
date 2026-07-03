@@ -31,14 +31,25 @@ function collect(dir) {
 // Matches the specifier of `from '…'`, `import('…')`, and bare `import '…'`.
 const SPECIFIER = /(\bfrom\s*|import\s*\(\s*|\bimport\s+)(['"])(\.[^'"]*)\2/g
 
-/** Resolve a relative specifier (from `fileDir`) to its `.js` form, or null. */
+/**
+ * Resolve a relative specifier (from `fileDir`) to the `.js` form node16 wants,
+ * or null to leave it. Handles missing extensions AND wrong ones — vue-tsc
+ * emits both `./x` (extensionless) and `./x.ts` (source extension), neither of
+ * which resolves for a consumer.
+ */
 function withExtension(spec, fileDir) {
-  // Already has an extension we recognise — leave it.
-  if (/\.(js|mjs|cjs|json|css|d\.ts)$/.test(spec)) return null
-  const target = resolve(fileDir, spec)
-  if (existsSync(`${target}.d.ts`)) return `${spec}.js`
+  // Asset imports keep their own extension.
+  if (/\.(json|css)$/.test(spec)) return null
+  // Strip any code extension to get the base, then re-resolve against `.d.ts`.
+  const base = spec.replace(/\.(js|mjs|cjs|ts|tsx|d\.ts)$/, '')
+  const target = resolve(fileDir, base)
+  if (existsSync(`${target}.d.ts`)) {
+    const want = `${base}.js`
+    return want === spec ? null : want
+  }
   if (existsSync(target) && statSync(target).isDirectory() && existsSync(join(target, 'index.d.ts'))) {
-    return `${spec}/index.js`
+    const want = `${base}/index.js`
+    return want === spec ? null : want
   }
   return null // unresolved — don't guess
 }
