@@ -82,3 +82,6 @@ export { default as Textarea, default as VyTextarea } from './components/Textare
 export { default as Toast, default as VyToast } from './components/Toast.vue'
 export { default as Toggle, default as VyToggle } from './components/Toggle.vue'
 export { default as ToggleGroup, default as VyToggleGroup } from './components/ToggleGroup.vue'
+export { default as Tray, default as VyTray } from './components/Tray.vue'
+export { default as TrayView, default as VyTrayView } from './components/TrayView.vue'
+export { type TrayContext, useTray } from './components/trayContext'

@@ -1,0 +1,120 @@
+{
+  "props": [
+    {
+      "name": "defaultOpen",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Initial open state when uncontrolled."
+    },
+    {
+      "name": "defaultView",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"default\"",
+      "description": "Id of the view shown when the tray opens (and returned to after close).\nMust match a `<VyTrayView :id>`."
+    },
+    {
+      "name": "dismissible",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Tapping the overlay or dragging down closes the tray."
+    },
+    {
+      "name": "duration",
+      "type": "number | undefined",
+      "required": false,
+      "default": "300",
+      "description": "Height-morph + slide/settle duration in ms. Drives both the per-view\nheight tween and the core sheet's open/close motion."
+    },
+    {
+      "name": "handle",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Show the drag handle at the top of the tray."
+    },
+    {
+      "name": "keyboardAware",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Lift the footer above the on-screen keyboard (Lynx). Forwarded to core's\nkeyboard-aware wrappers around the persistent footer slot. No-op on\nweb/jsdom."
+    },
+    {
+      "name": "modelValue",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Convenience alias for `open` — bind with `v-model`."
+    },
+    {
+      "name": "open",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Controlled open state — bind with `v-model:open`."
+    },
+    {
+      "name": "overlay",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Render the dim overlay behind the tray."
+    },
+    {
+      "name": "side",
+      "type": "SheetDirection | undefined",
+      "required": false,
+      "default": "\"bottom\"",
+      "description": "Edge the tray slides and drags from. Trays are almost always `bottom`;\nexposed for parity with the other sheet-family components."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"overlay\" | \"handle\" | \"content\" | \"morph\" | \"viewport\" | \"body\" | \"footer\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"floating\" | \"flush\" | undefined",
+      "required": false,
+      "description": "Panel chrome. `floating` is a detached card hovering with a gap and border\non all sides (the tray's signature look); `flush` is a classic bottom\nsheet glued to the screen edges (same silhouette as `Drawer`)."
+    },
+    {
+      "name": "view",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Controlled current view — bind with `v-model:view`. Usually left\nuncontrolled and driven via triggers / `useTray().setView`."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
+    },
+    {
+      "name": "update:modelValue",
+      "type": "[value: boolean]"
+    },
+    {
+      "name": "update:view",
+      "type": "[value: string]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "trigger",
+      "type": "TraySlotProps",
+      "description": "In-flow trigger. Rendered where `<VyTray>` sits; tapping it opens the tray\nto `defaultView`. For opening to a specific view, use `useTray()` or a\n`@tap` that calls the slot's `open(id)`."
+    },
+    {
+      "name": "default",
+      "type": "TraySlotProps",
+      "description": "The views — one or more `<VyTrayView :id>` children."
+    },
+    {
+      "name": "footer",
+      "type": "TraySlotProps",
+      "description": "Persistent footer, mounted below the morph region so it survives view swaps."
+    }
+  ]
+}

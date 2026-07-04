@@ -1,0 +1,17 @@
+{
+  "props": [
+    {
+      "name": "id",
+      "type": "string",
+      "required": true,
+      "description": "Unique id for this view. The tray shows this view's content only when its\ncurrent `view` matches — set it via `defaultView`, `useTray().setView(id)`,\nor a trigger's `view` prop."
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{} | undefined"
+    }
+  ]
+}

@@ -54,6 +54,17 @@
 export interface SheetContentImplProps {
   /** Disable dragging. */
   dragDisabled?: boolean
+  /**
+   * Hug content instead of sizing the panel to `snapPoints × viewport`. The
+   * panel takes its natural content height (a bottom sheet grows upward from
+   * the edge). Drag/slide/backdrop are unaffected: the drag physics already
+   * read the panel's MEASURED extent via `@layoutchange`, and the slide
+   * keyframes translate by `100%` of whatever that height resolves to. Used
+   * by the styled `Tray`, whose per-view height morph needs the panel to
+   * follow its content rather than a fixed viewport fraction.
+   * @defaultValue `false`
+   */
+  fitContent?: boolean
 }
 </script>
 
@@ -77,6 +88,7 @@ import { injectSheetRootContext, provideSheetDragContext } from './sheetContext'
 
 const props = withDefaults(defineProps<SheetContentImplProps>(), {
   dragDisabled: false,
+  fitContent: false,
 })
 
 const ctx = injectSheetRootContext()
@@ -122,6 +134,11 @@ const closeSign = computed(() => directionCloseSign(ctx.side.value))
 // `vh`, not `dvh` — Lynx native drops the dynamic-viewport unit, collapsing
 // the panel to its content height.
 const panelStyle = computed(() => {
+  // Content-hug mode: emit no explicit extent so the panel takes its natural
+  // content size. `measuredPanelHeight/Width` (from `@layoutchange`) still
+  // feeds `panelExtentPx`, so the drag threshold and backdrop-fade progress
+  // track the real hugged height.
+  if (props.fitContent) return {}
   const size = `${maxSnap.value * 100}${axis.value === 'x' ? 'vw' : 'vh'}`
   return axis.value === 'x' ? { width: size } : { height: size }
 })

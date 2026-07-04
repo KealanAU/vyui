@@ -42,6 +42,8 @@ import Textarea from './Textarea.vue'
 import Toast from './Toast.vue'
 import Toggle from './Toggle.vue'
 import ToggleGroup from './ToggleGroup.vue'
+import Tray from './Tray.vue'
+import TrayView from './TrayView.vue'
 
 /**
  * Canonical wrapper pattern — every styled component agent copies this shape.
@@ -157,4 +159,6 @@ export const REGISTRY = {
   VyToast: Toast,
   VyToggle: Toggle,
   VyToggleGroup: ToggleGroup,
+  VyTray: Tray,
+  VyTrayView: TrayView,
 } satisfies Record<string, Component>
