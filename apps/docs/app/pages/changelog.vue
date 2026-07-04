@@ -9,9 +9,23 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
 });
 
-function formatDate(date: string) {
+function parseChangelogDate(value: unknown) {
+    if (value instanceof Date && Number.isFinite(value.getTime())) {
+        return value;
+    }
+
+    if (typeof value !== "string" || !value.trim()) {
+        return undefined;
+    }
+
     // Parse as UTC so the displayed day doesn't drift across timezones.
-    return dateFormatter.format(new Date(`${date}T00:00:00Z`));
+    const date = new Date(`${value.trim()}T00:00:00Z`);
+    return Number.isFinite(date.getTime()) ? date : undefined;
+}
+
+function formatDate(date: unknown) {
+    const parsed = parseChangelogDate(date);
+    return parsed ? dateFormatter.format(parsed) : "Unknown date";
 }
 
 useSeoMeta({
