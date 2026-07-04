@@ -63,6 +63,7 @@ import ToggleGroupMultiple from './toggle-group/ToggleGroupMultiple.vue'
 import ToggleDisabled from './toggle/ToggleDisabled.vue'
 import ToggleExample from './toggle/ToggleExample.vue'
 import ToggleText from './toggle/ToggleText.vue'
+import TrayExample from './tray/TrayExample.vue'
 
 export const examples: Record<string, Component> = {
   'accordion-anatomy': AccordionAnatomy,
@@ -126,4 +127,5 @@ export const examples: Record<string, Component> = {
   'toggle-disabled': ToggleDisabled,
   'toggle-example': ToggleExample,
   'toggle-text': ToggleText,
+  'tray-example': TrayExample,
 }
