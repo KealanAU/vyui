@@ -1,4 +1,8 @@
-import twColors from 'tailwindcss/colors'
+// Explicit `.js` — `tailwindcss/colors` has no `exports` map, so the
+// extensionless specifier resolves under bundlers but throws under Node's pure
+// ESM resolver (which the packed-tarball smoke test uses). The `.js` form works
+// everywhere.
+import twColors from 'tailwindcss/colors.js'
 import type { AppConfig } from '../types'
 import { SEMANTIC_TO_PALETTE_DEFAULT } from '../theme/color-constants'
 

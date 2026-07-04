@@ -36,10 +36,10 @@
     "dist/**/*.js"
   ],
   "scripts": {
-    "build": "pnpm build-only && pnpm build-types",
+    "build": "pnpm build-only && pnpm build-types && pnpm smoke-test",
     "build-only": "rslib build",
-    "build-types": "vue-tsc -p tsconfig.build.json",
-    "prepublishOnly": "pnpm build",
+    "build-types": "vue-tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && node ../shared-build-config/scripts/add-dts-extensions.mjs dist && node ../shared-build-config/scripts/check-dts.mjs dist",
+    "smoke-test": "node scripts/smoke-test.mjs",
     "dev": "rslib build --watch",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
@@ -78,8 +78,14 @@
   "types": "./dist/index.d.ts",
   "peerDependencies": {
     "@lynx-js/react": "^0.116.5",
+    "@lynx-js/types": "^3.8.0",
     "vue": ">= 3.4.0",
     "vue-lynx": "^0.4.0"
+  },
+  "peerDependenciesMeta": {
+    "@lynx-js/types": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@iconify/types": "^2.0.0",
@@ -88,12 +94,11 @@
     "@vueuse/core": "^14.1.0",
     "@vueuse/shared": "^14.1.0",
     "ohash": "^2.0.11",
-    "tailwind-merge": "^2.5.4"
+    "tailwind-merge": "^2.5.4",
+    "vue-component-type-helpers": "^3.3.1"
   },
   "devDependencies": {
     "@iconify/vue": "^5.0.1",
-    "@vyui/shared-build-config": "workspace:*",
-    "@vyui/testing-utils": "workspace:*",
     "@lynx-js/react": "^0.116.5",
     "@lynx-js/testing-environment": "^0.1.11",
     "@lynx-js/types": "^3.8.0",
@@ -105,16 +110,18 @@
     "@testing-library/vue": "^8.1.0",
     "@types/node": "^24.0.0",
     "@vitejs/plugin-vue": "^5.2.4",
-    "eslint": "^10.5.0",
     "@vue/compiler-sfc": "^3.5.17",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.7.0",
+    "@vyui/shared-build-config": "workspace:*",
+    "@vyui/testing-utils": "workspace:*",
+    "eslint": "^10.5.0",
     "jsdom": "^26.1.0",
+    "tsc-alias": "^1.8.17",
     "vitest": "^3.2.4",
     "vitest-axe": "0.1.0",
     "vitest-canvas-mock": "^0.3.3",
     "vue": "3.5.34",
-    "vue-component-type-helpers": "^3.3.1",
     "vue-lynx": "^0.4.0",
     "vue-tsc": "3.2.6"
   }
