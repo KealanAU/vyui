@@ -9,9 +9,17 @@ import {
   VyModal,
   VySelect,
   VyToast,
+  VyTray,
+  VyTrayView,
 } from '@vyui/kit'
 
 const modalOpen = ref(false)
+const trayOpen = ref(false)
+const trayVariant = ref<'floating' | 'flush'>('floating')
+function openTray(variant: 'floating' | 'flush') {
+  trayVariant.value = variant
+  trayOpen.value = true
+}
 const drawerOpen = ref(false)
 const drawerFullOpen = ref(false)
 const drawerRightOpen = ref(false)
@@ -115,6 +123,53 @@ const fruitItems = [
           </view>
         </template>
       </VyModal>
+    </view>
+
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-slate-900 text-base font-semibold">Tray</text>
+      <text class="text-slate-500 text-xs">
+        Morphing multi-view sheet — the panel grows/shrinks to fit each view.
+        Navigate forward, then Back; the footer stays put across views.
+        <text class="font-medium">Floating</text> hovers with a gap + border on
+        all sides; <text class="font-medium">flush</text> anchors to the edges.
+      </text>
+      <view class="flex flex-row gap-2">
+        <VyButton color="neutral" variant="subtle" label="Open floating" @tap="openTray('floating')" />
+        <VyButton color="neutral" variant="subtle" label="Open flush" @tap="openTray('flush')" />
+      </view>
+      <VyTray v-model:open="trayOpen" :variant="trayVariant" default-view="menu">
+        <template #default="{ setView, goBack, canGoBack }">
+          <VyTrayView id="menu">
+            <view class="flex flex-col gap-2">
+              <text class="text-slate-900 text-base font-semibold">Quick actions</text>
+              <VyButton color="neutral" variant="soft" label="Share" @tap="setView('share')" />
+              <VyButton color="neutral" variant="soft" label="Rename" @tap="setView('share')" />
+              <VyButton color="error" variant="soft" label="Delete" @tap="setView('confirm')" />
+            </view>
+          </VyTrayView>
+
+          <VyTrayView id="share">
+            <view class="flex flex-col gap-2">
+              <VyButton v-if="canGoBack" color="neutral" variant="ghost" size="sm" label="← Back" @tap="goBack()" />
+              <text class="text-slate-900 text-base font-semibold">Share</text>
+              <text class="text-slate-500 text-sm">A taller view — the tray grows to fit it.</text>
+              <text class="text-slate-600 text-sm">Anyone with the link can view. Toggle access, copy the URL, or invite by email — plenty of room here so the panel is noticeably taller than the confirm view.</text>
+            </view>
+          </VyTrayView>
+
+          <VyTrayView id="confirm">
+            <view class="flex flex-col gap-2">
+              <VyButton v-if="canGoBack" color="neutral" variant="ghost" size="sm" label="← Back" @tap="goBack()" />
+              <text class="text-slate-900 text-base font-semibold">Delete item?</text>
+              <text class="text-slate-500 text-sm">A short view — the tray shrinks down.</text>
+            </view>
+          </VyTrayView>
+        </template>
+
+        <template #footer="{ close }">
+          <VyButton color="neutral" variant="solid" label="Close" block @tap="close()" />
+        </template>
+      </VyTray>
     </view>
 
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">

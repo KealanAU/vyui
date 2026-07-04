@@ -12,6 +12,12 @@
 export interface SheetContentProps {
   /** Disable drag / snap / fling; open and close still animate. */
   dragDisabled?: boolean
+  /**
+   * Hug content instead of sizing the panel to `snapPoints × viewport`.
+   * Forwarded to `SheetContentImpl`. Used by the styled `Tray`.
+   * @defaultValue `false`
+   */
+  fitContent?: boolean
 }
 </script>
 
@@ -22,6 +28,7 @@ import { injectSheetRootContext } from './sheetContext'
 
 const props = withDefaults(defineProps<SheetContentProps>(), {
   dragDisabled: false,
+  fitContent: false,
 })
 
 const ctx = injectSheetRootContext()
@@ -29,7 +36,7 @@ const ctx = injectSheetRootContext()
 
 <template>
   <Presence :show="ctx.open.value">
-    <SheetContentImpl :drag-disabled="props.dragDisabled">
+    <SheetContentImpl :drag-disabled="props.dragDisabled" :fit-content="props.fitContent">
       <slot />
     </SheetContentImpl>
   </Presence>

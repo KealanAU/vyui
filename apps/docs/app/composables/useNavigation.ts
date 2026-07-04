@@ -31,6 +31,7 @@ const COMPONENT_CATEGORY: Record<string, string> = {
   drawer: 'Overlay',
   sheet: 'Overlay',
   'action-sheet': 'Overlay',
+  tray: 'Overlay',
   popover: 'Overlay',
   tooltip: 'Overlay',
   'dropdown-menu': 'Overlay',
