@@ -14,8 +14,8 @@ const searchTerm = ref('')
 
 const layerOptions: { label: string, value: ComponentLayer }[] = [
   { label: 'All', value: 'all' },
-  { label: 'Core', value: 'core' },
   { label: 'Kit', value: 'kit' },
+  { label: 'Core', value: 'core' },
 ]
 
 const filteredNavigation = computed<ContentNavigationItem[]>(() => {
