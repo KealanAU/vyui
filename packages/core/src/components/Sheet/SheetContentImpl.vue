@@ -102,6 +102,12 @@ const dataState = computed(() =>
     : 'open',
 )
 
+// Side is expressed as a class, not just `data-side`: Lynx native doesn't
+// match `[data-side=…]` attribute selectors in CSS (same limitation that
+// drove the `ui-*` state-class migration, issue #9), so the edge-placement
+// and per-side slide keyframes below must key off a class to fire on device.
+const sideClass = computed(() => `vyui-sheet__content--${ctx.side.value}`)
+
 const maxSnap = computed(() => {
   const snaps = ctx.snapPoints.value
   return snaps.length > 0 ? snaps[snaps.length - 1] ?? 1 : 1
@@ -617,7 +623,7 @@ const a11y = useA11y(() => ({
 <template>
   <view
     class="vyui-sheet__content"
-    :class="presenceClass"
+    :class="[presenceClass, sideClass]"
     v-bind="a11y"
     :data-state="dataState"
     :data-side="ctx.side.value"
@@ -654,41 +660,49 @@ const a11y = useA11y(() => ({
   transform: translateY(100%);
 }
 
-.vyui-sheet__content[data-side="bottom"] {
+/* `flex-direction` places the drag handle (SheetContent's first child) on the
+   sheet's inner edge: column keeps it at the top for a bottom sheet, and each
+   variant flips the axis / reverses so it sits on the edge the sheet is pulled
+   toward (bottom for `top`, left for `right`, right for `left`). */
+.vyui-sheet__content--bottom {
   left: 0;
   right: 0;
   bottom: 0;
   width: 100%;
+  flex-direction: column;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
   transform: translateY(100%);
 }
 
-.vyui-sheet__content[data-side="top"] {
+.vyui-sheet__content--top {
   left: 0;
   right: 0;
   top: 0;
   width: 100%;
+  flex-direction: column-reverse;
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
   transform: translateY(-100%);
 }
 
-.vyui-sheet__content[data-side="right"] {
+.vyui-sheet__content--right {
   top: 0;
   right: 0;
   bottom: 0;
   height: 100%;
+  flex-direction: row;
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
   transform: translateX(100%);
 }
 
-.vyui-sheet__content[data-side="left"] {
+.vyui-sheet__content--left {
   top: 0;
   left: 0;
   bottom: 0;
   height: 100%;
+  flex-direction: row-reverse;
   border-top-right-radius: 16px;
   border-bottom-right-radius: 16px;
   transform: translateX(-100%);
@@ -698,35 +712,46 @@ const a11y = useA11y(() => ({
   transform: translate(0, 0);
 }
 
-.vyui-sheet__content[data-side="bottom"].ui-entering {
+/* Underlying transform while leaving. The slide-out keyframes below omit their
+   `from` step so they animate from this value — the fully-open position for a
+   plain close, or the live inline `transform` (which outranks this rule) when a
+   drag settles the panel off. A hardcoded `from: translate(0)` would instead
+   snap a mid-drag panel back to full-open for a frame before sliding out — the
+   flash — whenever the inline `animation: none` on the drag path fails to
+   suppress this keyframe (animations outrank transitions for `transform`). */
+.vyui-sheet__content.ui-leaving {
+  transform: translate(0, 0);
+}
+
+.vyui-sheet__content--bottom.ui-entering {
   animation: vyui-sheet-slide-in 280ms ease-out both;
 }
 
-.vyui-sheet__content[data-side="bottom"].ui-leaving {
+.vyui-sheet__content--bottom.ui-leaving {
   animation: vyui-sheet-slide-out 280ms ease-in both;
 }
 
-.vyui-sheet__content[data-side="top"].ui-entering {
+.vyui-sheet__content--top.ui-entering {
   animation: vyui-sheet-slide-in-from-top 280ms ease-out both;
 }
 
-.vyui-sheet__content[data-side="top"].ui-leaving {
+.vyui-sheet__content--top.ui-leaving {
   animation: vyui-sheet-slide-out-to-top 280ms ease-in both;
 }
 
-.vyui-sheet__content[data-side="right"].ui-entering {
+.vyui-sheet__content--right.ui-entering {
   animation: vyui-sheet-slide-in-from-right 280ms ease-out both;
 }
 
-.vyui-sheet__content[data-side="right"].ui-leaving {
+.vyui-sheet__content--right.ui-leaving {
   animation: vyui-sheet-slide-out-to-right 280ms ease-in both;
 }
 
-.vyui-sheet__content[data-side="left"].ui-entering {
+.vyui-sheet__content--left.ui-entering {
   animation: vyui-sheet-slide-in-from-left 280ms ease-out both;
 }
 
-.vyui-sheet__content[data-side="left"].ui-leaving {
+.vyui-sheet__content--left.ui-leaving {
   animation: vyui-sheet-slide-out-to-left 280ms ease-in both;
 }
 
@@ -735,9 +760,11 @@ const a11y = useA11y(() => ({
   to   { transform: translateY(0); }
 }
 
+/* Slide-out keyframes intentionally omit `from` — they start from the panel's
+   current transform (see `.ui-leaving` above) so a drag-settled close never
+   flashes back to full-open. */
 @keyframes vyui-sheet-slide-out {
-  from { transform: translateY(0); }
-  to   { transform: translateY(100%); }
+  to { transform: translateY(100%); }
 }
 
 @keyframes vyui-sheet-slide-in-from-top {
@@ -746,8 +773,7 @@ const a11y = useA11y(() => ({
 }
 
 @keyframes vyui-sheet-slide-out-to-top {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-100%); }
+  to { transform: translateY(-100%); }
 }
 
 @keyframes vyui-sheet-slide-in-from-right {
@@ -756,8 +782,7 @@ const a11y = useA11y(() => ({
 }
 
 @keyframes vyui-sheet-slide-out-to-right {
-  from { transform: translateX(0); }
-  to   { transform: translateX(100%); }
+  to { transform: translateX(100%); }
 }
 
 @keyframes vyui-sheet-slide-in-from-left {
@@ -766,7 +791,6 @@ const a11y = useA11y(() => ({
 }
 
 @keyframes vyui-sheet-slide-out-to-left {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-100%); }
+  to { transform: translateX(-100%); }
 }
 </style>
