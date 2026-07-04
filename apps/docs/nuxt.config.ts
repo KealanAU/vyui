@@ -20,7 +20,7 @@ export default defineNuxtConfig({
       type: 'Organization',
       name: 'Vy UI',
       url: 'https://vyui.dev',
-      logo: 'https://vyui.dev/favicon.svg',
+      logo: 'https://vyui.dev/icon-512.png',
       sameAs: ['https://github.com/KealanAU/vyui'],
     },
   },
