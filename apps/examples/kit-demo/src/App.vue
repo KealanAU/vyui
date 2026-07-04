@@ -7,7 +7,6 @@ import ThemeSection from './sections/ThemeSection.vue'
 import FormSection from './sections/FormSection.vue'
 import DisplaySection from './sections/DisplaySection.vue'
 import GesturesSection from './sections/GesturesSection.vue'
-import FeedListSection from './sections/FeedListSection.vue'
 import ScrollViewSection from './sections/ScrollViewSection.vue'
 import IslandSection from './sections/IslandSection.vue'
 import OverlaySection from './sections/OverlaySection.vue'
@@ -58,7 +57,6 @@ const allTabItems = [
   { value: 'form',    label: 'Form',  icon: 'icon-park-outline:edit',             slot: 'form' },
   { value: 'display', label: 'View',  icon: 'icon-park-outline:layers',           slot: 'display' },
   { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures' },
-  { value: 'feed',    label: 'Feed',  icon: 'icon-park-outline:list-two',         slot: 'feed' },
   { value: 'scroll',  label: 'Scroll', icon: 'icon-park-outline:swipe',           slot: 'scroll' },
   { value: 'island',  label: 'Island', icon: 'icon-park-outline:pill',            slot: 'island' },
   { value: 'overlay', label: 'Modal', icon: 'icon-park-outline:application-menu', slot: 'overlay' },
@@ -71,24 +69,34 @@ const tabItems = computed(() => allTabItems)
 // inner gestures (drag-to-reorder, swipe rows, pull a list) — the symptom is
 // "the whole page scrolls instead of the thing under my finger". For these tabs
 // we disable the outer scroll so the inner surface owns the gesture.
-const FULL_BLEED_TABS = ['gestures', 'feed', 'scroll']
-const pageScrolls = computed(() => !FULL_BLEED_TABS.includes(String(tab.value)))
+const NON_SCROLLING_TABS = ['gestures', 'scroll']
+const pageScrolls = computed(() => !NON_SCROLLING_TABS.includes(String(tab.value)))
+
+// A non-scrolling tab keeps the same header + padding as the scrolling tabs so
+// switching to it doesn't jolt the tab bar to the top of the screen — only the
+// outer element swaps (scroll-view → non-scrolling view) so the inner gesture
+// surface / own scroller owns the touch stream.
+const showChrome = computed(() => !isLandscape.value)
+
 const pageClass = computed(() => {
   if (isLandscape.value) {
     return pageScrolls.value
       ? 'flex flex-col w-full min-h-[100vh] p-3'
       : 'flex flex-col w-full h-[100vh] min-h-0 p-3'
   }
-  return pageScrolls.value
-    ? 'flex flex-col gap-4 px-5 pt-16 pb-10'
-    : 'flex flex-col w-full h-[100vh] min-h-0 gap-2 px-3 pt-2 pb-2'
+  if (pageScrolls.value)
+    return 'flex flex-col gap-4 px-5 pt-16 pb-10'
+  // Non-scrolling tab (Gestures / Scroll): same header + padding as the scrolling
+  // tabs, but capped to the viewport so the inner surface owns the touch stream
+  // instead of the page scrolling under the finger.
+  return 'flex flex-col gap-4 w-full h-[100vh] min-h-0 px-5 pt-16 pb-10'
 })
 const tabsUi = computed(() => {
   if (isLandscape.value) {
     // Vertical rail (fixed width, pinned to the top via `self-start`) + content
     // filling the rest of the width. A scrolling tab lets the whole rail+content
     // block grow past the viewport (the outer `<scroll-view>` owns the scroll);
-    // a full-bleed tab caps to the viewport so its inner surface owns gestures.
+    // a non-scrolling tab caps to the viewport so its inner surface owns gestures.
     return {
       root: pageScrolls.value ? 'min-h-[calc(100vh-1.5rem)]' : 'flex-1 min-h-0',
       list: 'w-36 shrink-0 self-start',
@@ -131,7 +139,7 @@ const tabsUi = computed(() => {
       scroll-orientation="vertical"
     >
       <view :class="pageClass">
-        <view v-if="pageScrolls && !isLandscape" class="flex flex-col gap-1">
+        <view v-if="showChrome" class="flex flex-col gap-1">
           <text class="text-slate-900 text-2xl font-bold">@vyui/kit demo</text>
           <text class="text-slate-500 text-sm">Styled components on top of @vyui/core primitives.</text>
         </view>
@@ -142,7 +150,7 @@ const tabsUi = computed(() => {
           variant="pill"
           size="sm"
           :orientation="isLandscape ? 'vertical' : 'horizontal'"
-          :direction="isLandscape || !pageScrolls ? 'inline' : 'stacked'"
+          :direction="isLandscape ? 'inline' : 'stacked'"
           :ui="tabsUi"
         >
           <template #theme>
@@ -163,10 +171,6 @@ const tabsUi = computed(() => {
 
           <template #gestures>
             <GesturesSection />
-          </template>
-
-          <template #feed>
-            <FeedListSection />
           </template>
 
           <template #scroll>
