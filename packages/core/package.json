@@ -40,7 +40,6 @@
     "build-only": "rslib build",
     "build-types": "vue-tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && node ../shared-build-config/scripts/add-dts-extensions.mjs dist && node ../shared-build-config/scripts/check-dts.mjs dist",
     "smoke-test": "node scripts/smoke-test.mjs",
-    "prepublishOnly": "pnpm build",
     "dev": "rslib build --watch",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",

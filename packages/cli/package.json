@@ -39,8 +39,7 @@
     "dev": "tsx src/index.ts",
     "build": "tsup",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "pnpm build"
+    "typecheck": "tsc --noEmit"
   },
   "engines": {
     "node": ">=18.3.0"
