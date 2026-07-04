@@ -78,6 +78,12 @@ function clearStackedToasts() {
 function dismissStackedToast(key: number) {
   stackedToasts.value = stackedToasts.value.filter(t => t.key !== key)
 }
+// Progress-color demo — the countdown bar recolors as it drains. Bump the key
+// to remount a fresh toast so its timer (and the bar) restart from full.
+const progressToast = ref(0)
+function showProgressToast() {
+  progressToast.value += 1
+}
 
 const dropdownItems = [
   [
@@ -205,6 +211,18 @@ const fruitItems = [
       <view class="flex flex-row gap-2">
         <VyButton color="primary" variant="soft" size="sm" label="Add toast" @tap="pushStackedToast" />
         <VyButton color="neutral" variant="ghost" size="sm" label="Clear" @tap="clearStackedToasts" />
+      </view>
+    </view>
+
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-slate-900 text-base font-semibold">Progress color</text>
+      <text class="text-slate-500 text-xs">
+        The countdown bar can be colored independently of the toast — pass
+        `progress.color` a function of the remaining fraction and it recolors as
+        it drains: green → amber → red.
+      </text>
+      <view class="flex flex-row gap-2">
+        <VyButton color="neutral" variant="soft" size="sm" label="Show progress toast" @tap="showProgressToast" />
       </view>
     </view>
 
@@ -337,6 +355,23 @@ const fruitItems = [
         :icon="t.icon"
         :close="false"
         @update:open="dismissStackedToast(t.key)"
+      />
+    </ToastViewport>
+  </ToastProvider>
+
+  <!-- Progress-color toast: `progress.color` is a function of the remaining
+       fraction, so the draining bar recolors green → amber → red. `:key`
+       remounts a fresh toast (and timer) on each tap. -->
+  <ToastProvider v-if="progressToast" :duration="6000">
+    <ToastViewport position="top" :style="{ top: '60px', zIndex: 60 }">
+      <VyToast
+        :key="progressToast"
+        color="neutral"
+        title="Saving changes…"
+        description="Closes on its own — watch the bar go green → amber → red."
+        icon="icon-park-outline:check-one"
+        :progress="{ color: (p) => p > 0.5 ? 'success' : p > 0.25 ? 'warning' : 'error' }"
+        :close="false"
       />
     </ToastViewport>
   </ToastProvider>

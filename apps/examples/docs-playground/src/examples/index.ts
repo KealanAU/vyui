@@ -57,6 +57,7 @@ import SwitchExample from './switch/SwitchExample.vue'
 import TabsExample from './tabs/TabsExample.vue'
 import TextareaExample from './textarea/TextareaExample.vue'
 import ToastExample from './toast/ToastExample.vue'
+import ToastProgressColor from './toast/ToastProgressColor.vue'
 import ToggleGroupExample from './toggle-group/ToggleGroupExample.vue'
 import ToggleGroupMultiple from './toggle-group/ToggleGroupMultiple.vue'
 import ToggleDisabled from './toggle/ToggleDisabled.vue'
@@ -120,6 +121,7 @@ export const examples: Record<string, Component> = {
   'tabs-example': TabsExample,
   'textarea-example': TextareaExample,
   'toast-example': ToastExample,
+  'toast-progress-color': ToastProgressColor,
   'toggle-group-example': ToggleGroupExample,
   'toggle-group-multiple': ToggleGroupMultiple,
   'toggle-disabled': ToggleDisabled,
