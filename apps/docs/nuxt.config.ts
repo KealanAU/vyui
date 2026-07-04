@@ -103,7 +103,7 @@ export default defineNuxtConfig({
           name: 'description',
           content: 'The component library for Vue-Lynx. Behavioral primitives and a styled kit for native iOS, Android, and web — from one Vue codebase.',
         },
-        { name: 'theme-color', content: '#ffffff' },
+        { name: 'theme-color', content: '#6366f1' },
         { name: 'robots', content: 'index, follow' },
       ],
       link: [
