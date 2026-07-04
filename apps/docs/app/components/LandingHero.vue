@@ -1,14 +1,4 @@
 <script setup lang="ts">
-// Live, interactive demos rendered through the same Lynx web bundle the docs
-// use (<LynxPreview> boots a real <lynx-view> per phone). Kept to three so the
-// hero only spins up a few Web Workers, and each one lazy-mounts when it
-// scrolls into view.
-const demos = [
-  { name: 'switch-example', label: 'Switch', package: '@vyui/kit' },
-  { name: 'tabs-example', label: 'Tabs', package: '@vyui/kit' },
-  { name: 'slider-example', label: 'Slider', package: '@vyui/kit' },
-]
-
 const words = ['Headless', 'Styled']
 
 // Typewriter timings (ms).
@@ -88,27 +78,7 @@ onBeforeUnmount(() => {
     </template>
 
     <template #description>
-      The component library for Vue-Lynx. A styled kit on headless, accessible primitives, with native rendering across iOS, Android, and web — all from one Vue codebase. Pre-alpha. Shipping fast.
-    </template>
-
-    <template #body>
-      <ClientOnly>
-        <div class="grid gap-5 sm:grid-cols-3 w-full max-w-4xl mx-auto">
-          <div
-            v-for="demo in demos"
-            :key="demo.name"
-            class="rounded-xl border border-default bg-elevated/30 overflow-hidden"
-          >
-            <div class="flex items-center justify-between px-3 py-2 border-b border-default">
-              <span class="text-xs font-semibold text-(--color-ink)">{{ demo.label }}</span>
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-(--color-vue-100) text-(--color-vue-700)">
-                {{ demo.package }}
-              </span>
-            </div>
-            <LynxPreview :name="demo.name" height="220px" />
-          </div>
-        </div>
-      </ClientOnly>
+      A styled kit built on headless, accessible primitives — rendering natively to iOS, Android, and web from a single Vue codebase.
     </template>
   </UPageHero>
 </template>
