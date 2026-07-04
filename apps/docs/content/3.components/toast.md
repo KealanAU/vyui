@@ -126,6 +126,42 @@ function remove(id: number) {
 
 The newest mounted toast is at the front. Tapping any stacked toast toggles the entire provider between its collapsed and expanded states. Auto-dismiss timers pause while expanded and restart when the stack collapses.
 
+### Progress color
+
+The countdown bar is colored by the toast's `color` by default. Pass `progress` an object to color the bar independently — either a fixed `color`, or a function of the remaining fraction (`1` at the start, `0` at dismissal) so the bar recolors as it drains.
+
+::component-code
+---
+name: toast-progress-color
+height: 220px
+---
+::
+
+```vue
+<script setup lang="ts">
+import { ToastProvider, ToastViewport } from '@vyui/core'
+import { VyToast } from '@vyui/kit'
+import { ref } from 'vue'
+
+const shown = ref(0)
+</script>
+
+<template>
+  <ToastProvider :duration="6000">
+    <ToastViewport position="top" :style="{ top: '16px', zIndex: 60 }">
+      <VyToast
+        :key="shown"
+        color="neutral"
+        title="Saving changes…"
+        description="Watch the bar go green → amber → red as it drains."
+        :progress="{ color: (p) => p > 0.5 ? 'success' : p > 0.25 ? 'warning' : 'error' }"
+        :close="false"
+      />
+    </ToastViewport>
+  </ToastProvider>
+</template>
+```
+
 ### Custom content
 
 Named slots replace the corresponding built-in regions.
@@ -173,7 +209,7 @@ Named slots replace the corresponding built-in regions.
 | `orientation` | `'horizontal' \| 'vertical'` | `'vertical'` | Places actions beside or below the body. |
 | `stacked` | `boolean` | `false` | Enables the shared collapsible stack geometry. |
 | `stackFrom` | `'top' \| 'bottom'` | `'bottom'` | Edge from which a stacked group fans out. |
-| `progress` | `boolean` | `false` | Shows a countdown bar for an active auto-dismiss timer. |
+| `progress` | `boolean \| { color?: Color \| ((p: number) => Color) }` | `false` | Shows a countdown bar for an active auto-dismiss timer. Pass an object to color the bar independently of the toast; `color` may be a function of the remaining fraction (`1` → `0`) so the bar recolors as it drains. |
 | `swipe` | `boolean` | `false` | Enables swipe-to-dismiss. |
 | `swipeDirection` | `'horizontal' \| 'left' \| 'right'` | `'horizontal'` | Allowed swipe-dismiss direction. |
 | `actions` | `ButtonProps[]` | `undefined` | Buttons wrapped in core `ToastAction` primitives. |
