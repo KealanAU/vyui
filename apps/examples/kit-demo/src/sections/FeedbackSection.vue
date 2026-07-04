@@ -66,23 +66,23 @@ function showProgressToast() {
       </view>
     </ToastProvider>
 
-    <!-- Runtime toast with an independently-colored progress bar. The toast is
-         `neutral` but its countdown bar is `success` — `progress` takes an
-         object to override just the bar color. Tapping remounts (via `:key`)
-         so the bar drains from full each time. -->
+    <!-- Runtime toast whose countdown bar recolors as it drains. `progress.color`
+         takes a function of the remaining fraction (1 → 0), so the bar goes
+         green → amber → red on the way out. Tapping remounts (via `:key`) so it
+         restarts from full. -->
     <view class="flex flex-col gap-3">
       <text class="text-slate-900 text-base font-semibold px-1">Toast progress color</text>
       <VyButton label="Show progress toast" color="neutral" variant="outline" @tap="showProgressToast" />
     </view>
-    <ToastProvider v-if="progressToast">
-      <ToastViewport position="bottom" :style="{ bottom: '24px', zIndex: 60 }">
+    <ToastProvider v-if="progressToast" :duration="6000">
+      <ToastViewport position="top" :style="{ top: '60px', zIndex: 60 }">
         <VyToast
           :key="progressToast"
           color="neutral"
           title="Saving changes…"
-          description="This closes on its own — watch the green bar."
+          description="This closes on its own — watch the bar go green → amber → red."
           icon="icon-park-outline:check-one"
-          :progress="{ color: 'success' }"
+          :progress="{ color: (p) => p > 0.5 ? 'success' : p > 0.25 ? 'warning' : 'error' }"
           :close="false"
         />
       </ToastViewport>

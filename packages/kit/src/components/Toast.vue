@@ -51,9 +51,12 @@ export interface ToastProps {
    * (`duration: 0`).
    *
    * Pass `true` for the default (bar inherits the toast `color`), or an object
-   * to override just the bar color independently — e.g. `{ color: 'success' }`.
+   * to override just the bar color independently. `color` can be a fixed color
+   * (`{ color: 'success' }`) or a function of the remaining fraction (`1` → `0`)
+   * so the bar recolors as it drains, e.g.
+   * `{ color: p => p > 0.5 ? 'success' : p > 0.25 ? 'warning' : 'error' }`.
    */
-  progress?: boolean | { color?: ToastVariants['color'] }
+  progress?: boolean | { color?: ToastVariants['color'] | ((progress: number) => ToastVariants['color']) }
   /** Enable swipe-to-dismiss (fling the toast away to close it). */
   swipe?: boolean
   /**
@@ -178,12 +181,18 @@ function stackStyle(s: StackSlotProps): Record<string, any> | undefined {
 // Progress bar color: defaults to the toast color (the `color` variant already
 // bakes `bg-${c}-500` into `ui.progress`); when `progress` is an object with a
 // `color`, emit that `bg-*-500` so tailwind-merge overrides the variant's. The
-// class is safe for Lynx JIT because the color variant already emits every
-// `bg-${c}-500` in the theme source.
-const progressColorClass = computed(() => {
-  const color = typeof props.progress === 'object' ? props.progress.color : undefined
+// `color` can be a function of the live remaining fraction, so the bar recolors
+// as it drains — we re-resolve it per tick from the slot's `progress` value.
+// The classes are safe for Lynx JIT because the color variant already emits
+// every `bg-${c}-500` in the theme source.
+function progressColorClass(value: number): string | undefined {
+  if (typeof props.progress !== 'object')
+    return undefined
+  const color = typeof props.progress.color === 'function'
+    ? props.progress.color(value)
+    : props.progress.color
   return color ? `bg-${color}-500` : undefined
-})
+}
 
 const closeButtonProps = computed<Partial<ButtonProps>>(() => {
   const overrides = typeof props.close === 'object' ? props.close : {}
@@ -278,7 +287,7 @@ const closeButtonProps = computed<Partial<ButtonProps>>(() => {
          auto-dismiss is off. -->
     <view
       v-if="progress && toastDuration > 0"
-      :class="ui.progress({ class: [props.ui?.progress, progressColorClass] })"
+      :class="ui.progress({ class: [props.ui?.progress, progressColorClass(progressValue)] })"
       :style="{ transform: `scaleX(${progressValue})`, transformOrigin: 'left' }"
     />
     </component>
