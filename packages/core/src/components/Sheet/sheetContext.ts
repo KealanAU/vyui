@@ -5,6 +5,7 @@ import type { ComputedRef, Ref } from 'vue'
 import type { MainThreadRef } from 'vue-lynx'
 
 import { createContext } from '../../shared/createContext'
+import type { SheetDirection } from '../../shared/composables'
 
 export interface SheetRootContext {
   /** Controlled open state. */
@@ -15,10 +16,14 @@ export interface SheetRootContext {
    * Persists across close/reopen.
    */
   snapIndex: Ref<number>
-  /** Snap points (0-1 fractions of viewport height), low to high. */
+  /** Edge the sheet is anchored to. */
+  side: ComputedRef<SheetDirection>
+  /** Snap points (0-1 fractions of viewport extent on the sheet axis), low to high. */
   snapPoints: ComputedRef<number[]>
   /** Viewport height in px (resolved from prop / runtime). */
   viewportHeight: ComputedRef<number>
+  /** Viewport width in px (resolved from prop / runtime). */
+  viewportWidth: ComputedRef<number>
   /**
    * Velocity threshold for fling-to-snap (px/s). Currently unused — the
    * release logic (mirroring `pickRelease`) implements flick-advance via

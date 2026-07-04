@@ -1,6 +1,7 @@
 <script lang="ts">
 import { tv } from 'tailwind-variants'
 import theme from '../theme/popover'
+import type { SheetDirection } from '@vyui/core'
 import type { AppConfig } from '../types'
 
 /**
@@ -17,8 +18,8 @@ export const buildPopover = (appConfig: AppConfig) => {
  * positioning knobs so call sites read cleanly:
  * `<UPopover :content="{ side: 'top', align: 'start', sideOffset: 4 }">`.
  *
- * Only used when `presentation === 'anchor'`. In sheet mode the content
- * docks to the bottom of the viewport regardless of `side`/`align`.
+ * Only used when `presentation === 'anchor'`. In sheet mode, use
+ * `sheetSide` for viewport-edge placement.
  */
 export interface PopoverContentSettings {
   side?: 'top' | 'right' | 'bottom' | 'left'
@@ -36,7 +37,7 @@ export interface PopoverProps {
   defaultOpen?: boolean
   /**
    * How to present the content on mobile.
-   * - `'sheet'` (default): renders as a bottom sheet via `SheetRoot` —
+   * - `'sheet'` (default): renders as an edge sheet via `SheetRoot` —
    *   native iOS / Material idiom for "tap → reveal floating panel" on
    *   touch screens. Drag-to-dismiss, snap physics, thumb-reach.
    * - `'anchor'`: docks the content next to the trigger (legacy popover
@@ -45,6 +46,13 @@ export interface PopoverProps {
    * @defaultValue 'sheet'
    */
   presentation?: 'sheet' | 'anchor'
+  /**
+   * Edge the sheet slides and drags from when `presentation` is `'sheet'`.
+   * Anchor presentation keeps using `content.side` for trigger-relative
+   * placement.
+   * @defaultValue `'bottom'`
+   */
+  sheetSide?: SheetDirection
   /**
    * Snap fractions for `presentation: 'sheet'`. Forwarded to `SheetRoot`.
    * @defaultValue `[0.6]`
@@ -112,7 +120,7 @@ export interface PopoverSlots {
   default(props: { open: boolean }): any
   /**
    * Custom anchor element — anchor mode only. Sheet mode ignores this
-   * slot (a bottom sheet has no anchor).
+   * slot (a viewport-edge sheet has no anchor).
    */
   anchor(props: { open: boolean }): any
   /** Popover content. `close` lets the slot dismiss programmatically. */
@@ -235,12 +243,14 @@ function onInteractOutside(event: any) {
 
 <template>
   <!-- SHEET MODE (default) — uses `SheetRoot` for state + drag. Touch-native
-       presentation: tap trigger → sheet slides up from bottom, drag down to
-       dismiss. Snap physics inherited from `SheetContent`. -->
+       presentation: tap trigger → sheet slides from a viewport edge, then
+       drags back toward that edge to dismiss. Snap physics inherited from
+       `SheetContent`. -->
   <SheetRoot
     v-if="presentation === 'sheet'"
     :open="resolvedOpen"
     :default-open="defaultOpen"
+    :side="sheetSide"
     :snap-points="snapPoints"
     :enable-drag-to-close="dismissible"
     @update:open="onUpdateOpen"

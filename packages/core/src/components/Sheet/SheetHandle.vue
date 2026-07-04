@@ -11,7 +11,8 @@ export interface SheetHandleProps {
 import { computed, useAttrs } from 'vue'
 
 import type { VyStyle } from '../../shared/types'
-import { injectSheetDragContext } from './sheetContext'
+import { directionAxis } from '../../shared/composables'
+import { injectSheetDragContext, injectSheetRootContext } from './sheetContext'
 
 defineOptions({ inheritAttrs: false })
 
@@ -23,14 +24,27 @@ const attrs = useAttrs()
 // outside a SheetContent (tests), so the handle still renders.
 const drag = injectSheetDragContext(null)
 
+// Root context carries `side`. Null fallback keeps the handle renderable
+// when mounted standalone (tests) — defaults to a bottom-sheet horizontal pill.
+const root = injectSheetRootContext(null)
+
+// The pill runs perpendicular to the drag axis: horizontal for top/bottom
+// sheets, vertical for left/right. SheetContent's per-side `flex-direction`
+// (column / column-reverse / row / row-reverse) then floats this first child
+// onto the sheet's inner edge; here we only flip the pill's own geometry and
+// which margins hold it off that edge.
+const isVertical = computed(() => directionAxis(root?.side.value ?? 'bottom') === 'x')
+
 const mergedStyle = computed<VyStyle>(() => ({
-  width: '36px',
-  height: '4px',
+  width: isVertical.value ? '4px' : '36px',
+  height: isVertical.value ? '36px' : '4px',
   borderRadius: '2px',
   backgroundColor: 'rgba(0, 0, 0, 0.2)',
   alignSelf: 'center',
-  marginTop: '8px',
-  marginBottom: '8px',
+  marginTop: isVertical.value ? '0px' : '8px',
+  marginBottom: isVertical.value ? '0px' : '8px',
+  marginLeft: isVertical.value ? '8px' : '0px',
+  marginRight: isVertical.value ? '8px' : '0px',
   ...(attrs.style as Record<string, any> | undefined),
 }))
 

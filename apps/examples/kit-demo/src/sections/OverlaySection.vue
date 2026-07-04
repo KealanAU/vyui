@@ -14,6 +14,9 @@ import {
 const modalOpen = ref(false)
 const drawerOpen = ref(false)
 const drawerFullOpen = ref(false)
+const drawerRightOpen = ref(false)
+const drawerLeftOpen = ref(false)
+const drawerTopOpen = ref(false)
 const dropdownOpen = ref(false)
 
 // Notifications — each entry has a "Show" button that surfaces its detail as a
@@ -186,6 +189,39 @@ const fruitItems = [
             <VyButton color="neutral" variant="solid" label="Close" block @tap="close()" />
           </view>
         </template>
+      </VyDrawer>
+
+      <!-- Side + top drawers: same core Sheet primitive, `side` switches the
+           anchor edge, slide axis, and drag direction. Right/left slide on x;
+           top slides down on y. Drag off-edge or fling to dismiss. -->
+      <VyDrawer
+        v-model:open="drawerRightOpen"
+        side="right"
+        title="Right drawer"
+        description="Slides in from the right. Drag right to dismiss."
+        :snap-points="[0.85]"
+      >
+        <VyButton color="neutral" variant="subtle" label="Open right drawer" />
+      </VyDrawer>
+
+      <VyDrawer
+        v-model:open="drawerLeftOpen"
+        side="left"
+        title="Left drawer"
+        description="Slides in from the left. Drag left to dismiss."
+        :snap-points="[0.85]"
+      >
+        <VyButton color="neutral" variant="subtle" label="Open left drawer" />
+      </VyDrawer>
+
+      <VyDrawer
+        v-model:open="drawerTopOpen"
+        side="top"
+        title="Top drawer"
+        description="Slides down from the top. Drag up to dismiss."
+        :snap-points="[0.5]"
+      >
+        <VyButton color="neutral" variant="subtle" label="Open top drawer" />
       </VyDrawer>
     </view>
 

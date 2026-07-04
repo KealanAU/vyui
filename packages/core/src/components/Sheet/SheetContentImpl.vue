@@ -66,7 +66,12 @@ import {
   PresenceState,
   presenceClassVariants,
 } from '@/components/Presence'
-import { useA11y, viewportSnapsToPositions } from '@/shared/composables'
+import {
+  directionAxis,
+  directionCloseSign,
+  useA11y,
+  viewportSnapsToPositions,
+} from '@/shared/composables'
 import { clamp } from '@/shared/clamp'
 import { injectSheetRootContext, provideSheetDragContext } from './sheetContext'
 
@@ -97,28 +102,42 @@ const dataState = computed(() =>
     : 'open',
 )
 
+// Side is expressed as a class, not just `data-side`: Lynx native doesn't
+// match `[data-side=…]` attribute selectors in CSS (same limitation that
+// drove the `ui-*` state-class migration, issue #9), so the edge-placement
+// and per-side slide keyframes below must key off a class to fire on device.
+const sideClass = computed(() => `vyui-sheet__content--${ctx.side.value}`)
+
 const maxSnap = computed(() => {
   const snaps = ctx.snapPoints.value
   return snaps.length > 0 ? snaps[snaps.length - 1] ?? 1 : 1
 })
 
-// Height of the panel as a viewport string, derived from the largest snap
-// fraction. e.g. `snapPoints: [0.75]` → `height: 75vh`. NOTE: must be `vh`,
-// not `dvh` — Lynx native drops the dynamic-viewport unit, which collapses
+const axis = computed(() => directionAxis(ctx.side.value))
+const closeSign = computed(() => directionCloseSign(ctx.side.value))
+
+// Size of the panel as a viewport string, derived from the largest snap
+// fraction. e.g. `snapPoints: [0.75]` → `height: 75vh` for vertical sheets
+// or `width: 75vw` for horizontal sheets. NOTE: vertical sheets must use
+// `vh`, not `dvh` — Lynx native drops the dynamic-viewport unit, collapsing
 // the panel to its content height.
-const panelHeight = computed(() => {
-  return `${maxSnap.value * 100}vh`
+const panelStyle = computed(() => {
+  const size = `${maxSnap.value * 100}${axis.value === 'x' ? 'vw' : 'vh'}`
+  return axis.value === 'x' ? { width: size } : { height: size }
 })
 
 // `SystemInfo` is not reactive, but the panel receives a layout event whenever
-// dynamic viewport units resolve to a new height after rotation. Feed that
-// measured height back into the snap/drag geometry so visual layout and MT
+// dynamic viewport units resolve to a new size after rotation. Feed that
+// measured size back into the snap/drag geometry so visual layout and MT
 // physics stay in sync.
 const measuredPanelHeight = ref(0)
+const measuredPanelWidth = ref(0)
 
-function onPanelLayout(event: { detail?: { height?: number } } | undefined) {
+function onPanelLayout(event: { detail?: { height?: number, width?: number } } | undefined) {
   const height = event?.detail?.height
+  const width = event?.detail?.width
   if (typeof height === 'number' && height > 0) measuredPanelHeight.value = height
+  if (typeof width === 'number' && width > 0) measuredPanelWidth.value = width
 }
 
 // Whether the content view should bind touch handlers. `handleOnly` makes
@@ -135,11 +154,13 @@ const isDragEnabled = computed(() =>
 // All read/written only inside `'main thread'` worklets that fire on user
 // input. By that time, the `INIT_MT_REF` ops below have been flushed.
 const containerRef = useMainThreadRef<any>(null)
-const touchStartYRef = useMainThreadRef<number>(0)
+const touchStartAxisRef = useMainThreadRef<number>(0)
 const isDraggingRef = useMainThreadRef<boolean>(false)
 // Ring-buffer for velocity. Each entry is `[y, timestampMs]`. We keep the
 // trailing 50ms of touch samples.
 const sampleRingRef = useMainThreadRef<Array<[number, number]>>([])
+const axisRef = useMainThreadRef<'x' | 'y'>(axis.value)
+const closeSignRef = useMainThreadRef<1 | -1>(closeSign.value)
 
 // Root-owned MT refs (created and INIT_MT_REF-registered by SheetRoot).
 // Bound to local consts so the worklet transform captures the
@@ -147,14 +168,19 @@ const sampleRingRef = useMainThreadRef<Array<[number, number]>>([])
 const backdropRef = ctx.backdropElRef
 const progressRef = ctx.progressMTRef
 
-// Panel height in px on MT (for the dismiss threshold and backdrop fade
+const viewportExtent = computed(() => axis.value === 'x'
+  ? ctx.viewportWidth.value
+  : ctx.viewportHeight.value)
+
+// Panel extent in px on MT (for the dismiss threshold and backdrop fade
 // progress). Recomputes on rotation / late-resolving SystemInfo /
 // snapPoint changes; the watch below re-syncs it to MT.
-const panelHeightPx = computed(() => {
-  if (measuredPanelHeight.value > 0) return Math.round(measuredPanelHeight.value)
-  return Math.round(ctx.viewportHeight.value * maxSnap.value)
+const panelExtentPx = computed(() => {
+  const measured = axis.value === 'x' ? measuredPanelWidth.value : measuredPanelHeight.value
+  if (measured > 0) return Math.round(measured)
+  return Math.round(viewportExtent.value * maxSnap.value)
 })
-const panelHeightPxRef = useMainThreadRef<number>(panelHeightPx.value)
+const panelExtentPxRef = useMainThreadRef<number>(panelExtentPx.value)
 
 // Snap positions in px-from-open, ascending (`[0]` = most open = 0, since
 // the panel is sized to the largest snap). Resolved by the unit-tested
@@ -162,10 +188,10 @@ const panelHeightPxRef = useMainThreadRef<number>(panelHeightPx.value)
 const snapPositionsPx = computed(() =>
   viewportSnapsToPositions(
     ctx.snapPoints.value,
-    measuredPanelHeight.value > 0
-      ? measuredPanelHeight.value / maxSnap.value
-      : ctx.viewportHeight.value,
-    panelHeightPx.value,
+    panelExtentPx.value > 0
+      ? panelExtentPx.value / maxSnap.value
+      : viewportExtent.value,
+    panelExtentPx.value,
   ),
 )
 
@@ -200,9 +226,9 @@ const touchStartPosRef = useMainThreadRef<number>(0)
 // callbacks fire post-mount, long after the refs are registered — the
 // setup-time dispatch race in the header comment doesn't apply.
 
-function _setPanelHeightPx(v: number) {
+function _setPanelExtentPx(v: number) {
   'main thread'
-  panelHeightPxRef.current = v
+  panelExtentPxRef.current = v
 }
 
 function _setDismissVelocity(v: number) {
@@ -225,11 +251,23 @@ function _setEnableDragToClose(v: boolean) {
   enableDragToCloseRef.current = v
 }
 
-watch(panelHeightPx, (v) => { void runOnMainThread(_setPanelHeightPx as any)(v) })
+function _setAxis(v: 'x' | 'y') {
+  'main thread'
+  axisRef.current = v
+}
+
+function _setCloseSign(v: 1 | -1) {
+  'main thread'
+  closeSignRef.current = v
+}
+
+watch(panelExtentPx, (v) => { void runOnMainThread(_setPanelExtentPx as any)(v) })
 watch(ctx.dismissVelocity, (v) => { void runOnMainThread(_setDismissVelocity as any)(v) })
 watch(ctx.duration, (v) => { void runOnMainThread(_setDurationMs as any)(v) })
 watch(snapPositionsPx, (v) => { void runOnMainThread(_setSnapPositions as any)(v) })
 watch(ctx.enableDragToClose, (v) => { void runOnMainThread(_setEnableDragToClose as any)(v) })
+watch(axis, (v) => { void runOnMainThread(_setAxis as any)(v) })
+watch(closeSign, (v) => { void runOnMainThread(_setCloseSign as any)(v) })
 
 function _setStyle(decl: Record<string, string>) {
   'main thread'
@@ -268,6 +306,23 @@ function _setBackdropStyle(decl: Record<string, string>) {
   }
 }
 
+function _axisCoord(e: { detail: { x?: number, y?: number } }) {
+  'main thread'
+  return axisRef.current === 'x' ? e.detail.x ?? 0 : e.detail.y ?? 0
+}
+
+function _translate(position: number) {
+  'main thread'
+  const signed = closeSignRef.current * position
+  return axisRef.current === 'x' ? `translateX(${signed}px)` : `translateY(${signed}px)`
+}
+
+function _translateClosed() {
+  'main thread'
+  const value = closeSignRef.current === 1 ? '100%' : '-100%'
+  return axisRef.current === 'x' ? `translateX(${value})` : `translateY(${value})`
+}
+
 function _pruneRing(now: number) {
   'main thread'
   const ring = sampleRingRef.current
@@ -295,15 +350,15 @@ function _settleTo(
   clearAnim: boolean,
 ) {
   'main thread'
-  const hpx = panelHeightPxRef.current
+  const extentPx = panelExtentPxRef.current
   // Frame 1: pin to where the finger left the panel (kills any keyframe too).
-  _setStyle({ animation: 'none', transition: 'none', transform: `translateY(${posRef.current}px)` })
-  let p0 = hpx > 0 ? 1 - posRef.current / hpx : 1
+  _setStyle({ animation: 'none', transition: 'none', transform: _translate(posRef.current) })
+  let p0 = extentPx > 0 ? 1 - posRef.current / extentPx : 1
   if (p0 < 0) p0 = 0
   if (p0 > 1) p0 = 1
   _setBackdropStyle({ transition: 'none', opacity: String(p0) })
   posRef.current = target
-  let progress = hpx > 0 ? 1 - target / hpx : 1
+  let progress = extentPx > 0 ? 1 - target / extentPx : 1
   if (progress < 0) progress = 0
   if (progress > 1) progress = 1
   progressRef.current = progress
@@ -322,12 +377,12 @@ function _settleTo(
   requestAnimationFrame(apply)
 }
 
-function _onTouchStart(e: { detail: { y: number } }) {
+function _onTouchStart(e: { detail: { x?: number, y?: number } }) {
   'main thread'
   isDraggingRef.current = true
-  const y = e.detail.y
-  touchStartYRef.current = y
-  sampleRingRef.current = [[y, Date.now()]]
+  const coord = _axisCoord(e)
+  touchStartAxisRef.current = coord
+  sampleRingRef.current = [[coord, Date.now()]]
   touchStartPosRef.current = posRef.current
   // Kill any in-flight transition AND re-assert the last COMMITTED position.
   // Without re-asserting the transform here, touching mid-settle inherits
@@ -337,33 +392,33 @@ function _onTouchStart(e: { detail: { y: number } }) {
   // the interpolated transform on MT, so a mid-settle grab snaps to the
   // settle's target (`posRef` is written eagerly at release) and drags from
   // there — a small jump in the worst case, never a stuck panel.
-  _setStyle({ transition: 'none', transform: `translateY(${posRef.current}px)` })
+  _setStyle({ transition: 'none', transform: _translate(posRef.current) })
   // The backdrop joins the drag: kill its transition so the per-frame
   // opacity writes in touchmove paint immediately instead of easing.
   _setBackdropStyle({ transition: 'none' })
 }
 
-function _onTouchMove(e: { detail: { y: number } }) {
+function _onTouchMove(e: { detail: { x?: number, y?: number } }) {
   'main thread'
   if (!isDraggingRef.current) return
-  const y = e.detail.y
+  const coord = _axisCoord(e)
   // Position = drag origin + finger delta, clamped to the travel range:
-  // 0 (fully open — no snap above it) … panel height (fully off-screen).
-  const hpx = panelHeightPxRef.current
-  let pos = touchStartPosRef.current + (y - touchStartYRef.current)
+  // 0 (fully open — no snap above it) … panel extent (fully off-screen).
+  const extentPx = panelExtentPxRef.current
+  let pos = touchStartPosRef.current + (coord - touchStartAxisRef.current) * closeSignRef.current
   if (pos < 0) pos = 0
-  if (pos > hpx) pos = hpx
+  if (pos > extentPx) pos = extentPx
   posRef.current = pos
-  _setStyle({ transform: `translateY(${pos}px)` })
+  _setStyle({ transform: _translate(pos) })
   // Drag-synced backdrop fade: 1 = fully open, 0 = dragged the full panel
-  // height. Mirrored into the context's progressMTRef for other MT readers.
-  let progress = hpx > 0 ? 1 - pos / hpx : 1
+  // extent. Mirrored into the context's progressMTRef for other MT readers.
+  let progress = extentPx > 0 ? 1 - pos / extentPx : 1
   if (progress < 0) progress = 0
   if (progress > 1) progress = 1
   progressRef.current = progress
   _setBackdropStyle({ opacity: String(progress) })
   const now = Date.now()
-  sampleRingRef.current.push([y, now])
+  sampleRingRef.current.push([coord, now])
   _pruneRing(now)
 }
 
@@ -372,18 +427,18 @@ function _onTouchEnd() {
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
 
-  // Velocity from ring buffer (px/s). Positive = downward (toward close).
+  // Velocity from ring buffer (px/s). Positive = toward close.
   const ring = sampleRingRef.current
   let velocity = 0
   if (ring.length >= 2) {
     const first = ring[0]
     const last = ring[ring.length - 1]
     const dt = (last[1] - first[1]) / 1000
-    if (dt > 0) velocity = (last[0] - first[0]) / dt
+    if (dt > 0) velocity = ((last[0] - first[0]) / dt) * closeSignRef.current
   }
 
   const pos = posRef.current
-  const hpx = panelHeightPxRef.current
+  const extentPx = panelExtentPxRef.current
   const positions = snapPositionsRef.current
   const durationMs = durationMsRef.current
 
@@ -402,7 +457,7 @@ function _onTouchEnd() {
   // from the most-closed snap instead of from open).
   const shouldDismiss = enableDragToCloseRef.current
     && (velocity >= dismissVelocityRef.current
-      || projected > mostClosed + hpx * 0.4)
+      || projected > mostClosed + extentPx * 0.4)
 
   // Settle timings derive from SheetRoot's `duration` prop: snap settle uses
   // the full duration; dismiss is a slightly quicker 0.9× cut (matches the
@@ -414,7 +469,7 @@ function _onTouchEnd() {
     // frame-1 re-pin in `_settleTo` guards the flick case). `@transitionend`
     // then advances Presence to `Left`, which unmounts the backdrop too — so
     // the inline opacity we fade to 0 here can't leak into the next open.
-    _settleTo(hpx, 'translateY(100%)', dismissMs, 'ease-in', false)
+    _settleTo(extentPx, _translateClosed(), dismissMs, 'ease-in', false)
     runOnBackground(_emitClose as any)()
   }
   else {
@@ -434,7 +489,7 @@ function _onTouchEnd() {
     // (`_slideOffFromCurrent` drives those closes). At fully open the
     // inline animation is cleared (empty-string value) so the keyframe paths
     // apply again.
-    _settleTo(target, `translateY(${target}px)`, durationMs, 'ease-out', target === 0)
+    _settleTo(target, _translate(target), durationMs, 'ease-out', target === 0)
     runOnBackground(_settle as any)(idx)
   }
 }
@@ -450,7 +505,7 @@ function _onTouchCancel() {
   // than flashing back to full size first.
   const target = touchStartPosRef.current
   const cancelMs = Math.round(durationMsRef.current * 0.7)
-  _settleTo(target, `translateY(${target}px)`, cancelMs, 'ease-out', target === 0)
+  _settleTo(target, _translate(target), cancelMs, 'ease-out', target === 0)
 }
 
 // Programmatic move (BG `snapIndex` watch / post-enter sync). Skips while
@@ -466,10 +521,10 @@ function _jumpToSnap(target: number) {
   _setStyle({
     animation: target === 0 ? '' : 'none',
     transition: `transform ${ms}ms ease-out`,
-    transform: `translateY(${target}px)`,
+    transform: _translate(target),
   })
-  const hpx = panelHeightPxRef.current
-  let progress = hpx > 0 ? 1 - target / hpx : 1
+  const extentPx = panelExtentPxRef.current
+  let progress = extentPx > 0 ? 1 - target / extentPx : 1
   if (progress < 0) progress = 0
   if (progress > 1) progress = 1
   progressRef.current = progress
@@ -490,14 +545,14 @@ function _slideOffFromCurrent() {
   'main thread'
   if (isDraggingRef.current) return
   const pos = posRef.current
-  const hpx = panelHeightPxRef.current
-  if (pos === 0 || pos >= hpx) return
-  posRef.current = hpx
+  const extentPx = panelExtentPxRef.current
+  if (pos === 0 || pos >= extentPx) return
+  posRef.current = extentPx
   const ms = Math.round(durationMsRef.current * 0.9)
   _setStyle({
     animation: 'none',
     transition: `transform ${ms}ms ease-in`,
-    transform: 'translateY(100%)',
+    transform: _translateClosed(),
   })
   progressRef.current = 0
   _setBackdropStyle({
@@ -568,9 +623,10 @@ const a11y = useA11y(() => ({
 <template>
   <view
     class="vyui-sheet__content"
-    :class="presenceClass"
+    :class="[presenceClass, sideClass]"
     v-bind="a11y"
     :data-state="dataState"
+    :data-side="ctx.side.value"
     data-vyui-sheet-content
     :main-thread-ref="containerRef"
     :main-thread-bindtouchstart="isDragEnabled ? _onTouchStart : undefined"
@@ -578,7 +634,7 @@ const a11y = useA11y(() => ({
     :main-thread-bindtouchend="isDragEnabled ? _onTouchEnd : undefined"
     :main-thread-bindtouchcancel="isDragEnabled ? _onTouchCancel : undefined"
     :event-through="false"
-    :style="{ height: panelHeight }"
+    :style="panelStyle"
     @layoutchange="onPanelLayout"
     @animationstart="handlers?.handleKFStart"
     @animationend="handlers?.handleKFEnd"
@@ -594,14 +650,8 @@ const a11y = useA11y(() => ({
 <style>
 .vyui-sheet__content {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
   z-index: 1001;
   background-color: #fff;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -610,16 +660,99 @@ const a11y = useA11y(() => ({
   transform: translateY(100%);
 }
 
-.vyui-sheet__content.ui-open {
-  transform: translateY(0);
+/* `flex-direction` places the drag handle (SheetContent's first child) on the
+   sheet's inner edge: column keeps it at the top for a bottom sheet, and each
+   variant flips the axis / reverses so it sits on the edge the sheet is pulled
+   toward (bottom for `top`, left for `right`, right for `left`). */
+.vyui-sheet__content--bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  flex-direction: column;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  transform: translateY(100%);
 }
 
-.vyui-sheet__content.ui-entering {
+.vyui-sheet__content--top {
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  flex-direction: column-reverse;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  transform: translateY(-100%);
+}
+
+.vyui-sheet__content--right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  flex-direction: row;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  transform: translateX(100%);
+}
+
+.vyui-sheet__content--left {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100%;
+  flex-direction: row-reverse;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  transform: translateX(-100%);
+}
+
+.vyui-sheet__content.ui-open {
+  transform: translate(0, 0);
+}
+
+/* Underlying transform while leaving. The slide-out keyframes below omit their
+   `from` step so they animate from this value — the fully-open position for a
+   plain close, or the live inline `transform` (which outranks this rule) when a
+   drag settles the panel off. A hardcoded `from: translate(0)` would instead
+   snap a mid-drag panel back to full-open for a frame before sliding out — the
+   flash — whenever the inline `animation: none` on the drag path fails to
+   suppress this keyframe (animations outrank transitions for `transform`). */
+.vyui-sheet__content.ui-leaving {
+  transform: translate(0, 0);
+}
+
+.vyui-sheet__content--bottom.ui-entering {
   animation: vyui-sheet-slide-in 280ms ease-out both;
 }
 
-.vyui-sheet__content.ui-leaving {
+.vyui-sheet__content--bottom.ui-leaving {
   animation: vyui-sheet-slide-out 280ms ease-in both;
+}
+
+.vyui-sheet__content--top.ui-entering {
+  animation: vyui-sheet-slide-in-from-top 280ms ease-out both;
+}
+
+.vyui-sheet__content--top.ui-leaving {
+  animation: vyui-sheet-slide-out-to-top 280ms ease-in both;
+}
+
+.vyui-sheet__content--right.ui-entering {
+  animation: vyui-sheet-slide-in-from-right 280ms ease-out both;
+}
+
+.vyui-sheet__content--right.ui-leaving {
+  animation: vyui-sheet-slide-out-to-right 280ms ease-in both;
+}
+
+.vyui-sheet__content--left.ui-entering {
+  animation: vyui-sheet-slide-in-from-left 280ms ease-out both;
+}
+
+.vyui-sheet__content--left.ui-leaving {
+  animation: vyui-sheet-slide-out-to-left 280ms ease-in both;
 }
 
 @keyframes vyui-sheet-slide-in {
@@ -627,8 +760,37 @@ const a11y = useA11y(() => ({
   to   { transform: translateY(0); }
 }
 
+/* Slide-out keyframes intentionally omit `from` — they start from the panel's
+   current transform (see `.ui-leaving` above) so a drag-settled close never
+   flashes back to full-open. */
 @keyframes vyui-sheet-slide-out {
-  from { transform: translateY(0); }
-  to   { transform: translateY(100%); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes vyui-sheet-slide-in-from-top {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes vyui-sheet-slide-out-to-top {
+  to { transform: translateY(-100%); }
+}
+
+@keyframes vyui-sheet-slide-in-from-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes vyui-sheet-slide-out-to-right {
+  to { transform: translateX(100%); }
+}
+
+@keyframes vyui-sheet-slide-in-from-left {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes vyui-sheet-slide-out-to-left {
+  to { transform: translateX(-100%); }
 }
 </style>

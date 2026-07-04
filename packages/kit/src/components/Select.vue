@@ -2,6 +2,7 @@
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '../theme/select'
 import { resolveColors } from '../theme/colors'
+import type { SheetDirection } from '@vyui/core'
 import type { AppConfig } from '../types'
 
 /**
@@ -61,6 +62,11 @@ export interface SelectProps {
    * @defaultValue 'sheet'
    */
   presentation?: 'sheet' | 'anchor'
+  /**
+   * Edge the picker sheet slides and drags from.
+   * @defaultValue `'bottom'`
+   */
+  side?: SheetDirection
   /**
    * Snap fractions forwarded to `SheetRoot`. Default `[0.5]` matches a
    * native picker — half-screen, scrollable list below the placeholder title.
@@ -181,6 +187,7 @@ const displayValue = computed(() => {
     <template #default="{ modelValue: rootValue, open }">
       <SheetRoot
         :open="localOpen"
+        :side="side"
         :snap-points="snapPoints"
         @update:open="localOpen = $event"
       >

@@ -2,6 +2,7 @@
 import { tv, type VariantProps } from 'tailwind-variants'
 import theme, { leadingIconFg, TRAILING_ICON_FG } from '../theme/actionSheet'
 import { resolveColors } from '../theme/colors'
+import type { SheetDirection } from '@vyui/core'
 import type { AppConfig } from '../types'
 import type { AvatarProps } from './Avatar.vue'
 
@@ -63,6 +64,11 @@ export interface ActionSheetProps {
   closeOnSelect?: boolean
   /** Show the drag handle at the top of the sheet. @defaultValue `true` */
   handle?: boolean
+  /**
+   * Edge the action sheet slides and drags from.
+   * @defaultValue `'bottom'`
+   */
+  side?: SheetDirection
   /**
    * Optional cancel button rendered below the list (iOS pattern). Pass a
    * string to override the label. Linear-style sheets typically omit this.
@@ -197,6 +203,7 @@ const trailingIconColor = computed(() => resolveColorHex(appConfig, TRAILING_ICO
   <SheetRoot
     :open="resolvedOpen"
     :default-open="defaultOpen"
+    :side="side"
     :enable-drag-to-close="dismissible"
     @update:open="onOpenChange"
   >
