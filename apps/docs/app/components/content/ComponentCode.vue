@@ -55,8 +55,12 @@ const { copy, copied } = useClipboard({ source })
         </div>
       </div>
       <template #fallback>
-        <div class="flex items-center justify-center text-sm text-muted" :style="{ height }">
-          Loading Lynx preview…
+        <div class="preview-canvas">
+          <div class="relative z-[1] flex flex-col items-center justify-center gap-3" :style="{ height }" aria-hidden="true">
+            <div class="preview-skeleton h-9 w-40 rounded-full" />
+            <div class="preview-skeleton h-3 w-52 rounded-full" />
+            <div class="preview-skeleton h-3 w-36 rounded-full" />
+          </div>
         </div>
       </template>
     </ClientOnly>
@@ -103,5 +107,31 @@ const { copy, copied } = useClipboard({ source })
   margin: 0;
   padding: 1rem;
   white-space: pre;
+}
+
+/* Skeleton shown during hydration, mirroring LynxPreview's own boot skeleton. */
+.preview-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--ui-bg-elevated) 70%, var(--ui-bg));
+}
+.preview-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--ui-bg-elevated) 40%, transparent),
+    transparent
+  );
+  animation: preview-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes preview-shimmer {
+  100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preview-skeleton::after { animation: none; }
 }
 </style>
