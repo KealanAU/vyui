@@ -1,5 +1,5 @@
 ---
-"@vyui/kit": minor
+"@vyui/kit": patch
 "@vyui/core": patch
 ---
 
