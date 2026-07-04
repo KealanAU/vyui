@@ -12,6 +12,19 @@ function escapeXml(value: string) {
     .replace(/'/g, '&apos;')
 }
 
+function parseChangelogDate(value: unknown) {
+  if (value instanceof Date && Number.isFinite(value.getTime())) {
+    return value
+  }
+
+  if (typeof value !== 'string' || !value.trim()) {
+    return undefined
+  }
+
+  const date = new Date(`${value.trim()}T00:00:00Z`)
+  return Number.isFinite(date.getTime()) ? date : undefined
+}
+
 export default defineEventHandler(async (event) => {
   const siteUrl = useRuntimeConfig(event).public.siteUrl as string
   const entries = await queryCollection(event, 'changelog').order('date', 'DESC').all()
@@ -19,13 +32,13 @@ export default defineEventHandler(async (event) => {
   const items = entries.map((entry) => {
     const link = `${siteUrl}/changelog`
     const guid = `${siteUrl}${entry.path}`
-    const pubDate = new Date(`${entry.date}T00:00:00Z`).toUTCString()
+    const pubDate = parseChangelogDate(entry.date)?.toUTCString()
     const title = `@vyui/${entry.package} ${entry.version} — ${entry.title}`
     return `    <item>
       <title>${escapeXml(title)}</title>
       <link>${link}</link>
       <guid isPermaLink="false">${guid}</guid>
-      <pubDate>${pubDate}</pubDate>
+${pubDate ? `      <pubDate>${pubDate}</pubDate>` : ''}
       <description>${escapeXml(entry.description ?? '')}</description>
     </item>`
   }).join('\n')
