@@ -24,7 +24,7 @@ export const ICON_FG_SHADE = 500
 // pixel values instead of via custom-property indirection.
 export default (colors: Color[]) => ({
   slots: {
-    root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 p-4 flex flex-row min-w-0 gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
+    root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 p-4 flex flex-row min-w-0 gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
     wrapper: 'w-0 min-w-0 flex-1 flex flex-col',
     title: 'text-sm font-medium text-neutral-900',
     description: 'text-sm text-neutral-500',

@@ -49,8 +49,11 @@ export interface ToastProps {
    * auto-dismiss timer runs. Tracks `ToastRoot`'s `progress`, so it pauses
    * while the stack is expanded and is hidden when auto-dismiss is off
    * (`duration: 0`).
+   *
+   * Pass `true` for the default (bar inherits the toast `color`), or an object
+   * to override just the bar color independently — e.g. `{ color: 'success' }`.
    */
-  progress?: boolean
+  progress?: boolean | { color?: ToastVariants['color'] }
   /** Enable swipe-to-dismiss (fling the toast away to close it). */
   swipe?: boolean
   /**
@@ -172,6 +175,16 @@ function stackStyle(s: StackSlotProps): Record<string, any> | undefined {
   }
 }
 
+// Progress bar color: defaults to the toast color (the `color` variant already
+// bakes `bg-${c}-500` into `ui.progress`); when `progress` is an object with a
+// `color`, emit that `bg-*-500` so tailwind-merge overrides the variant's. The
+// class is safe for Lynx JIT because the color variant already emits every
+// `bg-${c}-500` in the theme source.
+const progressColorClass = computed(() => {
+  const color = typeof props.progress === 'object' ? props.progress.color : undefined
+  return color ? `bg-${color}-500` : undefined
+})
+
 const closeButtonProps = computed<Partial<ButtonProps>>(() => {
   const overrides = typeof props.close === 'object' ? props.close : {}
   return {
@@ -265,7 +278,7 @@ const closeButtonProps = computed<Partial<ButtonProps>>(() => {
          auto-dismiss is off. -->
     <view
       v-if="progress && toastDuration > 0"
-      :class="ui.progress({ class: props.ui?.progress })"
+      :class="ui.progress({ class: [props.ui?.progress, progressColorClass] })"
       :style="{ transform: `scaleX(${progressValue})`, transformOrigin: 'left' }"
     />
     </component>

@@ -1,6 +1,14 @@
 <script setup lang="ts">
-import { ToastProvider } from '@vyui/core'
-import { VyAlert, VyToast } from '@vyui/kit'
+import { ref } from 'vue'
+import { ToastProvider, ToastViewport } from '@vyui/core'
+import { VyAlert, VyButton, VyToast } from '@vyui/kit'
+
+// Live progress demo — flip the key to remount a fresh toast so its
+// auto-dismiss timer (and the draining progress bar) restart from full.
+const progressToast = ref(0)
+function showProgressToast() {
+  progressToast.value += 1
+}
 </script>
 
 <template>
@@ -56,6 +64,28 @@ import { VyAlert, VyToast } from '@vyui/kit'
           icon="icon-park-outline:close-one"
         />
       </view>
+    </ToastProvider>
+
+    <!-- Runtime toast with an independently-colored progress bar. The toast is
+         `neutral` but its countdown bar is `success` — `progress` takes an
+         object to override just the bar color. Tapping remounts (via `:key`)
+         so the bar drains from full each time. -->
+    <view class="flex flex-col gap-3">
+      <text class="text-slate-900 text-base font-semibold px-1">Toast progress color</text>
+      <VyButton label="Show progress toast" color="neutral" variant="outline" @tap="showProgressToast" />
+    </view>
+    <ToastProvider v-if="progressToast">
+      <ToastViewport position="bottom" :style="{ bottom: '24px', zIndex: 60 }">
+        <VyToast
+          :key="progressToast"
+          color="neutral"
+          title="Saving changes…"
+          description="This closes on its own — watch the green bar."
+          icon="icon-park-outline:check-one"
+          :progress="{ color: 'success' }"
+          :close="false"
+        />
+      </ToastViewport>
     </ToastProvider>
   </view>
 </template>
