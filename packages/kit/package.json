@@ -40,7 +40,6 @@
     "build-only": "rslib build && vue-tsc -p tsconfig.build.json && pnpm copy-dts && node ../shared-build-config/scripts/add-dts-extensions.mjs dist && node ../shared-build-config/scripts/check-dts.mjs dist",
     "copy-dts": "cp src/tailwind.d.ts dist/tailwind.d.ts && cp src/theme/color-constants.d.ts dist/theme/color-constants.d.ts",
     "smoke-test": "node scripts/smoke-test.mjs",
-    "prepublishOnly": "pnpm build",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint src"
   },
