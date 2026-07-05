@@ -36,9 +36,10 @@ describe('VyUI plugin', () => {
   // The regression this guards: vue-lynx's createApp returns an app with
   // `provide`/`use` but no `component`, so the old unconditional registration
   // loop threw `app.component is not a function` on device.
-  it('stays theme-only without throwing on a Lynx-like app lacking app.component', () => {
+  it('stays theme-only and warns (dev) on a Lynx-like app lacking app.component', () => {
     const provide = vi.fn()
     const lynxApp = { provide, use: vi.fn() } as any
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     expect(() => VyUI.install!(lynxApp, { ui: { primary: 'orange' } })).not.toThrow()
     expect(provide).toHaveBeenCalledOnce()
@@ -46,6 +47,8 @@ describe('VyUI plugin', () => {
       APP_CONFIG_KEY,
       expect.objectContaining({ ui: expect.objectContaining({ primary: 'orange' }) }),
     )
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('app.component'))
+    warn.mockRestore()
   })
 })
 

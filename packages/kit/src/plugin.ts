@@ -34,7 +34,16 @@ export const VyUI: Plugin<VyUIPluginOptions> = {
     // `app.component is not a function`. Guard it — on Lynx the plugin becomes
     // theme-only and SFCs use named imports (`import { VyButton } from
     // '@vyui/kit'`), which is the correct usage there anyway.
-    if (typeof app.component !== 'function') return
+    if (typeof app.component !== 'function') {
+      if (__DEV__) {
+        console.warn(
+          '[vyui] `app.component` is unavailable on this runtime (e.g. vue-lynx); '
+          + 'skipping global component registration. Import components locally instead: '
+          + "`import { VyButton } from '@vyui/kit'`.",
+        )
+      }
+      return
+    }
 
     const components = options.components ?? REGISTRY
     for (const [name, comp] of Object.entries(components)) {
