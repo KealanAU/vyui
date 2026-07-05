@@ -7,9 +7,18 @@ export interface CreateVyuiPresetOptions {
   neutral?: string
   /** Tailwind shade steps. */
   shades?: number[]
+  /**
+   * Normalized config from `defineVyuiConfig` (`@vyui/kit/config`). When
+   * present, `ui.colors` supplies the semantic color set — pass the same object
+   * to `provideVyUI` so build + runtime share one source of truth.
+   */
+  ui?: { colors?: string[] }
 }
 
-/** Build the @vyui/kit Tailwind preset for a given color set. */
+/**
+ * Build the @vyui/kit Tailwind preset. Accepts flat options or a
+ * `defineVyuiConfig` result (`{ ui: { colors } }`).
+ */
 export declare function createVyuiPreset(options?: CreateVyuiPresetOptions): Partial<Config>
 
 /** Default configurable semantic colors (excludes neutral). Literal tuple so

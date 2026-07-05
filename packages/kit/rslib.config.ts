@@ -41,6 +41,7 @@ export default defineConfig({
           index: './src/index.ts',
           'theme/index': './src/theme/index.ts',
           tailwind: './src/tailwind.js',
+          config: './src/config.js',
         },
       },
     },

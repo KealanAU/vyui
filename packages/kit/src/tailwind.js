@@ -84,16 +84,43 @@ const RADIUS_SCALE = {
 
 /**
  * Build the @vyui/kit preset for a given color set. Defaults to the package's
- * standard semantic colors; pass `colors` to add/replace them (keep this in
- * sync with `appConfig.ui.colors` and the `--ui-color-*` CSS var blocks).
+ * standard semantic colors.
  *
- * @param {object} [options]
+ * Accepts EITHER the flat preset options (`{ colors, neutral, shades }`) OR a
+ * normalized config from `defineVyuiConfig` (`{ ui: { colors } }`) — pass the
+ * SAME config object here and to `provideVyUI` so the generated palette and the
+ * runtime `ui.colors` can't drift.
+ *
+ * @param {object} [options] Flat options, or a `defineVyuiConfig` result.
  * @param {string[]} [options.colors] Configurable semantic colors (no neutral).
  * @param {string}   [options.neutral] Neutral color name.
  * @param {number[]} [options.shades] Tailwind shade steps.
+ * @param {object}   [options.ui] Normalized config; `ui.colors` overrides `colors`.
  * @returns {Partial<TailwindConfig>}
  */
-export function createVyuiPreset({ colors = COLORS, neutral = NEUTRAL, shades = SHADES } = {}) {
+export function createVyuiPreset(options = {}) {
+  // Unwrap the normalized `{ ui }` config from defineVyuiConfig; fall back to
+  // the flat `{ colors, neutral, shades }` form for direct callers.
+  const src = options.ui ?? options
+  const { colors = COLORS, neutral = NEUTRAL, shades = SHADES } = src
+
+  // Silent "class resolves to nothing" is the worst DX here: a semantic color
+  // outside the package set generates utilities but only paints if the consumer
+  // also defines matching `--ui-color-<name>-*` CSS vars AND lists it in the
+  // runtime `theme.colors`. Surface that at build time (dev only — this file
+  // runs in Node via Tailwind's jiti loader, so `process.env` is available).
+  if (process.env.NODE_ENV !== 'production') {
+    const custom = colors.filter((c) => !COLORS.includes(c))
+    if (custom.length > 0) {
+      console.warn(
+        `[vyui/tailwind] custom semantic color(s) [${custom.join(', ')}] will emit `
+        + 'utilities, but only resolve if you also define matching '
+        + '`--ui-color-<name>-*` CSS vars and list them in your runtime '
+        + '`theme.colors` (provideVyUI / app.use). Otherwise the classes paint nothing.',
+      )
+    }
+  }
+
   const allColors = [...new Set([...colors, neutral])]
   return {
     theme: {
