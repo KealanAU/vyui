@@ -45,7 +45,7 @@
 ## Impact
 
 - **Breaks aliased imports (near-universal pattern):** Any shared composable or module that defines `'main thread'` worklets and is consumed via `@/`/tsconfig path aliases — the standard project convention — silently fails at runtime with a confusing low-level error that is far from the root cause.
-- **Blocks published component libraries entirely:** A package consumed via a bare specifier (e.g. `@vyui/core`) cannot ship MT worklets to consumers, because the consumer's MT loader skips all imports into that package. There is no viable workaround for real consumers; a relative side-effect import pointing into `node_modules` is not a publishable solution.
+- **Blocks published component libraries entirely:** A package consumed via a bare specifier (e.g. `@vyui/core`) cannot ship MT worklets to consumers, because the consumer's MT loader skips all imports into that package. A fully general solution needs upstream package traversal / allowlisting. VyUI currently carries a narrow local patch that follows only `@/…` plus `@vyui/core` / `@vyui/kit` imports; it is a stopgap for VyUI consumers, not a general npm-package traversal policy.
 
 ---
 
