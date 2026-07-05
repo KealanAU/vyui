@@ -27,6 +27,10 @@ npx @vyui/cli add toast --dry-run
 
 # List the styles offered by the registry
 npx @vyui/cli styles
+
+# Add the temporary vue-lynx main-thread worklet loader patch
+npx @vyui/cli patch-vue-lynx
+pnpm install
 ```
 
 `init` detects the app entry, Tailwind config, global CSS, import alias, and
@@ -163,3 +167,23 @@ The registry itself is generated from `@vyui/kit` source by
 For a standard Vue-Lynx project, no manual wiring is required. Run
 `npx @vyui/cli info` to see what was detected, then add components with
 `npx @vyui/cli add`.
+
+## Vue-Lynx main-thread worklet patch
+
+`vue-lynx@0.4.0` only follows relative imports while building the main-thread
+worklet graph. That can drop worklets imported through `@/…` aliases or from
+published VyUI packages, causing runtime `bind` errors when a main-thread
+handler is invoked.
+
+Run the explicit patch command in pnpm projects that hit this loader issue:
+
+```bash
+npx @vyui/cli patch-vue-lynx
+pnpm install
+```
+
+The command writes `patches/vue-lynx@0.4.0.patch` and adds the matching
+`patchedDependencies` entry to `pnpm-workspace.yaml`. It is idempotent, supports
+`--dry-run`, and requires `--overwrite` before replacing a different existing
+patch file. Remove the patch file and workspace entry once the upstream
+`vue-lynx` loader fix is available.

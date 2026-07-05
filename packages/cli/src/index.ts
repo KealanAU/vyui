@@ -6,6 +6,7 @@ import { list } from './commands/list.js'
 import { view } from './commands/view.js'
 import { info } from './commands/info.js'
 import { styles } from './commands/styles.js'
+import { patchVueLynx } from './commands/patch-vue-lynx.js'
 import { c, log } from './utils.js'
 
 const HELP = `${c.bold('vyui')} — add @vyui/kit styled components to your project
@@ -18,6 +19,7 @@ ${c.bold('Usage')}
   vyui view <component...> [options]
   vyui info [options]
   vyui styles [options]
+  vyui patch-vue-lynx [options]
 
 ${c.bold('Commands')}
   init                 Set up vyui.config.json + shared library files
@@ -27,6 +29,7 @@ ${c.bold('Commands')}
   view <component...>  Print registry component source before installing
   info                 Show detected project and VyUI configuration
   styles               List the styles available in the registry
+  patch-vue-lynx       Add the temporary vue-lynx MT worklet loader patch
 
 ${c.bold('Options')}
   --registry <url>     Registry base URL (default https://vyui.dev/r)
@@ -101,6 +104,9 @@ async function main(): Promise<void> {
       break
     case 'styles':
       await styles({ cwd, registry: values.registry })
+      break
+    case 'patch-vue-lynx':
+      patchVueLynx({ cwd, overwrite: values.overwrite, dryRun: values['dry-run'] })
       break
     default:
       log.err(`Unknown command: ${command}`)
