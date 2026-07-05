@@ -31,11 +31,13 @@ height: 260px
 ---
 ::
 
-You can also import the unprefixed alias and public type.
+Import the component and its public type from the kit barrel.
 
 ```ts
-import { AspectRatio, type AspectRatioProps } from '@vyui/kit'
+import { VyAspectRatio, type AspectRatioProps } from '@vyui/kit'
 ```
+
+The unprefixed `AspectRatio` primitive is still available from `@vyui/core` if you prefer the raw name.
 
 ## Features and behavior
 

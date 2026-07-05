@@ -5,6 +5,7 @@ import type { ContentNavigationItem } from '@nuxt/content'
 // into "Other" — add them here as new components are documented.
 const COMPONENT_CATEGORY: Record<string, string> = {
   input: 'Form',
+  calendar: 'Form',
   textarea: 'Form',
   select: 'Form',
   combobox: 'Form',

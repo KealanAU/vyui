@@ -11,6 +11,7 @@
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r typecheck",
     "clean": "pnpm -r exec rm -rf dist .rspeedy node_modules/.cache && rm -rf node_modules/.cache",
+    "check:docs": "tsx tools/check-docs-coverage.ts",
     "changeset": "changeset",
     "version-packages": "changeset version && tsx tools/gen-changelog-docs.ts",
     "release": "pnpm build && changeset publish",

@@ -49,6 +49,13 @@
       "description": "Controlled open state. Bind with `v-model:open`."
     },
     {
+      "name": "side",
+      "type": "SheetDirection | undefined",
+      "required": false,
+      "default": "\"bottom\"",
+      "description": "Edge the sheet is anchored to. Controls enter/exit animation and drag axis."
+    },
+    {
       "name": "snapIndex",
       "type": "number | undefined",
       "required": false,
@@ -59,7 +66,7 @@
       "type": "number[] | undefined",
       "required": false,
       "default": "[1]",
-      "description": "Snap points as fractions of viewport height, low → high. e.g. `[0.25, 0.5, 0.9]`."
+      "description": "Snap points as fractions of viewport extent on the sheet axis, low → high.\ne.g. `[0.25, 0.5, 0.9]`. For `top`/`bottom` this is viewport height;\nfor `left`/`right` this is viewport width."
     },
     {
       "name": "velocityThreshold",
@@ -73,6 +80,12 @@
       "type": "number | undefined",
       "required": false,
       "description": "Viewport height in px. If omitted, reads from `SystemInfo.pixelHeight /\npixelRatio` at runtime, falling back to `800`."
+    },
+    {
+      "name": "viewportWidth",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Viewport width in px. If omitted, reads from `SystemInfo.pixelWidth /\npixelRatio` at runtime, falling back to `400`."
     }
   ],
   "events": [

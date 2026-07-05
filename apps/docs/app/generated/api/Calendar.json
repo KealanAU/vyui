@@ -1,0 +1,108 @@
+{
+  "props": [
+    {
+      "name": "caveat",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Show the Lynx date-runtime caveat banner."
+    },
+    {
+      "name": "caveatDescription",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"VyCalendar stores ISO strings and avoids host Date objects at the public boundary. Verify date formatting and timezone behavior on your Lynx targets before shipping.\""
+    },
+    {
+      "name": "caveatTitle",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"Calendar date handling is experimental\""
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
+    },
+    {
+      "name": "defaultMonth",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Initial visible month as `YYYY-MM`."
+    },
+    {
+      "name": "defaultValue",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Initial selected date for uncontrolled usage."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Disable every selectable day."
+    },
+    {
+      "name": "disabledDates",
+      "type": "string[] | undefined",
+      "required": false,
+      "description": "ISO dates that cannot be selected."
+    },
+    {
+      "name": "fixedWeeks",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Always render six weeks to avoid height changes between months."
+    },
+    {
+      "name": "modelValue",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Selected date as `YYYY-MM-DD`."
+    },
+    {
+      "name": "month",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Visible month as `YYYY-MM`."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"header\" | \"title\" | \"caveat\" | \"nav\" | \"navButton\" | \"navIcon\" | \"weekdays\" | \"weekday\" | \"weeks\" | \"week\" | \"day\" | \"dayText\" | \"outsideDayText\" | \"todayText\" | \"selectedDay\" | \"selectedDayText\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "weekStartsOn",
+      "type": "0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Start weeks on Sunday (`0`) through Saturday (`6`)."
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "type": "[value: string]"
+    },
+    {
+      "name": "update:month",
+      "type": "[value: string]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "day",
+      "type": "{ day: CalendarDay; }"
+    },
+    {
+      "name": "caveat",
+      "type": "{} | undefined"
+    }
+  ]
+}

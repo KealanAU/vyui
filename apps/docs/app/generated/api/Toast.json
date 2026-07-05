@@ -49,10 +49,10 @@
     },
     {
       "name": "progress",
-      "type": "boolean | undefined",
+      "type": "boolean | { color?: keyof VyuiColorRegistry | ((progress: number) => keyof VyuiColorRegistry | undefined) | undefined; } | undefined",
       "required": false,
       "default": "false",
-      "description": "Show a thin countdown bar along the bottom edge that drains as the\nauto-dismiss timer runs. Tracks `ToastRoot`'s `progress`, so it pauses\nwhile the stack is expanded and is hidden when auto-dismiss is off\n(`duration: 0`)."
+      "description": "Show a thin countdown bar along the bottom edge that drains as the\nauto-dismiss timer runs. Tracks `ToastRoot`'s `progress`, so it pauses\nwhile the stack is expanded and is hidden when auto-dismiss is off\n(`duration: 0`).\n\nPass `true` for the default (bar inherits the toast `color`), or an object\nto override just the bar color independently. `color` can be a fixed color\n(`{ color: 'success' }`) or a function of the remaining fraction (`1` → `0`)\nso the bar recolors as it drains, e.g.\n`{ color: p => p > 0.5 ? 'success' : p > 0.25 ? 'warning' : 'error' }`."
     },
     {
       "name": "stacked",
@@ -63,7 +63,7 @@
     },
     {
       "name": "stackFrom",
-      "type": "\"bottom\" | \"top\" | undefined",
+      "type": "\"top\" | \"bottom\" | undefined",
       "required": false,
       "default": "\"bottom\"",
       "description": "Which edge the stack is pinned to — must match the `ToastViewport`\n`position`. `top` fans toasts downward, `bottom` fans them upward.\nOnly used when `stacked`. Defaults to `bottom` (Sonner's default)."
@@ -77,7 +77,7 @@
     },
     {
       "name": "swipeDirection",
-      "type": "\"horizontal\" | \"right\" | \"left\" | undefined",
+      "type": "\"left\" | \"right\" | \"horizontal\" | undefined",
       "required": false,
       "default": "\"horizontal\"",
       "description": "Directions a swipe may dismiss in. `horizontal` (default) flings either\nway; `left` / `right` constrain it. Only used when `swipe`."

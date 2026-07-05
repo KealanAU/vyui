@@ -6,6 +6,13 @@
       "required": false,
       "default": "false",
       "description": "Disable drag / snap / fling; open and close still animate."
+    },
+    {
+      "name": "fitContent",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Hug content instead of sizing the panel to `snapPoints × viewport`.\nForwarded to `SheetContentImpl`. Used by the styled `Tray`."
     }
   ],
   "events": [],
