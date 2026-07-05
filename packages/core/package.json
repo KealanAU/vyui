@@ -1,7 +1,7 @@
 {
   "name": "@vyui/core",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Lynx-native component primitives, ported from reka-ui",
   "license": "MIT AND Apache-2.0",
   "author": "Kealan Clarke",
