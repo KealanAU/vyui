@@ -61,6 +61,10 @@ export interface InputProps extends PrimitiveProps {
   inputFilter?: string
   /** On-screen return-key label — see `InputConfirmType`. */
   confirmType?: InputConfirmType
+  /** Browser/native capitalization hint forwarded to the underlying input. */
+  autocapitalize?: string
+  /** Browser/native correction hint forwarded to the underlying input. */
+  autocorrect?: string
   /** When `false`, focus will not raise the software keyboard. */
   showSoftInputOnFocus?: boolean
 }
@@ -377,6 +381,8 @@ defineExpose<InputExposed>({
     :type="type"
     :input-filter="inputFilter"
     :confirm-type="confirmType"
+    :autocapitalize="autocapitalize"
+    :autocorrect="autocorrect"
     :show-soft-input-on-focus="showSoftInputOnFocus"
     ignore-focus
     accessibility-traits="keyboard"
