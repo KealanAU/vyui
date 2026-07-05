@@ -70,7 +70,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"overlay\" | \"handle\" | \"content\" | \"morph\" | \"viewport\" | \"body\" | \"footer\", any>> | undefined",
+      "type": "Partial<Record<\"content\" | \"body\" | \"overlay\" | \"handle\" | \"footer\" | \"viewport\" | \"morph\", any>> | undefined",
       "required": false
     },
     {
@@ -88,11 +88,11 @@
   ],
   "events": [
     {
-      "name": "update:open",
+      "name": "update:modelValue",
       "type": "[value: boolean]"
     },
     {
-      "name": "update:modelValue",
+      "name": "update:open",
       "type": "[value: boolean]"
     },
     {

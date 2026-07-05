@@ -74,6 +74,12 @@
       "description": "Iconify name rendered next to the selected item. Defaults to `appConfig.ui.icons.check`."
     },
     {
+      "name": "side",
+      "type": "SheetDirection | undefined",
+      "required": false,
+      "description": "Edge the picker sheet slides and drags from."
+    },
+    {
       "name": "size",
       "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
       "required": false

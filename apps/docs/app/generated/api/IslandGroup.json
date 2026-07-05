@@ -21,7 +21,7 @@
     },
     {
       "name": "position",
-      "type": "\"bottom\" | \"top\" | undefined",
+      "type": "\"top\" | \"bottom\" | undefined",
       "required": false,
       "description": "Which viewport edge to float against — only relevant when the group is\nfloating (`layer !== 'inline'`). Centered along the cross axis by default\n(tweak with `align`). Works on Lynx via an inline `style`, so no\ncaller-side positioning workaround is needed."
     },

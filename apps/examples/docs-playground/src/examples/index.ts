@@ -19,12 +19,18 @@ import AvatarGroupMixed from './avatar-group/AvatarGroupMixed.vue'
 import AvatarChip from './avatar/AvatarChip.vue'
 import AvatarExample from './avatar/AvatarExample.vue'
 import AvatarSizes from './avatar/AvatarSizes.vue'
+import CalendarExample from './calendar/CalendarExample.vue'
 import IconColor from './icon/IconColor.vue'
 import IconExample from './icon/IconExample.vue'
 import IconSize from './icon/IconSize.vue'
+import InputCharacterCount from './input/InputCharacterCount.vue'
+import InputClear from './input/InputClear.vue'
+import InputCopy from './input/InputCopy.vue'
 import InputDisabled from './input/InputDisabled.vue'
 import InputExample from './input/InputExample.vue'
 import InputIcon from './input/InputIcon.vue'
+import InputPasswordToggle from './input/InputPasswordToggle.vue'
+import InputPhoneCountry from './input/InputPhoneCountry.vue'
 import InputVariants from './input/InputVariants.vue'
 import IslandButtonExample from './island-button/IslandButtonExample.vue'
 import IslandGroupExample from './island-group/IslandGroupExample.vue'
@@ -83,12 +89,18 @@ export const examples: Record<string, Component> = {
   'avatar-chip': AvatarChip,
   'avatar-example': AvatarExample,
   'avatar-sizes': AvatarSizes,
+  'calendar-example': CalendarExample,
   'icon-color': IconColor,
   'icon-example': IconExample,
   'icon-size': IconSize,
+  'input-character-count': InputCharacterCount,
+  'input-clear': InputClear,
+  'input-copy': InputCopy,
   'input-disabled': InputDisabled,
   'input-example': InputExample,
   'input-icon': InputIcon,
+  'input-password-toggle': InputPasswordToggle,
+  'input-phone-country': InputPhoneCountry,
   'input-variants': InputVariants,
   'island-button-example': IslandButtonExample,
   'island-group-example': IslandGroupExample,

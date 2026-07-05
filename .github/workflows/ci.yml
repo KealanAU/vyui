@@ -22,6 +22,7 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - run: pnpm check:docs
       - run: pnpm build
       - run: pnpm test
       # Typecheck runs in its own parallel gate (typecheck.yml), not here.

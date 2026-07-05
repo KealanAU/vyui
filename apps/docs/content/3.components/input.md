@@ -107,6 +107,100 @@ The icon color is resolved to a Lynx-compatible hex value and passed to both nam
 </VyInput>
 ```
 
+### Clear action
+
+Use the trailing slot for a one-tap clear action.
+
+::component-code
+---
+name: input-clear
+height: 180px
+---
+::
+
+### Copy action
+
+Use the trailing slot for one-click copy actions. Keep the source text in state and pass that value to the clipboard handler instead of reading from the rendered input or slot content.
+
+::component-code
+---
+name: input-copy
+height: 180px
+---
+::
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { VyButton, VyInput } from '@vyui/kit'
+
+const value = ref('hello@vyui.dev')
+const copied = ref(false)
+
+async function copyValue() {
+  const writeText = (globalThis as any).navigator?.clipboard?.writeText
+  if (!writeText) return
+
+  await writeText(value.value)
+  copied.value = true
+
+  setTimeout(() => {
+    copied.value = false
+  }, 1200)
+}
+</script>
+
+<template>
+  <VyInput v-model="value">
+    <template #trailing>
+      <VyButton
+        size="xs"
+        variant="ghost"
+        color="neutral"
+        :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+        :label="copied ? 'Copied' : 'Copy'"
+        @tap="copyValue"
+      />
+    </template>
+  </VyInput>
+</template>
+```
+
+The web clipboard API is shown here as an application-level handler. For native targets, wrap the platform clipboard bridge behind the same `copyValue` boundary.
+
+### Password toggle
+
+Use a trailing button to switch the input between `password` and `text`.
+
+::component-code
+---
+name: input-password-toggle
+height: 180px
+---
+::
+
+### Character count
+
+Use the trailing slot for passive text such as a character count. `VyInput` does not currently expose the native `maxLength` prop, so enforce limits in your model handler when needed.
+
+::component-code
+---
+name: input-character-count
+height: 180px
+---
+::
+
+### Phone country code
+
+Combine `VySelect` with `VyInput` to build a phone field with country selection. `VySelect` is currently a sheet picker, not a searchable `SelectMenu`, so keep searchable or lazy-loaded country data in application code until that API exists.
+
+::component-code
+---
+name: input-phone-country
+height: 240px
+---
+::
+
 ### Autofocus and imperative access
 
 The kit wrapper exposes its core input instance through `inputRef`.

@@ -22,7 +22,7 @@
     },
     {
       "name": "direction",
-      "type": "\"bottom\" | \"top\" | \"right\" | \"left\" | undefined",
+      "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
       "required": false,
       "description": "Alias for `side` — matches Nuxt UI's Drawer (vaul) API."
     },
@@ -88,10 +88,10 @@
     },
     {
       "name": "side",
-      "type": "\"bottom\" | \"top\" | \"right\" | \"left\" | undefined",
+      "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
       "required": false,
       "default": "\"bottom\"",
-      "description": "Side the drawer slides in from. NOTE: the underlying core `Sheet*` is\na bottom-sheet — this drives `data-side` for styling but the physical\ndrag direction is fixed. Map `direction` from Nuxt UI's Drawer to\nthe same prop for parity."
+      "description": "Side the drawer slides in from. Map `direction` from Nuxt UI's Drawer\nto the same prop for parity."
     },
     {
       "name": "snapPoints",

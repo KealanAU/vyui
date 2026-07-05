@@ -7,6 +7,7 @@ import Avatar from './Avatar.vue'
 import AvatarGroup from './AvatarGroup.vue'
 import Badge from './Badge.vue'
 import Button from './Button.vue'
+import Calendar from './Calendar.vue'
 import Card from './Card.vue'
 import Checkbox from './Checkbox.vue'
 import Chip from './Chip.vue'
@@ -123,6 +124,7 @@ export const REGISTRY = {
   VyAvatarGroup: AvatarGroup,
   VyBadge: Badge,
   VyButton: Button,
+  VyCalendar: Calendar,
   VyCard: Card,
   VyCheckbox: Checkbox,
   VyChip: Chip,

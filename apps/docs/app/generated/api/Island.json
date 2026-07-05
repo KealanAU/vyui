@@ -55,7 +55,7 @@
     },
     {
       "name": "position",
-      "type": "\"bottom\" | \"top\" | undefined",
+      "type": "\"top\" | \"bottom\" | undefined",
       "required": false,
       "description": "Which viewport edge to float against — only relevant when the island is\nfloating (`layer !== 'inline'`). Works on Lynx via an inline `style`, so a\nlone `<VyIsland>` hovers with no wrapper. Also sets the panel growth\ndirection (panel grows away from the edge)."
     },

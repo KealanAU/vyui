@@ -67,6 +67,12 @@
       "description": "Render the dim overlay behind the sheet."
     },
     {
+      "name": "side",
+      "type": "SheetDirection | undefined",
+      "required": false,
+      "description": "Edge the action sheet slides and drags from."
+    },
+    {
       "name": "size",
       "type": "\"sm\" | \"md\" | \"lg\" | undefined",
       "required": false
