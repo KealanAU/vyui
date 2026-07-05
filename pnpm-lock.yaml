@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  vue-lynx@0.4.0: 0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b
+  vue-lynx@0.4.0: 7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa
 
 importers:
 
@@ -134,7 +134,7 @@ importers:
         version: 0.3.1(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.9.0))
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.15))
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.15))
     devDependencies:
       '@iconify-json/lucide':
         specifier: ^1.2.108
@@ -180,7 +180,7 @@ importers:
         version: link:../../../packages/kit
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
     devDependencies:
       '@iconify-json/lucide':
         specifier: ^1.2.108
@@ -226,7 +226,7 @@ importers:
         version: link:../../../packages/kit
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
     devDependencies:
       '@iconify-json/icon-park-outline':
         specifier: ^1.2.0
@@ -275,7 +275,7 @@ importers:
         version: link:../../../packages/kit
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
     devDependencies:
       '@iconify-json/icon-park-outline':
         specifier: ^1.2.0
@@ -324,7 +324,7 @@ importers:
         version: link:../../../packages/core
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2)
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2)
     devDependencies:
       '@lynx-js/rspeedy':
         specifier: ^0.13.5
@@ -352,7 +352,7 @@ importers:
         version: link:../../../packages/kit
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.15))
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.15))
     devDependencies:
       '@iconify-json/lucide':
         specifier: ^1.2.108
@@ -398,7 +398,7 @@ importers:
         version: link:../../../packages/kit
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
     devDependencies:
       '@iconify-json/icon-park-outline':
         specifier: ^1.2.0
@@ -453,7 +453,7 @@ importers:
         version: link:../../../packages/kit
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14))
     devDependencies:
       '@iconify-json/icon-park-outline':
         specifier: ^1.2.0
@@ -514,7 +514,7 @@ importers:
         version: 3.5.17(typescript@5.9.3)
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2)
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2)
       vue-tsc:
         specifier: 3.2.6
         version: 3.2.6(typescript@5.9.3)
@@ -632,7 +632,7 @@ importers:
         version: 3.5.34(typescript@5.9.3)
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.34(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.34(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))
       vue-tsc:
         specifier: 3.2.6
         version: 3.2.6(typescript@5.9.3)
@@ -678,7 +678,7 @@ importers:
         version: 3.5.17(typescript@5.9.3)
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2)
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2)
       vue-tsc:
         specifier: 3.2.6
         version: 3.2.6(typescript@5.9.3)
@@ -705,7 +705,7 @@ importers:
         version: 3.2.4(@types/debug@4.1.13)(@types/node@24.12.4)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(terser@5.47.1)(tsx@4.22.3)(yaml@2.9.0)
       vue-lynx:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.34(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(lightningcss@1.32.0))
+        version: 0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.34(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(lightningcss@1.32.0))
     devDependencies:
       '@types/jsdom':
         specifier: ^28.0.3
@@ -20746,7 +20746,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  vue-lynx@0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14)):
+  vue-lynx@0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.14)):
     dependencies:
       '@lynx-js/css-extract-webpack-plugin': 0.7.1(@lynx-js/template-webpack-plugin@0.10.9(@lynx-js/lynx-core@0.1.3)(tslib@2.8.1))(webpack@5.106.2(postcss@8.5.14))
       '@lynx-js/react': 0.116.5(@lynx-js/types@3.8.0)(@types/react@18.3.28)
@@ -20763,7 +20763,7 @@ snapshots:
       - tslib
       - webpack
 
-  vue-lynx@0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.15)):
+  vue-lynx@0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(postcss@8.5.15)):
     dependencies:
       '@lynx-js/css-extract-webpack-plugin': 0.7.1(@lynx-js/template-webpack-plugin@0.10.9(@lynx-js/lynx-core@0.1.3)(tslib@2.8.1))(webpack@5.106.2(postcss@8.5.15))
       '@lynx-js/react': 0.116.5(@lynx-js/types@3.8.0)(@types/react@18.3.28)
@@ -20780,7 +20780,7 @@ snapshots:
       - tslib
       - webpack
 
-  vue-lynx@0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2):
+  vue-lynx@0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.17(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2):
     dependencies:
       '@lynx-js/css-extract-webpack-plugin': 0.7.1(@lynx-js/template-webpack-plugin@0.10.9(@lynx-js/lynx-core@0.1.3)(tslib@2.8.1))(webpack@5.106.2)
       '@lynx-js/react': 0.116.5(@lynx-js/types@3.8.0)(@types/react@18.3.28)
@@ -20797,7 +20797,7 @@ snapshots:
       - tslib
       - webpack
 
-  vue-lynx@0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.34(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)):
+  vue-lynx@0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.34(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0)):
     dependencies:
       '@lynx-js/css-extract-webpack-plugin': 0.7.1(@lynx-js/template-webpack-plugin@0.10.9(@lynx-js/lynx-core@0.1.3)(tslib@2.8.1))(webpack@5.106.2(esbuild@0.28.0)(lightningcss@1.32.0))
       '@lynx-js/react': 0.116.5(@lynx-js/types@3.8.0)(@types/react@18.3.28)
@@ -20814,7 +20814,7 @@ snapshots:
       - tslib
       - webpack
 
-  vue-lynx@0.4.0(patch_hash=0d09250f7c1381bb9ec8c228d2ebb0bbb240546f41260c000bb9b5cb59df477b)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.34(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(lightningcss@1.32.0)):
+  vue-lynx@0.4.0(patch_hash=7306a3c760077dc4628d585e0f6eff7128e455981bf2cc98a6ee806d3c9ca4aa)(@lynx-js/lynx-core@0.1.3)(@lynx-js/types@3.8.0)(@rsbuild/core@1.7.3)(@rsbuild/plugin-vue@1.2.8(@rsbuild/core@1.7.3)(@rspack/core@1.7.11(@swc/helpers@0.5.21))(@vue/compiler-sfc@3.5.17)(vue@3.5.34(typescript@5.9.3)))(@types/react@18.3.28)(tslib@2.8.1)(webpack@5.106.2(lightningcss@1.32.0)):
     dependencies:
       '@lynx-js/css-extract-webpack-plugin': 0.7.1(@lynx-js/template-webpack-plugin@0.10.9(@lynx-js/lynx-core@0.1.3)(tslib@2.8.1))(webpack@5.106.2(lightningcss@1.32.0))
       '@lynx-js/react': 0.116.5(@lynx-js/types@3.8.0)(@types/react@18.3.28)
