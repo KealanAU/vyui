@@ -34,6 +34,17 @@ describe('Input — default render', () => {
     expect(el.getAttribute('maxlength')).toBe('32')
   })
 
+  it('forwards input capitalization and correction hints', () => {
+    const { container } = render(Input, {
+      autocapitalize: 'none',
+      autocorrect: 'off',
+      'data-testid': 'input',
+    })
+    const el = input(container)
+    expect(el.getAttribute('autocapitalize')).toBe('none')
+    expect(el.getAttribute('autocorrect')).toBe('off')
+  })
+
   it('renders disabled / readonly attrs and data-* mirrors', () => {
     const { container } = render(_Input, { disabled: true, readonly: true })
     const el = input(container)

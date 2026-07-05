@@ -66,6 +66,10 @@ export interface InputProps {
   required?: boolean
   /** Forwarded to the underlying `<input>`. Defaults to `'off'`. */
   autocomplete?: string
+  /** Forwarded to the underlying `<input>`. Defaults to `'none'` for email and password inputs. */
+  autocapitalize?: string
+  /** Forwarded to the underlying `<input>`. Defaults to `'off'` for email and password inputs. */
+  autocorrect?: string
   /** Focus the input on mount (after `autofocusDelay` ms). */
   autofocus?: boolean
   /** Delay before applying `autofocus`, in milliseconds. */
@@ -137,6 +141,10 @@ const ui = computed(() => buildInput(appConfig)({
 // neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
+const isAuthField = computed(() => props.type === 'email' || props.type === 'password')
+const resolvedAutocapitalize = computed(() => props.autocapitalize ?? (isAuthField.value ? 'none' : undefined))
+const resolvedAutocorrect = computed(() => props.autocorrect ?? (isAuthField.value ? 'off' : undefined))
+
 onMounted(() => {
   if (!props.autofocus) return
   if (props.autofocusDelay > 0) {
@@ -194,6 +202,8 @@ defineExpose({ inputRef })
         :name="name"
         :required="required"
         :autocomplete="autocomplete"
+        :autocapitalize="resolvedAutocapitalize"
+        :autocorrect="resolvedAutocorrect"
         :class="ui.base({ class: ['w-full', props.ui?.base] })"
         @update:model-value="$emit('update:modelValue', $event)"
         @confirm="$emit('confirm', $event)"
