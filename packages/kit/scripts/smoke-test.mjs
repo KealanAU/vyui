@@ -81,10 +81,18 @@ try {
   else ok('provideVyUI is exported')
 
   // Spot-check a representative set of components are real component objects.
-  for (const name of ['Button', 'Accordion', 'Switch', 'Modal', 'VyButton']) {
+  // Components are exported only under their canonical `Vy*` name (bare aliases
+  // were removed), incl. the core primitives re-exported as `VyIcon` etc.
+  for (const name of ['VyButton', 'VyAccordion', 'VySwitch', 'VyModal', 'VyIcon']) {
     const c = main[name]
     if (!c || (typeof c !== 'object' && typeof c !== 'function')) fail(`component ${name} is ${typeof c}`)
     else ok(`component ${name} resolves`)
+  }
+
+  // Bare aliases must NOT leak back in — the canonical surface is `Vy*` only.
+  for (const name of ['Button', 'Accordion', 'Switch', 'Modal']) {
+    if (main[name] !== undefined) fail(`bare alias ${name} should have been removed from the barrel`)
+    else ok(`bare alias ${name} is absent`)
   }
 
   // 2. Subpath exports resolve to real modules.
