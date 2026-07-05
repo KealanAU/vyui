@@ -1,5 +1,11 @@
 # @vyui/core
 
+## 0.1.2
+
+### Patch Changes
+
+- cbbbcbf: Ensure tray, drawer, and action sheet content renders above the sheet backdrop by default, and disable automatic capitalization and correction for kit email and password inputs.
+
 ## 0.1.1
 
 ### Patch Changes
