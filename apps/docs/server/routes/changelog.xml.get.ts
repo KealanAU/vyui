@@ -25,9 +25,46 @@ function parseChangelogDate(value: unknown) {
   return Number.isFinite(date.getTime()) ? date : undefined
 }
 
+function parseVersionOrder(version: unknown) {
+  if (typeof version !== 'string') {
+    return 0
+  }
+
+  const match = version.match(/^v?(\d+)\.(\d+)\.(\d+)$/)
+  if (!match) {
+    return 0
+  }
+
+  const [, major, minor, patch] = match
+  return Number(major) * 1_000_000 + Number(minor) * 1_000 + Number(patch)
+}
+
+function getChangelogOrder(entry: { version?: unknown }) {
+  return (
+    (entry as { changelogOrder?: number }).changelogOrder
+    ?? parseVersionOrder(entry.version)
+  )
+}
+
 export default defineEventHandler(async (event) => {
   const siteUrl = useRuntimeConfig(event).public.siteUrl as string
-  const entries = await queryCollection(event, 'changelog').order('date', 'DESC').all()
+  const entries = (await queryCollection(event, 'changelog').all()).sort((a, b) => {
+    const dateA = parseChangelogDate(a.date)?.getTime() ?? 0
+    const dateB = parseChangelogDate(b.date)?.getTime() ?? 0
+
+    if (dateA !== dateB) {
+      return dateB - dateA
+    }
+
+    const orderA = getChangelogOrder(a)
+    const orderB = getChangelogOrder(b)
+
+    if (orderA !== orderB) {
+      return orderB - orderA
+    }
+
+    return String(a.path).localeCompare(String(b.path))
+  })
 
   const items = entries.map((entry) => {
     const link = `${siteUrl}/changelog`

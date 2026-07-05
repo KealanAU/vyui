@@ -1,9 +1,10 @@
 ---
-title: @vyui/kit v0.1.0
-description: 0610d70: Input/Textarea: surface the on-screen keyboard via a normalized keyboard event.
-date: 2026-06-25
+title: "@vyui/kit v0.1.0"
+description: "0610d70: Input/Textarea: surface the on-screen keyboard via a normalized keyboard event."
+date: "2026-06-25"
 package: kit
-version: v0.1.0
+version: "v0.1.0"
+changelogOrder: 1000
 ---
 
 ### Minor Changes
