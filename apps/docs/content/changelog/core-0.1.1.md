@@ -1,9 +1,10 @@
 ---
-title: @vyui/core v0.1.1
-description: bb4d208: Add VyTray — a morphing, multi-view bottom sheet built on the core Sheet primitives.
-date: 2026-07-04
+title: "@vyui/core v0.1.1"
+description: "bb4d208: Add VyTray — a morphing, multi-view bottom sheet built on the core Sheet primitives."
+date: "2026-07-04"
 package: core
-version: v0.1.1
+version: "v0.1.1"
+changelogOrder: 1001
 ---
 
 ### Patch Changes

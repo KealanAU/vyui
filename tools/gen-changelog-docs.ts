@@ -76,6 +76,15 @@ function entryPath(key: string, version: string): string {
   return path.join(DOCS_DIR, `${key}-${version}.md`)
 }
 
+function yamlString(value: string): string {
+  return JSON.stringify(value)
+}
+
+function versionOrder(version: string): number {
+  const [major = 0, minor = 0, patch = 0] = version.split('.').map(Number)
+  return major * 1_000_000 + minor * 1_000 + patch
+}
+
 // True if any docs file already documents this package@version, regardless of
 // filename — so a hand-curated entry (even one named differently) is respected.
 function alreadyDocumented(key: string, version: string): boolean {
@@ -93,11 +102,12 @@ function render(key: string, block: Block, date: string): string {
   const title = `@vyui/${key} v${block.version}`
   const description = deriveDescription(block.body)
   return `---
-title: ${title}
-description: ${description}
-date: ${date}
+title: ${yamlString(title)}
+description: ${yamlString(description)}
+date: ${yamlString(date)}
 package: ${key}
-version: v${block.version}
+version: ${yamlString(`v${block.version}`)}
+changelogOrder: ${versionOrder(block.version)}
 ---
 
 ${block.body}

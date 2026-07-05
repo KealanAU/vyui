@@ -32,6 +32,8 @@ export default defineContentConfig({
         date: z.string(),
         // Release badge label, e.g. 'v0.0.3', 'Workspace'.
         version: z.string(),
+        // Numeric SemVer sort key generated for deterministic same-day ordering.
+        changelogOrder: z.number().optional(),
       }),
     }),
   },

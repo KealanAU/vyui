@@ -51,7 +51,7 @@ npm install @vyui/core
 
 ### `@vyui/kit` — Styled components
 
-A workspace package layering opinionated styled components on top of `@vyui/core`. Today it's consumed inside this monorepo by the demo apps; a public release will follow.
+Opinionated styled components layered on top of `@vyui/core`, published for Vue-Lynx apps that want ready-to-use `Vy*` components and theme defaults.
 
 ## Quick start
 
@@ -60,10 +60,7 @@ git clone https://github.com/KealanAU/vyui.git
 cd vyui
 pnpm install
 
-# Run the broken-component sandbox (Slider + Phase 5 primitives)
-pnpm --filter @vyui/phase5-debug dev
-
-# Or the styled-component showcase
+# Run the styled-component showcase
 pnpm --filter @vyui/kit-demo dev
 ```
 
@@ -93,14 +90,14 @@ const value = ref(50)
 vyui/
 ├── packages/
 │   ├── core/                  # @vyui/core — runtime primitives (published)
-│   ├── ui/                    # @vyui/kit — styled components on top of core
+│   ├── kit/                   # @vyui/kit — styled components on top of core
 │   ├── shared-build-config/   # shared rslib / build config
 │   └── testing-utils/         # shared test helpers
 └── apps/
     └── examples/
         ├── kit-demo/           # styled-component showcase
         ├── native-demo/       # broader primitive showcase
-        ├── web-demo/          # web-target preview
+        ├── docs-playground/   # docs example bundle
         └── …
 ```
 
@@ -111,7 +108,7 @@ intended trajectory of the project so contributors and users can see where
 it's headed.
 
 * [x] `@vyui/core` primitives (in progress; published on npm)
-* [ ] `@vyui/kit` published to npm as a styled-component package
+* [x] `@vyui/kit` published to npm as a styled-component package
 * [x] `@vyui/cli` — shadcn-style CLI for adding individual styled components
   to a downstream project (`npx @vyui/cli init`, `npx @vyui/cli add button`)
 * [x] Hosted component registry (`vyui.dev/r/<style>/*` JSON manifests, with
@@ -121,10 +118,9 @@ it's headed.
 * [x] Style namespacing (`registry/<style>/*`, à la shadcn `default`) — pick a
   style at `init`; new styles layer tokens, UI theme deltas, and optional
   full-file overlays over the kit base
-* [ ] Documentation site (`vyui.dev`) generated from real source files so
-  components stay in sync automatically
-* [ ] Theme system / design tokens
-* [ ] Icon set
+* [x] Documentation site (`vyui.dev`) with generated API tables and examples
+* [x] Theme system / design tokens
+* [x] Icon set
 * [ ] Starter templates and examples
 * [ ] Cross-target testing (iOS, Android, Web)
 

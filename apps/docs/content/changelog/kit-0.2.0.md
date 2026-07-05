@@ -1,9 +1,10 @@
 ---
-title: @vyui/kit v0.2.0
-description: 5109043: Add defineVyuiConfig (new @vyui/kit/config entry) so a project's theme is authored once and fed to both the Tailwind preset (build) and provideVyUI/…
-date: 2026-07-05
+title: "@vyui/kit v0.2.0"
+description: "5109043: Add defineVyuiConfig (new @vyui/kit/config entry) so a project's theme is authored once and fed to both the Tailwind preset (build) and provideVyUI/…"
+date: "2026-07-05"
 package: kit
-version: v0.2.0
+version: "v0.2.0"
+changelogOrder: 2000
 ---
 
 ### Minor Changes
