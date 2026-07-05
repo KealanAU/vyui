@@ -27,7 +27,7 @@ export default {
     // The sheet panel. `fitContent` on core SheetContent means no explicit
     // height — it hugs handle + morph + footer. `variant` supplies the
     // edge/inset + border + radius chrome below.
-    content: 'fixed flex flex-col overflow-hidden bg-white',
+    content: 'fixed z-[1001] flex flex-col overflow-hidden bg-white',
     // Drag pill (SheetContent's first child; core flex-direction pins it top).
     handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
     // Height-animated container. `overflow-hidden` clips the outgoing/incoming
