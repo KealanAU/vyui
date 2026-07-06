@@ -62,6 +62,14 @@ try {
         if (spec.endsWith('.css')) return { url: 'data:text/javascript,export default {}', shortCircuit: true }
         const m = globalThis.__vyuiExternals
         if (m && m[spec]) return { url: m[spec], shortCircuit: true }
+        // Deep per-file core specifiers (rewrite-deep-imports output, e.g.
+        // "@vyui/core/dist/components/Icon/Icon.vue.js"): resolve against the
+        // workspace @vyui/core, whose mapped URL points at its dist/index.js.
+        if (m && spec.startsWith('@vyui/core/dist/')) {
+          const core = m['@vyui/core']
+          const root = core.slice(0, core.lastIndexOf('/dist/') + 1)
+          return { url: root + spec.slice('@vyui/core/'.length), shortCircuit: true }
+        }
         return next(spec, ctx)
       }`
     const { register } = await import('node:module')
@@ -107,7 +115,18 @@ try {
   if (!tw.default && !tw.createVyuiPreset) fail('@vyui/kit/tailwind: no preset export')
   else ok('@vyui/kit/tailwind resolves')
 
-  // 3. Every `exports` subpath file exists in the packed tarball.
+  // 3. Per-component subpath entries: canonical Vy* bindings survive packing,
+  // and the deep @vyui/core rewrite resolves (icon's only binding lives in
+  // core, so it exercises a "@vyui/core/dist/…" specifier end-to-end).
+  const tray = await importFromTarball('entries/tray.js')
+  if (!tray.VyTray || typeof tray.useTray !== 'function') fail('@vyui/kit/tray entry: VyTray/useTray missing')
+  else ok('@vyui/kit/tray entry resolves (VyTray + useTray)')
+
+  const icon = await importFromTarball('entries/icon.js')
+  if (!icon.VyIcon) fail('@vyui/kit/icon entry: VyIcon missing')
+  else ok('@vyui/kit/icon entry resolves via deep @vyui/core import')
+
+  // 4. Every `exports` subpath file exists in the packed tarball.
   for (const [sub, target] of Object.entries(pkg.exports)) {
     const file = (typeof target === 'string' ? target : target.import || target.default)
     if (!file || !file.endsWith('.js')) continue

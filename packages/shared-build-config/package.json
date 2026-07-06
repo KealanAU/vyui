@@ -21,6 +21,9 @@
     },
     "./check-dist-shape": {
       "import": "./scripts/check-dist-shape.mjs"
+    },
+    "./rewrite-deep-imports": {
+      "import": "./scripts/rewrite-deep-imports.mjs"
     }
   },
   "devDependencies": {

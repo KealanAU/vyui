@@ -61,7 +61,10 @@ try {
   }
 
   // Each `exports` subpath → its built entry file, imported and checked.
+  // Wildcard subpaths (`./dist/*.js`, the deep-import surface for @vyui/kit's
+  // rewrite) have no single file to import; bundler resolution covers them.
   for (const [sub, target] of Object.entries(pkg.exports)) {
+    if (sub.includes('*')) continue
     const file = typeof target === 'string' ? target : target.import || target.default
     if (!file || !file.endsWith('.js')) continue
     const rel = file.replace(/^\.\/dist\//, '')
