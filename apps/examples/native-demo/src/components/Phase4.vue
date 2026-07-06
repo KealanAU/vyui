@@ -15,6 +15,7 @@ import {
     // Icon (vyui original)
     Icon,
 } from "@vyui/core";
+import { VyCalendar } from "@vyui/kit";
 import { ACCENT, ACCENT_LIGHT, DemoCard, DemoHint, DemoLabel, DemoSwitcher } from "./_shared";
 
 // --- PinInput ---
@@ -39,10 +40,13 @@ function dismissToast(id: number) {
     toasts.value = toasts.value.filter((t) => t.id !== id);
 }
 
+// --- Calendar ---
+const date = ref("2026-07-05");
+
 // Component isolation: 0 = show all, N > 0 = show only N-th card.
-//   1 PinInput · 2 Toast
+//   1 PinInput · 2 Toast · 3 Calendar
 const showComponent = ref(0);
-const CARDS = 2;
+const CARDS = 3;
 </script>
 
 <template>
@@ -225,6 +229,42 @@ const CARDS = 2;
                     </ToastRoot>
                 </ToastViewport>
             </ToastProvider>
+        </DemoCard>
+
+        <!-- Calendar -->
+        <DemoCard v-if="showComponent === 0 || showComponent === 3">
+            <DemoLabel>CALENDAR</DemoLabel>
+            <DemoHint>Experimental ISO-string date picker with the Lynx date-runtime caveat visible by default</DemoHint>
+            <VyCalendar
+                v-model="date"
+                default-month="2026-07"
+                :disabled-dates="['2026-07-10', '2026-07-11']"
+                size="sm"
+                :ui="{
+                    root: 'w-full',
+                    caveat: 'mb-1',
+                }"
+            />
+            <view
+                :style="{
+                    alignSelf: 'flex-start',
+                    paddingLeft: '12px',
+                    paddingRight: '12px',
+                    paddingTop: '6px',
+                    paddingBottom: '6px',
+                    borderRadius: '20px',
+                    backgroundColor: ACCENT_LIGHT,
+                }"
+            >
+                <text
+                    :style="{
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: ACCENT,
+                    }"
+                    >Selected {{ date }}</text
+                >
+            </view>
         </DemoCard>
 
     </view>
