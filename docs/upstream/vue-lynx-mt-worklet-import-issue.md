@@ -61,6 +61,16 @@
 
 ---
 
+## VyUI status (as shipped)
+
+`@vyui/core` and `@vyui/kit` now publish **per-file, source-shaped ESM** (Vite lib + Rollup `preserveModules`; see `docs/plans/vite-preserve-modules-dist.md`). Every worklet module ships with direct **named** `vue-lynx` imports and its own pre-compiled `registerWorkletInternal(...)` registrations — the shape the whole MT toolchain assumes. This removes the second failure mode (a bundle's `__WEBPACK_EXTERNAL_MODULE_vue_lynx_*` namespace being orphaned by the consumer's registration slicing). A `check-dist-shape` build gate keeps dist source-shaped.
+
+With source-shaped dist, the **only** remaining consumer-side requirement is the Tier-2 **traversal** fix so the consumer's MT loader walks into `@vyui/*` at all:
+- **Now:** the local `patches/vue-lynx@0.4.0.patch` (follows `@/…` + `@vyui/core` / `@vyui/kit`).
+- **Once #190 ships:** drop the patch and set `includeWorkletPackages: ['@vyui/core', '@vyui/kit']`.
+
+---
+
 ## Environment
 
 - `vue-lynx` 0.4.0

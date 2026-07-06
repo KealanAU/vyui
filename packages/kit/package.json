@@ -26,7 +26,7 @@
     "tailwind",
     "tailwind-variants"
   ],
-  "//sideEffects": "INVARIANT: no `'main thread'` worklets in @vyui/kit — all worklet logic lives in @vyui/core. If you add a worklet here, widen sideEffects to [\"src/**/*.vue\",\"src/**/*.ts\",\"dist/**/*.js\"] and wire pluginVyuiWorklet into rslib.config.ts like packages/core, or rspack will tree-shake the vue-lynx MT side-effect imports and downstream consumers will crash with `bind of undefined`.",
+  "//sideEffects": "INVARIANT: no `'main thread'` worklets in @vyui/kit — all worklet logic lives in @vyui/core. The Vite build already wires the worklet plugin (vite.config.ts) for parity, but if you add a worklet here also widen sideEffects to [\"**/*.css\",\"**/*.vue.js\",\"dist/**/*.js\"] like packages/core so the vue-lynx MT side-effect imports aren't tree-shaken — otherwise downstream consumers crash with `bind of undefined`.",
   "sideEffects": false,
   "files": [
     "dist",
@@ -37,7 +37,7 @@
   ],
   "scripts": {
     "build": "pnpm build-only && pnpm smoke-test",
-    "build-only": "rslib build && vue-tsc -p tsconfig.build.json && pnpm copy-dts && node ../shared-build-config/scripts/add-dts-extensions.mjs dist && node ../shared-build-config/scripts/check-dts.mjs dist",
+    "build-only": "vite build && node ../shared-build-config/scripts/check-dist-shape.mjs dist && vue-tsc -p tsconfig.build.json && pnpm copy-dts && node ../shared-build-config/scripts/add-dts-extensions.mjs dist && node ../shared-build-config/scripts/check-dts.mjs dist",
     "copy-dts": "cp src/tailwind.d.ts dist/tailwind.d.ts && cp src/config.d.ts dist/config.d.ts && cp src/theme/color-constants.d.ts dist/theme/color-constants.d.ts",
     "smoke-test": "node scripts/smoke-test.mjs",
     "test": "vitest run",
@@ -80,10 +80,8 @@
     "tailwind-variants": "^0.3.1"
   },
   "devDependencies": {
-    "@rsbuild/plugin-vue": "^1.2.8",
-    "@rslib/core": "^0.7.0",
     "@types/node": "^24.0.0",
-    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue": "^6.0.7",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.7.0",
     "@vyui/shared-build-config": "workspace:*",
@@ -91,6 +89,7 @@
     "eslint": "^10.5.0",
     "jsdom": "^26.1.0",
     "tailwindcss": "^3.4.0",
+    "vite": "^7.3.3",
     "vitest": "^3.2.4",
     "vue": "3.5.17",
     "vue-lynx": "^0.4.0",

@@ -7,7 +7,7 @@
  *      `resolveColor`) — via the sibling `color-constants.d.ts` ambient types.
  *   2. The build-time plane (`tailwind.js`, loaded by Tailwind's jiti at the
  *      consumer build) — via a direct `require`/`import` of the emitted
- *      `dist/theme/color-constants.js` (rslib `bundle: false` emits it 1:1).
+ *      `dist/theme/color-constants.js` (Vite `preserveModules` emits it 1:1).
  *
  * `style.css` is the one file that CANNOT import this (it ships raw, never
  * compiled) — it stays hand-synced with `SEMANTIC_TO_PALETTE_DEFAULT` below.

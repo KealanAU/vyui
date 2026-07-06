@@ -57,6 +57,9 @@ try {
     const hook = `
       export async function initialize(map) { globalThis.__vyuiExternals = map }
       export async function resolve(spec, ctx, next) {
+        // @vyui/core's dist now ships real SFC <style> side-effect imports; a
+        // bundler resolves them, Node can't. Stub CSS to an empty module.
+        if (spec.endsWith('.css')) return { url: 'data:text/javascript,export default {}', shortCircuit: true }
         const m = globalThis.__vyuiExternals
         if (m && m[spec]) return { url: m[spec], shortCircuit: true }
         return next(spec, ctx)
