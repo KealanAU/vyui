@@ -17,7 +17,7 @@ links:
 
 ## Overview
 
-`Icon` renders Iconify data through Lynx's native `<svg content="…">` element. `@vyui/kit` re-exports the same primitive as both `Icon` and `VyIcon`, and the `VyUI` plugin registers `<VyIcon>` globally.
+`Icon` renders Iconify data through Lynx's native `<svg content="…">` element. `@vyui/kit` re-exports the same primitive as `VyIcon`, and the `VyUI` plugin registers `<VyIcon>` globally when the runtime supports global component registration.
 
 No icon collection is bundled or registered by default. Register the prefixes your application uses before rendering string names.
 
@@ -51,7 +51,7 @@ import {
 
 ## Icon registration
 
-Install an Iconify JSON collection and register it during application startup, before mounting the app.
+Install an Iconify JSON collection and register it during application startup, before mounting the app. Use [Icones](https://icones.js.org/) to browse Iconify collections, preview icon names, and find the matching `@iconify-json/*` package to install.
 
 ::code-group
 ```bash [pnpm]

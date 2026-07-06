@@ -26,7 +26,7 @@ height: 560px
 ---
 ::
 
-Nuxt UI's `UCalendar` is still the larger shape to aim for: multiple dates, ranges, month/year views, week numbers, richer disabled predicates, and event slots. This first Vy UI component is deliberately smaller until native Lynx date behavior is proven.
+This first component is deliberately small until native Lynx date behavior is proven.
 
 ## Usage
 
@@ -95,17 +95,6 @@ Use the `day` slot for badges, pricing, availability, or event markers. Slot pro
 - `disabledDates` accepts exact ISO dates that cannot be selected.
 - The component intentionally does not accept or emit host `Date` objects.
 
-## Planned API Direction
-
-Future Calendar work should cover the common `UCalendar` patterns once the runtime caveats are resolved:
-
-- `multiple` for selecting more than one date.
-- `range` for start/end selection.
-- Month and year views.
-- Disabled date predicates.
-- Week numbers.
-- Locale-aware month, weekday, and announcement text that works consistently on native Lynx and web.
-
 ## Current Blocker
 
 The remaining blocker is not visual styling. It is correctness across runtimes:
@@ -116,6 +105,17 @@ The remaining blocker is not visual styling. It is correctness across runtimes:
 - Accessibility text for selected dates, ranges, disabled dates, and month/year navigation needs locale-safe formatting.
 
 Until those are resolved, a documented app-owned picker is safer than a package component that looks complete but stores or announces dates incorrectly.
+
+## Roadmap
+
+Future calendar work is focused on closing the date-runtime gaps first, then expanding the API. We are aiming for parity with [Nuxt UI's `UCalendar`](https://ui.nuxt.com/components/calendar) once those pieces are safe to support on Lynx:
+
+- `multiple` for selecting more than one date.
+- `range` for start/end selection.
+- Month and year views.
+- Disabled date predicates.
+- Week numbers.
+- Locale-aware month, weekday, and announcement text that works consistently on native Lynx and web.
 
 ## Props
 
