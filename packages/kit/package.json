@@ -274,12 +274,12 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "peerDependencies": {
-    "@vyui/core": "workspace:^",
     "tailwindcss": "^3.4.0",
     "vue": ">= 3.4.0",
     "vue-lynx": "^0.4.0"
   },
   "dependencies": {
+    "@vyui/core": "workspace:^",
     "defu": "^6.1.5",
     "tailwind-variants": "^0.3.1"
   },
@@ -288,7 +288,6 @@
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.7.0",
-    "@vyui/core": "workspace:*",
     "@vyui/shared-build-config": "workspace:*",
     "@vyui/testing-utils": "workspace:*",
     "eslint": "^10.5.0",
