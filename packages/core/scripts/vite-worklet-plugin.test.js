@@ -129,5 +129,12 @@ describe('worklet plugin: transformWorklet (end-to-end via @lynx-js/react/transf
     expect(out).toContain(INLINE_GATE)
     expect(out).not.toMatch(/loadWorkletRuntime/)
     expect(out).not.toMatch(/import[^\n]*worklet-runtime/)
+    // …and carries the top-level `"main thread"` marker the consumer's MT
+    // loader gates registration extraction on (regression guard for the
+    // `bind of undefined` device crash).
+    expect(out).toContain('globalThis.__vyuiWorkletModule = "main thread"')
+    // The leftover in-body directive is stripped so the consumer's re-transform
+    // doesn't double-register: the only `main thread` string is the marker.
+    expect(out.match(/main thread/g)).toHaveLength(1)
   })
 })

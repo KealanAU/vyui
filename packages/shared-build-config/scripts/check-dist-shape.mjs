@@ -63,6 +63,16 @@ export function scanModule(file, code) {
     }
   }
 
+  // 6. Every worklet module must retain the `'main thread'` / `"main thread"`
+  //    marker string. The consumer's `worklet-loader-mt` gates registration
+  //    extraction on it (`if (!source.includes("'main thread'") …) return
+  //    'export default {};'`) — without it the module's registrations are
+  //    dropped from the consumer's MT bundle and every gesture throws
+  //    `cannot read property 'bind' of undefined`.
+  if (registered.size > 0 && !/'main thread'|"main thread"/.test(code)) {
+    why.push("worklet module is missing the 'main thread' marker (consumer MT loader will drop its registrations)")
+  }
+
   return { file, why, registrations: registered.size, isWorklet: registered.size > 0 }
 }
 

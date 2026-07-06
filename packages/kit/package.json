@@ -26,8 +26,8 @@
     "tailwind",
     "tailwind-variants"
   ],
-  "//sideEffects": "INVARIANT: no `'main thread'` worklets in @vyui/kit — all worklet logic lives in @vyui/core. The Vite build already wires the worklet plugin (vite.config.ts) for parity, but if you add a worklet here also widen sideEffects to [\"**/*.css\",\"**/*.vue.js\",\"dist/**/*.js\"] like packages/core so the vue-lynx MT side-effect imports aren't tree-shaken — otherwise downstream consumers crash with `bind of undefined`.",
-  "sideEffects": false,
+  "//sideEffects": "Must mirror packages/core. @vyui/kit has no `'main thread'` worklets of its own, but its components transitively import @vyui/core components/composables (TrayView->useDragGesture, useAnimate, Sheet, ...) that DO register main-thread worklets. With `sideEffects: false`, vue-lynx's MT side-effect imports (`import '@vyui/kit'` emitted by worklet-loader-mt) get elided, so those transitive core worklets never register and downstream consumers crash with `bind of undefined`. Keep this widened whether or not kit adds its own worklets.",
+  "sideEffects": ["**/*.css", "**/*.vue.js", "dist/**/*.js"],
   "files": [
     "dist",
     "src/style.css",

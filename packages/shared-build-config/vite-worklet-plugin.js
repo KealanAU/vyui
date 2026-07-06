@@ -119,7 +119,56 @@ export function transformWorklet(code, id) {
   if (result.errors && result.errors.length > 0) {
     throw new Error(`[vyui:worklet] ${filename}: ${result.errors.map((e) => e.text).join('; ')}`)
   }
-  return inlineRuntimeGate(result.code)
+  return reAddMainThreadMarker(stripBodyDirectives(inlineRuntimeGate(result.code)))
+}
+
+// SWC leaves a bare `'main thread';` directive inside some registration bodies.
+// When the consumer's `worklet-loader-mt` re-transforms our dist, it re-detects
+// those as fresh worklets and emits a second, spurious registration (the
+// documented 157→159 double-transform). Harmless (our id still registers) but
+// untidy. Strip the leftover directive statements so the consumer sees exactly
+// our pre-compiled registrations — the single top-level marker added by
+// `reAddMainThreadMarker` is what carries the loader's gate. Matches only a
+// whole-line quoted `main thread` statement, never the marker assignment or a
+// `'main thread'` used as a value.
+function stripBodyDirectives(code) {
+  return code.replace(/(^|\n)[ \t]*(['"])main thread\2\s*;?[ \t]*(?=\n|$)/g, '$1')
+}
+
+// CRITICAL for npm consumers: the worklet pre-compile consumes the `'main
+// thread'` directive (SWC moves it into the registration body and usually
+// drops the literal). But the consumer's `worklet-loader-mt` gates registration
+// extraction on the module *still containing* the string `'main thread'` /
+// `"main thread"`:
+//
+//   if (!source.includes("'main thread'") && !source.includes('"main thread"'))
+//     return localImports + 'export default {};'   // ← drops ALL registrations
+//
+// Without the marker, the consumer's MT bundle gets our imports but none of our
+// `registerWorkletInternal(...)` calls, so the worklets never register on the
+// main thread and the first gesture throws `cannot read property 'bind' of
+// undefined`.
+//
+// Re-add the marker as a global assignment rather than a bare `"main thread";`
+// directive: Rollup hoists imports above a leading directive and then drops it
+// as a no-op, but it always keeps an assignment to a global (a side effect).
+// The statement is inert (idempotent global write, evaluated only in our
+// background bundle — the consumer's MT loader strips everything except the
+// registrations) and the consumer's re-transform ignores it, re-emitting our
+// registrations with the same `_wkltId`s the background bundle already
+// references. Verified end-to-end on device (picknic).
+const MT_MARKER = 'globalThis.__vyuiWorkletModule = "main thread";\n'
+
+function reAddMainThreadMarker(code) {
+  if (!code.includes('registerWorkletInternal(')) return code
+  // Inject unconditionally: SWC keeps `'main thread'` as a directive inside the
+  // registration function bodies, but Rollup strips unrecognized function-body
+  // directives on output — so the string is gone from the published dist even
+  // when it survives our transform. The global-assignment marker is a top-level
+  // side effect Rollup keeps. Skip only if a *top-level* marker is already
+  // present (idempotent).
+  if (code.includes(MT_MARKER.trim())) return code
+  return MT_MARKER + code
 }
 
 /**

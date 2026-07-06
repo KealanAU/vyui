@@ -38,6 +38,14 @@ describe('check-dist-shape: RED on the bundled Tray-bug shape', () => {
     const { why } = scanModule('leak.vue.js', 'import x from "./Foo.vue?vue&type=script&lang.ts";')
     expect(why.some((w) => /\?vue&type=/.test(w))).toBe(true)
   })
+
+  it('flags a worklet module missing the `main thread` marker (consumer drops its registrations)', () => {
+    // A registration with no `'main thread'` string anywhere — the consumer's
+    // MT loader would replace this module with `export default {}`.
+    const noMarker = 'registerWorkletInternal("main-thread", "abcd:1", function(){ return 1 });'
+    const { why } = scanModule('nomarker.js', noMarker)
+    expect(why.some((w) => /marker/.test(w))).toBe(true)
+  })
 })
 
 describe('check-dist-shape: GREEN on the source-shaped output', () => {
