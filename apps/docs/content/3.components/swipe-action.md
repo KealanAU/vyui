@@ -2,7 +2,7 @@
 title: Swipe Action
 description: Reveal trailing row actions or commit an action with a full swipe.
 navigation:
-  icon: i-lucide-swipe
+  icon: i-lucide-move-horizontal
 package: kit
 links:
   - label: Source
