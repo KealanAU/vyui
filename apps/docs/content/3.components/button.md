@@ -15,37 +15,88 @@ links:
 
 `VyButton` renders a pressable control on top of the headless `@vyui/core` Button. It supports semantic `color`, six `variant` styles, five sizes, leading/trailing icons or an avatar, a loading spinner, and `block` / `square` layouts.
 
+::component-code
+---
+name: button-example
+height: 190px
+---
+::
+
 ## Usage
 
-Use `label` for simple text, or the default slot for custom content. Listen for presses with `@tap`.
+Use `label` for simple text, or the default slot for custom content. Listen for presses with `@tap`; Lynx exposes tap events instead of DOM click events.
 
 ```vue
 <script setup lang="ts">
 import { VyButton } from '@vyui/kit'
 
-function onPress() {
-  // ...
+function saveDraft() {
+  // Persist the draft.
 }
 </script>
 
 <template>
-  <VyButton label="Continue" @tap="onPress" />
+  <VyButton label="Save draft" @tap="saveDraft" />
 </template>
 ```
 
-### Colors and variants
+### Label
+
+Use the `label` prop when the button text is plain. Slot content replaces the built-in label and can contain custom Lynx markup.
+
+```vue
+<VyButton label="Continue" />
+
+<VyButton>
+  <view class="flex flex-row items-center gap-2">
+    <text>Continue</text>
+    <text class="text-xs text-primary-100">Beta</text>
+  </view>
+</VyButton>
+```
+
+### Color
+
+Use `color` to select the semantic palette.
+
+```vue
+<VyButton color="primary" label="Primary" />
+<VyButton color="success" label="Success" />
+<VyButton color="warning" label="Warning" />
+<VyButton color="error" label="Error" />
+<VyButton color="neutral" label="Neutral" />
+```
+
+### Variant
 
 `color` selects the semantic palette; `variant` selects the fill treatment.
+
+::component-code
+---
+name: button-variants
+height: 340px
+---
+::
 
 ```vue
 <VyButton color="primary" variant="solid" label="Solid" />
 <VyButton color="primary" variant="outline" label="Outline" />
+<VyButton color="primary" variant="subtle" label="Subtle" />
 <VyButton color="neutral" variant="soft" label="Soft" />
 <VyButton color="error" variant="ghost" label="Ghost" />
 <VyButton color="primary" variant="link" label="Link" />
 ```
 
 ### Sizes
+
+Use `size` to change padding, text scale, icon size, and avatar size.
+
+::component-code
+---
+name: button-sizes
+height: 310px
+---
+::
 
 ```vue
 <VyButton size="xs" label="XS" />
@@ -55,31 +106,214 @@ function onPress() {
 <VyButton size="xl" label="XL" />
 ```
 
-### Icons and avatar
+### Icon
+
+Use `icon`, `leadingIcon`, or `trailingIcon` to show an Iconify glyph inside the button.
 
 `leadingIcon` / `trailingIcon` place explicit Iconify glyphs. The `icon` shorthand goes to the trailing side when `trailing` is set, otherwise the leading side. `avatar` renders a `VyAvatar` in the leading slot instead of an icon.
 
+::component-code
+---
+name: button-icons
+height: 230px
+---
+::
+
 ```vue
+<VyButton icon="i-lucide-rocket" label="Launch" />
 <VyButton leading-icon="i-lucide-arrow-left" label="Back" />
 <VyButton trailing-icon="i-lucide-arrow-right" label="Next" />
-<VyButton :avatar="{ src: 'https://…/me.png' }" label="Account" />
 ```
 
-### Loading, block, and square
+With no `label` and no default slot, the button automatically uses a square icon-only footprint. Add `accessibility-label` for icon-only actions.
+
+```vue
+<VyButton icon="i-lucide-search" accessibility-label="Search" />
+```
+
+### Avatar
+
+Use `avatar` to render a `VyAvatar` on the leading side. The avatar inherits a size token from the button unless `avatar.size` is set.
+
+```vue
+<VyButton
+  :avatar="{ src: 'https://github.com/nuxt.png', alt: 'Nuxt' }"
+  label="Nuxt"
+  color="neutral"
+  variant="outline"
+/>
+```
+
+An avatar-only button also collapses to the square footprint.
+
+```vue
+<VyButton
+  :avatar="{ src: 'https://github.com/nuxt.png', alt: 'Nuxt' }"
+  accessibility-label="Open Nuxt profile"
+/>
+```
+
+### Loading
+
+Use `loading` to show the loading icon and block interaction. Because `loading` sets the underlying core button to disabled, `tap` will not emit while it is loading.
+
+::component-code
+---
+name: button-loading
+height: 220px
+---
+::
 
 ```vue
 <VyButton :loading="submitting" label="Saving" />
-<VyButton block label="Full width" />
-<VyButton square icon="i-lucide-plus" />
+```
+
+Use `loadingIcon` to override the spinner for one button. The global default comes from `appConfig.ui.icons.loading`.
+
+```vue
+<VyButton loading loading-icon="i-lucide-loader" label="Loading" />
+```
+
+Override the global loading icon through the `VyUI` plugin config.
+
+```ts
+provideVyUI(app, {
+  ui: {
+    icons: {
+      loading: 'tabler:loader-2'
+    }
+  }
+})
+```
+
+### Disabled
+
+Use `disabled` to prevent interaction and apply the disabled visual state. Loading buttons are disabled automatically.
+
+::component-code
+---
+name: button-disabled
+height: 210px
+---
+::
+
+```vue
+<VyButton disabled label="Disabled" />
+```
+
+### Form submission
+
+`VyButton` does not submit a native HTML form on Lynx. With `VyForm`, call the exposed `submit()` method from `@tap` and bind the form slot's `submitting` state to `loading`.
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { VyButton, VyForm, VyFormField, VyInput } from '@vyui/kit'
+
+const form = ref()
+
+function onSubmit(values: Record<string, unknown>) {
+  // Send values.
+}
+</script>
+
+<template>
+  <VyForm ref="form" :default-values="{ email: '' }" @submit="onSubmit">
+    <template #default="{ submitting }">
+      <VyFormField name="email" label="Email">
+        <VyInput name="email" />
+      </VyFormField>
+
+      <VyButton :loading="submitting" label="Submit" @tap="form.submit()" />
+    </template>
+  </VyForm>
+</template>
+```
+
+### Block and square
+
+Use `block` for full-width actions. A block button with a trailing icon pushes that icon to the far edge.
+
+::component-code
+---
+name: button-layouts
+height: 230px
+---
+::
+
+```vue
+<VyButton block label="Create project" trailing-icon="i-lucide-arrow-right" />
+```
+
+Use `square` to force equal-sided padding, even when content would normally create a wider button.
+
+```vue
+<VyButton square icon="i-lucide-plus" accessibility-label="Create" />
+```
+
+### Custom slots
+
+Use the default slot to replace the built-in label. Use `leading` and `trailing` to replace the built-in icon areas; both scoped slots receive `iconColor` so custom icons can match the resolved variant foreground.
+
+::component-code
+---
+name: button-slots
+height: 220px
+---
+::
+
+```vue
+<VyButton label="Deploy" variant="outline">
+  <template #leading="{ iconColor }">
+    <VyIcon name="i-lucide-cloud-upload" :color="iconColor" class="size-5" />
+  </template>
+</VyButton>
+```
+
+## Examples
+
+### `class` prop
+
+Use `class` to override root styles for one button.
+
+::component-code
+---
+name: button-styling
+height: 210px
+---
+::
+
+```vue
+<VyButton class="rounded-full px-5" label="Rounded" />
+```
+
+### `ui` prop
+
+Use `ui` to override a named theme slot after variants are resolved.
+
+```vue
+<VyButton
+  icon="i-lucide-rocket"
+  color="neutral"
+  variant="outline"
+  label="Launch"
+  :ui="{
+    label: 'text-primary-600 font-semibold',
+    leadingIcon: 'size-6'
+  }"
+/>
 ```
 
 ## Features and behavior
 
 - `label` renders the text; the default slot overrides it.
 - `loading` shows a spinner (`loadingIcon`, default `appConfig.ui.icons.loading`) and blocks interaction.
+- `disabled` blocks `tap` emission and applies the disabled visual state.
 - `block` stretches to full width and pushes a trailing icon to the far edge; `square` produces an equal-sided icon button.
+- With no `label` and no default slot, icon-only and avatar-only buttons automatically use the square footprint.
 - The `leading` / `trailing` slots receive `iconColor` so custom glyphs can match the variant's resolved foreground.
-- `type` and `autofocus` are kept for API parity with Nuxt UI v4 but are no-ops on Lynx, which renders the button as a non-focusable `<view>`.
+- `type` and `autofocus` are kept for API parity with Nuxt UI v4 but are no-ops on Lynx, where the core button renders as a `<view>`.
+- Unlike Nuxt UI's web button, `VyButton` does not currently render links and does not support `to`, `href`, active variants, or automatic promise-based loading.
 
 ## Props
 
@@ -100,7 +334,7 @@ function onPress() {
 | `leading` | `boolean` | `false` | Force `icon` onto the leading side. |
 | `trailing` | `boolean` | `false` | Force `icon` onto the trailing side. |
 | `avatar` | `AvatarProps` | `undefined` | Render a `VyAvatar` in the leading slot. |
-| `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Parity only; no-op on Lynx. |
+| `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | API parity only; no native form behavior on Lynx. |
 | `autofocus` | `boolean` | `false` | Parity only; no-op on Lynx. |
 | `class` | `any` | `undefined` | Classes merged onto the root. |
 | `ui` | `Partial<Record<ButtonSlot, any>>` | `undefined` | Per-instance theme slot overrides. |
@@ -138,10 +372,20 @@ The `variant` × `color` matrix resolves fills and foregrounds (e.g. `solid` pai
 
 ## Accessibility
 
-The Lynx core button renders a `<view>`, so `type` and `autofocus` do not apply and the control is not natively focusable. Provide a clear `label` (or accessible content), and use `disabled` to convey unavailable actions.
+The core button exposes button semantics and announces disabled state through the Lynx accessibility helpers. Provide a clear visible `label` or custom accessible content; for icon-only and avatar-only buttons, pass `accessibility-label`.
+
+`type` and `autofocus` are no-ops on Lynx. The control does not participate in native HTML form submission, so call the form submit handler from `@tap` when using `VyButton` with `VyForm`.
+
+## Platform notes
+
+- Interaction uses Lynx `tap`, exposed as Vue's `@tap`, rather than DOM `click`.
+- Lynx SVG does not inherit `currentColor`; built-in icons resolve the semantic foreground to an explicit SVG color.
+- Foreground classes live on `label`, `leadingIcon`, and `trailingIcon`, not only on `base`, because CSS inheritance is disabled in the Lynx build.
+- Hover and focus-visible states from the Nuxt UI web button are intentionally omitted; pressed feedback uses Lynx `active:` classes.
 
 ## Related components
 
 - [`Icon`](/components/icon) for the leading/trailing glyphs.
 - [`Avatar`](/components/avatar) for the `avatar` prop.
 - [`Form`](/components/form) for submit buttons inside a form.
+- [`Island Button`](/components/island-button) for actions inside island layouts.

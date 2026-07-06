@@ -19,6 +19,15 @@ import AvatarGroupMixed from './avatar-group/AvatarGroupMixed.vue'
 import AvatarChip from './avatar/AvatarChip.vue'
 import AvatarExample from './avatar/AvatarExample.vue'
 import AvatarSizes from './avatar/AvatarSizes.vue'
+import ButtonDisabled from './button/ButtonDisabled.vue'
+import ButtonExample from './button/ButtonExample.vue'
+import ButtonIcons from './button/ButtonIcons.vue'
+import ButtonLayouts from './button/ButtonLayouts.vue'
+import ButtonLoading from './button/ButtonLoading.vue'
+import ButtonSizes from './button/ButtonSizes.vue'
+import ButtonSlots from './button/ButtonSlots.vue'
+import ButtonStyling from './button/ButtonStyling.vue'
+import ButtonVariants from './button/ButtonVariants.vue'
 import CalendarExample from './calendar/CalendarExample.vue'
 import IconColor from './icon/IconColor.vue'
 import IconExample from './icon/IconExample.vue'
@@ -89,6 +98,15 @@ export const examples: Record<string, Component> = {
   'avatar-chip': AvatarChip,
   'avatar-example': AvatarExample,
   'avatar-sizes': AvatarSizes,
+  'button-disabled': ButtonDisabled,
+  'button-example': ButtonExample,
+  'button-icons': ButtonIcons,
+  'button-layouts': ButtonLayouts,
+  'button-loading': ButtonLoading,
+  'button-sizes': ButtonSizes,
+  'button-slots': ButtonSlots,
+  'button-styling': ButtonStyling,
+  'button-variants': ButtonVariants,
   'calendar-example': CalendarExample,
   'icon-color': IconColor,
   'icon-example': IconExample,
