@@ -46,6 +46,9 @@ try {
     const hook = `
       export async function initialize(map) { globalThis.__vyuiExternals = map }
       export async function resolve(spec, ctx, next) {
+        // SFC <style> ships as a real side-effect import now; a bundler resolves
+        // it, Node can't. Stub CSS to an empty module like a bundler would.
+        if (spec.endsWith('.css')) return { url: 'data:text/javascript,export default {}', shortCircuit: true }
         const m = globalThis.__vyuiExternals
         if (m && m[spec]) return { url: m[spec], shortCircuit: true }
         return next(spec, ctx)
@@ -58,7 +61,10 @@ try {
   }
 
   // Each `exports` subpath → its built entry file, imported and checked.
+  // Wildcard subpaths (`./dist/*.js`, the deep-import surface for @vyui/kit's
+  // rewrite) have no single file to import; bundler resolution covers them.
   for (const [sub, target] of Object.entries(pkg.exports)) {
+    if (sub.includes('*')) continue
     const file = typeof target === 'string' ? target : target.import || target.default
     if (!file || !file.endsWith('.js')) continue
     const rel = file.replace(/^\.\/dist\//, '')

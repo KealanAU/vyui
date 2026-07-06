@@ -3,15 +3,31 @@
   "type": "module",
   "version": "0.0.0",
   "private": true,
-  "description": "Shared rslib/rsbuild build config helpers for vyui packages",
+  "description": "Shared Vite build config helpers for vyui packages",
   "license": "MIT",
   "exports": {
-    "./vue-loader-options": {
-      "types": "./vue-loader-options.d.ts",
-      "import": "./vue-loader-options.js"
+    "./vite-vue-options": {
+      "types": "./vite-vue-options.d.ts",
+      "import": "./vite-vue-options.js"
+    },
+    "./vite-worklet-plugin": {
+      "import": "./vite-worklet-plugin.js"
+    },
+    "./vite-prune-vue-facades": {
+      "import": "./vite-prune-vue-facades.js"
+    },
+    "./vite-sfc-css-imports": {
+      "import": "./vite-sfc-css-imports.js"
+    },
+    "./check-dist-shape": {
+      "import": "./scripts/check-dist-shape.mjs"
+    },
+    "./rewrite-deep-imports": {
+      "import": "./scripts/rewrite-deep-imports.mjs"
     }
   },
   "devDependencies": {
-    "@rsbuild/plugin-vue": "^1.2.8"
+    "@vitejs/plugin-vue": "^6.0.7",
+    "vite": "^7.3.3"
   }
 }

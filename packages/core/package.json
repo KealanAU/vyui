@@ -28,6 +28,7 @@
     "a11y",
     "reka-ui"
   ],
+  "//exports": "The `./dist/*.js` wildcard is the mechanism behind @vyui/kit's shakeable subpath entries: kit's build rewrites its barrel imports of core to per-file deep specifiers (rewrite-deep-imports.mjs) so a deep-imported kit component only reaches its own core subtree. The vue-lynx MT pipeline prunes by `sideEffects` globs over what is REACHED, so reaching less is the only way to ship less.",
   "sideEffects": [
     "**/*.css",
     "**/*.vue.js",
@@ -37,10 +38,10 @@
   ],
   "scripts": {
     "build": "pnpm build-only && pnpm build-types && pnpm smoke-test",
-    "build-only": "rslib build",
+    "build-only": "vite build && node ../shared-build-config/scripts/check-dist-shape.mjs dist",
     "build-types": "vue-tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && node ../shared-build-config/scripts/add-dts-extensions.mjs dist && node ../shared-build-config/scripts/check-dts.mjs dist",
     "smoke-test": "node scripts/smoke-test.mjs",
-    "dev": "rslib build --watch",
+    "dev": "vite build --watch",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
     "test-watch": "vitest",
@@ -71,6 +72,7 @@
       "types": "./dist/shared/index.d.ts",
       "import": "./dist/shared/index.js"
     },
+    "./dist/*.js": "./dist/*.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -102,14 +104,12 @@
     "@lynx-js/react": "^0.116.5",
     "@lynx-js/testing-environment": "^0.1.11",
     "@lynx-js/types": "^3.8.0",
-    "@rsbuild/plugin-vue": "^1.2.8",
-    "@rslib/core": "^0.7.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/user-event": "^14.6.1",
     "@testing-library/vue": "^8.1.0",
     "@types/node": "^24.0.0",
-    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue": "^6.0.7",
     "@vue/compiler-sfc": "^3.5.17",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.7.0",
@@ -121,6 +121,7 @@
     "vitest": "^3.2.4",
     "vitest-axe": "0.1.0",
     "vitest-canvas-mock": "^0.3.3",
+    "vite": "^7.3.3",
     "vue": "3.5.34",
     "vue-lynx": "^0.4.0",
     "vue-tsc": "3.2.6"
