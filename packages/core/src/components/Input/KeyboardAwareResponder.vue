@@ -37,9 +37,17 @@ export interface KeyboardAwareResponderProps extends PrimitiveProps {
   /**
    * The id of the inner `<scroll-view>` when `mode === 'scroll-view'`. The
    * root uses this to dispatch `scrollTo` ops. Defaults to `'scrollview'`
-   * for parity with the React port.
+   * for parity with the React port — pass a unique id when more than one
+   * scroll-mode responder can be on screen.
    */
   scrollviewId?: string
+  /**
+   * Class applied to the inner `<scroll-view>` when `mode === 'scroll-view'`.
+   * The scroll path only engages when the scroll region has a bounded height
+   * — pass the height cap here (fallthrough attrs land on the outer wrapper
+   * view, not the scroll-view).
+   */
+  scrollViewClass?: any
 }
 </script>
 
@@ -114,10 +122,13 @@ watch(() => props.mode, reportScrollInfo)
     as="view"
     flatten="false"
   >
+    <!-- `id` (not `scroll-view-id`) — the root scrolls it via a `#{id}`
+         selector query. -->
     <Primitive
       as="scroll-view"
       scroll-orientation="vertical"
-      :scroll-view-id="scrollviewId"
+      :id="scrollviewId"
+      :class="scrollViewClass"
     >
       <Primitive
         as="view"

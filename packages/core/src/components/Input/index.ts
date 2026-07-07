@@ -17,6 +17,7 @@ export {
 
 export {
   default as KeyboardAwareRoot,
+  type KeyboardAwareRootEmits,
   type KeyboardAwareRootProps,
 } from './KeyboardAwareRoot.vue'
 
@@ -34,6 +35,7 @@ export {
 export {
   injectKeyboardAwareRootContext,
   injectKeyboardAwareTriggerContext,
+  type KeyboardAwareKeyboardInfo,
   type KeyboardAwareNodeRef,
   type KeyboardAwareRootContext,
   type KeyboardAwareTriggerContext,

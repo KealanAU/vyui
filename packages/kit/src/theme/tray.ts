@@ -39,6 +39,11 @@ export default {
     viewport: 'flex flex-col',
     // Body padding around the active view.
     body: 'px-4 pt-2 pb-4',
+    // The keyboard-aware `<scroll-view>` around the body slot (only rendered
+    // when `keyboardAware` is `'scroll'`/`true`). Scrolling only engages once
+    // its height is bounded — apps must cap it here (e.g. `max-h-[400px]`);
+    // unbounded, the tray hugs content and nothing scrolls.
+    bodyScroll: '',
     // Persistent footer — mounted outside `morph`, so it survives view swaps
     // (does not unmount/animate).
     footer: 'flex flex-col px-4 pt-2 pb-4 border-t border-neutral-100',
