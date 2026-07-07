@@ -5,12 +5,12 @@ import type { PrimitiveProps } from '@/components/Primitive'
 export type DialogContentImplEmits = DismissableLayerEmits & {
   /**
    * Event handler called when auto-focusing on open. Can be prevented.
-   * Inert on Lynx (no focus model) — kept so call sites mirror reka-ui.
+   * Inert on Lynx because Lynx has no DOM focus model.
    */
   openAutoFocus: [event: any]
   /**
    * Event handler called when auto-focusing on close. Can be prevented.
-   * Inert on Lynx (no focus model) — kept so call sites mirror reka-ui.
+   * Inert on Lynx because Lynx has no DOM focus model.
    */
   closeAutoFocus: [event: any]
 }
@@ -23,8 +23,8 @@ export interface DialogContentImplProps extends PrimitiveProps {
    */
   forceMount?: boolean
   /**
-   * When `true`, focus cannot escape the `Content`. No-op on Lynx (there is
-   * no focus trap); kept for API parity with reka-ui.
+   * When `true`, focus cannot escape the `Content`. No-op on Lynx because
+   * there is no DOM focus trap.
    * @defaultValue false
    */
   trapFocus?: boolean

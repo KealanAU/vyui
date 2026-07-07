@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import type { PrimitiveProps } from '@/components/Primitive'
 import { createContext } from '@/shared'
 
-/** Load lifecycle of the avatar image, mirroring reka-ui's `ImageLoadingStatus`. */
+/** Load lifecycle of the avatar image. */
 export type ImageLoadingStatus = 'idle' | 'loading' | 'loaded' | 'error'
 
 export interface AvatarRootProps extends PrimitiveProps {}

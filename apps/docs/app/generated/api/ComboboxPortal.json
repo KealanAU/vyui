@@ -16,7 +16,7 @@
       "name": "to",
       "type": "string | undefined",
       "required": false,
-      "description": "Kept for API compatibility with reka-ui. No-op on Lynx — content renders via OverlayRoot."
+      "description": "No-op on Lynx — content renders via OverlayRoot."
     }
   ],
   "events": [],
