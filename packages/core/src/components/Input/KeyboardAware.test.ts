@@ -137,6 +137,123 @@ describe('KeyboardAware* — focus tracking', () => {
   })
 })
 
+describe('KeyboardAware* — keyboard event routing', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // The root's only working keyboard signal under vue-lynx is the input's
+  // per-element @keyboard event — these tests walk it up the whole chain.
+  it('feeds the root keyboard height from the input @keyboard event (via Trigger)', async () => {
+    const heights: number[] = []
+    const { container } = render({
+      components: { KeyboardAwareRoot, KeyboardAwareResponder, KeyboardAwareTrigger, Input },
+      setup: () => ({ value: ref(''), onHeight: (h: number) => heights.push(h) }),
+      template: `
+        <KeyboardAwareRoot @keyboard-height-change="onHeight">
+          <KeyboardAwareResponder>
+            <KeyboardAwareTrigger>
+              <Input v-model="value" data-testid="ka-input" />
+            </KeyboardAwareTrigger>
+          </KeyboardAwareResponder>
+        </KeyboardAwareRoot>
+      `,
+    })
+    await nextTick()
+    const input = container.querySelector('[data-testid="ka-input"]')!
+
+    fireEvent.focus(input, { detail: { value: '' } })
+    fireEvent.keyboard(input, { detail: { show: 1, keyBoardHeight: 320, safeAreaBottom: 20 } })
+    await waitForUpdate()
+    expect(heights).toContain(320)
+
+    fireEvent.keyboard(input, { detail: { show: 0, keyBoardHeight: 0 } })
+    await waitForUpdate()
+    expect(heights[heights.length - 1]).toBe(0)
+  })
+
+  it('inputs self-register with the root when no Trigger wraps them', async () => {
+    const rootRef = ref<any>(null)
+    const heights: number[] = []
+    const { container } = render({
+      components: { KeyboardAwareRoot, KeyboardAwareResponder, Input },
+      setup: () => ({ rootRef, value: ref(''), onHeight: (h: number) => heights.push(h) }),
+      template: `
+        <KeyboardAwareRoot ref="rootRef" @keyboard-height-change="onHeight">
+          <KeyboardAwareResponder>
+            <Input v-model="value" data-testid="ka-input" />
+          </KeyboardAwareResponder>
+        </KeyboardAwareRoot>
+      `,
+    })
+    await nextTick()
+    expect(rootRef.value.__test_focusedRef()).toBeNull()
+    const input = container.querySelector('[data-testid="ka-input"]')!
+
+    fireEvent.focus(input, { detail: { value: '' } })
+    await waitForUpdate()
+    const focused = rootRef.value.__test_focusedRef()
+    expect(focused).not.toBeNull()
+
+    fireEvent.keyboard(input, { detail: { show: 1, keyBoardHeight: 336 } })
+    await waitForUpdate()
+    expect(heights).toContain(336)
+
+    // The self-ref identity must be stable — the root's blur path compares
+    // `focusedRef.value === triggerRef` before clearing.
+    fireEvent.focus(input, { detail: { value: '' } })
+    await waitForUpdate()
+    expect(rootRef.value.__test_focusedRef()).toBe(focused)
+
+    fireEvent.blur(input, { detail: { value: '' } })
+    vi.advanceTimersByTime(30)
+    await waitForUpdate()
+    expect(rootRef.value.__test_focusedRef()).toBeNull()
+  })
+
+  it('ignores a stale keyboard-hide from a previously-focused input', async () => {
+    const heights: number[] = []
+    const { container } = render({
+      components: { KeyboardAwareRoot, KeyboardAwareResponder, KeyboardAwareTrigger, Input },
+      setup: () => ({ a: ref(''), b: ref(''), onHeight: (h: number) => heights.push(h) }),
+      template: `
+        <KeyboardAwareRoot @keyboard-height-change="onHeight">
+          <KeyboardAwareResponder>
+            <KeyboardAwareTrigger>
+              <Input v-model="a" data-testid="input-a" />
+            </KeyboardAwareTrigger>
+            <KeyboardAwareTrigger>
+              <Input v-model="b" data-testid="input-b" />
+            </KeyboardAwareTrigger>
+          </KeyboardAwareResponder>
+        </KeyboardAwareRoot>
+      `,
+    })
+    await nextTick()
+    const inputA = container.querySelector('[data-testid="input-a"]')!
+    const inputB = container.querySelector('[data-testid="input-b"]')!
+
+    fireEvent.focus(inputA, { detail: { value: '' } })
+    fireEvent.keyboard(inputA, { detail: { show: 1, keyBoardHeight: 320 } })
+    await waitForUpdate()
+
+    // Focus hops to B while the keyboard stays up; A's late hide must not
+    // collapse the height B still depends on.
+    fireEvent.focus(inputB, { detail: { value: '' } })
+    await waitForUpdate()
+    fireEvent.keyboard(inputA, { detail: { show: 0, keyBoardHeight: 0 } })
+    await waitForUpdate()
+    expect(heights[heights.length - 1]).toBe(320)
+
+    fireEvent.keyboard(inputB, { detail: { show: 0, keyBoardHeight: 0 } })
+    await waitForUpdate()
+    expect(heights[heights.length - 1]).toBe(0)
+  })
+})
+
 describe('KeyboardAware* — root test seam', () => {
   it('exposes __test_setKeyboardStatus to drive the keyboard height in tests', async () => {
     const rootRef = ref<any>(null)

@@ -37,10 +37,10 @@
     },
     {
       "name": "keyboardAware",
-      "type": "boolean | undefined",
+      "type": "boolean | \"scroll\" | \"lift\" | undefined",
       "required": false,
       "default": "false",
-      "description": "Lift the footer above the on-screen keyboard (Lynx). Forwarded to core's\nkeyboard-aware wrappers around the persistent footer slot. No-op on\nweb/jsdom."
+      "description": "Keyboard handling on Lynx (no-op on web/jsdom — there is no platform\nkeyboard event). When enabled, the whole panel rises above the on-screen\nkeyboard: the panel is bottom-anchored and content-hugging, so growing\nits bottom padding by the keyboard height pushes handle/body/footer up\nwhile the panel background fills behind the keyboard. (Padding, not\n`transform` — the sheet's MT drag worklets own the panel transform.)\n - `'lift'` — rise only. Best for short/medium trays.\n - `'scroll'` (or `true`) — rise, plus the body becomes a keyboard-aware\n   scroll region that keeps the focused input in view. It only scrolls\n   once its height is bounded — cap it via the `bodyScroll` ui slot\n   (e.g. `max-h-*`). Best for tall trays.\n - `false` — no keyboard handling.\nInputs anywhere inside (body or footer) register themselves; no\n`KeyboardAwareTrigger` wrapping needed."
     },
     {
       "name": "modelValue",
@@ -70,7 +70,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"content\" | \"body\" | \"overlay\" | \"handle\" | \"footer\" | \"viewport\" | \"morph\", any>> | undefined",
+      "type": "Partial<Record<\"content\" | \"body\" | \"overlay\" | \"handle\" | \"footer\" | \"viewport\" | \"morph\" | \"bodyScroll\", any>> | undefined",
       "required": false
     },
     {

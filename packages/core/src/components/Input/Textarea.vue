@@ -76,7 +76,11 @@ export type TextareaEmits = {
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { Primitive, usePrimitiveElement } from '@/components/Primitive'
-import { injectKeyboardAwareTriggerContext } from './keyboardAwareContext'
+import type { KeyboardAwareNodeRef } from './keyboardAwareContext'
+import {
+  injectKeyboardAwareRootContext,
+  injectKeyboardAwareTriggerContext,
+} from './keyboardAwareContext'
 
 /** See `Input.vue` — kept local to avoid a util dependency. */
 class InvokeRejectError extends Error {
@@ -104,6 +108,12 @@ const emit = defineEmits<TextareaEmits>()
 
 const { primitiveElement, currentElement } = usePrimitiveElement()
 const triggerContext = injectKeyboardAwareTriggerContext(null)
+
+// See `Input.vue` — trigger-less self-registration with a surrounding
+// `KeyboardAwareRoot`; a wrapping trigger takes precedence. `selfRef` identity
+// must stay stable (the root's blur path compares by reference).
+const rootContext = triggerContext ? null : injectKeyboardAwareRootContext(null)
+const selfRef: KeyboardAwareNodeRef = { current: null }
 
 const controlled = ref(props.modelValue !== undefined)
 
@@ -222,12 +232,17 @@ function handleInput(event: any) {
 
 function handleFocus(event: any) {
   triggerContext?.onInputFocused?.()
+  if (rootContext) {
+    selfRef.current = currentElement.value
+    rootContext.onAwareTriggerFocused?.(selfRef)
+  }
   const value: string = event?.detail?.value ?? event?.target?.value ?? props.modelValue ?? ''
   emit('focus', value)
 }
 
 function handleBlur(event: any) {
   triggerContext?.onInputBlurred?.()
+  rootContext?.onAwareTriggerBlurred?.(selfRef)
   const value: string = event?.detail?.value ?? event?.target?.value ?? props.modelValue ?? ''
   emit('blur', value)
 }
@@ -243,14 +258,19 @@ function handleSelection(event: any) {
 }
 
 // Normalize Lynx's raw `{ show, keyBoardHeight, safeAreaBottom }` keyboard
-// payload — see `Input.vue`'s `keyboard` emit for the rationale.
+// payload — see `Input.vue`'s `keyboard` emit for the rationale. Also piped
+// up the KeyboardAware chain (the only keyboard signal that reaches
+// `KeyboardAwareRoot` on device).
 function handleKeyboard(event: any) {
   const d = event?.detail ?? {}
-  emit('keyboard', {
+  const info = {
     visible: d.show === 1 || d.show === true,
     height: Number(d.keyBoardHeight ?? d.keyboardHeight ?? d.height ?? 0) || 0,
     safeAreaBottom: Number(d.safeAreaBottom ?? 0) || 0,
-  })
+  }
+  triggerContext?.onInputKeyboard?.(info)
+  rootContext?.onAwareTriggerKeyboardChanged?.(selfRef, info)
+  emit('keyboard', info)
 }
 
 defineExpose<TextareaExposed>({
