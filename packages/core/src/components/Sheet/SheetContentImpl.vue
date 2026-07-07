@@ -49,19 +49,7 @@
      `.ui-leaving` from translateY(0) — `_slideOffFromCurrent` drives those
      closes instead). Settling back at fully open clears the inline
      `animation` so the normal keyframe paths apply again. In all inline
-     cases `@transitionend` advances Presence to `Left`.
-
-     The inline suppression alone is not durable: vue-lynx SET_STYLE patches
-     are replace-all, so any BG re-render that re-serializes styles during
-     Leaving wipes the MT-written `animation: none` (and transition), letting
-     `.ui-leaving`'s keyframe (re)start from fully open — the ghost panel that
-     eats taps. So whenever an MT transition owns the close, the same signal
-     is ALSO expressed as a class (`vyui-sheet__content--mt-close`, computed
-     as `suppressLeaveKeyframe`): it rides the very render that applies
-     `ui-leaving` and survives style patches; the CSS gate at the bottom keeps
-     the keyframe off and pins the panel at the closed position should the
-     inline styles be lost. usePresence's MAX_LEAVING_FRAMES hard cap is the
-     final net if the wipe also kills the transition's end event. -->
+     cases `@transitionend` advances Presence to `Left`. -->
 <script lang="ts">
 export interface SheetContentImplProps {
   /** Disable dragging. */
@@ -232,21 +220,6 @@ const snapTargetPos = computed(() => {
   const idx = clamp(ctx.snapIndex.value, 0, positions.length - 1)
   return positions[positions.length - 1 - idx] ?? 0
 })
-
-// Latched by `_emitClose` in the same tick as `setOpen(false)` so the gating
-// class below and `ui-leaving` land in one render; cleared on reopen (a full
-// close unmounts the component, which resets it for free).
-const dragDismissed = ref(false)
-
-// True whenever a close would be MT-transition-driven: a drag-dismiss is in
-// flight, or the panel rests below fully open (`_slideOffFromCurrent` drives
-// that close). Bound as `vyui-sheet__content--mt-close` — the class-based
-// twin of the worklets' inline `animation: none` (see header comment); the
-// CSS gate only matches together with `.ui-leaving`, so carrying the class
-// while open at a lower snap is inert.
-const suppressLeaveKeyframe = computed(() =>
-  dragDismissed.value || snapTargetPos.value !== 0,
-)
 
 // Release physics from SheetRoot's props. `ctx.velocityThreshold` is
 // deliberately not mirrored — `pickRelease` (and the worklet mirror of it)
@@ -606,9 +579,6 @@ function _slideOffFromCurrent() {
 }
 
 function _emitClose() {
-  // Latch before setOpen: both reactive writes flush in the same render, so
-  // `ui-leaving` can never appear without the keyframe-gating class.
-  dragDismissed.value = true
   ctx.setOpen(false)
 }
 
@@ -646,14 +616,8 @@ watch(presenceState, (s) => {
 // Non-drag close hook for `_slideOffFromCurrent`. Dispatch unconditionally —
 // only MT knows the real position (`posRef`), and the worklet bails when the
 // keyframe path should run (fully open) or a drag-dismiss is in flight.
-// Reopen (a Leaving cancelled by show flipping back) releases the
-// drag-dismiss latch so a later close from fully open uses the keyframe.
 watch(() => ctx.open.value, (isOpen) => {
-  if (isOpen) {
-    dragDismissed.value = false
-    return
-  }
-  void runOnMainThread(_slideOffFromCurrent as any)()
+  if (!isOpen) void runOnMainThread(_slideOffFromCurrent as any)()
 })
 
 // SheetHandle uses the same MT touch handlers when handleOnly is true.
@@ -676,7 +640,7 @@ const a11y = useA11y(() => ({
 <template>
   <view
     class="vyui-sheet__content"
-    :class="[presenceClass, sideClass, suppressLeaveKeyframe ? 'vyui-sheet__content--mt-close' : '']"
+    :class="[presenceClass, sideClass]"
     v-bind="a11y"
     :data-state="dataState"
     :data-side="ctx.side.value"
@@ -806,33 +770,6 @@ const a11y = useA11y(() => ({
 
 .vyui-sheet__content--left.ui-leaving {
   animation: vyui-sheet-slide-out-to-left 280ms ease-in both;
-}
-
-/* An MT transition owns this close (drag-dismiss, or a non-drag close from a
-   lower snap) — keep the slide-out keyframe off no matter what happens to the
-   worklets' inline `animation: none` (a vue-lynx style patch wipes inline
-   styles wholesale). Three classes so these outrank the two-class per-side
-   `.ui-leaving` rules above. The transform pins the panel at the closed
-   position if such a wipe also destroys the inline transform mid-slide;
-   in the normal path the live inline transform outranks it. */
-.vyui-sheet__content--bottom.vyui-sheet__content--mt-close.ui-leaving {
-  animation: none;
-  transform: translateY(100%);
-}
-
-.vyui-sheet__content--top.vyui-sheet__content--mt-close.ui-leaving {
-  animation: none;
-  transform: translateY(-100%);
-}
-
-.vyui-sheet__content--right.vyui-sheet__content--mt-close.ui-leaving {
-  animation: none;
-  transform: translateX(100%);
-}
-
-.vyui-sheet__content--left.vyui-sheet__content--mt-close.ui-leaving {
-  animation: none;
-  transform: translateX(-100%);
 }
 
 @keyframes vyui-sheet-slide-in {
