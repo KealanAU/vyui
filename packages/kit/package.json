@@ -1,7 +1,7 @@
 {
   "name": "@vyui/kit",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Styled Vue-Lynx components built on @vyui/core",
   "license": "MIT",
   "author": "Kealan Clarke",
@@ -26,8 +26,12 @@
     "tailwind",
     "tailwind-variants"
   ],
-  "//sideEffects": "INVARIANT: no `'main thread'` worklets in @vyui/kit — all worklet logic lives in @vyui/core. If you add a worklet here, widen sideEffects to [\"src/**/*.vue\",\"src/**/*.ts\",\"dist/**/*.js\"] and wire pluginVyuiWorklet into rslib.config.ts like packages/core, or rspack will tree-shake the vue-lynx MT side-effect imports and downstream consumers will crash with `bind of undefined`.",
-  "sideEffects": false,
+  "//sideEffects": "Must mirror packages/core. @vyui/kit has no `'main thread'` worklets of its own, but its components transitively import @vyui/core components/composables (TrayView->useDragGesture, useAnimate, Sheet, ...) that DO register main-thread worklets. With `sideEffects: false`, vue-lynx's MT side-effect imports (`import '@vyui/kit'` emitted by worklet-loader-mt) get elided, so those transitive core worklets never register and downstream consumers crash with `bind of undefined`. Keep this widened whether or not kit adds its own worklets.",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.vue.js",
+    "dist/**/*.js"
+  ],
   "files": [
     "dist",
     "src/style.css",
@@ -37,7 +41,7 @@
   ],
   "scripts": {
     "build": "pnpm build-only && pnpm smoke-test",
-    "build-only": "rslib build && vue-tsc -p tsconfig.build.json && pnpm copy-dts && node ../shared-build-config/scripts/add-dts-extensions.mjs dist && node ../shared-build-config/scripts/check-dts.mjs dist",
+    "build-only": "vite build && node scripts/gen-subpath-entries.mjs && node ../shared-build-config/scripts/rewrite-deep-imports.mjs dist @vyui/core ../core/dist/index.js && node ../shared-build-config/scripts/check-dist-shape.mjs dist && vue-tsc -p tsconfig.build.json && pnpm copy-dts && node ../shared-build-config/scripts/add-dts-extensions.mjs dist && node ../shared-build-config/scripts/check-dts.mjs dist",
     "copy-dts": "cp src/tailwind.d.ts dist/tailwind.d.ts && cp src/config.d.ts dist/config.d.ts && cp src/theme/color-constants.d.ts dist/theme/color-constants.d.ts",
     "smoke-test": "node scripts/smoke-test.mjs",
     "test": "vitest run",
@@ -64,6 +68,206 @@
       "import": "./dist/config.js",
       "default": "./dist/config.js"
     },
+    "./accordion": {
+      "types": "./dist/entries/accordion.d.ts",
+      "import": "./dist/entries/accordion.js"
+    },
+    "./action-sheet": {
+      "types": "./dist/entries/action-sheet.d.ts",
+      "import": "./dist/entries/action-sheet.js"
+    },
+    "./alert": {
+      "types": "./dist/entries/alert.d.ts",
+      "import": "./dist/entries/alert.js"
+    },
+    "./aspect-ratio": {
+      "types": "./dist/entries/aspect-ratio.d.ts",
+      "import": "./dist/entries/aspect-ratio.js"
+    },
+    "./avatar": {
+      "types": "./dist/entries/avatar.d.ts",
+      "import": "./dist/entries/avatar.js"
+    },
+    "./avatar-group": {
+      "types": "./dist/entries/avatar-group.d.ts",
+      "import": "./dist/entries/avatar-group.js"
+    },
+    "./badge": {
+      "types": "./dist/entries/badge.d.ts",
+      "import": "./dist/entries/badge.js"
+    },
+    "./button": {
+      "types": "./dist/entries/button.d.ts",
+      "import": "./dist/entries/button.js"
+    },
+    "./calendar": {
+      "types": "./dist/entries/calendar.d.ts",
+      "import": "./dist/entries/calendar.js"
+    },
+    "./card": {
+      "types": "./dist/entries/card.d.ts",
+      "import": "./dist/entries/card.js"
+    },
+    "./checkbox": {
+      "types": "./dist/entries/checkbox.d.ts",
+      "import": "./dist/entries/checkbox.js"
+    },
+    "./chip": {
+      "types": "./dist/entries/chip.d.ts",
+      "import": "./dist/entries/chip.js"
+    },
+    "./combobox": {
+      "types": "./dist/entries/combobox.d.ts",
+      "import": "./dist/entries/combobox.js"
+    },
+    "./drawer": {
+      "types": "./dist/entries/drawer.d.ts",
+      "import": "./dist/entries/drawer.js"
+    },
+    "./dropdown-menu": {
+      "types": "./dist/entries/dropdown-menu.d.ts",
+      "import": "./dist/entries/dropdown-menu.js"
+    },
+    "./feed-list": {
+      "types": "./dist/entries/feed-list.d.ts",
+      "import": "./dist/entries/feed-list.js"
+    },
+    "./form": {
+      "types": "./dist/entries/form.d.ts",
+      "import": "./dist/entries/form.js"
+    },
+    "./form-field": {
+      "types": "./dist/entries/form-field.d.ts",
+      "import": "./dist/entries/form-field.js"
+    },
+    "./icon": {
+      "types": "./dist/entries/icon.d.ts",
+      "import": "./dist/entries/icon.js"
+    },
+    "./input": {
+      "types": "./dist/entries/input.d.ts",
+      "import": "./dist/entries/input.js"
+    },
+    "./island": {
+      "types": "./dist/entries/island.d.ts",
+      "import": "./dist/entries/island.js"
+    },
+    "./island-button": {
+      "types": "./dist/entries/island-button.d.ts",
+      "import": "./dist/entries/island-button.js"
+    },
+    "./island-group": {
+      "types": "./dist/entries/island-group.d.ts",
+      "import": "./dist/entries/island-group.js"
+    },
+    "./keyboard-aware": {
+      "types": "./dist/entries/keyboard-aware.d.ts",
+      "import": "./dist/entries/keyboard-aware.js"
+    },
+    "./label": {
+      "types": "./dist/entries/label.d.ts",
+      "import": "./dist/entries/label.js"
+    },
+    "./modal": {
+      "types": "./dist/entries/modal.d.ts",
+      "import": "./dist/entries/modal.js"
+    },
+    "./number-field": {
+      "types": "./dist/entries/number-field.d.ts",
+      "import": "./dist/entries/number-field.js"
+    },
+    "./pin-input": {
+      "types": "./dist/entries/pin-input.d.ts",
+      "import": "./dist/entries/pin-input.js"
+    },
+    "./placeholder": {
+      "types": "./dist/entries/placeholder.d.ts",
+      "import": "./dist/entries/placeholder.js"
+    },
+    "./popover": {
+      "types": "./dist/entries/popover.d.ts",
+      "import": "./dist/entries/popover.js"
+    },
+    "./progress": {
+      "types": "./dist/entries/progress.d.ts",
+      "import": "./dist/entries/progress.js"
+    },
+    "./provide": {
+      "types": "./dist/entries/provide.d.ts",
+      "import": "./dist/entries/provide.js"
+    },
+    "./radio-group": {
+      "types": "./dist/entries/radio-group.d.ts",
+      "import": "./dist/entries/radio-group.js"
+    },
+    "./rating": {
+      "types": "./dist/entries/rating.d.ts",
+      "import": "./dist/entries/rating.js"
+    },
+    "./select": {
+      "types": "./dist/entries/select.d.ts",
+      "import": "./dist/entries/select.js"
+    },
+    "./separator": {
+      "types": "./dist/entries/separator.d.ts",
+      "import": "./dist/entries/separator.js"
+    },
+    "./skeleton": {
+      "types": "./dist/entries/skeleton.d.ts",
+      "import": "./dist/entries/skeleton.js"
+    },
+    "./slider": {
+      "types": "./dist/entries/slider.d.ts",
+      "import": "./dist/entries/slider.js"
+    },
+    "./sortable": {
+      "types": "./dist/entries/sortable.d.ts",
+      "import": "./dist/entries/sortable.js"
+    },
+    "./stepper": {
+      "types": "./dist/entries/stepper.d.ts",
+      "import": "./dist/entries/stepper.js"
+    },
+    "./swipe-action": {
+      "types": "./dist/entries/swipe-action.d.ts",
+      "import": "./dist/entries/swipe-action.js"
+    },
+    "./swiper": {
+      "types": "./dist/entries/swiper.d.ts",
+      "import": "./dist/entries/swiper.js"
+    },
+    "./switch": {
+      "types": "./dist/entries/switch.d.ts",
+      "import": "./dist/entries/switch.js"
+    },
+    "./tabs": {
+      "types": "./dist/entries/tabs.d.ts",
+      "import": "./dist/entries/tabs.js"
+    },
+    "./textarea": {
+      "types": "./dist/entries/textarea.d.ts",
+      "import": "./dist/entries/textarea.js"
+    },
+    "./toast": {
+      "types": "./dist/entries/toast.d.ts",
+      "import": "./dist/entries/toast.js"
+    },
+    "./toggle": {
+      "types": "./dist/entries/toggle.d.ts",
+      "import": "./dist/entries/toggle.js"
+    },
+    "./toggle-group": {
+      "types": "./dist/entries/toggle-group.d.ts",
+      "import": "./dist/entries/toggle-group.js"
+    },
+    "./tray": {
+      "types": "./dist/entries/tray.d.ts",
+      "import": "./dist/entries/tray.js"
+    },
+    "./tray-view": {
+      "types": "./dist/entries/tray-view.d.ts",
+      "import": "./dist/entries/tray-view.js"
+    },
     "./style.css": "./src/style.css",
     "./package.json": "./package.json"
   },
@@ -80,10 +284,8 @@
     "tailwind-variants": "^0.3.1"
   },
   "devDependencies": {
-    "@rsbuild/plugin-vue": "^1.2.8",
-    "@rslib/core": "^0.7.0",
     "@types/node": "^24.0.0",
-    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue": "^6.0.7",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.7.0",
     "@vyui/shared-build-config": "workspace:*",
@@ -91,6 +293,7 @@
     "eslint": "^10.5.0",
     "jsdom": "^26.1.0",
     "tailwindcss": "^3.4.0",
+    "vite": "^7.3.3",
     "vitest": "^3.2.4",
     "vue": "3.5.17",
     "vue-lynx": "^0.4.0",
