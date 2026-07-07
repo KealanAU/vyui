@@ -182,7 +182,9 @@ function onFormSubmit(values: Record<string, unknown>) {
         translate up so the field clears the keyboard, and settle back on
         dismiss.
       </text>
-      <VyKeyboardAwareRoot>
+      <!-- `offset` = extra clearance above the keyboard for self-registered
+           inputs (a wrapping Trigger's own offset wins). -->
+      <VyKeyboardAwareRoot :offset="16">
         <VyKeyboardAwareResponder>
           <VyInput v-model="kaOn" placeholder="I should ride above the keyboard" />
         </VyKeyboardAwareResponder>

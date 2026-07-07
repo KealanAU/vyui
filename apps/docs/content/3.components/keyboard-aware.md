@@ -84,6 +84,7 @@ The primitives render as normal wrappers when used outside a root, but no keyboa
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `forceAttach` | `boolean` | `false` | Keeps translating the responder toward the keyboard even when the trigger is already visible. |
+| `offset` | `number` | `0` | Extra clearance in px between a self-registered input and the keyboard top. Regions wrapped in a trigger use the trigger's own `offset` instead. |
 | `androidStatusBarPlusBottomBarHeight` | `number` | `0` | Corrects Android measurements for system bars, in pixels. |
 | `as` | `AsTag` | `'view'` | Underlying Lynx element. |
 | `asChild` | `boolean` | `false` | Merges behavior into the single child element. |

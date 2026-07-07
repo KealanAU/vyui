@@ -28,6 +28,12 @@ export interface KeyboardAwareRootProps extends PrimitiveProps {
    */
   forceAttach?: boolean
   /**
+   * Extra clearance in px kept between a self-registered input and the top
+   * of the keyboard. Regions wrapped in a `KeyboardAwareTrigger` use the
+   * trigger's own `offset` instead.
+   */
+  offset?: number
+  /**
    * Combined height of the Android status bar + bottom navigation bar in px.
    * Used to correct `boundingClientRect` (which does not include the status
    * bar on Android) when computing how far to move the responder.
@@ -109,6 +115,7 @@ function scrollToById(id: string, offset: number, smooth: boolean): void {
 const props = withDefaults(defineProps<KeyboardAwareRootProps>(), {
   as: 'view',
   forceAttach: false,
+  offset: 0,
   androidStatusBarPlusBottomBarHeight: 0,
 })
 const emit = defineEmits<KeyboardAwareRootEmits>()
@@ -178,9 +185,11 @@ function keyboardAwareResponderScrollInfoCollected(
     })
 }
 
-function onAwareTriggerFocused(triggerRef: KeyboardAwareNodeRef, offset = 0) {
+function onAwareTriggerFocused(triggerRef: KeyboardAwareNodeRef, offset?: number) {
   focusedRef.value = triggerRef
-  focusedOffset.value = offset
+  // Triggers report their own offset; self-registered inputs report none and
+  // take the root's.
+  focusedOffset.value = offset ?? props.offset
 }
 
 function onAwareTriggerBlurred(triggerRef: KeyboardAwareNodeRef) {

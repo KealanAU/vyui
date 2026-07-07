@@ -26,6 +26,13 @@
       "required": false,
       "default": "false",
       "description": "When `true`, the responder will keep translating upward even after the\nfocused trigger is already above the keyboard. Useful for content that\nshould \"stick\" to the keyboard's top edge."
+    },
+    {
+      "name": "offset",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Extra clearance in px kept between a self-registered input and the top\nof the keyboard. Regions wrapped in a `KeyboardAwareTrigger` use the\ntrigger's own `offset` instead."
     }
   ],
   "events": [
