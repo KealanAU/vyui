@@ -20,7 +20,7 @@ e.g. `[data-state="open"]` / `[data-disabled]`.
 
 | Attribute | Values | Where |
 | --- | --- | --- |
-| `data-state` | `open` / `closed`, `checked` / `unchecked`, `active` / `inactive`, `on` / `off` (component-dependent) | Accordion, Button, Checkbox, Collapsible, Combobox, Dialog, DropdownMenu, Popover, Progress, RadioGroup, Rating, Select, Sheet, Stepper, Switch, Tabs, Toast, Toggle, Navigation |
+| `data-state` | `open` / `closed`, `checked` / `unchecked`, `active` / `inactive`, `on` / `off`, `dragging` / `idle` (component-dependent) | Accordion, Button, Checkbox, Collapsible, Combobox, Dialog, DropdownMenu, Popover, Progress, RadioGroup, Rating, Select, Sheet, Sortable, Stepper, Switch, Tabs, Toast, Toggle, Navigation |
 | `data-disabled` | present when disabled | All interactive components |
 | `data-orientation` | `horizontal` / `vertical` | Accordion, RadioGroup, Rating, Separator, Slider, Stepper, Tabs |
 | `data-readonly` | present when read-only | Input, Textarea, NumberField |

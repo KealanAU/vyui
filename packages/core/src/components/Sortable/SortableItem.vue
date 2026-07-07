@@ -15,7 +15,7 @@ export interface SortableItemProps {
 </script>
 
 <script setup lang="ts">
-import { onBeforeUnmount, watch } from 'vue'
+import { computed, onBeforeUnmount, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import type { SortableItemHandle } from './sortableContext'
@@ -30,6 +30,11 @@ defineSlots<{
 }>()
 
 const ctx = injectSortableRootContext()
+
+// BG-side dragging state — drives the `ui-dragging` class so themes can
+// restyle the lifted row (e.g. hide its divider, which is painted on this
+// element and would otherwise travel with the drag transform).
+const isDragging = computed(() => ctx.draggingIndex.value === props.index)
 
 const containerRef = useMainThreadRef<any>(null)
 const touchStartYRef = useMainThreadRef<number>(0)
@@ -383,7 +388,9 @@ function _cancelActivation() {
 <template>
   <view
     class="vyui-sortable__item"
+    :class="{ 'ui-dragging': isDragging }"
     data-vyui-sortable-item
+    :data-state="isDragging ? 'dragging' : 'idle'"
     :main-thread-ref="containerRef"
     :main-thread-binduiappear="_registerMT"
     :main-thread-bindtouchstart="_onTouchStart"
@@ -395,6 +402,6 @@ function _cancelActivation() {
       flexShrink: 0,
     }"
   >
-    <slot :dragging="ctx.draggingIndex.value === props.index" :index="props.index" />
+    <slot :dragging="isDragging" :index="props.index" />
   </view>
 </template>

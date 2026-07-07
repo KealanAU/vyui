@@ -26,7 +26,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"item\" | \"handle\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"item\" | \"handle\" | \"itemContent\", any>> | undefined",
       "required": false
     }
   ],
