@@ -34,7 +34,7 @@ e.g. `[data-state="open"]` / `[data-disabled]`.
 | `data-linear` | present in linear mode | Stepper |
 | `data-front` / `data-expanded` / `data-position` | stack/layout state | Toast |
 
-> The state-attribute set per component mirrors Reka UI / Radix conventions. When
+> The state-attribute set per component follows headless UI conventions. When
 > in doubt, inspect the rendered output or the component's `.vue` source.
 
 ## Structural markers (`data-vyui-*`)

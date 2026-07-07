@@ -1,6 +1,6 @@
 # Vy UI
 
-> Headless, accessible component primitives for [Vue-Lynx](https://lynxjs.org) — ByteDance's cross-platform native framework. Inspired by Reka UI, Radix UI, and the shadcn/ui distribution model.
+> Lynx-native UI primitives for Vue.
 
 **Vy UI** brings a Radix-style primitives layer to the Vue-Lynx ecosystem. Build native mobile apps for iOS, Android, and Web from a single Vue codebase, with components you own and can modify.
 
@@ -174,11 +174,6 @@ porting, and adapting from them.
 
 ### Primary references
 
-* **[Reka UI](https://reka-ui.com)** — Vue port of Radix UI; the closest analog on
-  web Vue and the primary reference for Vy UI's primitive API design. Many
-  `@vyui/core` primitives port behavior and composition directly from Reka UI
-  with Lynx-specific rendering adjustments. MIT.
-
 * **[Radix UI](https://radix-ui.com)** — Pioneered the headless primitives model
   and the multi-part component pattern (`Root` / `Trigger` / `Content` / etc.)
   that Vy UI follows. MIT.
@@ -221,9 +216,9 @@ porting, and adapting from them.
 
 ### Attribution
 
-Some styled component templates may be ported from or inspired by shadcn/ui,
-Nuxt UI, and Reka UI. Where this is the case, original MIT license terms and
-attribution are preserved in each component file.
+Some styled component templates may be ported from or inspired by other MIT
+projects. Where this is the case, original license terms and attribution are
+preserved in each component file.
 
 ## License
 

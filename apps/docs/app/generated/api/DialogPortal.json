@@ -4,7 +4,7 @@
       "name": "to",
       "type": "string | undefined",
       "required": false,
-      "description": "Inert on Lynx. Kept on the prop surface for API parity with reka-ui; the\nactual portaling is handled by `overlayStore` + the app-root `OverlayRoot`,\nso this selector is never read. No default is supplied — the prop is\nmeaningless and supplying `'#overlay-root'` would falsely imply a DOM\ntarget."
+      "description": "Inert on Lynx. Actual portaling is handled by `overlayStore` + the app-root `OverlayRoot`,\nso this selector is never read. No default is supplied — the prop is\nmeaningless and supplying `'#overlay-root'` would falsely imply a DOM\ntarget."
     }
   ],
   "events": [],

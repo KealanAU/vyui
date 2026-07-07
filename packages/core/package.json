@@ -2,7 +2,7 @@
   "name": "@vyui/core",
   "type": "module",
   "version": "0.1.2",
-  "description": "Lynx-native component primitives, ported from reka-ui",
+  "description": "Lynx-native UI primitives for Vue",
   "license": "MIT AND Apache-2.0",
   "author": "Kealan Clarke",
   "homepage": "https://vyui.dev",
@@ -25,8 +25,7 @@
     "components",
     "primitives",
     "accessibility",
-    "a11y",
-    "reka-ui"
+    "a11y"
   ],
   "sideEffects": [
     "**/*.css",
