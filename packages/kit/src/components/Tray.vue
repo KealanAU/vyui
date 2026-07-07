@@ -58,11 +58,22 @@ export interface TrayProps {
    */
   duration?: number
   /**
-   * Lift the footer above the on-screen keyboard (Lynx). Forwarded to core's
-   * keyboard-aware wrappers around the persistent footer slot. No-op on
-   * web/jsdom. @defaultValue `false`
+   * Keyboard handling on Lynx (no-op on web/jsdom — there is no platform
+   * keyboard event). When enabled, the whole panel rises above the on-screen
+   * keyboard: the panel is bottom-anchored and content-hugging, so growing
+   * its bottom padding by the keyboard height pushes handle/body/footer up
+   * while the panel background fills behind the keyboard. (Padding, not
+   * `transform` — the sheet's MT drag worklets own the panel transform.)
+   *  - `'lift'` — rise only. Best for short/medium trays.
+   *  - `'scroll'` (or `true`) — rise, plus the body becomes a keyboard-aware
+   *    scroll region that keeps the focused input in view. It only scrolls
+   *    once its height is bounded — cap it via the `bodyScroll` ui slot
+   *    (e.g. `max-h-*`). Best for tall trays.
+   *  - `false` — no keyboard handling.
+   * Inputs anywhere inside (body or footer) register themselves; no
+   * `KeyboardAwareTrigger` wrapping needed. @defaultValue `false`
    */
-  keyboardAware?: boolean
+  keyboardAware?: boolean | 'lift' | 'scroll'
   class?: any
   ui?: Partial<Record<keyof ReturnType<typeof buildTray>['slots'], any>>
 }
@@ -109,11 +120,11 @@ import { computed, ref } from 'vue'
 import {
   KeyboardAwareResponder,
   KeyboardAwareRoot,
-  KeyboardAwareTrigger,
   SheetBackdrop,
   SheetContent,
   SheetHandle,
   SheetRoot,
+  useId,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 import { provideTrayContext } from './trayContext'
@@ -194,6 +205,37 @@ provideTrayContext({
   goBack,
 })
 
+// -- Keyboard awareness --------------------------------------------------------
+// `true` is an alias for `'scroll'` — the mode that suits most trays (the
+// panel rises either way; scroll additionally bounds the body).
+const kaMode = computed<false | 'lift' | 'scroll'>(() =>
+  props.keyboardAware === true ? 'scroll' : (props.keyboardAware || false),
+)
+
+// Unique per instance — the root scrolls the responder's scroll-view by id,
+// and two open trays sharing core's default `'scrollview'` id would collide.
+const bodyScrollId = useId(undefined, 'vy-tray-body-scroll')
+
+// Height reported by the tray's KeyboardAwareRoot (fed by the focused input's
+// element @keyboard event — the only keyboard signal under vue-lynx).
+const keyboardHeight = ref(0)
+function onKeyboardHeight(heightInPx: number) {
+  keyboardHeight.value = heightInPx
+}
+
+// The rise: pad the panel's bottom by the keyboard height. The panel is
+// bottom-anchored and hugs content, so the padding extends it UPWARD —
+// handle/body/footer clear the keyboard while the panel background fills in
+// behind it. Padding rather than `transform`/`bottom` because the sheet's MT
+// drag worklets own the panel transform (BG style patches are replace-all and
+// would fight them), and padding needs no knowledge of the variant's inset.
+const panelKeyboardStyle = computed(() => (kaMode.value
+  ? {
+      paddingBottom: `${keyboardHeight.value}px`,
+      transition: 'padding-bottom 0.25s ease-out',
+    }
+  : {}))
+
 // -- Height morph ------------------------------------------------------------
 // The panel hugs content (core `fitContent`); the `morph` container carries an
 // explicit px height that CSS-transitions between views. `null` before the
@@ -201,7 +243,11 @@ provideTrayContext({
 // from zero. `viewport`'s @layoutchange feeds the measured natural height in.
 const morphHeight = ref<number | null>(null)
 
+// While the keyboard is up, the scroll responder grows a spacer inside the
+// viewport; that @layoutchange must not become a morph target or the tray
+// grows instead of scrolling — morph updates freeze until the keyboard closes.
 function onViewportLayout(event: { detail?: { height?: number } } | undefined) {
+  if (keyboardHeight.value > 0) return
   const h = event?.detail?.height
   if (typeof h === 'number' && h > 0) morphHeight.value = Math.round(h)
 }
@@ -250,36 +296,46 @@ const ui = computed(() => buildTray(appConfig)({ variant: props.variant }))
     <SheetContent
       fit-content
       :class="ui.content({ class: [props.class, props.ui?.content] })"
+      :style="panelKeyboardStyle"
     >
       <SheetHandle v-if="handle" :class="ui.handle({ class: props.ui?.handle })" />
 
-      <view :class="ui.morph({ class: props.ui?.morph })" :style="morphStyle">
-        <view
-          :class="ui.viewport({ class: props.ui?.viewport })"
-          @layoutchange="onViewportLayout"
-        >
-          <view :class="ui.body({ class: props.ui?.body })">
-            <slot v-bind="slotProps" />
+      <!-- One KeyboardAwareRoot spans body + footer so any input inside
+           self-registers and its @keyboard event drives `keyboardHeight`
+           (→ the panel's padding rise). Renders as a plain view when
+           keyboard awareness is off. -->
+      <component
+        :is="kaMode ? KeyboardAwareRoot : 'view'"
+        v-on="kaMode ? { keyboardHeightChange: onKeyboardHeight } : {}"
+      >
+        <view :class="ui.morph({ class: props.ui?.morph })" :style="morphStyle">
+          <view
+            :class="ui.viewport({ class: props.ui?.viewport })"
+            @layoutchange="onViewportLayout"
+          >
+            <view :class="ui.body({ class: props.ui?.body })">
+              <!-- 'scroll': the body is a bounded scroll region the root
+                   scrolls to keep the focused input in view once the panel
+                   has risen. -->
+              <KeyboardAwareResponder
+                v-if="kaMode === 'scroll'"
+                mode="scroll-view"
+                :scrollview-id="bodyScrollId"
+                :scroll-view-class="ui.bodyScroll({ class: props.ui?.bodyScroll })"
+              >
+                <slot v-bind="slotProps" />
+              </KeyboardAwareResponder>
+              <slot v-else v-bind="slotProps" />
+            </view>
           </view>
         </view>
-      </view>
 
-      <!-- Persistent footer: outside `morph`, so it never unmounts or animates
-           across view swaps. `keyboardAware` wraps it to lift above the
-           keyboard (same pattern as VyDrawer). -->
-      <component
-        :is="keyboardAware ? KeyboardAwareRoot : 'view'"
-        v-if="!!$slots.footer"
-      >
-        <component
-          :is="keyboardAware ? KeyboardAwareResponder : 'view'"
-          :class="ui.footer({ class: props.ui?.footer })"
-        >
-          <KeyboardAwareTrigger v-if="keyboardAware">
-            <slot name="footer" v-bind="slotProps" />
-          </KeyboardAwareTrigger>
-          <slot v-else name="footer" v-bind="slotProps" />
-        </component>
+        <!-- Persistent footer: outside `morph`, so it never unmounts or
+             animates across view swaps. It rides the panel's padding rise —
+             no responder of its own. -->
+        <view v-if="!!$slots.footer" :class="ui.footer({ class: props.ui?.footer })">
+          <slot name="footer" v-bind="slotProps" />
+        </view>
       </component>
     </SheetContent>
   </SheetRoot>

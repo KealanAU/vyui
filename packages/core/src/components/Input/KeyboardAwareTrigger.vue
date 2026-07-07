@@ -23,6 +23,7 @@ export interface KeyboardAwareTriggerProps extends PrimitiveProps {
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Primitive, usePrimitiveElement } from '@/components/Primitive'
+import type { KeyboardAwareKeyboardInfo } from './keyboardAwareContext'
 import {
   injectKeyboardAwareRootContext,
   provideKeyboardAwareTriggerContext,
@@ -67,9 +68,15 @@ function onInputBlurred() {
   rootContext?.onAwareTriggerBlurred?.(triggerRef.value)
 }
 
+function onInputKeyboard(info: KeyboardAwareKeyboardInfo) {
+  syncTriggerRef()
+  rootContext?.onAwareTriggerKeyboardChanged?.(triggerRef.value, info)
+}
+
 provideKeyboardAwareTriggerContext({
   onInputFocused,
   onInputBlurred,
+  onInputKeyboard,
 })
 </script>
 

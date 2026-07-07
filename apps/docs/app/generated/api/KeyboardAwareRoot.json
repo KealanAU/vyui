@@ -18,7 +18,7 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while keeping the primitive's props and behavior."
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
     },
     {
       "name": "forceAttach",
@@ -28,7 +28,12 @@
       "description": "When `true`, the responder will keep translating upward even after the\nfocused trigger is already above the keyboard. Useful for content that\nshould \"stick\" to the keyboard's top edge."
     }
   ],
-  "events": [],
+  "events": [
+    {
+      "name": "keyboardHeightChange",
+      "type": "[heightInPx: number]"
+    }
+  ],
   "slots": [
     {
       "name": "default",
