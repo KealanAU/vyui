@@ -2,7 +2,7 @@
   "name": "@vyui/core",
   "type": "module",
   "version": "0.2.0",
-  "description": "Lynx-native component primitives, ported from reka-ui",
+  "description": "Lynx-native UI primitives for Vue",
   "license": "MIT AND Apache-2.0",
   "author": "Kealan Clarke",
   "homepage": "https://vyui.dev",
@@ -25,8 +25,7 @@
     "components",
     "primitives",
     "accessibility",
-    "a11y",
-    "reka-ui"
+    "a11y"
   ],
   "//exports": "The `./dist/*.js` wildcard is the mechanism behind @vyui/kit's shakeable subpath entries: kit's build rewrites its barrel imports of core to per-file deep specifiers (rewrite-deep-imports.mjs) so a deep-imported kit component only reaches its own core subtree. The vue-lynx MT pipeline prunes by `sideEffects` globs over what is REACHED, so reaching less is the only way to ship less.",
   "sideEffects": [

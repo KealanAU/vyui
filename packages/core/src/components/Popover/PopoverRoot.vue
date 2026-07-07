@@ -16,7 +16,7 @@ export interface PopoverRootProps {
    * The modality of the popover. When `true` the content registers as a modal
    * overlay (scroll-lock / hide-others would apply on the DOM). On Lynx those
    * are no-ops, but the flag still selects `PopoverContentModal` vs
-   * `PopoverContentNonModal` so the structural split matches reka-ui.
+   * `PopoverContentNonModal`.
    *
    * @defaultValue false
    */

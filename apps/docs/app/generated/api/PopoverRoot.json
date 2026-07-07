@@ -12,7 +12,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "The modality of the popover. When `true` the content registers as a modal\noverlay (scroll-lock / hide-others would apply on the DOM). On Lynx those\nare no-ops, but the flag still selects `PopoverContentModal` vs\n`PopoverContentNonModal` so the structural split matches reka-ui."
+      "description": "The modality of the popover. When `true` the content registers as a modal\noverlay (scroll-lock / hide-others would apply on the DOM). On Lynx those\nare no-ops, but the flag still selects `PopoverContentModal` vs\n`PopoverContentNonModal` so the structural split remains explicit."
     },
     {
       "name": "open",

@@ -493,7 +493,7 @@ const CARDS = 14
       <view :style="{ borderWidth: '1px', borderColor: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }">
         <CollapsibleRoot
           v-for="(item, i) in [
-            { key: 'q1', q: 'What is vyui?', a: 'A Lynx-native port of reka-ui primitives.' },
+            { key: 'q1', q: 'What is vyui?', a: 'Lynx-native UI primitives for Vue.' },
             { key: 'q2', q: 'What is Lynx?', a: 'A cross-platform UI framework by ByteDance.' },
             { key: 'q3', q: 'Unstyled?', a: 'Yes. You own the visual layer entirely.' },
           ]"

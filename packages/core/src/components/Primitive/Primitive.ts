@@ -16,7 +16,8 @@ export interface PrimitiveProps {
   /**
    * Change the default rendered element for the one passed as a child, merging their props and behavior.
    *
-   * Read our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details.
+   * Use this when you need a component to render through a child element while
+   * keeping the primitive's props and behavior.
    */
   asChild?: boolean
   /**

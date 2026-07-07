@@ -15,13 +15,12 @@ import type { Color } from './colors'
 export const ICON_FG_SHADE = 500
 
 // LYNX NOTE — `var()` in inline `style=""` does NOT resolve on Lynx native
-// (only stylesheet-level `var()` does). The original Reka UI swipe classes
-// `translate-x-(--reka-toast-swipe-move-x)` / `translate-x-(--reka-toast-swipe-end-x)`
-// expected the consumer to set those vars via inline style — that path is
-// inert on Lynx, and we don't ship swipe-to-dismiss yet. Dropped to avoid
-// implying it works. See `core/src/components/Slider/SliderThumbImpl.vue`
-// (~L46) for the canonical write-up; resolve transforms inline as concrete
-// pixel values instead of via custom-property indirection.
+// (only stylesheet-level `var()` does). Toast swipe transforms would need
+// concrete inline pixel values on Lynx, and we don't ship swipe-to-dismiss yet.
+// Dropped to avoid implying it works. See
+// `core/src/components/Slider/SliderThumbImpl.vue` (~L46) for the canonical
+// write-up; resolve transforms inline as concrete pixel values instead of via
+// custom-property indirection.
 export default (colors: Color[]) => ({
   slots: {
     root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 p-4 flex flex-row min-w-0 gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
