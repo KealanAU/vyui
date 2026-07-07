@@ -2,8 +2,9 @@
 // (`border-primary-500`) which Tailwind resolves via CSS variables defined in
 // the consuming app — see `apps/examples/kit-demo/src/index.css`.
 //
-// Lynx adaptation: `ring-*` → `border-*` (no ringWidth plugin in
-// `@lynx-js/tailwind-preset`), `inline-flex` → `flex` (Lynx strips
+// Lynx adaptation: `ring-*` → `border-*` + a flat arbitrary `box-shadow`
+// focus ring (no ringWidth plugin in `@lynx-js/tailwind-preset` — see
+// compoundVariants), `inline-flex` → `flex` (Lynx strips
 // inline-flex), and — most importantly — leading / trailing slots are
 // **inline siblings** of the underlying `<input>` rather than absolutely-
 // positioned overlays. Lynx's layout engine doesn't reliably overlay
@@ -76,12 +77,19 @@ export default (colors: Color[]) => ({
     highlight: { true: '' }
   },
   compoundVariants: [
-    // Resting border is neutral; the colored border is opt-in via `highlight`
-    // (no focus state on Lynx).
+    // Resting border is neutral; the colored border + shadow ring paints while
+    // focused (tracked in JS by `Input.vue` — Lynx has no `:focus-within` and
+    // the chrome lives on `root`, not the `<input>`) or statically via
+    // `highlight`. The ring is a flat arbitrary box-shadow: the Lynx preset
+    // has no `ring*` / `boxShadowColor` plugins, but its `shadow-*` emits a
+    // plain `box-shadow` (no `--tw-shadow` var composition), and
+    // `--ui-color-*-200` holds a concrete value, so the single var() level
+    // survives Lynx's one-level var() resolution. Template-literal class —
+    // safelisted in `../tailwind.js` (keep the two in sync).
     ...colors.map(c => ({
       color: c,
       highlight: true,
-      class: { root: `border border-${c}-500` }
+      class: { root: `border border-${c}-500 shadow-[0_0_0_2px_var(--ui-color-${c}-200)]` }
     })),
     // Icons default to neutral (dimmed), decoupled from `color`; override via
     // the `leading` / `trailing` slots. Loading spinner animates the icon slot.

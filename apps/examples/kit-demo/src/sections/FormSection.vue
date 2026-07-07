@@ -19,6 +19,9 @@ import {
 } from '@vyui/kit'
 
 const name = ref('')
+const ringDefault = ref('')
+const ringError = ref('')
+const ringSoft = ref('')
 const bio = ref('')
 const wifiOn = ref(true)
 const bluetoothOn = ref(false)
@@ -142,6 +145,16 @@ function onFormSubmit(values: Record<string, unknown>) {
         leading-icon="icon-park-outline:user"
       />
       <text v-if="name" class="text-slate-500 text-xs pt-1">Hello, {{ name }}!</text>
+    </view>
+
+    <!-- Input focus ring -->
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-slate-900 text-base font-semibold">Input focus ring</text>
+      <text class="text-slate-500 text-xs">Tap an input — colored border + shadow ring should follow focus, and drop on blur.</text>
+      <VyInput v-model="ringDefault" placeholder="color=primary (default)" />
+      <VyInput v-model="ringError" color="error" placeholder="color=error" />
+      <VyInput v-model="ringSoft" variant="soft" placeholder="variant=soft (borderless at rest)" />
+      <VyInput highlight placeholder="highlight (static ring, no focus needed)" />
     </view>
 
     <!-- Textarea -->
