@@ -1,7 +1,0 @@
-export * from './tokens'
-export { default as DemoCard } from './DemoCard.vue'
-export { default as DemoLabel } from './DemoLabel.vue'
-export { default as DemoHint } from './DemoHint.vue'
-export { default as DemoBadge } from './DemoBadge.vue'
-export { default as DemoValueRow } from './DemoValueRow.vue'
-export { default as DemoSwitcher } from './DemoSwitcher.vue'

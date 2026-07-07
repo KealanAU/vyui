@@ -111,7 +111,6 @@ vyui/
 └── apps/
     └── examples/
         ├── kit-demo/           # styled-component showcase
-        ├── native-demo/       # broader primitive showcase
         ├── docs-playground/   # docs example bundle
         └── …
 ```
