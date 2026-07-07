@@ -80,7 +80,11 @@ const itemHeight = computed(() => ITEM_HEIGHTS[(props.size ?? 'md') as keyof typ
       :index="index"
       :class="ui.item({ class: props.ui?.item })"
     >
-      <slot name="item" :item="it" :index="index" />
+      <!-- The pill is a child of the transformed shell so the shell can stay
+           transparent — paint on the shell itself travels with the drag. -->
+      <view :class="ui.itemContent({ class: props.ui?.itemContent })">
+        <slot name="item" :item="it" :index="index" />
+      </view>
     </SortableItem>
   </SortableRoot>
 </template>

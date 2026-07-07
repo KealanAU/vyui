@@ -29,7 +29,7 @@ export declare const NEUTRAL: 'neutral'
 
 /** Extra `ui-*` state markers (beyond the lynx preset's built-ins) the kit
  *  themes rely on for class-based state variants — feed into `uiVariants`. */
-export declare const VYUI_UI_STATES: readonly ['on', 'off', 'completed', 'highlighted', 'inactive']
+export declare const VYUI_UI_STATES: readonly ['on', 'off', 'completed', 'highlighted', 'inactive', 'dragging']
 
 /** Default preset built with the standard color set. */
 declare const preset: Partial<Config>

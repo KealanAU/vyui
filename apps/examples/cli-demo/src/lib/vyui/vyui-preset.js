@@ -56,7 +56,7 @@ export { COLORS, NEUTRAL } from './theme/color-constants.js'
  * })
  * ```
  */
-export const VYUI_UI_STATES = ['on', 'off', 'completed', 'highlighted', 'inactive']
+export const VYUI_UI_STATES = ['on', 'off', 'completed', 'highlighted', 'inactive', 'dragging']
 
 const buildScale = (name, neutral, shades) =>
   Object.fromEntries([
