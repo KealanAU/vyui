@@ -69,7 +69,7 @@ Icon names only resolve after their Iconify set has been registered. See [`Icon`
 
 ### Variants and validation emphasis
 
-Use `highlight` to paint a static semantic border regardless of focus.
+The semantic border and shadow ring paint automatically while the input is focused. Use `highlight` to force them on permanently, for example for validation emphasis.
 
 ::component-code
 ---
@@ -266,7 +266,7 @@ The core instance provides `focus()`, `blur()`, `clear()`, `setValue(value)`, `g
 | `color` | `Color` | `'primary'` | Semantic border, highlight, and icon color. |
 | `variant` | `'outline' \| 'soft' \| 'subtle' \| 'ghost' \| 'none'` | `'outline'` | Surface treatment. |
 | `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Padding, text, gap, and icon scale. |
-| `highlight` | `boolean` | `false` | Always paints a semantic border. |
+| `highlight` | `boolean` | `false` | Forces the semantic border and focus ring on permanently. |
 | `id` | `string` | `undefined` | Native identifier. |
 | `name` | `string` | `undefined` | Native field name. |
 | `required` | `boolean` | `false` | Native required marker. |
@@ -344,7 +344,7 @@ createApp(App)
 | `trailing` | Trailing adornment wrapper. |
 | `trailingIcon` | Trailing icon. |
 
-The theme combines `size`, `variant`, `color`, `highlight`, and internal leading, trailing, and loading states. `outline` and `subtle` use semantic borders, while `soft`, `ghost`, and `none` reduce or remove the border treatment.
+The theme combines `size`, `variant`, `color`, `highlight`, and internal leading, trailing, and loading states. `outline` and `subtle` use semantic borders, while `soft`, `ghost`, and `none` reduce or remove the border treatment. While focused, or when `highlight` is set, the root paints a semantic border plus a shadow ring in the active `color`.
 
 Because CSS inheritance is disabled in the Lynx build, typed-text and placeholder colors belong on `base`, while surface and border classes belong on `root`. The loading icon defaults to `appConfig.ui.icons.loading`; override that semantic icon globally or use `loadingIcon` per input.
 
@@ -362,6 +362,7 @@ Use `type="password"` for secret text, but do not assume the keyboard type valid
 - The normalized `keyboard` event comes from the focused native element and reports both keyboard height and safe-area bottom inset.
 - Use [`KeyboardAware`](/components/keyboard-aware) wrappers when the software keyboard may cover the field.
 - Software-keyboard layouts, autocomplete behavior, password masking, and return-key labels can differ across iOS, Android, and web.
+- Focus is tracked in JS because Lynx has no `:focus-within` and the border and ring live on the root wrapper, not the native input; the ring itself is a flat `box-shadow`.
 - Leading and trailing elements are flex siblings rather than absolute overlays because Lynx does not reliably layer them over a native text input.
 - Lynx SVG does not inherit `currentColor`, so built-in and custom icon slots receive an explicit resolved hex color.
 - The default theme is light-mode-only.
