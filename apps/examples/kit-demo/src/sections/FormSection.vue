@@ -7,6 +7,8 @@ import {
   VyFormField,
   VyIcon,
   VyInput,
+  VyKeyboardAwareResponder,
+  VyKeyboardAwareRoot,
   VyLabel,
   VyNumberField,
   VyPinInput,
@@ -22,6 +24,10 @@ const name = ref('')
 const ringDefault = ref('')
 const ringError = ref('')
 const ringSoft = ref('')
+// Keyboard-avoidance comparison — same inputs, one card bare and one wrapped
+// in KeyboardAwareRoot/Responder. Inputs self-register (no Trigger wrapping).
+const kaOff = ref('')
+const kaOn = ref('')
 const bio = ref('')
 const wifiOn = ref(true)
 const bluetoothOn = ref(false)
@@ -155,6 +161,34 @@ function onFormSubmit(values: Record<string, unknown>) {
       <VyInput v-model="ringError" color="error" placeholder="color=error" />
       <VyInput v-model="ringSoft" variant="soft" placeholder="variant=soft (borderless at rest)" />
       <VyInput highlight placeholder="highlight (static ring, no focus needed)" />
+    </view>
+
+    <!-- Keyboard avoidance: off vs on. Scroll these two cards toward the
+         bottom of the screen first so the keyboard would cover them. -->
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-slate-900 text-base font-semibold">Keyboard avoidance — off</text>
+      <text class="text-slate-500 text-xs">
+        Bare input: scroll this card near the bottom, focus, Cmd+K — the
+        keyboard covers it and nothing moves.
+      </text>
+      <VyInput v-model="kaOff" placeholder="I stay behind the keyboard" />
+    </view>
+
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-slate-900 text-base font-semibold">Keyboard avoidance — on</text>
+      <text class="text-slate-500 text-xs">
+        Same input wrapped in KeyboardAwareRoot + Responder (no per-input
+        wrapping — it self-registers). Focus + Cmd+K: the responder should
+        translate up so the field clears the keyboard, and settle back on
+        dismiss.
+      </text>
+      <!-- `offset` = extra clearance above the keyboard for self-registered
+           inputs (a wrapping Trigger's own offset wins). -->
+      <VyKeyboardAwareRoot :offset="16">
+        <VyKeyboardAwareResponder>
+          <VyInput v-model="kaOn" placeholder="I should ride above the keyboard" />
+        </VyKeyboardAwareResponder>
+      </VyKeyboardAwareRoot>
     </view>
 
     <!-- Textarea -->

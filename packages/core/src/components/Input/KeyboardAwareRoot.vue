@@ -2,16 +2,20 @@
   Adapted from lynx-family/lynx-ui (Apache-2.0) —
   packages/lynx-ui-input/src/KeyboardAwareRoot.tsx.
 
-  Owns the keyboard state: subscribes to `keyboardstatuschanged`, tracks
-  which trigger is currently focused, and either translates the responder
-  upward (`view` mode) or grows the responder's bottom spacer + scrolls the
-  scrollview (`scroll-view` mode) to keep the focused trigger above the
-  on-screen keyboard.
+  Owns the keyboard state: tracks which trigger is currently focused, and
+  either translates the responder upward (`view` mode) or grows the
+  responder's bottom spacer + scrolls the scrollview (`scroll-view` mode) to
+  keep the focused trigger above the on-screen keyboard.
 
-  Web / jsdom: there is no platform keyboard event, so
-  `useGlobalKeyboard` is a no-op and `keyboardHeightInPx` stays at 0 — the
-  responder remains at rest. The provider wiring still works, which is what
-  the test suite verifies.
+  Keyboard signal: the primary source is the focused input's per-element
+  `@keyboard` event, piped up via `onAwareTriggerKeyboardChanged` — the
+  global `keyboardstatuschanged` subscription (`useGlobalKeyboard`) is kept
+  as a fallback but never fires under vue-lynx (the event is not delivered
+  to the background runtime; see `Input.vue`).
+
+  Web / jsdom: there is no platform keyboard event, so `keyboardHeightInPx`
+  stays at 0 — the responder remains at rest. The provider wiring still
+  works, which is what the test suite verifies.
 -->
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
@@ -24,19 +28,35 @@ export interface KeyboardAwareRootProps extends PrimitiveProps {
    */
   forceAttach?: boolean
   /**
+   * Extra clearance in px kept between a self-registered input and the top
+   * of the keyboard. Regions wrapped in a `KeyboardAwareTrigger` use the
+   * trigger's own `offset` instead.
+   */
+  offset?: number
+  /**
    * Combined height of the Android status bar + bottom navigation bar in px.
    * Used to correct `boundingClientRect` (which does not include the status
    * bar on Android) when computing how far to move the responder.
    */
   androidStatusBarPlusBottomBarHeight?: number
 }
+
+export type KeyboardAwareRootEmits = {
+  /**
+   * Fires whenever the tracked keyboard height changes (px; `0` = hidden).
+   * Lets wrappers react to keyboard visibility without their own listener —
+   * e.g. `VyTray` freezes its height morph while the keyboard is up so the
+   * scroll responder's growing spacer doesn't feed back into the morph.
+   */
+  keyboardHeightChange: [heightInPx: number]
+}
 </script>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, shallowRef, watch } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useElementRect } from '@/shared/composables'
-import type { KeyboardAwareNodeRef } from './keyboardAwareContext'
+import type { KeyboardAwareKeyboardInfo, KeyboardAwareNodeRef } from './keyboardAwareContext'
 import { provideKeyboardAwareRootContext } from './keyboardAwareContext'
 import { useGlobalKeyboard } from './composables/useGlobalKeyboard'
 
@@ -95,15 +115,21 @@ function scrollToById(id: string, offset: number, smooth: boolean): void {
 const props = withDefaults(defineProps<KeyboardAwareRootProps>(), {
   as: 'view',
   forceAttach: false,
+  offset: 0,
   androidStatusBarPlusBottomBarHeight: 0,
 })
+const emit = defineEmits<KeyboardAwareRootEmits>()
 
 const keyboardHeightInPx = ref(0)
 const previousResponderTranslateY = ref(0)
 const firstTimeFocused = ref(true)
 
-/** The trigger ref that is currently focused — `null` when none. */
-const focusedRef = ref<KeyboardAwareNodeRef | null>(null)
+/** The trigger ref that is currently focused — `null` when none. Shallow so
+ *  the stored object keeps its identity: blur/keyboard paths compare it `===`
+ *  against the reporting trigger's ref, and a deep `ref` would wrap plain
+ *  objects (e.g. an input's self-registration ref) in a reactive proxy that
+ *  never matches. */
+const focusedRef = shallowRef<KeyboardAwareNodeRef | null>(null)
 /** Focus-time offset captured from the focusing trigger. */
 const focusedOffset = ref(0)
 
@@ -159,9 +185,11 @@ function keyboardAwareResponderScrollInfoCollected(
     })
 }
 
-function onAwareTriggerFocused(triggerRef: KeyboardAwareNodeRef, offset = 0) {
+function onAwareTriggerFocused(triggerRef: KeyboardAwareNodeRef, offset?: number) {
   focusedRef.value = triggerRef
-  focusedOffset.value = offset
+  // Triggers report their own offset; self-registered inputs report none and
+  // take the root's.
+  focusedOffset.value = offset ?? props.offset
 }
 
 function onAwareTriggerBlurred(triggerRef: KeyboardAwareNodeRef) {
@@ -178,6 +206,17 @@ function onAwareTriggerBlurred(triggerRef: KeyboardAwareNodeRef) {
 function onAwareTriggerLayoutChanged(triggerRef: KeyboardAwareNodeRef) {
   if (focusedRef.value === triggerRef)
     adjustResponderPosition()
+}
+
+function onAwareTriggerKeyboardChanged(triggerRef: KeyboardAwareNodeRef, info: KeyboardAwareKeyboardInfo) {
+  // A hide event from a trigger that is no longer the tracked focus is stale
+  // (focus already moved to a sibling whose show event keeps the keyboard up).
+  if (!info.visible && focusedRef.value && focusedRef.value !== triggerRef)
+    return
+  // `height` is treated as logical px — the picknic spike drove a flex spacer
+  // with the raw `keyBoardHeight` on an iOS device and the sizing matched. If
+  // Android reports physical pixels, divide by `SystemInfo.pixelRatio` here.
+  keyboardHeightInPx.value = info.visible ? info.height : 0
 }
 
 function scrollToTarget(
@@ -293,6 +332,10 @@ watch([keyboardHeightInPx, focusedRef], () => {
   adjustResponderPosition()
 })
 
+watch(keyboardHeightInPx, (h) => {
+  emit('keyboardHeightChange', h)
+})
+
 // Ensure the first paint settles the responder transform to its rest state.
 onMounted(() => {
   adjustResponderPosition()
@@ -302,6 +345,7 @@ provideKeyboardAwareRootContext({
   onAwareTriggerFocused,
   onAwareTriggerBlurred,
   onAwareTriggerLayoutChanged,
+  onAwareTriggerKeyboardChanged,
   keyboardAwareResponder: responderRef,
   keyboardAwareResponderScrollInfoCollected,
 })

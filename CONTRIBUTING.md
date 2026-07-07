@@ -11,11 +11,9 @@ packages/
   shared-build-config/        — shared rslib / build config
   testing-utils/              — shared test helpers
 apps/examples/
-  phase5-debug/   broken-component sandbox (Slider + 8 Phase 5 primitives)
-  kit-demo/        styled-component showcase (exercises @vyui/kit)
-  native-demo/    broader primitive showcase across @vyui/core
-  web-demo/       web-target preview
-  …
+  kit-demo/         styled-component showcase (exercises @vyui/kit)
+  docs-playground/  docs example bundle (live playground sources)
+  …                 app-shaped demos (vyai, tiktok-demo, linear-demo, …)
 ```
 
 `@vyui/kit` is workspace-linked into the example apps via an alias in
@@ -40,26 +38,16 @@ which historically crashed MT with
 2. Run a demo:
 
    ```bash
-   # Broken-component sandbox — the fastest reproduction surface
-   pnpm --filter @vyui/phase5-debug dev
-
    # Styled-component showcase
    pnpm --filter @vyui/kit-demo dev
-
-   # Broader primitive showcase
-   pnpm --filter @vyui/native-demo dev
    ```
 
 3. Where to test:
 
-   - **`phase5-debug`** — broken-component sandbox. Use this first when
-     bisecting MT-worklet crashes; each card mounts independently via
-     `v-if`, so a broken component can be isolated by selecting only its
-     card. See `apps/examples/phase5-debug/README.md`.
    - **`kit-demo`** — styled-component showcase. Use this for `@vyui/kit`
      work and for verifying styled-component output across targets.
-   - **`native-demo`** — broader primitive showcase. Use this when you
-     need to exercise multiple `@vyui/core` primitives together.
+   - The app-shaped demos (`vyai`, `tiktok-demo`, `linear-demo`, …) exercise
+     component combinations inside real layouts.
 
 4. How to edit core for the demos: edit files in `packages/core/src/`. The
    demos pick changes up via the workspace alias declared in their

@@ -118,7 +118,11 @@ export type InputEmits = {
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { Primitive, usePrimitiveElement } from '@/components/Primitive'
-import { injectKeyboardAwareTriggerContext } from './keyboardAwareContext'
+import type { KeyboardAwareNodeRef } from './keyboardAwareContext'
+import {
+  injectKeyboardAwareRootContext,
+  injectKeyboardAwareTriggerContext,
+} from './keyboardAwareContext'
 
 /**
  * Minimal local error type used to reject the `invoke()` promise without
@@ -150,6 +154,16 @@ const { primitiveElement, currentElement } = usePrimitiveElement()
 
 /** Triggers may not exist — call optionally. */
 const triggerContext = injectKeyboardAwareTriggerContext(null)
+
+// Trigger-less keyboard awareness: when a `KeyboardAwareRoot` is above but no
+// `KeyboardAwareTrigger` wraps this input, register the input itself as the
+// trigger so apps don't need per-input wrappers. A wrapping trigger takes
+// precedence (it may group several inputs or carry an `offset`).
+const rootContext = triggerContext ? null : injectKeyboardAwareRootContext(null)
+
+// Identity must stay stable across focus/blur — the root's delayed blur path
+// compares `focusedRef.value === triggerRef` before clearing.
+const selfRef: KeyboardAwareNodeRef = { current: null }
 
 /**
  * Tracks whether this is a controlled input. We honor v-model when
@@ -325,12 +339,17 @@ function handleInput(event: any) {
 
 function handleFocus(event: any) {
   triggerContext?.onInputFocused?.()
+  if (rootContext) {
+    selfRef.current = currentElement.value
+    rootContext.onAwareTriggerFocused?.(selfRef)
+  }
   const value: string = event?.detail?.value ?? event?.target?.value ?? props.modelValue ?? ''
   emit('focus', value)
 }
 
 function handleBlur(event: any) {
   triggerContext?.onInputBlurred?.()
+  rootContext?.onAwareTriggerBlurred?.(selfRef)
   const value: string = event?.detail?.value ?? event?.target?.value ?? props.modelValue ?? ''
   emit('blur', value)
 }
@@ -347,14 +366,19 @@ function handleSelection(event: any) {
 
 // Normalize Lynx's raw `{ show, keyBoardHeight, safeAreaBottom }` keyboard
 // payload. See the `keyboard` entry in `InputEmits` for why this element event
-// (not the global emitter) is the keyboard signal under vue-lynx.
+// (not the global emitter) is the keyboard signal under vue-lynx. The payload
+// is also piped up the KeyboardAware chain — it is the only keyboard signal
+// that reaches `KeyboardAwareRoot` on device.
 function handleKeyboard(event: any) {
   const d = event?.detail ?? {}
-  emit('keyboard', {
+  const info = {
     visible: d.show === 1 || d.show === true,
     height: Number(d.keyBoardHeight ?? d.keyboardHeight ?? d.height ?? 0) || 0,
     safeAreaBottom: Number(d.safeAreaBottom ?? 0) || 0,
-  })
+  }
+  triggerContext?.onInputKeyboard?.(info)
+  rootContext?.onAwareTriggerKeyboardChanged?.(selfRef, info)
+  emit('keyboard', info)
 }
 
 defineExpose<InputExposed>({

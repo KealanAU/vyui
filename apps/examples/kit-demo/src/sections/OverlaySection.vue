@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onUnmounted, reactive, ref, watch } from 'vue'
 import { ToastProvider, ToastViewport } from '@vyui/core'
 import {
   VyButton,
   VyCombobox,
   VyDrawer,
   VyDropdownMenu,
+  VyInput,
   VyModal,
   VySelect,
+  VyTextarea,
   VyToast,
   VyTray,
   VyTrayView,
@@ -20,6 +22,27 @@ function openTray(variant: 'floating' | 'flush') {
   trayVariant.value = variant
   trayOpen.value = true
 }
+// Keyboard-aware trays — device-only (the web preview has no software
+// keyboard). Inputs self-register with the surrounding KeyboardAwareRoot, so
+// nothing in this file wraps a KeyboardAwareTrigger. Scroll mode: the tray
+// must NOT grow when the keyboard opens (morph freeze) — the focused field
+// scrolls above it instead, and the footer lifts independently. Lift mode:
+// the whole panel translates up.
+const kbScrollOpen = ref(false)
+const kbLiftOpen = ref(false)
+const kbForm = reactive({
+  name: '', handle: '', bio: '', city: '', website: '', note: '', reply: '',
+})
+
+// Stage probe: shows the last @keyboard payload the focused input emitted.
+// If this chip updates on Cmd+K but nothing moves, the signal chain is fine
+// and the failure is actuation (spacer setNativeProps / scrollTo / responder
+// transform); if it stays "—", the element event isn't firing here at all.
+const kbLast = ref('—')
+function onKbProbe(info: { visible: boolean, height: number, safeAreaBottom: number }) {
+  kbLast.value = `visible=${info.visible} height=${info.height} safeArea=${info.safeAreaBottom}`
+}
+
 const drawerOpen = ref(false)
 const drawerFullOpen = ref(false)
 const drawerRightOpen = ref(false)
@@ -84,6 +107,35 @@ const progressToast = ref(0)
 function showProgressToast() {
   progressToast.value += 1
 }
+
+// Ghost-close regression rig (usePresence MAX_LEAVING_FRAMES hard cap +
+// SheetContentImpl's mt-close keyframe gate). The 100ms ticker inside the
+// drawer body keeps BG re-renders flowing through the Leaving window — the
+// style-patch aggravator that un-suppressed the slide-out keyframe — and the
+// tap probe proves the panel really unmounted: a stuck-Leaving panel sits
+// invisible over the lower part of the screen and eats the taps.
+const ghostOpen = ref(false)
+const ghostTicks = ref(0)
+const ghostTaps = ref(0)
+let ghostTicker: ReturnType<typeof setInterval> | undefined
+watch(ghostOpen, (isOpen) => {
+  if (isOpen) {
+    if (ghostTicker) clearInterval(ghostTicker)
+    ghostTicks.value = 0
+    ghostTicker = setInterval(() => { ghostTicks.value += 1 }, 100)
+    return
+  }
+  // Keep ticking ~2s past close so patches land DURING the leave, then stop.
+  setTimeout(() => {
+    if (!ghostOpen.value && ghostTicker) {
+      clearInterval(ghostTicker)
+      ghostTicker = undefined
+    }
+  }, 2000)
+})
+onUnmounted(() => {
+  if (ghostTicker) clearInterval(ghostTicker)
+})
 
 const dropdownItems = [
   [
@@ -174,6 +226,55 @@ const fruitItems = [
 
         <template #footer="{ close }">
           <VyButton color="neutral" variant="solid" label="Close" block @tap="close()" />
+        </template>
+      </VyTray>
+    </view>
+
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-slate-900 text-base font-semibold">Keyboard-aware tray</text>
+      <text class="text-slate-500 text-xs">
+        Device-only — the web preview has no software keyboard. Focus a field,
+        then Cmd+K: the whole panel should rise above the keyboard (bottom
+        padding grows, so the panel extends up while its background fills in
+        behind the keyboard). Inputs register themselves; no per-input
+        wrapping anywhere here.
+        <text class="font-medium">Scroll</text>: tall body — it becomes a
+        bounded scroll region that keeps the focused field in view.
+        <text class="font-medium">Lift</text>: short tray — rise only.
+      </text>
+      <view class="flex flex-row gap-2">
+        <VyButton color="neutral" variant="subtle" label="Open scroll tray" @tap="kbScrollOpen = true" />
+        <VyButton color="neutral" variant="subtle" label="Open lift tray" @tap="kbLiftOpen = true" />
+      </view>
+
+      <!-- `bodyScroll` caps the scroll region — without a bound the tray hugs
+           content and nothing scrolls. -->
+      <VyTray v-model:open="kbScrollOpen" keyboard-aware :ui="{ bodyScroll: 'max-h-80' }">
+        <view class="flex flex-col gap-3">
+          <text class="text-slate-900 text-base font-semibold">Edit profile</text>
+          <text class="text-slate-400 text-xs">@keyboard: {{ kbLast }}</text>
+          <VyInput v-model="kbForm.name" placeholder="Name" @keyboard="onKbProbe" />
+          <VyInput v-model="kbForm.handle" placeholder="Handle" @keyboard="onKbProbe" />
+          <VyTextarea v-model="kbForm.bio" placeholder="Bio — a few lines" @keyboard="onKbProbe" />
+          <VyInput v-model="kbForm.city" placeholder="City" @keyboard="onKbProbe" />
+          <VyInput v-model="kbForm.website" placeholder="Website — focus me last" @keyboard="onKbProbe" />
+        </view>
+        <template #footer="{ close }">
+          <view class="flex flex-col gap-2">
+            <VyInput v-model="kbForm.note" placeholder="Footer note — lifts with the footer" @keyboard="onKbProbe" />
+            <VyButton color="neutral" variant="solid" label="Done" block @tap="close()" />
+          </view>
+        </template>
+      </VyTray>
+
+      <VyTray v-model:open="kbLiftOpen" keyboard-aware="lift">
+        <view class="flex flex-col gap-2">
+          <text class="text-slate-900 text-base font-semibold">Quick reply</text>
+          <text class="text-slate-400 text-xs">@keyboard: {{ kbLast }}</text>
+          <VyInput v-model="kbForm.reply" placeholder="Type a reply…" @keyboard="onKbProbe" />
+        </view>
+        <template #footer="{ close }">
+          <VyButton color="neutral" variant="solid" label="Send" block @tap="close()" />
         </template>
       </VyTray>
     </view>
@@ -296,6 +397,42 @@ const fruitItems = [
       >
         <VyButton color="neutral" variant="subtle" label="Open top drawer" />
       </VyDrawer>
+    </view>
+
+    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-slate-900 text-base font-semibold">Ghost-close regression</text>
+      <text class="text-slate-500 text-xs">
+        A ticker re-renders the panel every 100ms, including while it closes
+        (the style-wipe aggravator). Try each close path — the moment the
+        panel is off screen, the tap probe must respond and must never come
+        back as an invisible tap-eater:
+        1) drag to the 40% snap, then tap the backdrop (MT slide-off path);
+        2) flick down hard from anywhere (drag-dismiss path);
+        3) close from 90% via backdrop (plain keyframe path — should still
+        slide out smoothly).
+        Scroll this card toward the bottom of the screen so the probe sits
+        where the panel was.
+      </text>
+      <VyDrawer
+        v-model:open="ghostOpen"
+        title="Ghost repro"
+        description="Ticking every 100ms. Drag to 40% + backdrop-tap, or flick down."
+        :snap-points="[0.4, 0.9]"
+        :default-snap-index="1"
+      >
+        <VyButton color="neutral" variant="subtle" label="Open ghost repro drawer" />
+        <template #body>
+          <view class="flex flex-col gap-2 px-4 py-2">
+            <text class="text-slate-900 text-2xl font-semibold">Ticks: {{ ghostTicks }}</text>
+            <text class="text-slate-500 text-xs">
+              Keeps BG patches flowing through the close — before the fix
+              these could wipe the worklets' inline animation suppression
+              and restart the slide-out keyframe.
+            </text>
+          </view>
+        </template>
+      </VyDrawer>
+      <VyButton color="primary" variant="soft" :label="`Tap probe: ${ghostTaps}`" block @tap="ghostTaps++" />
     </view>
 
     <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">

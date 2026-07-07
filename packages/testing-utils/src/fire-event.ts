@@ -14,6 +14,7 @@ export const eventMap: Record<string, { defaultInit: Record<string, unknown> }> 
   blur: { defaultInit: {} },
   input: { defaultInit: {} },
   confirm: { defaultInit: {} },
+  keyboard: { defaultInit: {} },
   layoutchange: { defaultInit: {} },
   transitionend: { defaultInit: {} },
   animationend: { defaultInit: {} },

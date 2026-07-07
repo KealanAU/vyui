@@ -104,14 +104,35 @@ const tray = useTray()
 </script>
 ```
 
-### Keyboard-aware footer
+### Keyboard awareness
 
-Set `keyboard-aware` to lift the footer above the on-screen keyboard on Lynx (for a footer that holds an input). It wraps the footer in the core keyboard-aware primitives and is a no-op on web.
+Set `keyboard-aware` and the whole panel rises above the on-screen keyboard when an input inside it gains focus (Lynx; no-op on web). Because the panel is bottom-anchored and hugs its content, the tray grows its bottom padding by the keyboard height — handle, body, and footer all clear the keyboard while the panel background fills in behind it. Any `VyInput` or `VyTextarea` in the body **or** footer registers itself automatically; no per-input wrapping.
 
 ```vue
-<VyTray v-model:open="open" keyboard-aware>
+<VyTray v-model:open="open" keyboard-aware="lift">
+  <VyInput v-model="reply" placeholder="Type a reply…" />
+  <template #footer="{ close }">
+    <VyButton label="Send" block @tap="close()" />
+  </template>
+</VyTray>
+```
+
+Two modes:
+
+- `keyboard-aware="lift"` — rise only. Right for short and medium trays whose content fits above the keyboard.
+- `keyboard-aware` / `keyboard-aware="scroll"` — rise, plus the body becomes a keyboard-aware scroll region that keeps the focused input in view. Right for tall content like a multi-field form.
+
+::callout{icon="i-lucide-ruler"}
+The scroll region only scrolls once its height is bounded — cap it through the `bodyScroll` ui slot (e.g. `:ui="{ bodyScroll: 'max-h-80' }"`). Left unbounded, the tray hugs its content and there is nothing to scroll.
+::
+
+```vue
+<VyTray v-model:open="open" keyboard-aware :ui="{ bodyScroll: 'max-h-80' }">
+  <VyInput v-model="form.name" placeholder="Name" />
+  <VyTextarea v-model="form.bio" placeholder="Bio" />
+  <VyInput v-model="form.website" placeholder="Website" />
   <template #footer>
-    <VyInput placeholder="Message…" />
+    <VyInput v-model="form.note" placeholder="Footer note" />
   </template>
 </VyTray>
 ```
@@ -156,6 +177,7 @@ Override globally through `appConfig.ui.tray` or locally with the `ui` prop.
 | `morph` | The height-animated container. Its `transition-duration` comes from the `duration` prop. |
 | `viewport` | Inner wrapper measured to drive the morph. |
 | `body` | Padding around the active view. |
+| `bodyScroll` | The keyboard-aware `<scroll-view>` around the body (rendered when `keyboardAware` is `'scroll'`/`true`). Cap its height here. |
 | `footer` | The persistent footer region. |
 
 ## Accessibility
@@ -165,6 +187,7 @@ The panel announces as a dialog and traps focus, inherited from the core `SheetC
 ## Platform notes
 
 - The height morph relies on animating between concrete pixel heights; Lynx animates `height` via CSS `transition` (not via main-thread style writes), which is what `VyTray` uses under the hood.
+- The keyboard rise is driven by the focused input's per-element `keyboard` event — the reliable keyboard signal under vue-lynx (see [`KeyboardAware`](/components/keyboard-aware)). It is applied as panel padding rather than a transform so it cannot fight the sheet's main-thread drag physics.
 - `floating` positions the panel with inset utilities that override the core edge-anchored sheet rules; on Lynx the later-injected utilities win.
 - Open/close motion and drag physics come from the core `Sheet` primitives — see [`Sheet`](/components/sheet) for the underlying behavior.
 

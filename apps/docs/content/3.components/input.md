@@ -360,7 +360,7 @@ Use `type="password"` for secret text, but do not assume the keyboard type valid
 
 - The underlying control is Lynx's native `<input>`, with DOM fallbacks used by the core imperative methods in tests and web-compatible runtimes.
 - The normalized `keyboard` event comes from the focused native element and reports both keyboard height and safe-area bottom inset.
-- Use [`KeyboardAware`](/components/keyboard-aware) wrappers when the software keyboard may cover the field.
+- Use [`KeyboardAware`](/components/keyboard-aware) wrappers when the software keyboard may cover the field. Inside a `VyKeyboardAwareRoot`, the input registers itself — no `VyKeyboardAwareTrigger` wrap needed.
 - Software-keyboard layouts, autocomplete behavior, password masking, and return-key labels can differ across iOS, Android, and web.
 - Focus is tracked in JS because Lynx has no `:focus-within` and the border and ring live on the root wrapper, not the native input; the ring itself is a flat `box-shadow`.
 - Leading and trailing elements are flex siblings rather than absolute overlays because Lynx does not reliably layer them over a native text input.
