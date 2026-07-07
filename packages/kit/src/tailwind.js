@@ -185,6 +185,10 @@ export function createVyuiPreset(options = {}) {
           'group-data-[state=checked]',
         ],
       },
+      // Focus/highlight ring — generated as a template literal in
+      // `theme/input.ts`; arbitrary values can't be expressed in the regex
+      // pattern above, so safelist the exact strings (keep in sync).
+      ...allColors.map((c) => `shadow-[0_0_0_2px_var(--ui-color-${c}-200)]`),
       'text-white',
     ],
   }

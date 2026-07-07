@@ -56,7 +56,7 @@ export interface InputProps {
   color?: InputVariants['color']
   variant?: InputVariants['variant']
   size?: InputVariants['size']
-  /** Paints a static ring matching `color`, ignoring focus state. */
+  /** Forces the colored ring on permanently; by default it paints while focused. */
   highlight?: boolean
   /** Forwarded to the underlying `<input>`. */
   id?: string
@@ -100,7 +100,7 @@ const props = withDefaults(defineProps<InputProps>(), {
   autocomplete: 'off',
   autofocusDelay: 0,
 })
-defineEmits(['update:modelValue', 'confirm', 'focus', 'blur', 'keyboard'])
+const emit = defineEmits(['update:modelValue', 'confirm', 'focus', 'blur', 'keyboard'])
 defineSlots<InputSlots>()
 
 const slots = useSlots()
@@ -127,12 +127,25 @@ const resolvedTrailingIcon = computed(() => {
 const hasLeading = computed(() => !!slots.leading || !!resolvedLeadingIcon.value || !!props.avatar || !!props.loading)
 const hasTrailing = computed(() => !!slots.trailing || !!resolvedTrailingIcon.value)
 
+// Lynx has no `:focus-within`, and the border/ring chrome lives on the root
+// <view>, not the <input> — track focus in JS and drive the `highlight`
+// variant so the colored border + shadow ring follows focus.
+const isFocused = ref(false)
+function onFocus(event: unknown) {
+  isFocused.value = true
+  emit('focus', event)
+}
+function onBlur(event: unknown) {
+  isFocused.value = false
+  emit('blur', event)
+}
+
 const ui = computed(() => buildInput(appConfig)({
   color: props.color,
   variant: props.variant,
   size: props.size,
   loading: props.loading,
-  highlight: props.highlight,
+  highlight: props.highlight || isFocused.value,
   leading: hasLeading.value,
   trailing: hasTrailing.value,
 }))
@@ -207,8 +220,8 @@ defineExpose({ inputRef })
         :class="ui.base({ class: ['w-full', props.ui?.base] })"
         @update:model-value="$emit('update:modelValue', $event)"
         @confirm="$emit('confirm', $event)"
-        @focus="$emit('focus', $event)"
-        @blur="$emit('blur', $event)"
+        @focus="onFocus"
+        @blur="onBlur"
         @keyboard="$emit('keyboard', $event)"
       />
     </view>
