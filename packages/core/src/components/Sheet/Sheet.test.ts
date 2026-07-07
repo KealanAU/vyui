@@ -280,14 +280,14 @@ describe('SheetBackdrop — Presence wiring', () => {
 // collapses the sheet to its content height — the drawer "won't open fully" bug
 // (#79). SheetContentImpl can't mount under vitest (MTS touch bindings crash the
 // renderer — see the file header), so guard the unit at the source level.
-describe('SheetContentImpl — viewport height unit (no dvh)', () => {
-  async function readImpl(): Promise<string> {
-    const fs = await import('node:fs')
-    const path = await import('node:path')
-    const here = path.dirname(new URL(import.meta.url).pathname)
-    return fs.readFileSync(path.join(here, 'SheetContentImpl.vue'), 'utf8')
-  }
+async function readImpl(): Promise<string> {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const here = path.dirname(new URL(import.meta.url).pathname)
+  return fs.readFileSync(path.join(here, 'SheetContentImpl.vue'), 'utf8')
+}
 
+describe('SheetContentImpl — viewport height unit (no dvh)', () => {
   it('sizes the panel with vh, never the unsupported dvh', async () => {
     const sfc = await readImpl()
     expect(sfc).toMatch(/\$\{maxSnap\.value \* 100\}\$\{axis\.value === 'x' \? 'vw' : 'vh'\}/)
@@ -304,5 +304,33 @@ describe('SheetContentImpl — viewport height unit (no dvh)', () => {
     expect(sfc).toContain('vyui-sheet-slide-out-to-right')
     expect(sfc).toContain('vyui-sheet-slide-in-from-left')
     expect(sfc).toContain('vyui-sheet-slide-out-to-left')
+  })
+})
+
+// Regression: when an MT transition drives the close (drag-dismiss or a
+// slide-off from a lower snap), the `.ui-leaving` keyframe must be gated off
+// by a CLASS, not just the worklets' inline `animation: none` — vue-lynx
+// style patches are replace-all, so a BG re-render during Leaving can wipe
+// the inline suppression and restart the keyframe from fully open (the
+// ghost-panel-eats-taps bug). Guarded at the source level like the dvh test
+// above (SheetContentImpl can't mount under vitest).
+describe('SheetContentImpl — MT-close keyframe gate', () => {
+  it('latches the drag-dismiss flag in the same tick as setOpen(false)', async () => {
+    const sfc = await readImpl()
+    expect(sfc).toMatch(/dragDismissed\.value = true\s*\n\s*ctx\.setOpen\(false\)/)
+  })
+
+  it('binds the gate class off the BG-computed suppressLeaveKeyframe', async () => {
+    const sfc = await readImpl()
+    expect(sfc).toMatch(/suppressLeaveKeyframe \? 'vyui-sheet__content--mt-close' : ''/)
+  })
+
+  it('gates the slide-out keyframe and pins the closed transform per side', async () => {
+    const sfc = await readImpl()
+    for (const side of ['bottom', 'top', 'right', 'left']) {
+      expect(sfc).toMatch(new RegExp(
+        `\\.vyui-sheet__content--${side}\\.vyui-sheet__content--mt-close\\.ui-leaving \\{\\n  animation: none;`,
+      ))
+    }
   })
 })

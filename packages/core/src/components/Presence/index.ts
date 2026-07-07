@@ -21,6 +21,7 @@ export {
 } from './Presence'
 
 export {
+  MAX_LEAVING_FRAMES,
   MAX_WAIT_FRAMES,
   usePresence,
   type UsePresenceRefOptions,

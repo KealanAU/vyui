@@ -52,6 +52,22 @@ export interface UsePresenceRefOptions {
 export const MAX_WAIT_FRAMES = 24
 
 /**
+ * Hard ceiling on the TOTAL number of frames an element may sit in `Leaving`,
+ * regardless of animation events. 60 frames ≈ 1s at 60fps — comfortably past
+ * any exit animation (280ms default) plus the {@link MAX_WAIT_FRAMES} grace.
+ *
+ * The per-frame fallback in `handleStateLeaving` is cancelled by ANY
+ * `bindanimationstart` / `bindtransitionstart`, after which the machine
+ * trusts a matching end/cancel to arrive. On Lynx that trust can be broken:
+ * a BG re-render that patches styles replaces main-thread-written inline
+ * styles wholesale (vue-lynx SET_STYLE), which can kill a running animation
+ * without ever firing its end/cancel — the state hangs in `Leaving` and the
+ * invisible child keeps eating taps. This cap is the un-cancellable safety
+ * net: once it expires, `Left` is forced no matter what.
+ */
+export const MAX_LEAVING_FRAMES = 60
+
+/**
  * The core animation state machine for `<Presence>`.
  *
  * Listens to `bindanimationstart` / `bindanimationend` / `bindanimationcancel`
@@ -64,7 +80,9 @@ export const MAX_WAIT_FRAMES = 24
  *
  * If no animation fires for {@link MAX_WAIT_FRAMES} frames after entering one
  * of those states, the state advances anyway so unanimated content doesn't
- * hang on screen.
+ * hang on screen. `Leaving` additionally carries the un-cancellable
+ * {@link MAX_LEAVING_FRAMES} hard cap, which forces `Left` even when a start
+ * event arrived but its end/cancel never will.
  *
  * Race protection — `enteringLoopIdRef` / `leavingLoopIdRef` /
  * `showScheduleIdRef` are incremented on every relevant trigger; in-flight
@@ -117,6 +135,10 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   const showScheduleIdRef = { current: 0 }
   const enteringWaitFramesRef = { current: 0 }
   const leavingWaitFramesRef = { current: 0 }
+  // Separate id for the hard-cap loop: bumped ONLY on (re)entry into Leaving,
+  // never by animation start events — that's what makes it un-cancellable.
+  const leavingHardLoopIdRef = { current: 0 }
+  const leavingHardWaitFramesRef = { current: 0 }
 
   // ----- helpers ------------------------------------------------------------
 
@@ -252,6 +274,35 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       delayFrames(1, tryLeft)
     }
     delayFrames(1, tryLeft)
+
+    // Un-cancellable hard cap — see MAX_LEAVING_FRAMES. Unlike `tryLeft`,
+    // this loop ignores `leavingLoopIdRef` bumps and the animating flags; it
+    // only stands down when the state itself moved on (an animation end
+    // advanced to Left) or the consumer flipped `show` back to true (the
+    // re-entry path owns the element again).
+    leavingHardWaitFramesRef.current = 0
+    leavingHardLoopIdRef.current += 1
+    const hardLoopId = leavingHardLoopIdRef.current
+    const forceLeft = () => {
+      if (hardLoopId !== leavingHardLoopIdRef.current) return
+      if (state.value !== PresenceState.Leaving) return
+      if (showRef.current) return
+      if (leavingHardWaitFramesRef.current >= MAX_LEAVING_FRAMES) {
+        log(
+          debugLog,
+          `[vyui-presence][usePresence] leaving hard cap reached, force Left, loopId: ${hardLoopId}`,
+        )
+        // An animation start whose end/cancel never arrived leaves these
+        // stuck true — clear them so the next open/close cycle isn't poisoned.
+        isKFAnimating.current = false
+        isTransitionAnimating.current = false
+        setPresenceState(PresenceState.Left)
+        return
+      }
+      leavingHardWaitFramesRef.current += 1
+      delayFrames(1, forceLeft)
+    }
+    delayFrames(1, forceLeft)
   }
 
   const handleStateEnteringWithDelay = () => {

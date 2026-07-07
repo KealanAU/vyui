@@ -237,6 +237,64 @@ describe('Presence — state machine via inject', () => {
     expect(probe.ctx.controllers.mount.value).toBe(false)
   })
 
+  it('hard-caps Leaving: forces Left when an animation start never resolves', async () => {
+    const onClose = vi.fn()
+    const probe = mountWithProbe({ initialShow: true, onClose })
+    await waitForUpdate()
+    await frames(40)
+    await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Entered)
+
+    probe.setOpen(false)
+    await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Leaving)
+    // A start with no matching end/cancel — what a style wipe that destroys
+    // a running animation produces. The 24-frame fallback is dead (the start
+    // bumped its loop id), so only the MAX_LEAVING_FRAMES cap can save us.
+    // (No mid-cap "still Leaving" probe here: rAF cadence in jsdom is too
+    // loose to assert against wall-clock waits; the in-flight pinning is
+    // covered by the Entering test above.)
+    probe.ctx.animationHandlers.handleKFStart()
+    await frames(80)
+    await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Left)
+    expect(probe.ctx.controllers.mount.value).toBe(false)
+    expect(onClose).toHaveBeenCalledTimes(1)
+
+    // The stuck isKFAnimating flag was cleared on the forced Left — the next
+    // open cycle must reach Entered through the normal fallback again.
+    probe.setOpen(true)
+    await waitForUpdate()
+    await frames(40)
+    await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Entered)
+  })
+
+  it('reopening during Leaving stands the hard cap down', async () => {
+    const onClose = vi.fn()
+    const probe = mountWithProbe({ initialShow: true, onClose })
+    await waitForUpdate()
+    await frames(40)
+    await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Entered)
+
+    probe.setOpen(false)
+    await waitForUpdate()
+    probe.ctx.animationHandlers.handleKFStart()
+    // Cancel the close while the leaving animation is still "in flight",
+    // let the rescheduled Entering land, then resolve the animation.
+    probe.setOpen(true)
+    await frames(15)
+    await waitForUpdate()
+    probe.ctx.animationHandlers.handleKFEnd()
+    // Wait past the cap: the stood-down hard loop must NOT force Left.
+    await frames(70)
+    await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Entered)
+    expect(probe.ctx.controllers.mount.value).toBe(true)
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
   it('enableDelay lands the state machine in DelayedEntering before Entered', async () => {
     // The DelayedEntering state is scheduled 16 frames after show. We pin
     // animation in flight (handleKFStart) before any waiting so the entering
