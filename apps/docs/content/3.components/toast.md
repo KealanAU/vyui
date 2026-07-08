@@ -295,7 +295,7 @@ Keep durations long enough to read and act on the message. Use `duration="0"` on
 - Swipe movement runs on the Lynx main thread and requires a measured toast width for distance-based dismissal; velocity-based dismissal can still work before measurement.
 - Stacking transforms run on an outer shell while swipe transforms run on an inner layer, preventing the two animations from overwriting each other.
 - Lynx SVG does not inherit `currentColor`, so the component resolves the leading icon color to an explicit hex value.
-- The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming](/theming)).
+- The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming → Dark Mode](/theming/dark-mode)).
 
 ## Related components
 

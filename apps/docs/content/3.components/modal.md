@@ -248,7 +248,7 @@ The native panel is treated as an accessibility container rather than one combin
 - Outside interaction is a native tap on the full-screen backdrop rather than a DOM pointer event.
 - The default transition uses Presence lifecycle classes and Lynx animation bindings, with a 250ms enter and 200ms leave.
 - Core dialog focus callbacks and DOM-style focus trapping are API-parity no-ops on Lynx.
-- The default theme uses the `bg-default` surface and `border-default` border tokens, so it adapts automatically under dark mode (see [Theming](/theming)).
+- The default theme uses the `bg-default` surface and `border-default` border tokens, so it adapts automatically under dark mode (see [Theming → Dark Mode](/theming/dark-mode)).
 - Use `<VyDrawer :snap-points="[1]">` instead of a full-screen modal.
 
 ## Related components

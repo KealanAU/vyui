@@ -190,7 +190,7 @@ Do not rely on color alone when displaying an existing score. Pair the rating wi
 - The component uses Lynx `view` nodes and native `tap` events rather than DOM radio inputs or buttons.
 - Active styling is driven by the core indicator's `data-state="active"` and `ui-active` markers.
 - The kit wrapper renders one indicator per item, so fractional and partial-fill ratings require direct use of the core primitives.
-- The default theme uses vyui's semantic tokens, so it adapts automatically under dark mode (see [Theming](/theming)), and does not include DOM hover or focus-ring styles.
+- The default theme uses vyui's semantic tokens, so it adapts automatically under dark mode (see [Theming → Dark Mode](/theming/dark-mode)), and does not include DOM hover or focus-ring styles.
 - A rating is not a native form input and does not submit a value by itself.
 
 ## Related components

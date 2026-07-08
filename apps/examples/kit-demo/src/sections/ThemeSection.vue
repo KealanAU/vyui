@@ -65,6 +65,18 @@ const showcaseIcons = [
   'icon-park-outline:bell-ring',
   'icon-park-outline:camera',
 ]
+
+// Same icon set, baked to the active semantic hex instead of a flat neutral —
+// reuses `paletteHex`/`colorPalettes` from the Palettes section above, so
+// flipping a swatch there also retints these.
+const colorShowcaseIcons: { icon: string, semantic: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' }[] = [
+  { icon: 'icon-park-outline:like', semantic: 'primary' },
+  { icon: 'icon-park-outline:message', semantic: 'secondary' },
+  { icon: 'icon-park-outline:check-one', semantic: 'success' },
+  { icon: 'icon-park-outline:info', semantic: 'info' },
+  { icon: 'icon-park-outline:caution', semantic: 'warning' },
+  { icon: 'icon-park-outline:close-one', semantic: 'error' },
+]
 </script>
 
 <template>
@@ -184,6 +196,18 @@ const showcaseIcons = [
         >
           <VyIcon :name="icon" :size="28" color="#0f172a" />
           <text class="text-muted text-xs text-center">{{ icon.replace('icon-park-outline:', '') }}</text>
+        </view>
+      </view>
+
+      <text class="text-default text-sm font-medium pt-1">with color</text>
+      <view class="flex flex-row flex-wrap gap-4 pt-1">
+        <view
+          v-for="entry in colorShowcaseIcons"
+          :key="entry.icon"
+          class="flex flex-col items-center gap-1 w-16"
+        >
+          <VyIcon :name="entry.icon" :size="28" :color="paletteHex(colorPalettes[entry.semantic])" />
+          <text class="text-muted text-xs text-center">{{ entry.semantic }}</text>
         </view>
       </view>
     </view>

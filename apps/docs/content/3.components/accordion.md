@@ -181,7 +181,7 @@ Override the component globally through `appConfig.ui.accordion` or locally with
 | `trailingIcon` | Toggle icon, including open-state rotation. |
 | `label` | Trigger label text. |
 
-The only theme variant is `disabled`, which dims the trigger and applies a disabled cursor style. The default theme uses vyui's semantic tokens, so it adapts automatically under dark mode (see [Theming](/theming)), and uses a simple transition instead of named web accordion keyframes.
+The only theme variant is `disabled`, which dims the trigger and applies a disabled cursor style. The default theme uses vyui's semantic tokens, so it adapts automatically under dark mode (see [Theming → Dark Mode](/theming/dark-mode)), and uses a simple transition instead of named web accordion keyframes.
 
 ## Accessibility
 

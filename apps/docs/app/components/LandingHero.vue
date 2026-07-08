@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
     <template #headline>
       <div class="inline-flex items-center gap-2 rounded-full badge-aurora text-(--color-ink) px-3 py-1 text-xs font-medium tracking-tight">
         <UIcon name="i-lucide-flask-conical" class="size-3.5" />
-        Pre-alpha — expect breaking changes
+        Alpha — expect breaking changes
       </div>
     </template>
 

@@ -97,8 +97,7 @@ const CATEGORY_ORDER = [
 // be a whole section (`/getting-started`, `/packages`) or a single nested page.
 // The two package layers (@vyui/core, @vyui/kit) live together under Getting
 // Started; the kit/core split is surfaced as a sub-filter under Components
-// instead. Categories that resolve to no content (e.g. Composables until it
-// ships) are dropped automatically.
+// instead. Categories that resolve to no content are dropped automatically.
 interface CategoryConfig {
   id: string
   title: string

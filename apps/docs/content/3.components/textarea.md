@@ -247,7 +247,7 @@ Autofocus can unexpectedly move focus and open the software keyboard. Reserve it
 - Native textarea scrolling can differ across iOS, Android, and web. Use the core component when you need `maxLines`, line spacing, bounce control, return-key type, or input filtering.
 - Leading and trailing elements are flex siblings rather than absolute overlays because Lynx does not reliably layer them over a native text input.
 - Lynx SVG does not inherit `currentColor`, so built-in and custom icon slots receive an explicit resolved hex color.
-- The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming](/theming)).
+- The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming → Dark Mode](/theming/dark-mode)).
 
 ## Related components
 

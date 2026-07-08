@@ -1,6 +1,6 @@
 # Contributing to Vy UI
 
-> Pre-alpha. Workflow notes here mirror what the maintainers actually run day to day.
+> Alpha. Workflow notes here mirror what the maintainers actually run day to day.
 
 ## Repo layout
 
