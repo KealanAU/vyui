@@ -7,25 +7,25 @@
 // demo's TS project file list. See `packages/core/src/index.ts`.
 import '../../../../packages/core/src'
 
-import { installIntlPolyfill, registerIconSet } from '@vyui/core'
 import { createApp } from 'vue-lynx'
 import { VyUI } from '@vyui/kit'
 import iconParkOutline from '@iconify-json/icon-park-outline/icons.json'
 import iconParkSolid from '@iconify-json/icon-park-solid/icons.json'
 import lucide from '@iconify-json/lucide/icons.json'
 import tabler from '@iconify-json/tabler/icons.json'
+import { installVyui } from '../../_shared/installVyui'
 import App from './App.vue'
 import { brandLogos } from './data/brand-icons'
 import './index.css'
 
-installIntlPolyfill()
-
-registerIconSet('lucide', lucide)
-registerIconSet('icon-park-outline', iconParkOutline)
-registerIconSet('icon-park-solid', iconParkSolid)
-registerIconSet('tabler', tabler)
-// Just the Claude / OpenAI marks for the model picker — a trimmed `logos` set.
-registerIconSet('logos', brandLogos)
+installVyui({
+  lucide,
+  'icon-park-outline': iconParkOutline,
+  'icon-park-solid': iconParkSolid,
+  tabler,
+  // Just the Claude / OpenAI marks for the model picker — a trimmed `logos` set.
+  logos: brandLogos,
+})
 
 const app = createApp(App)
 app.use(VyUI)

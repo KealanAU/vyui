@@ -101,6 +101,10 @@ export interface ComboboxProps {
   ui?: Partial<Record<keyof ReturnType<typeof buildCombobox>['slots'], any>>
 }
 
+export interface ComboboxEmits {
+  (e: 'update:modelValue', value: string | number | (string | number)[]): void
+}
+
 export interface ComboboxSlots {
   /** Trigger value render override. Defaults to label of the selected item(s). */
   default(props: { modelValue: any, open: boolean }): any
@@ -145,7 +149,7 @@ const props = withDefaults(defineProps<ComboboxProps>(), {
   snapPoints: () => [0.9],
   handle: true,
 })
-const emit = defineEmits<{ 'update:modelValue': [value: any] }>()
+const emit = defineEmits<ComboboxEmits>()
 defineSlots<ComboboxSlots>()
 
 const slots = useSlots()

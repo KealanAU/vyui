@@ -18,6 +18,7 @@ export * from './components/Combobox'
 
 // vyui originals
 export * from './components/Button'
+export * from './components/ConfigProvider'
 export * from './components/Form'
 export * from './components/Icon'
 export * from './components/Input'

@@ -7,8 +7,8 @@
 ```
 packages/
   core/         @vyui/core    — runtime primitives (published to npm)
-  ui/           @vyui/kit      — styled components on top of core
-  shared-build-config/        — shared rslib / build config
+  kit/          @vyui/kit      — styled components on top of core
+  shared-build-config/        — shared Vite build config
   testing-utils/              — shared test helpers
 apps/examples/
   kit-demo/         styled-component showcase (exercises @vyui/kit)
@@ -16,14 +16,12 @@ apps/examples/
   …                 app-shaped demos (vyai, tiktok-demo, linear-demo, …)
 ```
 
-`@vyui/kit` is workspace-linked into the example apps via an alias in
-`lynx.config.ts` (it resolves to `packages/kit/src/index.ts`), so edits to UI
-source show up immediately in the demo. `@vyui/core` is **not** aliased by
-default — example apps depend on the published npm version (`^0.0.2`) so the
-pre-compiled MT worklets in `packages/core/dist` ship intact. Aliasing core
-to its source path triggers the consumer's vue-lynx worklet loader to re-run,
-which historically crashed MT with
-`cannot read property 'bind' of undefined`.
+Both `@vyui/kit` and `@vyui/core` are aliased straight at workspace **source**
+in every demo (`apps/examples/_shared/vyui-aliases.ts`, wired into each
+demo's `lynx.config.ts`), so edits to either package show up immediately with
+no build step. The alias targets source rather than `dist` specifically so
+vue-lynx's MT worklet loader — which only walks relative imports, not
+`node_modules` — can reach worklet code; see "Worklet pitfalls" below.
 
 ## Local development workflow
 
@@ -49,59 +47,10 @@ which historically crashed MT with
    - The app-shaped demos (`vyai`, `tiktok-demo`, `linear-demo`, …) exercise
      component combinations inside real layouts.
 
-4. How to edit core for the demos: edit files in `packages/core/src/`. The
-   demos pick changes up via the workspace alias declared in their
-   `source.alias` in `lynx.config.ts`. No `pnpm build` needed for dev
-   iteration in those demos.
-
-   The exception is `kit-demo`, which intentionally depends on the published
-   `@vyui/core` (see next section).
-
-## Editing @vyui/core against kit-demo (`dev:local`)
-
-When you need to edit `@vyui/core` source and see it live in `kit-demo`, opt
-into the local-core alias:
-
-```bash
-# Terminal 1 — watch-build core into packages/core/dist
-pnpm --filter @vyui/core dev
-
-# Terminal 2 — run the demo with @vyui/core aliased to local dist
-pnpm --filter @vyui/kit-demo dev:local
-```
-
-What this does:
-
-- `pnpm --filter @vyui/core dev` runs `rslib build --watch`. Source edits in
-  `packages/core/src/**` rebuild into `packages/core/dist/` with worklets
-  pre-compiled the same way the npm-published package builds them.
-- `dev:local` sets `VYUI_USE_LOCAL_CORE=1`, which flips an alias in
-  `apps/examples/kit-demo/lynx.config.ts` to resolve `@vyui/core` imports
-  against `packages/core/dist/` instead of `node_modules`.
-
-The alias is gated on the env var, so:
-
-- `pnpm --filter @vyui/kit-demo dev` (no `:local`) → resolves `@vyui/core`
-  from the published npm version. Use this when you only care about UI /
-  demo source.
-- `pnpm --filter @vyui/kit-demo dev:local` → resolves from your local
-  `packages/core/dist`. Use this for any core-source change.
-
-Production builds (`pnpm build`) and CI never touch the local alias — they
-always pull `^0.0.2` from npm.
-
-### When the local-core flow fails
-
-- **`@vyui/core` doesn't resolve / 404s**: `packages/core/dist/` hasn't been
-  built yet. Run `pnpm --filter @vyui/core build` once or start the watcher
-  in Terminal 1 first.
-- **MT crashes after switching to local**: dist may be stale. Stop the demo,
-  delete `packages/core/dist`, re-run the core watcher, then the demo. The
-  worklet loader output must come from the rslib chain, not from the
-  consumer pipeline.
-- **HMR not picking up core changes**: rslib watch writes to disk; the demo's
-  dev server picks them up via file-watch. If it stalls, restart the demo
-  (`Ctrl-C` then `pnpm dev:local`).
+4. How to edit core for the demos: edit files in `packages/core/src/`. Every
+   demo (including `kit-demo`) picks changes up via the workspace alias
+   declared in `source.alias` in its `lynx.config.ts` — no `pnpm build`
+   needed for dev iteration.
 
 ## Adding a new primitive
 
@@ -115,9 +64,8 @@ always pull `^0.0.2` from npm.
    canonical patterns — both are stable, both demonstrate the shape we want
    for primitives.
 
-3. Add a card to `apps/examples/phase5-debug/src/App.vue` to exercise it
-   under the debug sandbox. Each card mounts via `v-if`, so the new
-   component can be isolated for bisection.
+3. Add a section under `apps/examples/kit-demo/src/sections/` and wire it
+   into `App.vue`'s tabs to exercise the new component in the live demo.
 
 4. **If the component uses MT worklets** (any `'main thread'` directive):
 
@@ -159,8 +107,8 @@ ninety percent of the time it's one of these:
   reach the MT graph. Don't narrow that list — tree-shaking will eat your
   worklets.
 
-Three known vue-lynx footguns are documented in
-`~/Desktop/vue-lynx-mt-tree-shake-upstream-fix.md`. If you hit something
+Related upstream vue-lynx worklet/tree-shaking issues are documented in
+`docs/upstream/vue-lynx-mt-worklet-import-issue.md`. If you hit something
 that smells related, check that doc first before debugging from scratch.
 
 ## Testing
@@ -172,7 +120,7 @@ that smells related, check that doc first before debugging from scratch.
 - **Single component:** `pnpm exec vitest run src/components/<Name>` from
   inside the package.
 - **Update snapshots:** `pnpm --filter @vyui/core test-update`.
-- **On-device testing:** `pnpm --filter @vyui/phase5-debug dev` and scan
+- **On-device testing:** `pnpm --filter @vyui/kit-demo dev` and scan
   the LAN QR with [Lynx Explorer](https://lynxjs.org/). For a web-only
   preview, open the printed `main.web.bundle` URL.
 
@@ -199,8 +147,8 @@ that smells related, check that doc first before debugging from scratch.
    - `pnpm --filter @vyui/core test` and `pnpm --filter @vyui/kit test`
      (whichever packages you touched).
    - `pnpm --filter <pkg> typecheck` for any package you changed.
-   - If you touched `packages/core/src/**`, verify the demo runs cleanly
-     via `dev:local` against your fresh dist.
+   - If you touched `packages/core/src/**`, verify `kit-demo` still runs
+     cleanly (the workspace alias picks up your changes with no rebuild).
 
 4. Open a PR. CI will run **build + test + typecheck** on the touched
    packages. Address any failures before requesting review.

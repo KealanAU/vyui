@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { MouseEvent } from '@lynx-js/types'
 import type { SelectEvent } from './utils'
 import type { PrimitiveProps } from '@/components/Primitive'
 import type { AcceptableValue, FormFieldProps } from '@/shared/types'

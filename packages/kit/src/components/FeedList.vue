@@ -1,6 +1,7 @@
 <script lang="ts">
 import { tv } from 'tailwind-variants'
 import theme from '../theme/feedList'
+import type { FeedListRefreshState } from '@vyui/core'
 import type { AppConfig } from '../types'
 
 /**
@@ -54,6 +55,21 @@ export interface FeedListProps<T = unknown> {
   ui?: Partial<Record<keyof ReturnType<typeof buildFeedList>['slots'], any>>
 }
 
+export interface FeedListEmits {
+  'update:refreshing': [value: boolean]
+  /** Fired once when the pull crosses threshold and is released. */
+  'refresh': []
+  /** Fired on every pull-to-refresh state transition. */
+  'refreshStateChange': [state: FeedListRefreshState]
+  'loadMore': []
+  'scrollToLower': [event: unknown]
+  'scrollToUpper': [event: unknown]
+  'scroll': [event: unknown]
+  'scrollStateChange': [event: unknown]
+  /** Native `bindsnap` — `event.detail.position` is the snapped item index. */
+  'snap': [event: unknown]
+}
+
 export interface FeedListSlots<T = unknown> {
   /** Row template. Receives the item and its current index. */
   item?(props: { item: T, index: number }): any
@@ -71,24 +87,11 @@ export interface FeedListSlots<T = unknown> {
 
 <script setup lang="ts" generic="T = unknown">
 import { computed } from 'vue'
-import { FeedList as CoreFeedList, type FeedListRefreshState } from '@vyui/core'
+import { FeedList as CoreFeedList } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 
 const props = withDefaults(defineProps<FeedListProps<T>>(), {})
-const emit = defineEmits<{
-  'update:refreshing': [value: boolean]
-  /** Fired once when the pull crosses threshold and is released. */
-  'refresh': []
-  /** Fired on every pull-to-refresh state transition. */
-  'refreshStateChange': [state: FeedListRefreshState]
-  'loadMore': []
-  'scrollToLower': [event: unknown]
-  'scrollToUpper': [event: unknown]
-  'scroll': [event: unknown]
-  'scrollStateChange': [event: unknown]
-  /** Native `bindsnap` — `event.detail.position` is the snapped item index. */
-  'snap': [event: unknown]
-}>()
+const emit = defineEmits<FeedListEmits>()
 defineSlots<FeedListSlots<T>>()
 
 const appConfig = useAppConfig()

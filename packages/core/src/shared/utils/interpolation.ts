@@ -31,6 +31,10 @@ interface RequiredExtrapolationConfig {
   extrapolateRight: Extrapolation
 }
 
+// getVal / isExtrapolate / validateType / internalInterpolate below are
+// duplicated (not shared) with ./interpolationJS — the worklet compiler needs
+// a literal `'main thread'` directive per function, so this file can't import
+// the JS-side implementations. Keep both copies in sync by hand.
 function getVal(
   type: Extrapolation,
   coefficient: number,
