@@ -1,5 +1,4 @@
 <script lang="ts">
-import type { MouseEvent } from '@lynx-js/types'
 import type { SelectEvent } from './utils'
 import type { PrimitiveProps } from '@/components/Primitive'
 import type { AcceptableValue, FormFieldProps } from '@/shared/types'
@@ -48,7 +47,7 @@ const checked = useVModel(props, 'checked', emits, {
 const { value } = toRefs(props)
 const { forwardRef } = useForwardExpose()
 
-function handleClick(event: MouseEvent) {
+function handleClick(event: any) {
   if (props.disabled)
     return
 

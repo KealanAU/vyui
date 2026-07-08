@@ -1,6 +1,7 @@
 import { defineConfig } from '@lynx-js/rspeedy'
 import { pluginVueLynx } from 'vue-lynx/plugin'
 import { pluginTailwindCSS } from 'rsbuild-plugin-tailwindcss'
+import { pluginQRCode } from '@lynx-js/qrcode-rsbuild-plugin'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createLynxFullscreenHintPlugin } from '../_shared/lynx-fullscreen-hint.ts'
@@ -59,5 +60,6 @@ export default defineConfig({
       exclude: [/[\\/]node_modules[\\/]/],
     }),
     createLynxFullscreenHintPlugin('cli-demo:lynx-fullscreen-hint'),
+    pluginQRCode(),
   ],
 })
