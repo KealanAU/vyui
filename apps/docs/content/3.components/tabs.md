@@ -256,7 +256,7 @@ Use concise, unique labels and keep visible text in custom trigger slots. Icon-o
 - The indicator uses native Lynx element measurement rather than DOM offsets. It remains hidden until the first non-zero layout measurement to avoid flashing at the wrong position.
 - Lynx SVG does not inherit `currentColor`; built-in icons receive a resolved fill, and the `leading` slot receives the same `iconColor`.
 - Inactive content is currently conditionally rendered regardless of `unmountOnHide`; do not rely on hidden panels retaining local component state.
-- The theme uses vyui's semantic tokens, so it adapts automatically under dark mode (see [Theming](/theming)), and intentionally omits DOM focus-ring and hover behavior.
+- The theme uses vyui's semantic tokens, so it adapts automatically under dark mode (see [Theming → Dark Mode](/theming/dark-mode)), and intentionally omits DOM focus-ring and hover behavior.
 - Long built-in labels truncate. Use `direction="stacked"`, fewer tabs, or a vertical layout when a narrow horizontal rail becomes crowded.
 
 ## Related components

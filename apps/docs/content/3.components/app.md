@@ -13,7 +13,7 @@ links:
 
 ## Overview
 
-`VyApp` is the recommended root wrapper for a Vy UI app. It owns the dark-mode class-toggle + remount contract that [`useColorMode`](/theming) requires of an app root, mounts the shared overlay host so teleporting surfaces work with zero setup, and reports the root's size whenever it changes.
+`VyApp` is the recommended root wrapper for a Vy UI app. It owns the dark-mode class-toggle + remount contract that [`useColorMode`](/theming/dark-mode) requires of an app root, mounts the shared overlay host so teleporting surfaces work with zero setup, and reports the root's size whenever it changes.
 
 ```vue [src/App.vue]
 <script setup lang="ts">
@@ -43,7 +43,7 @@ Reach for `VyApp` once, at the top of the tree. Everything it wires up — the d
 
 ### Dark mode
 
-`VyApp` reads [`useColorMode`](/theming)'s `mode` / `isDark` and applies both pieces of the app-root contract: the `.dark` class and a `:key="mode"` remount. Lynx native only applies a class change to freshly mounted nodes, so toggling `.dark` on an already-mounted tree would not re-skin it — keying on `mode` remounts the subtree on every change, turning that platform quirk into the mechanism. You get this for free just by wrapping your app; nothing further to wire up.
+`VyApp` reads [`useColorMode`](/theming/dark-mode)'s `mode` / `isDark` and applies both pieces of the app-root contract: the `.dark` class and a `:key="mode"` remount. Lynx native only applies a class change to freshly mounted nodes, so toggling `.dark` on an already-mounted tree would not re-skin it — keying on `mode` remounts the subtree on every change, turning that platform quirk into the mechanism. You get this for free just by wrapping your app; nothing further to wire up.
 
 ### Overlay host
 
@@ -121,7 +121,7 @@ Override globally through `appConfig.ui.app` or locally with the `ui` prop.
 
 ## Platform notes
 
-- The dark-mode remount relies on Lynx native applying class changes only to freshly mounted nodes — `:key="mode"` turns that into the toggle mechanism. See [`useColorMode`](/theming) for the full rationale.
+- The dark-mode remount relies on Lynx native applying class changes only to freshly mounted nodes — `:key="mode"` turns that into the toggle mechanism. See [`useColorMode`](/theming/dark-mode) for the full rationale.
 - `viewport-change` is sourced from the background-thread `layoutchange` event rather than a `main-thread-*` binding, because those attrs do not reliably fall through onto this root.
 - Components that teleport (`Modal`, `Tray`, `Toast`, …) need an `OverlayRoot` somewhere in the tree to render at all — `VyApp` provides one by default so this is rarely something you need to think about.
 
@@ -129,4 +129,4 @@ Override globally through `appConfig.ui.app` or locally with the `ui` prop.
 
 - [`Tray`](/components/tray) for a bottom sheet mounted through the overlay host `VyApp` provides.
 - [`Modal`](/components/modal) for a centered blocking dialog, same overlay host.
-- [Theming](/theming) for dark mode and runtime theme overrides.
+- [Theming → Dark Mode](/theming/dark-mode) and [Theming → Overrides](/theming/overrides) for runtime theme overrides.

@@ -1,5 +1,5 @@
 # @vyui/core
 
-Pre-alpha. Lynx-native Vue components.
+Alpha. Lynx-native Vue components.
 
-Expect breaking changes on every release until 0.1.0.
+Expect breaking changes on every release until 1.0.0.

@@ -212,27 +212,30 @@ body.landing-page {
   --ui-border-accented: var(--color-ink-600);
 }
 
-/* Aurora pill — violet → indigo → fuchsia, matches the landing page blobs */
+/* Aurora pill — Vue green → ink, on the project's own brand ramp instead of
+   the generic violet/indigo/fuchsia "AI app" gradient. Stays a light pastel
+   so the fixed dark-ink text on top stays readable. */
 .badge-aurora {
-  background: linear-gradient(120deg, #ddd6fe 0%, #c7d2fe 50%, #f5d0fe 100%);
+  background: linear-gradient(120deg, #bbf7d0 0%, #dcfce7 50%, #e9eaeb 100%);
 }
 
 /* Dark: same pastel scheme, nudged just one tone up (300-step). Stays
    light enough that the dark ink text still reads on top. */
 .dark .badge-aurora {
-  background: linear-gradient(120deg, #c4b5fd 0%, #a5b4fc 50%, #f0abfc 100%);
+  background: linear-gradient(120deg, #6ee7b7 0%, #bbf7d0 50%, #cdced1 100%);
 }
 
-/* Aurora gradient text — reuses the badge palette as a clipped text fill */
+/* Aurora gradient text — Vue green fading into the ink anchor color, reusing
+   the same brand ramp as the pill instead of the violet/fuchsia clip-text. */
 .text-aurora {
-  background: linear-gradient(120deg, #8b5cf6 0%, #6366f1 50%, #d946ef 100%);
+  background: linear-gradient(120deg, #059669 0%, #42b883 50%, #17191c 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .dark .text-aurora {
-  background: linear-gradient(120deg, #c4b5fd 0%, #a5b4fc 50%, #f0abfc 100%);
+  background: linear-gradient(120deg, #bbf7d0 0%, #6ee7b7 50%, #f4f4f5 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

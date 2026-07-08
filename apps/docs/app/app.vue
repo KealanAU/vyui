@@ -47,9 +47,9 @@ provide('navigation', navigation)
     />
 
     <UBanner
-      id="prealpha-banner"
+      id="alpha-banner"
       icon="i-lucide-flask-conical"
-      title="Vy UI and Vue-Lynx are pre-alpha — breaking changes ahead."
+      title="Vy UI is alpha and Vue-Lynx is pre-alpha — breaking changes ahead."
       close
       :ui="{
         root: 'bg-(--color-vue-mint) border-b border-(--color-ink)/10',

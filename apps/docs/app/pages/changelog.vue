@@ -103,7 +103,7 @@ defineOgImageComponent("Default", {
                 color="warning"
                 variant="subtle"
                 title="No entries yet"
-                description="Vy UI is pre-alpha. This page fills in as core and kit evolve."
+                description="Vy UI is alpha. This page fills in as core and kit evolve."
             />
 
             <template v-else>

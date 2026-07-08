@@ -365,7 +365,7 @@ Use `type="password"` for secret text, but do not assume the keyboard type valid
 - Focus is tracked in JS because Lynx has no `:focus-within` and the border and ring live on the root wrapper, not the native input; the ring itself is a flat `box-shadow`.
 - Leading and trailing elements are flex siblings rather than absolute overlays because Lynx does not reliably layer them over a native text input.
 - Lynx SVG does not inherit `currentColor`, so built-in and custom icon slots receive an explicit resolved hex color.
-- The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming](/theming)).
+- The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming → Dark Mode](/theming/dark-mode)).
 
 ## Related components
 

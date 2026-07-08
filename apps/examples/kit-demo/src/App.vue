@@ -8,6 +8,7 @@ import DarkModeSection from './sections/DarkModeSection.vue'
 import FormSection from './sections/FormSection.vue'
 import DisplaySection from './sections/DisplaySection.vue'
 import GesturesSection from './sections/GesturesSection.vue'
+import SwipeDeckSection from './sections/SwipeDeckSection.vue'
 import ScrollViewSection from './sections/ScrollViewSection.vue'
 import IslandSection from './sections/IslandSection.vue'
 import OverlaySection from './sections/OverlaySection.vue'
@@ -75,6 +76,7 @@ const allTabItems = [
   { value: 'form',    label: 'Form',  icon: 'icon-park-outline:edit',             slot: 'form' },
   { value: 'display', label: 'View',  icon: 'icon-park-outline:layers',           slot: 'display' },
   { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures' },
+  { value: 'swipe',   label: 'Swipe',  icon: 'icon-park-outline:check-one',       slot: 'swipe' },
   { value: 'scroll',  label: 'Scroll', icon: 'icon-park-outline:swipe',           slot: 'scroll' },
   { value: 'island',  label: 'Island', icon: 'icon-park-outline:pill',            slot: 'island' },
   { value: 'overlay', label: 'Modal', icon: 'icon-park-outline:application-menu', slot: 'overlay' },
@@ -87,7 +89,7 @@ const tabItems = computed(() => allTabItems)
 // inner gestures (drag-to-reorder, swipe rows, pull a list) — the symptom is
 // "the whole page scrolls instead of the thing under my finger". For these tabs
 // we disable the outer scroll so the inner surface owns the gesture.
-const NON_SCROLLING_TABS = ['gestures', 'scroll']
+const NON_SCROLLING_TABS = ['gestures', 'swipe', 'scroll']
 const pageScrolls = computed(() => !NON_SCROLLING_TABS.includes(String(tab.value)))
 
 // A non-scrolling tab keeps the same header + padding as the scrolling tabs so
@@ -207,6 +209,10 @@ const tabsUi = computed(() => {
 
           <template #gestures>
             <GesturesSection />
+          </template>
+
+          <template #swipe>
+            <SwipeDeckSection />
           </template>
 
           <template #scroll>

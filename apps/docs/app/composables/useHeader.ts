@@ -24,7 +24,7 @@ export function useHeader() {
   }, {
     label: 'Theming',
     to: '/theming',
-    active: route.path === '/theming',
+    active: route.path === '/theming' || route.path.startsWith('/theming/'),
   }, {
     label: 'Roadmap',
     to: '/getting-started/roadmap',
@@ -54,7 +54,7 @@ export function useHeader() {
     label: 'Theming',
     icon: 'i-lucide-palette',
     to: '/theming',
-    active: route.path === '/theming',
+    active: route.path === '/theming' || route.path.startsWith('/theming/'),
   }, {
     label: 'Roadmap',
     icon: 'i-lucide-map',
@@ -91,7 +91,7 @@ export function useHeader() {
     label: 'Theming',
     icon: 'i-lucide-palette',
     to: '/theming',
-    active: route.path === '/theming',
+    active: route.path === '/theming' || route.path.startsWith('/theming/'),
   }, {
     label: 'Roadmap',
     icon: 'i-lucide-map',
