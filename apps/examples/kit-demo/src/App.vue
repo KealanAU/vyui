@@ -71,14 +71,19 @@ const rootClass = computed(() => [
 ].join(' '))
 
 const tab = ref<string | number>('theme')
+// The gesture tabs (Gestures / Swipe / Scroll) opt back into unmounting: their
+// sections write styles from MT worklets (`setStyleProperty`,
+// `animate(fill: 'forwards')`), which land on the native style object and keep
+// painting through the kept-alive `display: none` on device — ghost cards over
+// other tabs. Content tabs stay kept-alive.
 const tabItems = [
   { value: 'theme',   label: 'Theme', icon: 'icon-park-outline:paint',            slot: 'theme' },
   { value: 'dark',    label: 'Dark',  icon: 'icon-park-outline:moon',             slot: 'dark' },
   { value: 'form',    label: 'Form',  icon: 'icon-park-outline:edit',             slot: 'form' },
   { value: 'display', label: 'View',  icon: 'icon-park-outline:layers',           slot: 'display' },
-  { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures' },
-  { value: 'swipe',   label: 'Swipe',  icon: 'icon-park-outline:check-one',       slot: 'swipe' },
-  { value: 'scroll',  label: 'Scroll', icon: 'icon-park-outline:swipe',           slot: 'scroll' },
+  { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures', unmountOnHide: true },
+  { value: 'swipe',   label: 'Swipe',  icon: 'icon-park-outline:check-one',       slot: 'swipe',    unmountOnHide: true },
+  { value: 'scroll',  label: 'Scroll', icon: 'icon-park-outline:swipe',           slot: 'scroll',   unmountOnHide: true },
   { value: 'island',  label: 'Island', icon: 'icon-park-outline:pill',            slot: 'island' },
   { value: 'overlay', label: 'Modal', icon: 'icon-park-outline:application-menu', slot: 'overlay' },
 ]
@@ -147,7 +152,8 @@ const tabsUi = computed(() =>
            trigger/indicator flush lands before the section mount, so the bar
            responds instantly. Content sections scroll themselves via
            `SectionScroll`; gesture tabs (Gestures/Swipe/Scroll) render bare so
-           their inner surfaces own the touch stream. -->
+           their inner surfaces own the touch stream, and opt back into
+           unmounting per-item (see tabItems). -->
       <VyTabs
         v-model="tab"
         :items="tabItems"

@@ -27,6 +27,13 @@ export interface TabsItem {
   /** Unique identifier for the tab. Defaults to the index when omitted. */
   value?: string | number
   disabled?: boolean
+  /**
+   * Per-tab override of the root `unmountOnHide`. Set `true` under a
+   * keep-alive root for a panel whose subtree writes styles from main-thread
+   * worklets (`setStyleProperty` / `animate(fill: 'forwards')`) — those nodes
+   * can keep painting through the kept-alive `display: none` on device.
+   */
+  unmountOnHide?: boolean
   [key: string]: any
 }
 
@@ -190,6 +197,7 @@ const triggerIconColor = (item: TabsItem, index: number, activeValue: string | n
         v-for="(item, index) in items"
         :key="index"
         :value="resolveValue(item, index)"
+        :unmount-on-hide="item.unmountOnHide"
         :class="classes.content"
       >
         <slot :name="(item.slot || 'content')" :item="item" :index="index">

@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "rspeedy dev",
-    "build": "rspeedy build",
+    "dev": "node scripts/gen-icons.mjs && rspeedy dev",
+    "build": "node scripts/gen-icons.mjs && rspeedy build",
     "gen:icons": "node scripts/gen-icons.mjs"
   },
   "dependencies": {

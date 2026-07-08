@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
 import Tabs from './story/_Tabs.vue'
+import TabsMixedUnmount from './story/_TabsMixedUnmount.vue'
 import TabsWithDisabled from './story/_TabsWithDisabled.vue'
 
 describe('given default Tabs', () => {
@@ -61,6 +62,22 @@ describe('given Tabs with unmountOnHide=false', () => {
     const hidden = container.querySelector('[data-state="inactive"][id*="content"]') as HTMLElement
     expect(hidden.style.display).toBe('none')
     expect(hidden.getAttribute('accessibility-elements-hidden')).toBeTruthy()
+  })
+
+  it('a panel-level unmountOnHide=true opts back into unmounting', async () => {
+    const { container } = render(TabsMixedUnmount)
+    const triggers = () => container.querySelectorAll('[accessibility-traits="tabbar"]')
+
+    fireEvent.tap(triggers()[1])
+    await waitForUpdate()
+    expect(container.innerHTML).toContain('Change your password')
+    // tab1 rides the root's unmountOnHide=false — kept alive while inactive.
+    expect(container.innerHTML).toContain('Make changes')
+
+    // Leaving tab2 unmounts it: the panel-level override wins over the root.
+    fireEvent.tap(triggers()[0])
+    await waitForUpdate()
+    expect(container.innerHTML).not.toContain('Change your password')
   })
 })
 
