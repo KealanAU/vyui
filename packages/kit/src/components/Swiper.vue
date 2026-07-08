@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/swiper'
 import type { AppConfig } from '../types'
 
@@ -7,10 +8,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.swiper`.
  */
-export const buildSwiper = (appConfig: AppConfig) => {
+export const buildSwiper = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).swiper as Partial<typeof theme> | undefined
   return tv({ extend: tv(theme), ...(overrides || {}) })
-}
+})
 
 type SwiperVariants = VariantProps<ReturnType<typeof buildSwiper>>
 

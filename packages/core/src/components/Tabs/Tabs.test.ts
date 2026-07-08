@@ -41,6 +41,48 @@ describe('given default Tabs', () => {
   })
 })
 
+describe('given Tabs with unmountOnHide=false', () => {
+  it('lazily mounts content on first visit, then keeps it mounted but hidden', async () => {
+    const { container } = render(Tabs, { unmountOnHide: false })
+    const triggers = container.querySelectorAll('[accessibility-traits="tabbar"]')
+
+    // Unvisited tab is NOT pre-mounted (lazy, not upfront).
+    expect(container.innerHTML).not.toContain('Change your password')
+
+    fireEvent.tap(triggers[1])
+    await waitForUpdate()
+    expect(container.innerHTML).toContain('Change your password')
+
+    // Switching back hides tab2's panel instead of unmounting it.
+    fireEvent.tap(triggers[0])
+    await waitForUpdate()
+    expect(container.innerHTML).toContain('Make changes')
+    expect(container.innerHTML).toContain('Change your password')
+    const hidden = container.querySelector('[data-state="inactive"][id*="content"]') as HTMLElement
+    expect(hidden.style.display).toBe('none')
+    expect(hidden.getAttribute('accessibility-elements-hidden')).toBeTruthy()
+  })
+})
+
+describe('given Tabs with deferContent', () => {
+  it('flips trigger state immediately and swaps content a macrotask later', async () => {
+    const { container } = render(Tabs, { deferContent: true })
+    const triggers = () => container.querySelectorAll('[accessibility-traits="tabbar"]')
+
+    fireEvent.tap(triggers()[1])
+    await waitForUpdate()
+    // Trigger state is already flipped…
+    expect(triggers()[1].getAttribute('data-state')).toBe('active')
+    // …but the content swap has not landed yet (still within the microtask flush).
+    expect(container.innerHTML).toContain('Make changes')
+
+    await new Promise(resolve => setTimeout(resolve, 0))
+    await waitForUpdate()
+    expect(container.innerHTML).toContain('Change your password')
+    expect(container.innerHTML).not.toContain('Make changes')
+  })
+})
+
 describe('given Tabs with a disabled trigger', () => {
   it('does not switch tabs when the disabled trigger is tapped', async () => {
     const { container } = render(TabsWithDisabled)

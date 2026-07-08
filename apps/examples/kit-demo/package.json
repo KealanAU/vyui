@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "rspeedy dev",
-    "build": "rspeedy build"
+    "build": "rspeedy build",
+    "gen:icons": "node scripts/gen-icons.mjs"
   },
   "dependencies": {
     "@vyui/core": "workspace:*",

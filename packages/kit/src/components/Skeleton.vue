@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/skeleton'
 import type { AppConfig } from '../types'
 
@@ -7,10 +8,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.skeleton`.
  */
-export const buildSkeleton = (appConfig: AppConfig) => {
+export const buildSkeleton = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).skeleton as Partial<typeof theme> | undefined
   return tv({ extend: tv(theme), ...(overrides || {}) })
-}
+})
 
 export interface SkeletonProps {
   class?: any

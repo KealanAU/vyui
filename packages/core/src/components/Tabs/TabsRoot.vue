@@ -7,6 +7,11 @@ import { createContext, useDirection, useForwardExpose, useId } from '@/shared'
 
 export interface TabsRootContext {
   modelValue: Ref<StringOrNumber | undefined>
+  /** The value `TabsContent` panels follow. Equals `modelValue` unless
+   * `deferContent` is set, in which case it trails by a macrotask so the
+   * trigger/indicator patch flushes to the main thread before the (much
+   * heavier) content unmount/mount patch. */
+  contentValue: Ref<StringOrNumber | undefined>
   changeModelValue: (value: StringOrNumber) => void
   orientation: Ref<DataOrientation>
   dir: Ref<Direction>
@@ -51,11 +56,26 @@ export interface TabsRootProps<T extends StringOrNumber = StringOrNumber> extend
   /** The controlled value of the tab to activate. Can be bind as `v-model`. */
   modelValue?: T
   /**
-   * When `true`, the element will be unmounted on closed state.
+   * When `true`, a content panel is unmounted whenever it is not the active
+   * tab. When `false`, a panel mounts the FIRST time its tab is selected and
+   * stays mounted (hidden via `display: none`) afterwards, making revisits a
+   * style flip instead of a full remount. Lazy-on-first-visit rather than
+   * all-mounted-upfront: on Lynx, mounting every panel at once would move the
+   * cost to first paint. Use `forceMount` on an individual `TabsContent` for
+   * the mount-upfront case.
    *
    * @defaultValue `true`
    */
   unmountOnHide?: boolean
+  /**
+   * When `true`, the active-trigger state change and the content swap land in
+   * separate flushes: triggers/indicator update immediately, content follows
+   * one macrotask later. On Lynx this makes the tab bar respond instantly
+   * instead of waiting for the incoming panel's subtree to mount.
+   *
+   * @defaultValue `false`
+   */
+  deferContent?: boolean
 }
 export type TabsRootEmits<T extends StringOrNumber = StringOrNumber> = {
   /** Event handler called when the value changes */
@@ -67,13 +87,14 @@ export const [injectTabsRootContext, provideTabsRootContext]
 </script>
 
 <script setup lang="ts" generic="T extends StringOrNumber = StringOrNumber">
-import { ref, shallowRef, toRefs } from 'vue'
+import { onScopeDispose, ref, shallowRef, toRefs, watch } from 'vue'
 import { Primitive } from '@/components/Primitive'
 
 const props = withDefaults(defineProps<TabsRootProps<T>>(), {
   orientation: 'horizontal',
   activationMode: 'automatic',
   unmountOnHide: true,
+  deferContent: false,
 })
 const emits = defineEmits<TabsRootEmits<T>>()
 
@@ -98,8 +119,27 @@ const contentIds = shallowRef<Set<StringOrNumber>>(new Set())
 const triggers = shallowRef<Map<StringOrNumber, any>>(new Map())
 const layoutTick = ref(0)
 
+// With `deferContent`, content follows the model one macrotask behind. A
+// microtask is not enough — Vue's own flush is a microtask, so the trigger
+// patch and the content patch would coalesce into the same main-thread
+// element-tree flush, which is exactly the latency this exists to split.
+const contentValue = shallowRef<StringOrNumber | undefined>(modelValue.value)
+let contentTimer: ReturnType<typeof setTimeout> | undefined
+watch(modelValue, (value) => {
+  if (!props.deferContent) {
+    contentValue.value = value
+    return
+  }
+  clearTimeout(contentTimer)
+  contentTimer = setTimeout(() => {
+    contentValue.value = value
+  }, 0)
+})
+onScopeDispose(() => clearTimeout(contentTimer))
+
 provideTabsRootContext({
   modelValue,
+  contentValue,
   changeModelValue: (value: StringOrNumber) => {
     modelValue.value = value as T
   },

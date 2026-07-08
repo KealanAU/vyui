@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/popover'
 import type { SheetDirection } from '@vyui/core'
 import type { AppConfig } from '../types'
@@ -8,10 +9,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.popover`.
  */
-export const buildPopover = (appConfig: AppConfig) => {
+export const buildPopover = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).popover as Partial<typeof theme> | undefined
   return tv({ extend: tv(theme), ...(overrides || {}) })
-}
+})
 
 /**
  * Sub-object mirroring Nuxt UI's `content` prop — a single bag for popper

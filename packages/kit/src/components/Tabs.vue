@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme, { iconFg } from '../theme/tabs'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
@@ -8,10 +9,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.tabs`.
  */
-export const buildTabs = (appConfig: AppConfig) => {
+export const buildTabs = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).tabs as Partial<ReturnType<typeof theme>> | undefined
   return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
+})
 
 type TabsVariants = VariantProps<ReturnType<typeof buildTabs>>
 
@@ -47,8 +48,17 @@ export interface TabsProps {
   defaultValue?: string | number
   /** When `false`, the content region is not rendered. */
   content?: boolean
-  /** Whether inactive tab content should unmount. */
+  /**
+   * Whether inactive tab content should unmount. When `false`, a panel mounts
+   * on its first visit and stays mounted (hidden) after — revisits become a
+   * style flip instead of a full remount.
+   */
   unmountOnHide?: boolean
+  /**
+   * Land the trigger/indicator update one flush before the content swap so
+   * the tab bar responds instantly even when the incoming panel is heavy.
+   */
+  deferContent?: boolean
   class?: any
   ui?: Partial<Record<keyof ReturnType<typeof buildTabs>['slots'], any>>
 }
@@ -88,6 +98,7 @@ const props = withDefaults(defineProps<TabsProps>(), {
   defaultValue: '0',
   orientation: 'horizontal',
   unmountOnHide: true,
+  deferContent: false,
 })
 const emit = defineEmits<TabsEmits>()
 const slots = defineSlots<TabsSlots>()
@@ -100,6 +111,20 @@ const ui = computed(() => buildTabs(appConfig)({
   size: props.size,
   orientation: props.orientation,
   direction: props.direction,
+}))
+
+// Slot classes are identical for every trigger/panel, so resolve each ONCE per
+// variant change instead of per element per render — a tab switch re-renders
+// this whole template (the scoped-slot `activeValue` changes), and on Lynx's
+// interpreter the tailwind-variants slot calls are the expensive part.
+const classes = computed(() => ({
+  root: ui.value.root({ class: [props.class, props.ui?.root] }),
+  list: ui.value.list({ class: props.ui?.list }),
+  indicator: ui.value.indicator({ class: props.ui?.indicator }),
+  trigger: ui.value.trigger({ class: props.ui?.trigger }),
+  leadingIcon: ui.value.leadingIcon({ class: props.ui?.leadingIcon }),
+  label: ui.value.label({ class: props.ui?.label }),
+  content: ui.value.content({ class: props.ui?.content }),
 }))
 
 const resolveValue = (item: TabsItem, index: number) =>
@@ -125,32 +150,33 @@ const triggerIconColor = (item: TabsItem, index: number, activeValue: string | n
     :default-value="defaultValue"
     :orientation="orientation"
     :unmount-on-hide="unmountOnHide"
-    :class="ui.root({ class: [props.class, props.ui?.root] })"
+    :defer-content="deferContent"
+    :class="classes.root"
     v-slot="{ modelValue: activeValue }"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <TabsList :class="ui.list({ class: props.ui?.list })">
-      <TabsIndicator :class="ui.indicator({ class: props.ui?.indicator })" />
+    <TabsList :class="classes.list">
+      <TabsIndicator :class="classes.indicator" />
 
       <TabsTrigger
         v-for="(item, index) in items"
         :key="index"
         :value="resolveValue(item, index)"
         :disabled="item.disabled"
-        :class="ui.trigger({ class: props.ui?.trigger })"
+        :class="classes.trigger"
       >
         <slot name="leading" :item="item" :index="index" :icon-color="triggerIconColor(item, index, activeValue)">
           <VyIcon
             v-if="item.icon"
             :name="item.icon"
             :color="triggerIconColor(item, index, activeValue)"
-            :class="ui.leadingIcon({ class: props.ui?.leadingIcon })"
+            :class="classes.leadingIcon"
           />
         </slot>
 
         <text
           v-if="item.label || !!slots.default"
-          :class="ui.label({ class: props.ui?.label })"
+          :class="classes.label"
         >
           <slot :item="item" :index="index">{{ item.label }}</slot>
         </text>
@@ -164,7 +190,7 @@ const triggerIconColor = (item: TabsItem, index: number, activeValue: string | n
         v-for="(item, index) in items"
         :key="index"
         :value="resolveValue(item, index)"
-        :class="ui.content({ class: props.ui?.content })"
+        :class="classes.content"
       >
         <slot :name="(item.slot || 'content')" :item="item" :index="index">
           <text v-if="item.content">{{ item.content }}</text>

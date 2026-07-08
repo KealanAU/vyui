@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/modal'
 import type { AppConfig } from '../types'
 import type { ButtonProps } from './Button.vue'
@@ -14,10 +15,10 @@ import type { ButtonProps } from './Button.vue'
  * ergonomics built on `SheetRoot`. The previous `fullscreen` variant was
  * removed — a full-screen Modal is just `<VyDrawer :snap-points="[1]">`.
  */
-export const buildModal = (appConfig: AppConfig) => {
+export const buildModal = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).modal as Partial<typeof theme> | undefined
   return tv({ extend: tv(theme), ...(overrides || {}) })
-}
+})
 
 type ModalVariants = VariantProps<ReturnType<typeof buildModal>>
 

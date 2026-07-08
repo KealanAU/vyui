@@ -34,8 +34,11 @@ The problems are **enforcement and completion**, not design:
    raw `bg-white`/`border-black`/`text-slate-*`) and the `avatarGroup.ts` overlap-ring
    `border-white`, which is an intentional gap pending a `ring-bg`-equivalent token (see
    §5.1–5.2).
-4. The safelist in `tailwind.js` emits **~550 KB of utility CSS** (pre-minify) and still
-   ships dead `data-[…]` variants and unusable `ring-*` utilities.
+4. **Fixed 2026-07:** the safelist in `tailwind.js` emitted **~550 KB of utility CSS**
+   (pre-minify) from combinatorial patterns, including dead `data-[…]` variants and
+   unusable `ring-*` utilities. It now safelists the exact classes collected from the
+   packaged theme configs (~84 KB in kit-demo) and offers an opt-in `components` filter;
+   §7 describes the old mechanism.
 
 ---
 
@@ -266,6 +269,11 @@ library-level fix, but there is currently no live consumer demonstrating it.
 ---
 
 ## 7. Payload: the safelist needs a diet
+
+> **Fixed 2026-07** — the preset now walks the packaged theme configs and safelists the
+> exact classes they emit for the configured color set (~84 KB in kit-demo), with an
+> opt-in `components` filter for consumers using a subset of the kit. Kept for the
+> record of the original mechanism and measurements.
 
 `tailwind.js:145-193` brute-forces `(bg|text|ring|border) × 7 colors × 11 shades × 27
 variants`. Measured output: **~550 KB of utility CSS** before minify, shipped into every

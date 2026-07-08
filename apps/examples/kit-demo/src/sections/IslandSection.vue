@@ -103,7 +103,7 @@ function notify(message: string) {
       <view :style="{ position: 'fixed', top: '16px', left: '0', right: '0', zIndex: 60, alignItems: 'center' }">
         <VyToast
           :title="toastMessage"
-          icon="icon-park-outline:navigation-fork"
+          icon="icon-park-outline:navigation"
           :close="false"
         />
       </view>

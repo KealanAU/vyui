@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/formField'
 import type { AppConfig } from '../types'
 import type { FormFieldValidator } from '@vyui/core'
@@ -8,10 +9,10 @@ import type { FormFieldValidator } from '@vyui/core'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.formField`.
  */
-export const buildFormField = (appConfig: AppConfig) => {
+export const buildFormField = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).formField as Partial<typeof theme> | undefined
   return tv({ extend: tv(theme), ...(overrides || {}) })
-}
+})
 
 type FormFieldVariants = VariantProps<ReturnType<typeof buildFormField>>
 

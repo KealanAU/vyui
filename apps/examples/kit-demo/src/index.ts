@@ -9,15 +9,16 @@ import '../../../../packages/core/src'
 
 import { createApp } from 'vue-lynx'
 import { COLORS, VyUI } from '@vyui/kit'
-import iconParkOutline from '@iconify-json/icon-park-outline/icons.json'
-import lucide from '@iconify-json/lucide/icons.json'
 import { installVyui } from '../../_shared/installVyui'
+import { iconParkOutline, lucide } from './icons.generated'
 import App from './App.vue'
 import './index.css'
 
-// Both lucide (used by VyUI defaults like `loading` and `check`) and
-// icon-park-outline (used in the demo screen) must be registered up front.
-installVyui({ lucide, 'icon-park-outline': iconParkOutline })
+// Generated SUBSETS of lucide (VyUI defaults like `loading`/`check`) and
+// icon-park-outline (the demo screen) — the full sets are ~1.5 MB of JSON,
+// parsed on the background thread at startup, for ~60 used glyphs. After
+// adding an icon name, regenerate with `pnpm gen:icons`.
+installVyui({ 'lucide': lucide, 'icon-park-outline': iconParkOutline })
 
 const app = createApp(App)
 // Register a custom semantic color (`tertiary`) alongside the defaults — the

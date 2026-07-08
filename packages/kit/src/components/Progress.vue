@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/progress'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
@@ -8,10 +9,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.progress`.
  */
-export const buildProgress = (appConfig: AppConfig) => {
+export const buildProgress = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).progress as Partial<ReturnType<typeof theme>> | undefined
   return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
+})
 
 type ProgressVariants = VariantProps<ReturnType<typeof buildProgress>>
 

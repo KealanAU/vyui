@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/feedList'
 import type { FeedListRefreshState } from '@vyui/core'
 import type { AppConfig } from '../types'
@@ -8,10 +9,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.feedList`.
  */
-export const buildFeedList = (appConfig: AppConfig) => {
+export const buildFeedList = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).feedList as Partial<typeof theme> | undefined
   return tv({ extend: tv(theme), ...(overrides || {}) })
-}
+})
 
 export interface FeedListProps<T = unknown> {
   /** Items to render. Each becomes a `<list-item>` with an `item-key`. */

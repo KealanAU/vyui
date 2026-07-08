@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/drawer'
 import type { AppConfig } from '../types'
 
@@ -7,10 +8,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.drawer`.
  */
-export const buildDrawer = (appConfig: AppConfig) => {
+export const buildDrawer = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).drawer as Partial<typeof theme> | undefined
   return tv({ extend: tv(theme), ...(overrides || {}) })
-}
+})
 
 type DrawerVariants = VariantProps<ReturnType<typeof buildDrawer>>
 

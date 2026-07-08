@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/avatar'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
@@ -9,10 +10,10 @@ import type { ChipProps } from './Chip.vue'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.avatar`.
  */
-export const buildAvatar = (appConfig: AppConfig) => {
+export const buildAvatar = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).avatar as Partial<ReturnType<typeof theme>> | undefined
   return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
+})
 
 type AvatarVariants = VariantProps<ReturnType<typeof buildAvatar>>
 
