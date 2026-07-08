@@ -5,7 +5,7 @@
  * between views via CSS `transition: height` (device-proven on Lynx — see the
  * `feat/tray` height spike; MT `setStyleProperty` height is a no-op).
  *
- * Light-mode only, matching the shipping `Drawer` theme: `dark:*`, `focus*`,
+ * Dark rides the semantic tokens, matching the shipping `Drawer` theme: `dark:*`, `focus*`,
  * and `shadow-*` classes are dropped (Lynx). Open/close slide + drag physics
  * are owned by core `SheetContentImpl`; this theme only styles chrome.
  *
@@ -27,9 +27,9 @@ export default {
     // The sheet panel. `fitContent` on core SheetContent means no explicit
     // height — it hugs handle + morph + footer. `variant` supplies the
     // edge/inset + border + radius chrome below.
-    content: 'fixed z-[1001] flex flex-col overflow-hidden bg-elevated',
+    content: 'fixed z-[1001] flex flex-col overflow-hidden bg-default',
     // Drag pill (SheetContent's first child; core flex-direction pins it top).
-    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
+    handle: 'self-center w-9 h-1 rounded-full bg-accented mt-1.5 mb-1',
     // Height-animated container. `overflow-hidden` clips the outgoing/incoming
     // view during the tween. `transition-[height]` + inline transitionDuration
     // (set from the `duration` prop) drive the morph.
@@ -46,7 +46,7 @@ export default {
     bodyScroll: '',
     // Persistent footer — mounted outside `morph`, so it survives view swaps
     // (does not unmount/animate).
-    footer: 'flex flex-col px-4 pt-2 pb-4 border-t border-neutral-100',
+    footer: 'flex flex-col px-4 pt-2 pb-4 border-t border-muted',
   },
   variants: {
     variant: {
@@ -54,11 +54,11 @@ export default {
       // rounded. `w-auto` unsets core's `width:100%` so the panel spans
       // between the left/right insets.
       floating: {
-        content: 'left-4 right-4 bottom-4 w-auto rounded-2xl border border-neutral-200',
+        content: 'left-4 right-4 bottom-4 w-auto rounded-2xl border border-default',
       },
       // Edge-anchored bottom sheet: flush left/right/bottom, top corners only.
       flush: {
-        content: 'inset-x-0 bottom-0 rounded-t-2xl border-t border-neutral-200',
+        content: 'inset-x-0 bottom-0 rounded-t-2xl border-t border-default',
       },
     },
   },

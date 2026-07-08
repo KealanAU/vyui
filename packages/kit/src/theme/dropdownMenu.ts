@@ -1,6 +1,6 @@
 /**
  * DropdownMenu theme — adapted from nuxt/ui v3.0.2 `theme/dropdown-menu.ts`
- * for Vue-Lynx. Light-mode only; `dark:*`, `focus:*`, `focus-visible:*`, and
+ * for Vue-Lynx. Dark rides the semantic tokens; `dark:*`, `focus:*`, `focus-visible:*`, and
  * `transition-shadow` classes are dropped. Hover/active states keep
  * `data-[state=...]`, `ui-highlighted`, `ui-disabled`.
  * `shadow-lg shadow-black/10` matches `IslandContainer` so floating surfaces
@@ -26,10 +26,10 @@ export const TRAILING_ICON_FG = { semantic: 'neutral', shade: 400 } as const
 
 export default (colors: Color[]) => ({
   slots: {
-    content: 'min-w-32 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-1rem)] bg-elevated rounded-lg border border-neutral-200 shadow-lg shadow-black/10 divide-y divide-neutral-200 overflow-y-auto',
+    content: 'min-w-32 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-1rem)] bg-default rounded-lg border border-default shadow-lg shadow-black/10 divide-y divide-default overflow-y-auto',
     group: 'p-1',
-    label: 'w-full flex flex-row items-center font-semibold text-neutral-900',
-    separator: '-mx-1 my-1 h-px bg-neutral-200',
+    label: 'w-full flex flex-row items-center font-semibold text-highlighted',
+    separator: '-mx-1 my-1 h-px bg-accented',
     item: 'group relative w-full flex flex-row items-start rounded-md ui-disabled:opacity-50 ui-disabled:cursor-not-allowed transition-colors',
     itemLeadingIcon: 'shrink-0',
     itemLeadingAvatar: 'shrink-0',
@@ -38,7 +38,7 @@ export default (colors: Color[]) => ({
     itemTrailingIcon: `shrink-0 text-${TRAILING_ICON_FG.semantic}-${TRAILING_ICON_FG.shade}`,
     itemWrapper: 'flex-1 flex flex-col text-start min-w-0',
     itemLabel: 'truncate',
-    itemDescription: 'truncate text-xs text-neutral-500',
+    itemDescription: 'truncate text-xs text-muted',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
@@ -49,14 +49,14 @@ export default (colors: Color[]) => ({
     // only the `bg-*` surface stays on `item`.
     active: {
       true: {
-        item: 'bg-neutral-100',
-        itemLabel: 'text-neutral-900',
-        itemLeadingIcon: 'text-neutral-700',
+        item: 'bg-elevated',
+        itemLabel: 'text-highlighted',
+        itemLeadingIcon: 'text-default',
       },
       false: {
-        item: 'ui-highlighted:bg-neutral-100 ui-open:bg-neutral-100',
-        itemLabel: 'text-neutral-700 group-ui-highlighted:text-neutral-900 group-ui-open:text-neutral-900',
-        itemLeadingIcon: 'text-neutral-500 group-ui-highlighted:text-neutral-700 group-ui-open:text-neutral-700',
+        item: 'ui-highlighted:bg-elevated ui-open:bg-elevated',
+        itemLabel: 'text-default group-ui-highlighted:text-highlighted group-ui-open:text-highlighted',
+        itemLeadingIcon: 'text-muted group-ui-highlighted:text-default group-ui-open:text-default',
       },
     },
     loading: {

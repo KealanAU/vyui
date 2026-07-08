@@ -1,6 +1,6 @@
 // Ported from nuxt/ui v3.0.2 `src/theme/card.ts` and adapted for Vue-Lynx.
 //
-// Light-mode-only port — `dark:` classes dropped. Variants: `solid` /
+// Ported (dark rides the semantic tokens) — `dark:` classes dropped. Variants: `solid` /
 // `outline` / `soft` / `subtle`. Semantic color is not exposed (card uses
 // neutral surfaces only); apps can override via `appConfig.ui.card`.
 
@@ -27,13 +27,13 @@ export default {
         footer: 'text-inverted',
       },
       outline: {
-        root: 'bg-default border border-neutral-200',
+        root: 'bg-default border border-default',
       },
       soft: {
-        root: 'bg-neutral-50',
+        root: 'bg-muted',
       },
       subtle: {
-        root: 'bg-neutral-50 border border-neutral-200',
+        root: 'bg-muted border border-default',
       },
     },
   },

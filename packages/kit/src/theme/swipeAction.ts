@@ -1,5 +1,5 @@
 /**
- * SwipeAction theme — vyui original (no nuxt/ui parallel). Light-mode-only.
+ * SwipeAction theme — vyui original (no nuxt/ui parallel). Dark rides the semantic tokens.
  *
  * NOTE: the core `SwipeAction` primitive only supports a trailing (right-side)
  * action panel today — the `side` variant here drives styling/`data-side`
@@ -8,7 +8,7 @@
 export default {
   slots: {
     root: 'relative min-w-0 max-w-full overflow-hidden',
-    actions: 'flex flex-row items-stretch min-w-0 max-w-full overflow-hidden bg-neutral-100',
+    actions: 'flex flex-row items-stretch min-w-0 max-w-full overflow-hidden bg-elevated',
     content: 'flex flex-row items-center min-w-0 max-w-full overflow-hidden bg-default',
   },
   variants: {

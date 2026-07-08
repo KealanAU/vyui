@@ -16,9 +16,9 @@ import type { Color } from './colors'
 export default (colors: Color[]) => ({
   slots: {
     root: 'gap-2',
-    base: 'relative overflow-hidden rounded-full bg-neutral-100',
+    base: 'relative overflow-hidden rounded-full bg-elevated',
     indicator: 'rounded-full size-full transition-transform duration-200 ease-out',
-    status: 'flex flex-row justify-end text-neutral-500 transition-[width] duration-200',
+    status: 'flex flex-row justify-end text-muted transition-[width] duration-200',
     steps: 'grid items-end',
     step: 'truncate text-end row-start-1 col-start-1 transition-opacity',
   },
@@ -35,8 +35,8 @@ export default (colors: Color[]) => ({
         steps: `text-${c}-500`,
       }])),
       neutral: {
-        indicator: 'bg-neutral-900',
-        steps: 'text-neutral-900',
+        indicator: 'bg-inverted',
+        steps: 'text-highlighted',
       },
     } as Record<Color, { indicator: string, steps: string }>,
     size: {
@@ -49,7 +49,7 @@ export default (colors: Color[]) => ({
     },
     step: {
       active: { step: 'opacity-100' },
-      first: { step: 'opacity-100 text-neutral-700' },
+      first: { step: 'opacity-100 text-default' },
       other: { step: 'opacity-0' },
       last: { step: '' },
     },

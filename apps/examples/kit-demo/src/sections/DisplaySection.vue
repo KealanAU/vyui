@@ -57,22 +57,22 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
 <template>
   <view class="flex flex-col gap-4 pt-2">
     <!-- Avatar / AvatarGroup -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold">Avatar</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Avatar</text>
       <view class="flex flex-row flex-wrap items-center gap-3">
         <VyAvatar :src="vyuiIcon" alt="Vy" />
         <VyAvatar alt="Kealan Clarke" />
         <VyAvatar icon="icon-park-outline:user" />
         <VyAvatar size="xl" alt="Big Avatar" />
       </view>
-      <text class="text-neutral-900 text-sm font-medium pt-1">Broken image → fallback</text>
+      <text class="text-highlighted text-sm font-medium pt-1">Broken image → fallback</text>
       <view class="flex flex-row flex-wrap items-center gap-3">
         <!-- `src` fails to load → falls back to alt-derived initials -->
         <VyAvatar :src="brokenImage" alt="Ada Lovelace" />
         <!-- `src` fails to load, no text → falls back to the icon -->
         <VyAvatar :src="brokenImage" icon="icon-park-outline:user" />
       </view>
-      <text class="text-neutral-900 text-sm font-medium pt-1">Group</text>
+      <text class="text-highlighted text-sm font-medium pt-1">Group</text>
       <VyAvatarGroup :max="3" size="md">
         <VyAvatar :src="vyuiIcon" alt="Vy" />
         <VyAvatar alt="Kealan Clarke" />
@@ -83,8 +83,8 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
     </view>
 
     <!-- Badge -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold">Badge</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Badge</text>
       <view class="flex flex-row flex-wrap items-center gap-2">
         <VyBadge label="Default" />
         <VyBadge color="success" label="Success" />
@@ -102,8 +102,8 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
     </view>
 
     <!-- Chip -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold">Chip</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Chip</text>
       <view class="flex flex-row flex-wrap items-center gap-4">
         <VyChip color="success">
           <VyAvatar :src="vyuiIcon" alt="Vy" />
@@ -119,8 +119,8 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
     </view>
 
     <!-- Progress -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-4">
-      <text class="text-neutral-900 text-base font-semibold">Progress</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-4">
+      <text class="text-highlighted text-base font-semibold">Progress</text>
       <view class="flex flex-col gap-2">
         <VyProgress :model-value="20" />
         <VyProgress :model-value="55" color="success" />
@@ -129,10 +129,10 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
     </view>
 
     <!-- Swiper (shared useDragGesture) -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
       <view class="flex flex-row items-center justify-between">
-        <text class="text-neutral-900 text-base font-semibold">Swiper</text>
-        <text class="text-neutral-500 text-xs">Active: {{ swiperIndex + 1 }} / {{ swiperSlides.length }}</text>
+        <text class="text-highlighted text-base font-semibold">Swiper</text>
+        <text class="text-muted text-xs">Active: {{ swiperIndex + 1 }} / {{ swiperSlides.length }}</text>
       </view>
       <VySwiper
         v-model="swiperIndex"
@@ -146,14 +146,14 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
           </view>
         </template>
       </VySwiper>
-      <text class="text-neutral-500 text-xs">Drag to swipe · flick to advance · dots reflect settle.</text>
+      <text class="text-muted text-xs">Drag to swipe · flick to advance · dots reflect settle.</text>
     </view>
 
     <!-- Swiper: autoplay + loop + axis-lock (new core props via kit passthrough) -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
       <view class="flex flex-row items-center justify-between">
-        <text class="text-neutral-900 text-base font-semibold">Swiper · autoplay + loop</text>
-        <text class="text-neutral-500 text-xs">Active: {{ autoSwiperIndex + 1 }} / {{ swiperSlides.length }}</text>
+        <text class="text-highlighted text-base font-semibold">Swiper · autoplay + loop</text>
+        <text class="text-muted text-xs">Active: {{ autoSwiperIndex + 1 }} / {{ swiperSlides.length }}</text>
       </view>
       <VySwiper
         v-model="autoSwiperIndex"
@@ -170,26 +170,26 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
           </view>
         </template>
       </VySwiper>
-      <text class="text-neutral-500 text-xs">Auto-advances every 2.5s · loops past the end · pauses while you drag.</text>
+      <text class="text-muted text-xs">Auto-advances every 2.5s · loops past the end · pauses while you drag.</text>
     </view>
 
     <!-- Separator -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold">Separator</text>
-      <text class="text-neutral-700 text-sm">Top section</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Separator</text>
+      <text class="text-default text-sm">Top section</text>
       <VySeparator />
-      <text class="text-neutral-700 text-sm">Bottom section</text>
+      <text class="text-default text-sm">Bottom section</text>
     </view>
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold">Separator (label)</text>
-      <text class="text-neutral-700 text-sm">Top section</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Separator (label)</text>
+      <text class="text-default text-sm">Top section</text>
       <VySeparator label="OR" />
-      <text class="text-neutral-700 text-sm">Bottom section</text>
+      <text class="text-default text-sm">Bottom section</text>
     </view>
 
     <!-- Skeleton -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold">Skeleton</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Skeleton</text>
       <view class="flex flex-row items-center gap-3">
         <VySkeleton class="w-12 h-12 rounded-full shrink-0" />
         <VySkeleton class="h-3 flex-1" />
@@ -198,12 +198,12 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
 
     <!-- Card -->
     <view class="flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold px-1">Card</text>
+      <text class="text-highlighted text-base font-semibold px-1">Card</text>
       <VyCard>
         <template #header>
-          <text class="text-neutral-900 text-sm font-semibold">Card header</text>
+          <text class="text-highlighted text-sm font-semibold">Card header</text>
         </template>
-        <text class="text-neutral-700 text-sm">Cards group related content. Header, body, and footer slots stack vertically.</text>
+        <text class="text-default text-sm">Cards group related content. Header, body, and footer slots stack vertically.</text>
         <template #footer>
           <view class="flex flex-row gap-2">
             <VyButton size="sm" variant="soft" color="neutral" label="Cancel" />
@@ -214,30 +214,30 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
     </view>
 
     <!-- Accordion -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold">Accordion</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Accordion</text>
       <VyAccordion v-model="accordionOpen" :items="accordionItems" type="single" />
     </view>
 
     <!-- Tabs (nested) -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold">Tabs (pill variant)</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Tabs (pill variant)</text>
       <VyTabs v-model="innerTab" :items="innerTabItems" variant="pill" size="sm">
         <template #overview>
-          <text class="text-neutral-700 text-sm pt-3">High-level overview of the product.</text>
+          <text class="text-default text-sm pt-3">High-level overview of the product.</text>
         </template>
         <template #specs>
-          <text class="text-neutral-700 text-sm pt-3">Technical specifications and dimensions.</text>
+          <text class="text-default text-sm pt-3">Technical specifications and dimensions.</text>
         </template>
         <template #reviews>
-          <text class="text-neutral-700 text-sm pt-3">Customer feedback and ratings.</text>
+          <text class="text-default text-sm pt-3">Customer feedback and ratings.</text>
         </template>
       </VyTabs>
     </view>
 
     <!-- Alert -->
     <view class="flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold px-1">Alert</text>
+      <text class="text-highlighted text-base font-semibold px-1">Alert</text>
       <VyAlert
         color="info"
         icon="icon-park-outline:info"
@@ -270,8 +270,8 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
     <!-- Toast (static showcase — ToastProvider lets ToastRoot inject context) -->
     <ToastProvider>
       <view class="flex flex-col gap-3">
-        <text class="text-neutral-900 text-base font-semibold px-1">Toast</text>
-        <text class="text-neutral-500 text-xs px-1">
+        <text class="text-highlighted text-base font-semibold px-1">Toast</text>
+        <text class="text-muted text-xs px-1">
           Static preview — add ToastViewport for runtime toasts.
         </text>
         <VyToast
@@ -290,10 +290,10 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
 
     <!-- AspectRatio — pure layout primitive; the box sizes to parent width
          and derives height from `ratio` (Lynx supports `aspect-ratio` natively). -->
-    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-neutral-900 text-base font-semibold">AspectRatio</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">AspectRatio</text>
       <view class="flex flex-col gap-2">
-        <text class="text-neutral-500 text-xs">16 / 9</text>
+        <text class="text-muted text-xs">16 / 9</text>
         <!-- Render the AspectRatio *as* the <image> so the ratio sits on the
              image element itself: a nested image sized via h-full/flex collapses
              to 0 on native, and a Lynx <image> with a 0 computed size never loads
@@ -304,18 +304,18 @@ const brokenImage = 'https://invalid.vyui.local/missing-avatar.png'
           :ratio="16 / 9"
           :src="vyuiIcon"
           mode="aspectFit"
-          class="rounded-lg bg-neutral-100"
+          class="rounded-lg bg-elevated"
         />
       </view>
       <view class="flex flex-row gap-3">
         <view class="flex flex-col gap-2 flex-1">
-          <text class="text-neutral-500 text-xs">1 / 1</text>
+          <text class="text-muted text-xs">1 / 1</text>
           <VyAspectRatio :ratio="1" class="bg-sky-500 rounded-lg flex items-center justify-center">
             <text class="text-white text-sm font-semibold">1:1</text>
           </VyAspectRatio>
         </view>
         <view class="flex flex-col gap-2 flex-1">
-          <text class="text-neutral-500 text-xs">4 / 3</text>
+          <text class="text-muted text-xs">4 / 3</text>
           <VyAspectRatio :ratio="4 / 3" class="bg-violet-500 rounded-lg flex items-center justify-center">
             <text class="text-white text-sm font-semibold">4:3</text>
           </VyAspectRatio>

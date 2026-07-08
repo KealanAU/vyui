@@ -102,10 +102,10 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
       v-else-if="row.kind === 'label'"
       :class="ui.label({ class: uiOverrides?.label })"
     >
-      <!-- `enableCSSInheritance: false`: the `label` slot's `text-neutral-900`
+      <!-- `enableCSSInheritance: false`: the `label` slot's `text-highlighted`
            sits on the wrapping <view>, so the heading color must land on this
            <text> directly. -->
-      <text :class="ui.itemLabel({ class: ['text-neutral-900', uiOverrides?.itemLabel] })">{{ getLabel(row.item) }}</text>
+      <text :class="ui.itemLabel({ class: ['text-highlighted', uiOverrides?.itemLabel] })">{{ getLabel(row.item) }}</text>
     </DropdownMenuLabel>
 
     <DropdownMenuCheckboxItem

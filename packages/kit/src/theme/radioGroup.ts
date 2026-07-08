@@ -14,16 +14,16 @@ export default (colors: Color[]) => ({
     root: 'relative min-w-0 max-w-full',
     // `fieldset` direction is set per orientation variant (flex-row/flex-col).
     fieldset: 'flex min-w-0 max-w-full',
-    legend: 'mb-1 block font-medium text-neutral-900',
+    legend: 'mb-1 block font-medium text-highlighted',
     // `gap-2` spaces the control from the label — Lynx ignores logical inline
     // margins (`ms-*`), so the old `ms-2` collapsed them. Matches Checkbox.
     item: 'flex flex-row items-start min-w-0 gap-2',
-    base: 'shrink-0 flex flex-row items-center justify-center rounded-full bg-default border border-neutral-300 transition-colors',
+    base: 'shrink-0 flex flex-row items-center justify-center rounded-full bg-default border border-accented transition-colors',
     indicator: 'flex flex-row items-center justify-center rounded-full bg-white',
     container: 'flex flex-row items-center',
     wrapper: 'flex flex-col min-w-0',
-    label: 'block font-medium text-neutral-900',
-    description: 'text-neutral-500',
+    label: 'block font-medium text-highlighted',
+    description: 'text-muted',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,

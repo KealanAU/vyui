@@ -123,28 +123,60 @@ export function createVyuiPreset(options = {}) {
 
   const allColors = [...new Set([...colors, neutral])]
   return {
+    // The library flips via semantic tokens under a `.dark` class (not `dark:`
+    // utilities), but pin the trigger to `class` so any `dark:` a CONSUMER
+    // writes keys off the same `.dark` ancestor `useColorMode` toggles.
+    darkMode: 'class',
     theme: {
       extend: {
         colors: Object.fromEntries(
           allColors.map((name) => [name, buildScale(name, neutral, shades)]),
         ),
-        // Surface tier — semantic background utilities (`bg-default` / `bg-muted`
-        // / `bg-elevated`) wired to the `--ui-bg*` tokens in `style.css`. Themes
-        // use these for field/overlay surfaces instead of literal `bg-white`, so
-        // they invert in dark mode (a var() ref resolves in one hop → the tokens
-        // hold `theme()` literals per mode). `backgroundColor` (not `colors`) so
-        // only `bg-*` is emitted, not text/border/ring variants.
+        // Semantic tokens — role-based utilities wired to the `--ui-*` tokens in
+        // `style.css`. Themes (and consumers) use these instead of raw ramp
+        // classes, so they flip in dark on their own (each token holds a
+        // per-mode `theme()` literal → one-hop var(), Lynx-safe). Scoped to
+        // `backgroundColor` / `textColor` / `borderColor` / `divideColor` /
+        // `fill` so each name only emits its own utility family.
+        //   surfaces: `bg-default` (cards/fields/overlays) + `bg-muted` /
+        //   `bg-elevated` / `bg-accented` fills + `bg-inverted` (neutral solid).
         backgroundColor: {
           default: 'var(--ui-bg)',
           muted: 'var(--ui-bg-muted)',
           elevated: 'var(--ui-bg-elevated)',
-          // High-contrast fill for neutral `solid` surfaces — flips with the
-          // mode so `text-inverted` stays legible on it (paired below).
+          accented: 'var(--ui-bg-accented)',
           inverted: 'var(--ui-bg-inverted)',
         },
-        // `text-inverted` — the foreground for `bg-inverted` fills.
+        // text: `text-default` (body) → `text-highlighted` (emphasis), plus
+        // `text-muted` / `text-dimmed` / `text-toned` and `text-inverted` (the
+        // foreground for `bg-inverted` fills).
         textColor: {
+          default: 'var(--ui-text)',
+          dimmed: 'var(--ui-text-dimmed)',
+          muted: 'var(--ui-text-muted)',
+          toned: 'var(--ui-text-toned)',
+          highlighted: 'var(--ui-text-highlighted)',
           inverted: 'var(--ui-text-inverted)',
+        },
+        // borders: `border-default` + `border-muted` / `border-accented` /
+        // `border-inverted`. Lowercase `default` emits `border-default` (a color
+        // utility); it does NOT touch the bare `border` (which stays the
+        // borderWidth DEFAULT below), so existing `border` usages are unaffected.
+        borderColor: {
+          default: 'var(--ui-border)',
+          muted: 'var(--ui-border-muted)',
+          accented: 'var(--ui-border-accented)',
+          inverted: 'var(--ui-border-inverted)',
+        },
+        // `divide-default` / `divide-muted` — dividers ride the border tokens.
+        divideColor: {
+          default: 'var(--ui-border)',
+          muted: 'var(--ui-border-muted)',
+        },
+        // `fill-default` — SVG fills (e.g. the popover/select arrow) ride the
+        // border token so they flip with the surface edge.
+        fill: {
+          default: 'var(--ui-border)',
         },
         borderRadius: RADIUS_SCALE,
         // Halve every numeric step of the borderWidth scale. The bare
@@ -203,6 +235,29 @@ export function createVyuiPreset(options = {}) {
           'group-data-[state=checked]',
         ],
       },
+      // Semantic tokens — role-based utilities (`text-muted`, `bg-elevated`,
+      // `border-default`, …). Static strings in the theme source, so a consumer
+      // scanning `@vyui/kit` dist already gets them; safelisted too for
+      // consumers who only pull the preset. The pattern over-matches (e.g.
+      // `text-elevated`) but Tailwind only emits names backed by a real utility.
+      {
+        pattern: /(bg|text|border)-(default|muted|elevated|accented|toned|dimmed|highlighted|inverted)/,
+        variants: [
+          'active',
+          'disabled',
+          'placeholder',
+          'ui-open',
+          'ui-highlighted',
+          'group-ui-inactive',
+          'group-ui-checked',
+          'group-ui-open',
+          'group-ui-highlighted',
+          'group-ui-dragging',
+        ],
+      },
+      'divide-default',
+      'divide-muted',
+      'fill-default',
       // Focus/highlight ring — generated as a template literal in
       // `theme/input.ts`; arbitrary values can't be expressed in the regex
       // pattern above, so safelist the exact strings (keep in sync).

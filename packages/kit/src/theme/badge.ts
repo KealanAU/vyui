@@ -3,7 +3,7 @@
 // Semantic color names (`primary`, `error`, …) resolve to actual palettes via
 // the consuming app's CSS variables and Tailwind config (see `theme/button.ts`).
 //
-// Light-mode-only port — `dark:` and `focus-visible:` classes are dropped.
+// Ported (dark rides the semantic tokens) — `dark:` and `focus-visible:` classes are dropped.
 // Variants restricted to `solid`/`outline`/`soft`/`subtle` (no `ghost`/`link`).
 import type { Color } from './colors'
 

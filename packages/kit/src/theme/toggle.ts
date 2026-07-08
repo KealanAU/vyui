@@ -50,7 +50,7 @@ export default (colors: Color[]) => ({
       true: '',
       // `text-*` must sit on the `icon` slot too — the root <view> won't
       // cascade it to the icon (`enableCSSInheritance: false`).
-      false: { base: 'active:bg-neutral-100 active:bg-neutral-200', icon: 'text-neutral-700' },
+      false: { base: 'active:bg-elevated active:bg-accented', icon: 'text-default' },
     },
   },
   compoundVariants: [

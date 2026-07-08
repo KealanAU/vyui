@@ -296,15 +296,15 @@ export const VyUI: Plugin<VyUIPluginOptions> = {
  * at write time (mirrors the `@@vyui:` import placeholders), which is what
  * actually wires the otherwise-dead `baseColor` config field.
  *
- * Matches ANY `theme('colors.slate.N')` — the neutral ramp (`:root` + `.dark`)
- * AND the surface tier (`--ui-bg*` / `--ui-text-inverted`), so a zinc/stone app
- * gets a matching base gray for BOTH its ramp and its baked surface tokens
- * (surfaces can't `var()`-ref the ramp on Lynx — single-level rule — so this
- * build-time rewrite is how "neutral drives the surfaces" actually happens).
- * Safe because `slate` appears ONLY in the neutral ramp + surface tokens; the
- * accent ramps use their own palettes (green/blue/…) and `theme('colors.white')`
- * surface values are intentionally left literal. With `baseColor: 'slate'` the
- * output is byte-identical to this source.
+ * Matches ANY `theme('colors.slate.N')` — the fixed neutral ramp (`:root`) AND
+ * the per-mode semantic tokens (`--ui-text*` / `--ui-bg*` / `--ui-border*`, both
+ * `:root` and `.dark`), so a zinc/stone app gets a matching base gray for BOTH
+ * its ramp and its baked tokens (tokens can't `var()`-ref the ramp on Lynx —
+ * single-level rule — so this build-time rewrite is how "neutral drives the
+ * surfaces/text/borders" actually happens). Safe because `slate` appears ONLY in
+ * the neutral ramp + those tokens; the accent ramps use their own palettes
+ * (green/blue/…) and `theme('colors.white')` token values are intentionally left
+ * literal. With `baseColor: 'slate'` the output is byte-identical to this source.
  */
 function grayifySlate(css: string): string {
   return css.replace(

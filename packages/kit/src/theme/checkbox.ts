@@ -14,8 +14,8 @@ export default (colors: Color[]) => ({
     indicator: 'flex flex-row items-center justify-center',
     icon: 'shrink-0 text-white',
     wrapper: 'flex-1 min-w-0 flex flex-col',
-    label: 'text-sm font-medium text-neutral-900',
-    description: 'text-xs text-neutral-500',
+    label: 'text-sm font-medium text-highlighted',
+    description: 'text-xs text-muted',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, {}])) as Record<Color, object>,
@@ -27,7 +27,7 @@ export default (colors: Color[]) => ({
     },
     checked: {
       true: {},
-      false: { base: 'bg-default border border-neutral-300' },
+      false: { base: 'bg-default border border-accented' },
     },
     disabled: {
       true: { base: 'opacity-50 cursor-not-allowed' },

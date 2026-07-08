@@ -12,5 +12,5 @@ export default {
   // pushing it past the right edge of any parent it sits inside (e.g.
   // `w-full + m-4` overflows by 2rem). Callers outside a flex container can
   // add `w-full` themselves via `class`.
-  base: 'relative overflow-hidden rounded-md border border-dashed border-neutral-300 bg-neutral-50',
+  base: 'relative overflow-hidden rounded-md border border-dashed border-accented bg-muted',
 }

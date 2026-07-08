@@ -17,7 +17,7 @@
 //   - when `inset: false` the dot is nudged half its size out of the box via
 //     `translate-x`/`translate-y` (supported by `@lynx-js/tailwind-preset`)
 //
-// Light-mode-only port — semantic colors resolve to `bg-${c}-500`.
+// Ported (dark rides the semantic tokens) — semantic colors resolve to `bg-${c}-500`.
 import type { Color } from './colors'
 
 export default (colors: Color[]) => ({

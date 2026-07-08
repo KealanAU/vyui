@@ -42,12 +42,12 @@ function onSwipeCommit(id: number): void {
 </script>
 
 <template>
-  <view class="bg-default border border-neutral-200 rounded-lg p-3 flex flex-col flex-1 min-w-[280px] gap-2">
+  <view class="bg-default border border-default rounded-lg p-3 flex flex-col flex-1 min-w-[280px] gap-2">
     <view class="flex flex-row items-center justify-between">
-      <text class="text-neutral-900 text-base font-semibold">SwipeAction</text>
-      <text class="text-neutral-400 text-xs">{{ swipeLog }}</text>
+      <text class="text-highlighted text-base font-semibold">SwipeAction</text>
+      <text class="text-dimmed text-xs">{{ swipeLog }}</text>
     </view>
-    <text class="text-neutral-500 text-xs">Full swipe (or flick) deletes · a partial swipe reveals Delete to tap.</text>
+    <text class="text-muted text-xs">Full swipe (or flick) deletes · a partial swipe reveals Delete to tap.</text>
     <view
       class="flex flex-col w-full gap-2"
       :main-thread-bindlayoutchange="onSwipeLayoutChange"
@@ -62,8 +62,8 @@ function onSwipeCommit(id: number): void {
         @commit="onSwipeCommit(row.id)"
       >
         <view class="bg-default h-16 flex flex-col justify-center px-4" :style="{ width: `${swipeRowWidth}px` }">
-          <text class="text-neutral-900 text-sm font-medium">{{ row.from }}</text>
-          <text class="text-neutral-500 text-xs">{{ row.subject }}</text>
+          <text class="text-highlighted text-sm font-medium">{{ row.from }}</text>
+          <text class="text-muted text-xs">{{ row.subject }}</text>
         </view>
         <template #actions="{ close }">
           <view

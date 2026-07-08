@@ -56,18 +56,13 @@ function onViewportLayoutChange(event: any): void {
 // type (which rejects nested arrays). Applied to the root so every @vyui/kit
 // component below picks up the swapped ramps.
 //
-// The PAGE rides the neutral ramp (`bg-neutral-50`), not a white surface token:
-// it resolves `var(--ui-color-neutral-50)` in one hop, so it tracks the neutral
-// swatch AND flips. Cards keep the white `bg-default` token — their job is depth,
-// which needs the asymmetric literal a symmetric ramp can't give.
-//
-// We always emit `neutral-${palette}`, and add `dark` on top when dark. Both
-// classes write `--ui-color-neutral-*`, so `index.css` defines higher-specificity
-// `.dark.neutral-${palette}` rules (inverted ${palette} ramp + ${palette} dark
-// surfaces) that win over either single class — so the swatch drives the page in
-// BOTH modes (and it's most visible in dark, where grays diverge).
+// The PAGE rides `bg-default` (the base surface token): white in light,
+// slate-900 in dark. It flips on its own — no `dark:` needed — because the
+// single `dark` class appended below flips every semantic `--ui-*` token in the
+// tree at once (see `@vyui/kit/style.css`). The `neutral-${palette}` swatch only
+// re-tints the fixed ramp + neutral `solid` fill; the semantic tokens stay slate.
 const rootClass = computed(() => [
-  'w-full h-full bg-neutral-50',
+  'w-full h-full bg-default',
   ...Object.entries(colorPalettes).map(([color, palette]) => `${color}-${palette}`),
   `neutral-${neutralPalette.value}`,
   ...(isDark.value ? ['dark'] : []),
@@ -164,8 +159,8 @@ const tabsUi = computed(() => {
     >
       <view :class="pageClass">
         <view v-if="showChrome" class="flex flex-col gap-2">
-          <text class="text-neutral-900 text-2xl font-bold">@vyui/kit demo</text>
-          <text class="text-neutral-500 text-sm">Styled components on top of @vyui/core primitives.</text>
+          <text class="text-highlighted text-2xl font-bold">@vyui/kit demo</text>
+          <text class="text-muted text-sm">Styled components on top of @vyui/core primitives.</text>
           <!-- App-root color-mode toggle: flips the WHOLE app (drives the root
                `<view>`'s `dark` class + `:key` remount). -->
           <view class="flex flex-row gap-1 pt-1">
@@ -228,7 +223,7 @@ const tabsUi = computed(() => {
         </VyTabs>
 
         <view v-if="pageScrolls && !isLandscape" class="flex flex-col items-center pt-4 pb-2">
-          <text class="text-neutral-400 text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
+          <text class="text-dimmed text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
         </view>
       </view>
     </component>

@@ -81,6 +81,7 @@ import {
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 import { resolveColorHex } from '../utils/resolveColor'
+import { useColorMode } from '../composables/useColorMode'
 
 const props = withDefaults(defineProps<TabsProps>(), {
   content: true,
@@ -108,10 +109,12 @@ const resolveValue = (item: TabsItem, index: number) =>
 // classes on `leadingIcon` never reach the rasterized glyph — bake the fill
 // per trigger instead (same pattern as Button/Input). `activeValue` comes
 // from TabsRoot's scoped slot: the same ref `TabsTrigger` compares against
-// (strict equality), so it also tracks uncontrolled tabs. Fallbacks mirror
-// the theme's `defaultVariants` (`primary` / `pill`).
+// (strict equality), so it also tracks uncontrolled tabs. `isDark` is threaded
+// so the baked neutral fill (inactive `text-muted`) tracks the mode. Fallbacks
+// mirror the theme's `defaultVariants` (`primary` / `pill`).
+const { isDark } = useColorMode()
 const triggerIconColor = (item: TabsItem, index: number, activeValue: string | number | undefined) => {
-  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'pill', resolveValue(item, index) === activeValue)
+  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'pill', resolveValue(item, index) === activeValue, isDark.value)
   return fg === 'white' ? 'white' : resolveColorHex(appConfig, fg.semantic, fg.shade)
 }
 </script>

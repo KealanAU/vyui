@@ -17,13 +17,13 @@ export default (colors: Color[]) => ({
     // `trigger` <view> — color there never reaches the nested icon/number. The
     // `item` carries the `group`, so state stays `group-data-[state=…]:`. The
     // `bg-*` fill stays on `trigger`.
-    trigger: 'rounded-full font-medium text-center align-middle flex flex-row items-center justify-center font-semibold bg-neutral-100',
+    trigger: 'rounded-full font-medium text-center align-middle flex flex-row items-center justify-center font-semibold bg-elevated',
     indicator: 'flex flex-row items-center justify-center size-full',
-    icon: 'shrink-0 group-ui-completed:text-white group-ui-active:text-white text-neutral-500',
-    separator: 'absolute rounded-full group-ui-disabled:opacity-75 bg-neutral-200',
+    icon: 'shrink-0 group-ui-completed:text-white group-ui-active:text-white text-muted',
+    separator: 'absolute rounded-full group-ui-disabled:opacity-75 bg-accented',
     wrapper: 'min-w-0',
-    title: 'font-medium text-neutral-900',
-    description: 'text-neutral-500 text-wrap',
+    title: 'font-medium text-highlighted',
+    description: 'text-muted text-wrap',
     content: 'size-full min-w-0 min-h-0',
   },
   variants: {

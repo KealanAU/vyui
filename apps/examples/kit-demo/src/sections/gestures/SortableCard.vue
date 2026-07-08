@@ -12,13 +12,13 @@ const tags = ref(['Design', 'Engineering', 'Product', 'Research'])
 </script>
 
 <template>
-  <view class="bg-default border border-neutral-200 rounded-lg p-3 flex flex-col flex-1 min-w-[280px] gap-2">
-    <text class="text-neutral-900 text-base font-semibold">Sortable</text>
-    <text class="text-neutral-500 text-xs">Press a row and drag to reorder. Current: {{ tags.join(' · ') }}</text>
+  <view class="bg-default border border-default rounded-lg p-3 flex flex-col flex-1 min-w-[280px] gap-2">
+    <text class="text-highlighted text-base font-semibold">Sortable</text>
+    <text class="text-muted text-xs">Press a row and drag to reorder. Current: {{ tags.join(' · ') }}</text>
     <VySortable v-model="tags" :long-press-ms="0" size="sm">
       <template #item="{ item }">
-        <text class="text-neutral-400 text-base">⠿</text>
-        <text class="text-neutral-900 text-sm">{{ item }}</text>
+        <text class="text-dimmed text-base">⠿</text>
+        <text class="text-highlighted text-sm">{{ item }}</text>
       </template>
     </VySortable>
   </view>

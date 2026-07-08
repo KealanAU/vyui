@@ -234,8 +234,8 @@ const displayLabel = computed(() => {
           </view>
 
           <slot :model-value="rootValue" :open="open">
-            <text v-if="displayLabel" class="flex-1 min-w-0 truncate text-start text-neutral-900">{{ displayLabel }}</text>
-            <text v-else class="flex-1 min-w-0 truncate text-start text-neutral-400">{{ placeholder ?? ' ' }}</text>
+            <text v-if="displayLabel" class="flex-1 min-w-0 truncate text-start text-highlighted">{{ displayLabel }}</text>
+            <text v-else class="flex-1 min-w-0 truncate text-start text-dimmed">{{ placeholder ?? ' ' }}</text>
           </slot>
 
           <view :class="ui.trailing({ class: props.ui?.trailing })">
@@ -267,7 +267,7 @@ const displayLabel = computed(() => {
               v-model="searchTerm"
               :placeholder="searchPlaceholder ?? 'Search…'"
               :disabled="disabled"
-              :class="ui.input({ class: ['flex-1 min-w-0 bg-transparent text-neutral-900', props.ui?.input] })"
+              :class="ui.input({ class: ['flex-1 min-w-0 bg-transparent text-highlighted', props.ui?.input] })"
             />
           </view>
 
