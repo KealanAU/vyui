@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "strict": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "jsx": "preserve",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@vyui/core": ["../../../../packages/core/src/index.ts"],
+      "@vyui/core/internal": ["../../../../packages/core/src/internal.ts"],
+      "@vyui/core/date": ["../../../../packages/core/src/date/index.ts"],
+      "@vyui/core/shared": ["../../../../packages/core/src/shared/index.ts"],
+      "@vyui/kit": ["../../../../packages/kit/src/index.ts"]
+    }
+  },
+  "vueCompilerOptions": {
+    "plugins": ["vue-lynx/types/volar-plugin"]
+  },
+  "include": [
+    "./**/*",
+    "../../../../packages/core/src/**/*",
+    "../../../../packages/kit/src/**/*"
+  ],
+  "exclude": ["../node_modules", "../../../../packages/core/src/**/*.story.vue", "../../../../packages/core/src/**/*.test.ts", "../../../../packages/core/src/**/*.bench.ts"]
+}

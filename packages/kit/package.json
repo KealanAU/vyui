@@ -80,6 +80,10 @@
       "types": "./dist/entries/alert.d.ts",
       "import": "./dist/entries/alert.js"
     },
+    "./app": {
+      "types": "./dist/entries/app.d.ts",
+      "import": "./dist/entries/app.js"
+    },
     "./aspect-ratio": {
       "types": "./dist/entries/aspect-ratio.d.ts",
       "import": "./dist/entries/aspect-ratio.js"

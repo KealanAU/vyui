@@ -37,6 +37,7 @@ export {
 export { default as VyAccordion } from './components/Accordion.vue'
 export { default as VyActionSheet } from './components/ActionSheet.vue'
 export { default as VyAlert } from './components/Alert.vue'
+export { default as VyApp } from './components/App.vue'
 // AspectRatio/Icon are pure core primitives (nothing to theme); re-exported here
 // under their `Vy*` name so they sit alongside the other kit components.
 export { AspectRatio as VyAspectRatio, type AspectRatioProps } from '@vyui/core'

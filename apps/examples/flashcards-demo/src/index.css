@@ -1,0 +1,9 @@
+/*
+ * Tailwind entry. `@lynx-js/tailwind-preset` is utility-only for Lynx,
+ * so we only load `base` and `utilities`.
+ */
+@tailwind base;
+@tailwind utilities;
+
+/* @vyui/kit default theme tokens — overrides go below this line. */
+@import '@vyui/kit/style.css';

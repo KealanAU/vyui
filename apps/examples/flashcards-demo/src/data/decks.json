@@ -1,0 +1,185 @@
+{
+  "decks": [
+    {
+      "id": "vue",
+      "title": "Vue",
+      "description": "Reactivity, components and composition.",
+      "icon": "lucide:atom",
+      "color": "primary",
+      "questions": [
+        {
+          "prompt": "Which function creates a reactive reference to a single value?",
+          "choices": ["reactive()", "ref()", "shallowRef()", "toRef()"],
+          "answer": 1
+        },
+        {
+          "prompt": "What does computed() return?",
+          "choices": [
+            "A plain function you must call in the template",
+            "A writable ref that never caches",
+            "A cached ref that re-evaluates when its dependencies change",
+            "A watcher that runs on every render"
+          ],
+          "answer": 2
+        },
+        {
+          "prompt": "Which lifecycle hook runs after the component is first inserted?",
+          "choices": ["onCreated", "onBeforeMount", "onMounted", "onUpdated"],
+          "answer": 2
+        },
+        {
+          "prompt": "How does a child component send data to its parent?",
+          "choices": [
+            "Mutating the prop directly",
+            "Emitting an event declared with defineEmits",
+            "Writing to a global variable",
+            "Calling the parent's methods via $parent"
+          ],
+          "answer": 1
+        },
+        {
+          "prompt": "What does v-model on a component expand to?",
+          "choices": [
+            "A :value binding only",
+            "A two-way proxy object",
+            "A :modelValue binding plus an @update:modelValue listener",
+            "A watcher on the child's state"
+          ],
+          "answer": 2
+        }
+      ]
+    },
+    {
+      "id": "javascript",
+      "title": "JavaScript",
+      "description": "Language quirks, arrays and promises.",
+      "icon": "lucide:braces",
+      "color": "warning",
+      "questions": [
+        {
+          "prompt": "What does typeof null evaluate to?",
+          "choices": ["\"null\"", "\"undefined\"", "\"object\"", "\"boolean\""],
+          "answer": 2
+        },
+        {
+          "prompt": "Which array method returns a new array with only the elements that pass a test?",
+          "choices": ["map()", "filter()", "reduce()", "forEach()"],
+          "answer": 1
+        },
+        {
+          "prompt": "What is the result of 0.1 + 0.2 === 0.3?",
+          "choices": ["true", "false", "NaN", "A TypeError"],
+          "answer": 1
+        },
+        {
+          "prompt": "What does Promise.all do when one of its promises rejects?",
+          "choices": [
+            "Waits for the rest, then resolves with partial results",
+            "Rejects immediately with that error",
+            "Resolves with undefined for the failed slot",
+            "Retries the failed promise once"
+          ],
+          "answer": 1
+        },
+        {
+          "prompt": "Which declaration is block-scoped and cannot be reassigned?",
+          "choices": ["var", "let", "const", "function"],
+          "answer": 2
+        }
+      ]
+    },
+    {
+      "id": "typescript",
+      "title": "TypeScript",
+      "description": "Types, narrowing and utility types.",
+      "icon": "lucide:file-code",
+      "color": "secondary",
+      "questions": [
+        {
+          "prompt": "Which type accepts any value but must be narrowed before use?",
+          "choices": ["any", "unknown", "never", "object"],
+          "answer": 1
+        },
+        {
+          "prompt": "What does the ? in `name?: string` mark?",
+          "choices": [
+            "A nullable string",
+            "An optional property",
+            "A readonly property",
+            "A getter"
+          ],
+          "answer": 1
+        },
+        {
+          "prompt": "Which utility type makes every property of T optional?",
+          "choices": ["Pick<T>", "Required<T>", "Partial<T>", "Readonly<T>"],
+          "answer": 2
+        },
+        {
+          "prompt": "What narrows a discriminated union to one member?",
+          "choices": [
+            "Checking a shared literal property in a conditional",
+            "Casting with as",
+            "Calling JSON.stringify on it",
+            "Adding an index signature"
+          ],
+          "answer": 0
+        },
+        {
+          "prompt": "What does `as const` do to an object literal?",
+          "choices": [
+            "Freezes it at runtime",
+            "Widens its members to string and number",
+            "Keeps literal types and marks members readonly",
+            "Converts it to an enum"
+          ],
+          "answer": 2
+        }
+      ]
+    },
+    {
+      "id": "lynx",
+      "title": "Lynx",
+      "description": "Elements, threads and native styling.",
+      "icon": "lucide:zap",
+      "color": "info",
+      "questions": [
+        {
+          "prompt": "Which Lynx element is the structural equivalent of a div?",
+          "choices": ["<box>", "<view>", "<frame>", "<stack>"],
+          "answer": 1
+        },
+        {
+          "prompt": "Where do 'main thread' worklets run?",
+          "choices": [
+            "In a web worker",
+            "On the background JS thread",
+            "On the UI (main) thread, separate from background JS",
+            "On the GPU"
+          ],
+          "answer": 2
+        },
+        {
+          "prompt": "Which element renders text content in Lynx?",
+          "choices": ["<span>", "<label>", "<text>", "<p>"],
+          "answer": 2
+        },
+        {
+          "prompt": "How does a Lynx page usually scroll vertically?",
+          "choices": [
+            "The root <view> scrolls by default",
+            "Inside a <scroll-view> with scroll-orientation=\"vertical\"",
+            "Via CSS overflow: scroll on any element",
+            "With a window.scrollTo call"
+          ],
+          "answer": 1
+        },
+        {
+          "prompt": "How many levels of CSS var() indirection does Lynx native resolve?",
+          "choices": ["None", "One", "Two", "Unlimited"],
+          "answer": 1
+        }
+      ]
+    }
+  ]
+}

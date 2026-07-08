@@ -4,6 +4,7 @@ export { ALL_COLORS, COLORS, NEUTRAL, resolveColors, type Color, type VyuiColorR
 export { default as accordion } from './accordion'
 export { default as actionSheet } from './actionSheet'
 export { default as alert } from './alert'
+export { default as app } from './app'
 export { default as avatar } from './avatar'
 export { default as avatarGroup } from './avatarGroup'
 export { default as badge } from './badge'
