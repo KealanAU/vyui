@@ -33,7 +33,10 @@
  */
 
 import { COLORS, NEUTRAL, SHADES } from './theme/color-constants.js'
-import * as themeExports from './theme/index.js'
+// Explicit `.ts` so the source plane resolves under jiti (the example apps'
+// tailwind configs import `src/tailwind.js` directly, and jiti's CJS resolver
+// won't remap `.js` → `.ts`). Vite rewrites this to `./theme/index.js` in dist.
+import * as themeExports from './theme/index.ts'
 
 // Re-exported so a Tailwind config can extend the default set without pulling in
 // the component barrel (`@vyui/kit`) through jiti:
