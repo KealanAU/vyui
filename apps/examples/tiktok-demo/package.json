@@ -17,6 +17,7 @@
     "@iconify-json/icon-park-solid": "^1.2.4",
     "@iconify-json/lucide": "^1.2.108",
     "@iconify-json/tabler": "^1.2.35",
+    "@lynx-js/qrcode-rsbuild-plugin": "^0.4.7",
     "@lynx-js/rspeedy": "^0.13.5",
     "@lynx-js/tailwind-preset": "^0.4.0",
     "@lynx-js/types": "^3.8.0",

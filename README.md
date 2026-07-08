@@ -97,7 +97,7 @@ pnpm install
 pnpm --filter @vyui/kit-demo dev
 ```
 
-Scan the LAN QR with [Lynx Explorer](https://lynxjs.org/) for on-device preview, or open the printed `main.web.bundle` URL for the web preview. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the full workflow (the `VYUI_USE_LOCAL_CORE` flag, MT-worklet pitfalls, and the PR checklist).
+Scan the LAN QR with [Lynx Explorer](https://lynxjs.org/) for on-device preview, or open the printed `main.web.bundle` URL for the web preview. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the full workflow (the workspace source aliasing, MT-worklet pitfalls, and the PR checklist).
 
 ## Project structure
 
@@ -106,7 +106,7 @@ vyui/
 ├── packages/
 │   ├── core/                  # @vyui/core — runtime primitives (published)
 │   ├── kit/                   # @vyui/kit — styled components on top of core
-│   ├── shared-build-config/   # shared rslib / build config
+│   ├── shared-build-config/   # shared Vite build config
 │   └── testing-utils/         # shared test helpers
 └── apps/
     └── examples/
@@ -161,8 +161,8 @@ Contributions welcome — especially:
 * Documentation, examples, and starter templates
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the local-development workflow
-(including the `VYUI_USE_LOCAL_CORE` flag for editing `@vyui/core` against
-the demo app, the MT-worklet pitfalls list, and the PR checklist).
+(including how `@vyui/core` and `@vyui/kit` are source-aliased into the demo
+apps, the MT-worklet pitfalls list, and the PR checklist).
 
 ## Acknowledgements
 

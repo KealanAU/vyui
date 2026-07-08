@@ -83,6 +83,10 @@ export interface SelectProps {
   ui?: Partial<Record<keyof ReturnType<typeof buildSelect>['slots'], any>>
 }
 
+export interface SelectEmits {
+  (e: 'update:modelValue', value: string): void
+}
+
 export interface SelectSlots {
   default(props: { modelValue?: string, open: boolean }): any
   /** Receives `iconColor` so custom icons can match the trigger's resolved theme color. */
@@ -123,7 +127,7 @@ const props = withDefaults(defineProps<SelectProps>(), {
   snapPoints: () => [0.5],
   handle: true,
 })
-const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const emit = defineEmits<SelectEmits>()
 defineSlots<SelectSlots>()
 
 const slots = useSlots()

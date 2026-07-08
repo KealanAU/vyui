@@ -5,15 +5,14 @@
 // @ts-expect-error — resolves at build time via rspack; outside the demo's TS project.
 import '../../../../packages/core/src'
 
-import { installIntlPolyfill, registerIconSet } from '@vyui/core'
 import { createApp } from 'vue-lynx'
 import { VyUI } from '@vyui/kit'
 import lucide from '@iconify-json/lucide/icons.json'
+import { installVyui } from '../../_shared/installVyui'
 import App from './App.vue'
 import './index.css'
 
-installIntlPolyfill()
-registerIconSet('lucide', lucide)
+installVyui({ lucide })
 
 const app = createApp(App)
 

@@ -7,24 +7,17 @@
 // demo's TS project file list. See `packages/core/src/index.ts`.
 import '../../../../packages/core/src'
 
-import { installIntlPolyfill, registerIconSet } from '@vyui/core'
 import { createApp } from 'vue-lynx'
 import { COLORS, VyUI } from '@vyui/kit'
 import iconParkOutline from '@iconify-json/icon-park-outline/icons.json'
 import lucide from '@iconify-json/lucide/icons.json'
+import { installVyui } from '../../_shared/installVyui'
 import App from './App.vue'
 import './index.css'
 
-// Lynx's PrimJS engine ships an incomplete `Intl`; install the shim before
-// any component constructs a date/number formatter. No-op on web.
-installIntlPolyfill()
-
-// Register icon sets with @vyui/core's renderer (Lynx-native <svg content="...">).
 // Both lucide (used by VyUI defaults like `loading` and `check`) and
 // icon-park-outline (used in the demo screen) must be registered up front.
-registerIconSet('lucide', lucide)
-registerIconSet('icon-park-outline', iconParkOutline)
-
+installVyui({ lucide, 'icon-park-outline': iconParkOutline })
 
 const app = createApp(App)
 // Register a custom semantic color (`tertiary`) alongside the defaults — the
