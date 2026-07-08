@@ -117,22 +117,45 @@ describe('useDragGesture — touch lifecycle', () => {
 describe('useDragGesture — drag + snap', () => {
   it('a drag below the snap threshold settles back to the start index', () => {
     const { gesture, currentIndex, onSwipeEnd, setStyleProperty } = mountGesture()
+    // Time must be mocked (not left to real elapsed wall-clock time): touchstart
+    // -> touchmove -> touchend run synchronously, so real elapsed time is a
+    // sub-millisecond value that Date.now()'s millisecond resolution can round
+    // to 0ms OR 1ms depending on exactly which tick the calls straddle. A
+    // rounded-up 1ms gap turns this 30px drag into an ~30,000px/s velocity,
+    // spuriously crossing velocityThreshold and flicking to index 1 instead of
+    // settling back — this is what made the test flaky across machines/CI.
+    // 150ms keeps velocity (200px/s) safely under the 300px/s threshold.
+    const nowSpy = vi.spyOn(Date, 'now')
+    nowSpy.mockReturnValueOnce(1000) // touchstart sample
     gesture.onTouchStart({ detail: { x: 100, y: 0 } })
+    nowSpy.mockReturnValueOnce(1150).mockReturnValueOnce(1150) // touchmove sample + internal prune
     gesture.onTouchMove({ detail: { x: 70, y: 0 } }) // 30px drag = 30% of itemWidth
+    nowSpy.mockReturnValueOnce(1160) // touchend internal prune
     gesture.onTouchEnd()
     expect(currentIndex.value).toBe(0)
     expect(onSwipeEnd).toHaveBeenCalledWith(0)
     expect(setStyleProperty).toHaveBeenCalledWith('transform', 'translateX(0px)')
+    nowSpy.mockRestore()
   })
 
   it('a drag past the snap threshold advances to the next index', () => {
     const { gesture, currentIndex, onSwipeEnd, setStyleProperty } = mountGesture()
+    // Mocked for the same reason as the test above: an unmocked real-time gap
+    // here happened to still land on index 1 (the un-thresholded flick-override
+    // path and the intended distance-based path agree by coincidence for this
+    // drag), which masked the same underlying non-determinism. Pin the timing
+    // so this actually exercises the distance-based classification it names.
+    const nowSpy = vi.spyOn(Date, 'now')
+    nowSpy.mockReturnValueOnce(1000) // touchstart sample
     gesture.onTouchStart({ detail: { x: 100, y: 0 } })
+    nowSpy.mockReturnValueOnce(1300).mockReturnValueOnce(1300) // touchmove sample + internal prune
     gesture.onTouchMove({ detail: { x: 30, y: 0 } }) // 70px drag = 70% of itemWidth
+    nowSpy.mockReturnValueOnce(1310) // touchend internal prune
     gesture.onTouchEnd()
     expect(currentIndex.value).toBe(1)
     expect(onSwipeEnd).toHaveBeenCalledWith(1)
     expect(setStyleProperty).toHaveBeenCalledWith('transform', 'translateX(-100px)')
+    nowSpy.mockRestore()
   })
 
   it('clamps the drag offset at the start/end of a non-loop track', () => {
