@@ -3,8 +3,8 @@ import type { ButtonProps } from '@nuxt/ui'
 
 const links: ButtonProps[] = [
   {
-    label: 'Read the docs',
-    to: '/getting-started',
+    label: 'Browse components',
+    to: '/components',
     trailingIcon: 'i-lucide-arrow-right',
   },
   {
@@ -21,8 +21,8 @@ const links: ButtonProps[] = [
 <template>
   <UPageCTA
     class="border-t border-default"
-    title="Component docs are on the way"
-    description="A per-component reference with props, slots, events, and live demos is the next thing being built. Until then, the source is the documentation."
+    title="Component docs are live"
+    description="Every component has a full reference — props, slots, events, and a live demo running a real Lynx bundle. Source is always one click away when you need more."
     variant="subtle"
     :links="links"
   />
