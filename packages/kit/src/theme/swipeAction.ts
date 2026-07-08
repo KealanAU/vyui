@@ -9,7 +9,7 @@ export default {
   slots: {
     root: 'relative min-w-0 max-w-full overflow-hidden',
     actions: 'flex flex-row items-stretch min-w-0 max-w-full overflow-hidden bg-neutral-100',
-    content: 'flex flex-row items-center min-w-0 max-w-full overflow-hidden bg-white',
+    content: 'flex flex-row items-center min-w-0 max-w-full overflow-hidden bg-default',
   },
   variants: {
     side: {

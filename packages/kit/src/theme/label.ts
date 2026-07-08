@@ -7,7 +7,7 @@
  */
 export default {
   slots: {
-    base: 'font-medium text-gray-900 select-none',
+    base: 'font-medium text-neutral-900 select-none',
   },
   variants: {
     size: {

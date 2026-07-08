@@ -291,18 +291,24 @@ export const VyUI: Plugin<VyUIPluginOptions> = {
 }
 
 /**
- * Replace the `slate` palette in the NEUTRAL ramp of `style.css` with the
- * `__VYUI_GRAY__` sentinel. The CLI substitutes the sentinel for the user's
- * chosen `baseColor` at write time (mirrors the `@@vyui:` import placeholders),
- * which is what actually wires the otherwise-dead `baseColor` config field.
+ * Replace every `slate` reference in `style.css` with the `__VYUI_GRAY__`
+ * sentinel. The CLI substitutes the sentinel for the user's chosen `baseColor`
+ * at write time (mirrors the `@@vyui:` import placeholders), which is what
+ * actually wires the otherwise-dead `baseColor` config field.
  *
- * Scoped to the `--ui-color-neutral-*` block ONLY — the other semantic colors
- * (primary/secondary/…) keep their literal palettes. With `baseColor: 'slate'`
- * the substituted output is byte-identical to this source.
+ * Matches ANY `theme('colors.slate.N')` — the neutral ramp (`:root` + `.dark`)
+ * AND the surface tier (`--ui-bg*` / `--ui-text-inverted`), so a zinc/stone app
+ * gets a matching base gray for BOTH its ramp and its baked surface tokens
+ * (surfaces can't `var()`-ref the ramp on Lynx — single-level rule — so this
+ * build-time rewrite is how "neutral drives the surfaces" actually happens).
+ * Safe because `slate` appears ONLY in the neutral ramp + surface tokens; the
+ * accent ramps use their own palettes (green/blue/…) and `theme('colors.white')`
+ * surface values are intentionally left literal. With `baseColor: 'slate'` the
+ * output is byte-identical to this source.
  */
-function grayifyNeutralRamp(css: string): string {
+function grayifySlate(css: string): string {
   return css.replace(
-    /(--ui-color-neutral-\d+:\s*theme\('colors\.)slate(\.\d+'\);)/g,
+    /(theme\('colors\.)slate(\.\d+'\))/g,
     '$1__VYUI_GRAY__$2',
   )
 }
@@ -319,7 +325,7 @@ const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: st
   { src: 'theme/color-constants.d.ts', path: 'theme/color-constants.d.ts', target: 'theme/color-constants.d.ts', type: 'registry:lib' },
   { src: 'types.ts', path: 'types.ts', target: 'types.ts', type: 'registry:lib' },
   { path: 'plugin.ts', target: 'plugin.ts', type: 'registry:lib' }, // content built per-style via makeInitPlugin
-  { src: 'style.css', path: 'style.css', target: 'style.css', type: 'registry:style', transform: grayifyNeutralRamp },
+  { src: 'style.css', path: 'style.css', target: 'style.css', type: 'registry:style', transform: grayifySlate },
   // Sits at lib/vyui/ root so its relative `./theme/color-constants.js` import
   // resolves to the copied theme dir; the CLI leaves preset imports un-rewritten.
   { src: 'tailwind.js', path: 'tailwind.js', target: 'vyui-preset.js', type: 'registry:preset' },

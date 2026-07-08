@@ -18,7 +18,7 @@ export default (colors: Color[]) => ({
       xl: { base: 'size-11 text-lg' },
     },
     variant: {
-      outline: 'bg-white border border-neutral-200',
+      outline: 'bg-default border border-neutral-200',
       soft: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50',
       subtle: 'bg-neutral-100 border border-neutral-200',
       ghost: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent',

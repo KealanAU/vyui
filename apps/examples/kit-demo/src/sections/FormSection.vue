@@ -83,8 +83,8 @@ function onFormSubmit(values: Record<string, unknown>) {
 <template>
   <view class="flex flex-col gap-4 pt-2">
     <!-- Button -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">Button</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">Button</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton :loading="loading" label="Submit" @tap="submit" />
         <VyButton leading-icon="icon-park-outline:like" label="With icon" />
@@ -94,45 +94,45 @@ function onFormSubmit(values: Record<string, unknown>) {
     </view>
 
     <!-- Button variants -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">Button variants</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">Button variants</text>
 
-      <text class="text-slate-500 text-xs">solid</text>
+      <text class="text-neutral-500 text-xs">solid</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="solid" color="primary" label="Primary" />
         <VyButton variant="solid" color="success" label="Success" />
         <VyButton variant="solid" color="error"   label="Error" />
       </view>
 
-      <text class="text-slate-500 text-xs pt-1">outline</text>
+      <text class="text-neutral-500 text-xs pt-1">outline</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="outline" color="primary" label="Primary" />
         <VyButton variant="outline" color="warning" label="Warning" />
         <VyButton variant="outline" color="info"    label="Info" />
       </view>
 
-      <text class="text-slate-500 text-xs pt-1">soft</text>
+      <text class="text-neutral-500 text-xs pt-1">soft</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="soft" color="primary" label="Primary" />
         <VyButton variant="soft" color="success" label="Success" />
         <VyButton variant="soft" color="error"   label="Error" />
       </view>
 
-      <text class="text-slate-500 text-xs pt-1">subtle</text>
+      <text class="text-neutral-500 text-xs pt-1">subtle</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="subtle" color="primary" label="Primary" />
         <VyButton variant="subtle" color="warning" label="Warning" />
         <VyButton variant="subtle" color="info"    label="Info" />
       </view>
 
-      <text class="text-slate-500 text-xs pt-1">ghost</text>
+      <text class="text-neutral-500 text-xs pt-1">ghost</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="ghost" color="primary" label="Primary" />
         <VyButton variant="ghost" color="error"   label="Error" />
         <VyButton variant="ghost" color="neutral" label="Neutral" />
       </view>
 
-      <text class="text-slate-500 text-xs pt-1">link</text>
+      <text class="text-neutral-500 text-xs pt-1">link</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="link" color="primary" label="Primary" />
         <VyButton variant="link" color="info"    label="Info" />
@@ -141,8 +141,8 @@ function onFormSubmit(values: Record<string, unknown>) {
     </view>
 
     <!-- Input + Label -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Input / Label</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-neutral-900 text-base font-semibold">Input / Label</text>
       <VyLabel for="name-input">Display name</VyLabel>
       <VyInput
         id="name-input"
@@ -150,13 +150,13 @@ function onFormSubmit(values: Record<string, unknown>) {
         placeholder="Enter your name"
         leading-icon="icon-park-outline:user"
       />
-      <text v-if="name" class="text-slate-500 text-xs pt-1">Hello, {{ name }}!</text>
+      <text v-if="name" class="text-neutral-500 text-xs pt-1">Hello, {{ name }}!</text>
     </view>
 
     <!-- Input focus ring -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Input focus ring</text>
-      <text class="text-slate-500 text-xs">Tap an input — colored border + shadow ring should follow focus, and drop on blur.</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-neutral-900 text-base font-semibold">Input focus ring</text>
+      <text class="text-neutral-500 text-xs">Tap an input — colored border + shadow ring should follow focus, and drop on blur.</text>
       <VyInput v-model="ringDefault" placeholder="color=primary (default)" />
       <VyInput v-model="ringError" color="error" placeholder="color=error" />
       <VyInput v-model="ringSoft" variant="soft" placeholder="variant=soft (borderless at rest)" />
@@ -165,18 +165,18 @@ function onFormSubmit(values: Record<string, unknown>) {
 
     <!-- Keyboard avoidance: off vs on. Scroll these two cards toward the
          bottom of the screen first so the keyboard would cover them. -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Keyboard avoidance — off</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-neutral-900 text-base font-semibold">Keyboard avoidance — off</text>
+      <text class="text-neutral-500 text-xs">
         Bare input: scroll this card near the bottom, focus, Cmd+K — the
         keyboard covers it and nothing moves.
       </text>
       <VyInput v-model="kaOff" placeholder="I stay behind the keyboard" />
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Keyboard avoidance — on</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-neutral-900 text-base font-semibold">Keyboard avoidance — on</text>
+      <text class="text-neutral-500 text-xs">
         Same input wrapped in KeyboardAwareRoot + Responder (no per-input
         wrapping — it self-registers). Focus + Cmd+K: the responder should
         translate up so the field clears the keyboard, and settle back on
@@ -192,66 +192,66 @@ function onFormSubmit(values: Record<string, unknown>) {
     </view>
 
     <!-- Textarea -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Textarea</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-neutral-900 text-base font-semibold">Textarea</text>
       <VyTextarea v-model="bio" placeholder="Tell us about yourself" :rows="3" />
-      <text v-if="bio" class="text-slate-500 text-xs pt-1">{{ bio.length }} chars</text>
+      <text v-if="bio" class="text-neutral-500 text-xs pt-1">{{ bio.length }} chars</text>
     </view>
 
     <!-- Switch -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-4">
-      <text class="text-slate-900 text-base font-semibold">Switch</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-4">
+      <text class="text-neutral-900 text-base font-semibold">Switch</text>
       <view class="flex flex-row items-center justify-between">
         <view class="flex flex-row items-center gap-2">
           <VyIcon name="icon-park-outline:wifi" :size="18" color="#0f172a" />
-          <text class="text-slate-900 text-sm">Wi-Fi</text>
+          <text class="text-neutral-900 text-sm">Wi-Fi</text>
         </view>
         <VySwitch v-model="wifiOn" />
       </view>
       <view class="flex flex-row items-center justify-between">
         <view class="flex flex-row items-center gap-2">
           <VyIcon name="icon-park-outline:bluetooth" :size="18" color="#0f172a" />
-          <text class="text-slate-900 text-sm">Bluetooth</text>
+          <text class="text-neutral-900 text-sm">Bluetooth</text>
         </view>
         <VySwitch v-model="bluetoothOn" color="info" />
       </view>
     </view>
 
     <!-- Checkbox -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-row items-center gap-3">
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-row items-center gap-3">
       <VyCheckbox v-model="agreed" />
-      <text class="text-slate-900 text-sm">I agree to the terms and conditions</text>
+      <text class="text-neutral-900 text-sm">I agree to the terms and conditions</text>
     </view>
 
     <!-- RadioGroup -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">RadioGroup</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">RadioGroup</text>
       <VyRadioGroup v-model="radioPlan" :items="radioItems" />
-      <text class="text-slate-500 text-xs">Selected: {{ radioPlan }}</text>
+      <text class="text-neutral-500 text-xs">Selected: {{ radioPlan }}</text>
     </view>
 
     <!-- ToggleGroup -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">ToggleGroup</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">ToggleGroup</text>
       <VyToggleGroup v-model="toggleAlign" :items="toggleItems" type="single" />
-      <text class="text-slate-500 text-xs">Align: {{ toggleAlign }}</text>
+      <text class="text-neutral-500 text-xs">Align: {{ toggleAlign }}</text>
     </view>
 
     <!-- Slider -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">Slider</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">Slider</text>
       <VySlider v-model="sliderValue" :min="0" :max="100" :step="1" />
-      <text class="text-slate-500 text-xs">Value: {{ sliderValue }}</text>
+      <text class="text-neutral-500 text-xs">Value: {{ sliderValue }}</text>
     </view>
 
     <!-- NumberField -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">NumberField</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">NumberField</text>
 
       <view class="flex flex-col gap-2">
         <VyLabel for="qty-field">Quantity (0–10)</VyLabel>
         <VyNumberField id="qty-field" v-model="quantity" :min="0" :max="10" :step="1" />
-        <text class="text-slate-500 text-xs">Value: {{ quantity ?? '—' }}</text>
+        <text class="text-neutral-500 text-xs">Value: {{ quantity ?? '—' }}</text>
       </view>
 
       <view class="flex flex-col gap-2 pt-1">
@@ -265,7 +265,7 @@ function onFormSubmit(values: Record<string, unknown>) {
           variant="soft"
           placeholder="0.00"
         />
-        <text class="text-slate-500 text-xs">Value: {{ price ?? '—' }}</text>
+        <text class="text-neutral-500 text-xs">Value: {{ price ?? '—' }}</text>
       </view>
 
       <view class="flex flex-col gap-2 pt-1">
@@ -275,8 +275,8 @@ function onFormSubmit(values: Record<string, unknown>) {
     </view>
 
     <!-- Stepper -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">Stepper</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">Stepper</text>
       <VyStepper v-model="stepperStep" :items="stepperItems" />
       <view class="flex flex-row gap-2 pt-2">
         <VyButton variant="soft" color="neutral" size="sm" label="Back" @tap="stepperStep = Math.max(0, stepperStep - 1)" />
@@ -285,15 +285,15 @@ function onFormSubmit(values: Record<string, unknown>) {
     </view>
 
     <!-- PinInput -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">PinInput</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">PinInput</text>
       <VyPinInput v-model="pin" :length="6" />
-      <text class="text-slate-500 text-xs">Entered: {{ pin || '—' }}</text>
+      <text class="text-neutral-500 text-xs">Entered: {{ pin || '—' }}</text>
     </view>
 
     <!-- Form + FormField (sync validators, label/description/error scaffold) -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">Form + FormField</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">Form + FormField</text>
       <VyForm
         ref="formRef"
         v-slot="{ submitting }"

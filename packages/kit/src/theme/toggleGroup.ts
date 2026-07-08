@@ -21,7 +21,7 @@ import type { Color } from './colors'
 // `dropdownMenu.ts` / `stepper.ts`.
 const outline = (c: string) =>
   ({
-    base: `border border-neutral-300 bg-white active:bg-${c}-50 active:bg-${c}-100`
+    base: `border border-neutral-300 bg-default active:bg-${c}-50 active:bg-${c}-100`
       + ` ui-on:border-${c}-500 ui-on:bg-${c}-50`,
     fg: `text-neutral-700 group-ui-on:text-${c}-600`,
   })
@@ -35,7 +35,7 @@ const soft = (c: string) =>
 
 const subtle = (c: string) =>
   ({
-    base: `border border-neutral-200 bg-white active:bg-${c}-50 active:bg-${c}-100`
+    base: `border border-neutral-200 bg-default active:bg-${c}-50 active:bg-${c}-100`
       + ` ui-on:border-${c}-300 ui-on:bg-${c}-100`,
     fg: `text-neutral-700 group-ui-on:text-${c}-600`,
   })

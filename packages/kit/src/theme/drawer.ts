@@ -16,7 +16,7 @@
 export default {
   slots: {
     overlay: 'fixed inset-0 bg-neutral-900/50',
-    content: 'fixed z-[1001] bg-white border border-neutral-200 flex overflow-hidden max-h-[100vh]',
+    content: 'fixed z-[1001] bg-elevated border border-neutral-200 flex overflow-hidden max-h-[100vh]',
     handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
     scaffold: 'flex flex-col flex-1 min-h-0',
     header: 'flex flex-row items-center gap-1.5 px-4 py-3 min-h-12',

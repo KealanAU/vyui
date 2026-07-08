@@ -38,23 +38,23 @@ function notify(message: string) {
     <!-- Island — the real floating dock is rendered after the closing
          </view> of this card (see below). This card holds the description
          + secondary placement variants (top pair, single icon). -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-4">
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-4">
       <view class="flex flex-col gap-1">
-        <text class="text-slate-900 text-base font-semibold">Island</text>
-        <text class="text-slate-500 text-xs">
+        <text class="text-neutral-900 text-base font-semibold">Island</text>
+        <text class="text-neutral-500 text-xs">
           Linear-style pill container — anchored to the viewport edge by
           default. The main dock for this section is floating at the bottom
           of the screen; toggle it below. Side-by-side and single-button
           patterns are inlined here for layout reference.
         </text>
-        <text class="text-slate-400 text-[11px] pt-1">value: <text class="font-mono">{{ dockTab }}</text> · mode: <text class="font-mono">{{ dockMode }}</text> · open: <text class="font-mono">{{ dockOpen }}</text></text>
+        <text class="text-neutral-400 text-[11px] pt-1">value: <text class="font-mono">{{ dockTab }}</text> · mode: <text class="font-mono">{{ dockMode }}</text> · open: <text class="font-mono">{{ dockOpen }}</text></text>
       </view>
 
       <VySeparator />
 
       <!-- Top pair — two inline islands side-by-side -->
       <view class="flex flex-col items-stretch gap-2">
-        <text class="text-slate-500 text-xs">Two top islands side-by-side (left breadcrumb, right actions)</text>
+        <text class="text-neutral-500 text-xs">Two top islands side-by-side (left breadcrumb, right actions)</text>
         <view class="flex flex-row items-start justify-between gap-2">
           <VyIsland layer="inline" size="sm">
             <VyIslandButton icon="icon-park-outline:left" @tap="() => {}" />
@@ -71,7 +71,7 @@ function notify(message: string) {
 
       <!-- Single-button island -->
       <view class="flex flex-col items-center gap-2">
-        <text class="text-slate-500 text-xs">Single icon, no labels</text>
+        <text class="text-neutral-500 text-xs">Single icon, no labels</text>
         <VyIsland layer="inline" size="lg">
           <VyIslandButton icon="icon-park-outline:message" @tap="() => {}" />
         </VyIsland>
@@ -82,8 +82,8 @@ function notify(message: string) {
       <!-- Show / hide the floating dock anchored at the bottom -->
       <view class="flex flex-row items-center justify-between gap-2">
         <view class="flex flex-col gap-0.5">
-          <text class="text-slate-900 text-sm font-medium">Floating bottom dock</text>
-          <text class="text-slate-500 text-xs">Fixed to the bottom of the viewport. Trailing pill = close.</text>
+          <text class="text-neutral-900 text-sm font-medium">Floating bottom dock</text>
+          <text class="text-neutral-500 text-xs">Fixed to the bottom of the viewport. Trailing pill = close.</text>
         </view>
         <VyButton
           :label="floatingDockVisible ? 'Hide' : 'Show'"

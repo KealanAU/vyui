@@ -4,6 +4,7 @@ export { VyUI } from './plugin'
 export { provideVyUI } from './provide'
 
 export { useAppConfig } from './composables/useAppConfig'
+export { useColorMode, type ColorMode, type UseColorModeReturn } from './composables/useColorMode'
 export { useComponentIcons, type UseComponentIconsProps } from './composables/useComponentIcons'
 
 export {

@@ -30,7 +30,7 @@ const solid = (c: string) =>
   ({ base: `bg-${c}-500`, fg: 'text-white' })
 
 const outline = (c: string) =>
-  ({ base: `bg-white border-2 border-solid border-${c}-200`, fg: `text-${c}-600` })
+  ({ base: `bg-default border-2 border-solid border-${c}-200`, fg: `text-${c}-600` })
 
 const subtle = (c: string) =>
   ({ base: `bg-${c}-50 border-2 border-solid border-${c}-200`, fg: `text-${c}-600` })

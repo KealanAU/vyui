@@ -27,7 +27,7 @@ export default (colors: Color[]) => ({
     },
     checked: {
       true: {},
-      false: { base: 'bg-white border border-neutral-300' },
+      false: { base: 'bg-default border border-neutral-300' },
     },
     disabled: {
       true: { base: 'opacity-50 cursor-not-allowed' },

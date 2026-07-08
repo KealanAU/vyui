@@ -114,6 +114,14 @@
   --ui-warning:   var(--ui-color-warning-500);
   --ui-error:     var(--ui-color-error-500);
 
+  /* Surface tier — light values (mirrors base style.css). This overlay has no
+     `.dark` neutral block, so dark surfaces are its own separate TODO. */
+  --ui-bg:          theme('colors.white');
+  --ui-bg-muted:    theme('colors.white');
+  --ui-bg-elevated: theme('colors.white');
+  --ui-bg-inverted:   theme('colors.slate.900');
+  --ui-text-inverted: theme('colors.white');
+
   /*
    * `rounded` style: a soft/pillowy base radius. This single value rescales
    * EVERY `rounded-*` utility across all (reused) components — the whole point

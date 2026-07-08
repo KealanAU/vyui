@@ -59,12 +59,13 @@ const link = (c: string) =>
 
 // ── Neutral ─────────────────────────────────────────────────────────────────
 // Nuxt treats neutral specially: solid is near-black, the rest sit on
-// default/elevated/accented surfaces. On Lynx the Tailwind preset only emits
-// `theme.colors` utilities (no semantic surface utilities like `bg-elevated`),
-// so map onto the neutral ramp directly. A style re-skins these by overriding
-// the `--ui-color-neutral-*` ramp (the `--base-color` mechanism).
+// default/elevated/accented surfaces. The button variants map onto the neutral
+// ramp directly (a style re-skins them by overriding `--ui-color-neutral-*` —
+// the `--base-color` mechanism). Field/overlay surfaces elsewhere use the
+// semantic surface tokens (`bg-default` / `bg-elevated`, see `style.css`) so
+// they invert in dark; buttons stay on the ramp because their fills already do.
 const neutralVariants = {
-  solid: { base: 'bg-neutral-900 active:bg-neutral-800', fg: 'text-white' },
+  solid: { base: 'bg-inverted active:opacity-90', fg: 'text-inverted' },
   outline: { base: 'border-2 border-solid border-neutral-300 active:bg-neutral-100', fg: 'text-neutral-700' },
   subtle: { base: 'border-2 border-solid border-neutral-200 bg-neutral-100 active:bg-neutral-200', fg: 'text-neutral-700' },
   soft: { base: 'bg-neutral-100 active:bg-neutral-200', fg: 'text-neutral-700' },

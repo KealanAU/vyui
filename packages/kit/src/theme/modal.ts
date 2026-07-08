@@ -26,7 +26,7 @@
 export default {
   slots: {
     overlay: 'fixed inset-0 bg-neutral-900/50',
-    content: 'relative overflow-hidden bg-white divide-y divide-neutral-200 flex flex-col w-[calc(100vw-2rem)] max-w-lg max-h-[calc(100vh-1rem)] rounded-lg border border-neutral-200',
+    content: 'relative overflow-hidden bg-elevated divide-y divide-neutral-200 flex flex-col w-[calc(100vw-2rem)] max-w-lg max-h-[calc(100vh-1rem)] rounded-lg border border-neutral-200',
     header: 'flex flex-row items-center gap-1.5 px-4 py-3 min-h-12',
     wrapper: '',
     body: 'flex-1 min-h-0 overflow-y-auto p-4',

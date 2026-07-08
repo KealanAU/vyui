@@ -109,6 +109,13 @@
   --ui-warning:   var(--ui-color-warning-500);
   --ui-error:     var(--ui-color-error-500);
 
+  /* Surface tier — light values (mirrors base style.css). */
+  --ui-bg:          theme('colors.white');
+  --ui-bg-muted:    theme('colors.white');
+  --ui-bg-elevated: theme('colors.white');
+  --ui-bg-inverted:   theme('colors.slate.900');
+  --ui-text-inverted: theme('colors.white');
+
   /* shadcn radius default — rescales the whole rounded-* scale */
   --ui-radius: 0.5rem;
 }

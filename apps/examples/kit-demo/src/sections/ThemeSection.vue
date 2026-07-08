@@ -70,12 +70,12 @@ const showcaseIcons = [
 <template>
   <view class="flex flex-col gap-4 pt-2">
     <!-- Active color — pick one from the dropdown; samples lock to it -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
       <view class="flex flex-row items-baseline justify-between">
-        <text class="text-slate-900 text-base font-semibold">Color</text>
-        <text class="text-slate-500 text-xs">{{ activeColor }}</text>
+        <text class="text-neutral-900 text-base font-semibold">Color</text>
+        <text class="text-neutral-500 text-xs">{{ activeColor }}</text>
       </view>
-      <text class="text-slate-500 text-xs">Pick any semantic color (incl. the custom <text class="font-mono">tertiary</text>) — the samples below render in it.</text>
+      <text class="text-neutral-500 text-xs">Pick any semantic color (incl. the custom <text class="font-mono">tertiary</text>) — the samples below render in it.</text>
       <VySelect
         :model-value="activeColor"
         :items="colorItems"
@@ -92,14 +92,14 @@ const showcaseIcons = [
     </view>
 
     <!-- Palettes -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-4">
-      <text class="text-slate-900 text-base font-semibold">Palettes</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-4">
+      <text class="text-neutral-900 text-base font-semibold">Palettes</text>
 
       <!-- primary — swatch grid -->
       <view class="flex flex-col gap-2">
         <view class="flex flex-row items-baseline justify-between">
-          <text class="text-slate-700 text-sm font-medium">primary</text>
-          <text class="text-slate-500 text-xs">{{ colorPalettes.primary }}</text>
+          <text class="text-neutral-700 text-sm font-medium">primary</text>
+          <text class="text-neutral-500 text-xs">{{ colorPalettes.primary }}</text>
         </view>
         <view class="flex flex-row flex-wrap gap-3">
           <view
@@ -107,7 +107,7 @@ const showcaseIcons = [
             :key="`primary-${p.name}`"
             :class="[
               'w-9 h-9 rounded-full border-2',
-              colorPalettes.primary === p.name ? 'border-slate-900' : 'border-transparent',
+              colorPalettes.primary === p.name ? 'border-neutral-900' : 'border-transparent',
             ]"
             :style="{ backgroundColor: p.hex }"
             @tap="colorPalettes.primary = p.name"
@@ -118,8 +118,8 @@ const showcaseIcons = [
       <!-- neutral — same swatch grid, gray families -->
       <view class="flex flex-col gap-2">
         <view class="flex flex-row items-baseline justify-between">
-          <text class="text-slate-700 text-sm font-medium">neutral</text>
-          <text class="text-slate-500 text-xs">{{ neutralPalette }}</text>
+          <text class="text-neutral-700 text-sm font-medium">neutral</text>
+          <text class="text-neutral-500 text-xs">{{ neutralPalette }}</text>
         </view>
         <view class="flex flex-row flex-wrap gap-3">
           <view
@@ -127,7 +127,7 @@ const showcaseIcons = [
             :key="`neutral-${p.name}`"
             :class="[
               'w-9 h-9 rounded-full border-2',
-              neutralPalette === p.name ? 'border-slate-900' : 'border-transparent',
+              neutralPalette === p.name ? 'border-neutral-900' : 'border-transparent',
             ]"
             :style="{ backgroundColor: p.hex }"
             @tap="neutralPalette = p.name"
@@ -143,7 +143,7 @@ const showcaseIcons = [
       >
         <view class="flex flex-row items-center gap-2">
           <view class="w-6 h-6 rounded-full" :style="{ backgroundColor: paletteHex(colorPalettes[c]) }" />
-          <text class="text-slate-700 text-sm font-medium">{{ c }}</text>
+          <text class="text-neutral-700 text-sm font-medium">{{ c }}</text>
         </view>
         <view class="w-36">
           <VySelect v-model="colorPalettes[c]" :items="paletteItems" :placeholder="c" size="sm" />
@@ -152,19 +152,19 @@ const showcaseIcons = [
     </view>
 
     <!-- Radius -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
       <view class="flex flex-row items-baseline justify-between">
-        <text class="text-slate-900 text-base font-semibold">Radius</text>
-        <text class="text-slate-500 text-xs">{{ radius }}rem</text>
+        <text class="text-neutral-900 text-base font-semibold">Radius</text>
+        <text class="text-neutral-500 text-xs">{{ radius }}rem</text>
       </view>
-      <text class="text-slate-500 text-xs">Sets <text class="font-mono">--ui-radius</text>. Every <text class="font-mono">rounded-*</text> utility scales from it.</text>
+      <text class="text-neutral-500 text-xs">Sets <text class="font-mono">--ui-radius</text>. Every <text class="font-mono">rounded-*</text> utility scales from it.</text>
       <view class="flex flex-row flex-wrap gap-2 pt-1">
         <view
           v-for="step in radiusSteps"
           :key="`r-${step}`"
           :class="[
             'w-12 h-12 border-2 bg-primary-500',
-            radius === step ? 'border-slate-900' : 'border-transparent',
+            radius === step ? 'border-neutral-900' : 'border-transparent',
           ]"
           :style="{ borderRadius: `${step}rem` }"
           @tap="radius = step"
@@ -173,9 +173,9 @@ const showcaseIcons = [
     </view>
 
     <!-- Icons -->
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">icon-park-outline</text>
-      <text class="text-slate-500 text-xs">Iconify set registered via registerIconSet().</text>
+    <view class="bg-default border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-neutral-900 text-base font-semibold">icon-park-outline</text>
+      <text class="text-neutral-500 text-xs">Iconify set registered via registerIconSet().</text>
       <view class="flex flex-row flex-wrap gap-4 pt-1">
         <view
           v-for="icon in showcaseIcons"
@@ -183,7 +183,7 @@ const showcaseIcons = [
           class="flex flex-col items-center gap-1 w-16"
         >
           <VyIcon :name="icon" :size="28" color="#0f172a" />
-          <text class="text-slate-500 text-xs text-center">{{ icon.replace('icon-park-outline:', '') }}</text>
+          <text class="text-neutral-500 text-xs text-center">{{ icon.replace('icon-park-outline:', '') }}</text>
         </view>
       </view>
     </view>

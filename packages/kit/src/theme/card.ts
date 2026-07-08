@@ -21,13 +21,13 @@ export default {
         // <text>, so plain-text children of a solid card should set their own
         // color (or pass `ui.{header,body,footer}`); the `bg-*` fill stays on
         // `root`.
-        root: 'bg-neutral-900',
-        header: 'text-white',
-        body: 'text-white',
-        footer: 'text-white',
+        root: 'bg-inverted',
+        header: 'text-inverted',
+        body: 'text-inverted',
+        footer: 'text-inverted',
       },
       outline: {
-        root: 'bg-white border border-neutral-200',
+        root: 'bg-default border border-neutral-200',
       },
       soft: {
         root: 'bg-neutral-50',

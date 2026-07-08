@@ -58,7 +58,7 @@ export default (colors: Color[]) => ({
     // Surface only (bg/border) on `root`; typed-text color lives on `base`
     // (the <textarea>) — see the `slots.base` note re `enableCSSInheritance: false`.
     variant: {
-      outline: { root: 'bg-white border border-neutral-200' },
+      outline: { root: 'bg-default border border-neutral-200' },
       soft: { root: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
       subtle: { root: 'bg-neutral-100 border border-neutral-200' },
       ghost: { root: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent' },

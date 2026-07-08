@@ -16,6 +16,31 @@
  * Override any of these in a downstream CSS file to rebrand without touching
  * @vyui/kit code.
  *
+ * ── DARK MODE ──────────────────────────────────────────────────────────────
+ * A `.dark` block redefines a subset of the ramp; anything it omits inherits
+ * `:root`. Two moves, no component or theme-file changes:
+ *   1. The NEUTRAL ramp fully inverts (`-50` ⇄ `-950`, `-100` ⇄ `-900`, …,
+ *      `-500` stays). Since surfaces/text/borders read the neutral ramp
+ *      directly (`bg-neutral-100`, `text-neutral-900`, `border-neutral-200`),
+ *      inverting it flips the whole surface system at once.
+ *   2. The MODE tier shifts `-500` → `-400` (nuxt/ui's move) so `bg-primary`
+ *      shorthands keep contrast on dark surfaces. Accent RAMPS don't invert —
+ *      a `-500` solid fill (`bg-{color}-500` + `text-white`) reads fine on dark.
+ *
+ * The `.dark` class is toggled on an ancestor by the app root (see
+ * `useColorMode`); custom-property inheritance flows the redefined ramp to every
+ * descendant. Rule: `.dark` values are `theme()` LITERALS, never `var(--ui-*)`
+ * refs — Lynx native resolves only ONE level of var() indirection, so a
+ * semantic token holding a var() ref collapses on device.
+ *
+ * Inverting the ramp flips everything that RIDES it (text, borders, muted
+ * fills), but not literal `bg-white` field/overlay surfaces — those ride the
+ * SURFACE tier below (`--ui-bg` / `--ui-bg-muted` / `--ui-bg-elevated`, exposed
+ * as `bg-default` / `bg-muted` / `bg-elevated`). Component themes use those
+ * tokens instead of `bg-white`; the tier is redefined with designed dark values
+ * in `.dark` (not a mechanical flip). Knob/thumb whites and `text-white` on
+ * solid color fills stay literal — a `-500` fill reads fine in both modes.
+ *
  * ── SYNC CONTRACT ──────────────────────────────────────────────────────────
  * This file ships RAW (never compiled) so it CANNOT import the shared color
  * source of truth (`src/theme/color-constants.js`). It must be hand-kept in
@@ -23,7 +48,9 @@
  * `ALL_COLORS`, and each block's palette must match
  * `SEMANTIC_TO_PALETTE_DEFAULT` in color-constants.js. Adding a custom color
  * (e.g. `tertiary`) requires adding its block here by hand (the consumer
- * override contract — same as nuxt/ui's CSS-var requirement).
+ * override contract — same as nuxt/ui's CSS-var requirement). The `.dark`
+ * neutral block is grayified by the same generator regex as `:root`, so a
+ * consumer's chosen base gray applies to both.
  */
 :root {
   /* primary */
@@ -117,13 +144,45 @@
   --ui-color-neutral-900: theme('colors.slate.900');
   --ui-color-neutral-950: theme('colors.slate.950');
 
-  /* Mode tier — picks the active shade for shorthand utilities (`bg-primary`). */
-  --ui-primary:   var(--ui-color-primary-500);
-  --ui-secondary: var(--ui-color-secondary-500);
-  --ui-success:   var(--ui-color-success-500);
-  --ui-info:      var(--ui-color-info-500);
-  --ui-warning:   var(--ui-color-warning-500);
-  --ui-error:     var(--ui-color-error-500);
+  /*
+   * Mode tier — picks the active shade for shorthand utilities (`bg-primary`).
+   * Holds `theme()` LITERALS, not `var(--ui-color-*-500)` refs: `bg-primary`
+   * resolves `var(--ui-primary)` (one hop) and Lynx native stops after one hop,
+   * so a nested var() ref here would collapse on device. To rebrand the mode
+   * tier, override these directly (overriding the `--ui-color-*` ramp no longer
+   * flows through). The heavily-used ramp utilities (`bg-primary-500`) resolve
+   * the ramp in one hop and still honor `--ui-color-*` overrides.
+   */
+  --ui-primary:   theme('colors.green.500');
+  --ui-secondary: theme('colors.blue.500');
+  --ui-success:   theme('colors.emerald.500');
+  --ui-info:      theme('colors.sky.500');
+  --ui-warning:   theme('colors.amber.500');
+  --ui-error:     theme('colors.red.500');
+
+  /*
+   * Surface tier — semantic background tokens for elevated/field surfaces.
+   * Components use `bg-default` / `bg-muted` / `bg-elevated` (mapped in
+   * tailwind.js) instead of a literal `bg-white`, which can't invert. In LIGHT
+   * all three are WHITE — surfaces separate via borders/shadow, not fill; in
+   * DARK they layer: muted (page) < default (cards, form chrome) < elevated
+   * (overlays). `theme()` LITERALS only — same single-level var() rule as the
+   * mode tier, so they're redefined concretely in `.dark`. Override any of these
+   * once (per mode) to reskin every surface without touching a component.
+   */
+  --ui-bg:          theme('colors.white');
+  --ui-bg-muted:    theme('colors.white');
+  --ui-bg-elevated: theme('colors.white');
+
+  /*
+   * Inverted surface — a high-contrast fill (`bg-inverted` + `text-inverted`)
+   * that flips with the mode: near-black-on-white in light, near-white-on-black
+   * in dark. Used by neutral `solid` fills (button/card) that must stay legible
+   * in both modes — a straight neutral-ramp invert would put white text on the
+   * now-light surface. Distinct from `text-white` on COLORED fills, which stays.
+   */
+  --ui-bg-inverted:   theme('colors.slate.900');
+  --ui-text-inverted: theme('colors.white');
 
   /*
    * Border-radius base. Every `rounded-*` utility resolves to a multiple of
@@ -138,13 +197,47 @@
   --ui-radius: 0.25rem;
 }
 
+/*
+ * Dark ramp. See the DARK MODE banner above. Only the neutral ramp + mode tier
+ * are redefined; the accent ramps inherit `:root` unchanged. Values are `theme()`
+ * literals (single-level var() rule). Applied via a `.dark` class on an app-root
+ * ancestor (`useColorMode`).
+ */
 .dark {
-  --ui-primary:   var(--ui-color-primary-400);
-  --ui-secondary: var(--ui-color-secondary-400);
-  --ui-success:   var(--ui-color-success-400);
-  --ui-info:      var(--ui-color-info-400);
-  --ui-warning:   var(--ui-color-warning-400);
-  --ui-error:     var(--ui-color-error-400);
+  /* neutral — inverted (`-50` ⇄ `-950`, midpoint `-500` fixed) so surfaces,
+     text and borders flip together. Same `slate` base as `:root`; grayified by
+     the generator alongside the light block. */
+  --ui-color-neutral-50:  theme('colors.slate.950');
+  --ui-color-neutral-100: theme('colors.slate.900');
+  --ui-color-neutral-200: theme('colors.slate.800');
+  --ui-color-neutral-300: theme('colors.slate.700');
+  --ui-color-neutral-400: theme('colors.slate.600');
+  --ui-color-neutral-500: theme('colors.slate.500');
+  --ui-color-neutral-600: theme('colors.slate.400');
+  --ui-color-neutral-700: theme('colors.slate.300');
+  --ui-color-neutral-800: theme('colors.slate.200');
+  --ui-color-neutral-900: theme('colors.slate.100');
+  --ui-color-neutral-950: theme('colors.slate.50');
+
+  /* Mode tier — one notch brighter (-400) for legibility on dark surfaces. */
+  --ui-primary:   theme('colors.green.400');
+  --ui-secondary: theme('colors.blue.400');
+  --ui-success:   theme('colors.emerald.400');
+  --ui-info:      theme('colors.sky.400');
+  --ui-warning:   theme('colors.amber.400');
+  --ui-error:     theme('colors.red.400');
+
+  /* Surface tier — DESIGNED dark values (not a mechanical ramp flip): the page
+     recedes to slate-950, cards/fields sit at slate-900, floating overlays lift
+     to slate-800. Keeping surfaces off pure-black (slate-900/800, not 950)
+     reads softer than inverting `bg-white` straight to the darkest shade. */
+  --ui-bg:          theme('colors.slate.900');
+  --ui-bg-muted:    theme('colors.slate.950');
+  --ui-bg-elevated: theme('colors.slate.800');
+
+  /* Inverted surface — flips to light fill / dark text in dark mode. */
+  --ui-bg-inverted:   theme('colors.white');
+  --ui-text-inverted: theme('colors.slate.900');
 }
 
 /*

@@ -18,7 +18,7 @@ export default (colors: Color[]) => ({
     // `gap-2` spaces the control from the label — Lynx ignores logical inline
     // margins (`ms-*`), so the old `ms-2` collapsed them. Matches Checkbox.
     item: 'flex flex-row items-start min-w-0 gap-2',
-    base: 'shrink-0 flex flex-row items-center justify-center rounded-full bg-white border border-neutral-300 transition-colors',
+    base: 'shrink-0 flex flex-row items-center justify-center rounded-full bg-default border border-neutral-300 transition-colors',
     indicator: 'flex flex-row items-center justify-center rounded-full bg-white',
     container: 'flex flex-row items-center',
     wrapper: 'flex flex-col min-w-0',

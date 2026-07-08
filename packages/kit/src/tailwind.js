@@ -128,6 +128,24 @@ export function createVyuiPreset(options = {}) {
         colors: Object.fromEntries(
           allColors.map((name) => [name, buildScale(name, neutral, shades)]),
         ),
+        // Surface tier — semantic background utilities (`bg-default` / `bg-muted`
+        // / `bg-elevated`) wired to the `--ui-bg*` tokens in `style.css`. Themes
+        // use these for field/overlay surfaces instead of literal `bg-white`, so
+        // they invert in dark mode (a var() ref resolves in one hop → the tokens
+        // hold `theme()` literals per mode). `backgroundColor` (not `colors`) so
+        // only `bg-*` is emitted, not text/border/ring variants.
+        backgroundColor: {
+          default: 'var(--ui-bg)',
+          muted: 'var(--ui-bg-muted)',
+          elevated: 'var(--ui-bg-elevated)',
+          // High-contrast fill for neutral `solid` surfaces — flips with the
+          // mode so `text-inverted` stays legible on it (paired below).
+          inverted: 'var(--ui-bg-inverted)',
+        },
+        // `text-inverted` — the foreground for `bg-inverted` fills.
+        textColor: {
+          inverted: 'var(--ui-text-inverted)',
+        },
         borderRadius: RADIUS_SCALE,
         // Halve every numeric step of the borderWidth scale. The bare
         // `border` utility uses `DEFAULT`; `border-2` / `border-4` keep their

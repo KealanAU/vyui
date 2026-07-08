@@ -16,7 +16,7 @@ export default {
   slots: {
     root: 'w-full min-w-0 max-w-full overflow-hidden flex flex-col',
     item: 'group flex flex-col min-w-0 max-w-full',
-    itemContent: 'flex-1 flex flex-row items-center min-w-0 overflow-hidden gap-2 bg-white border border-neutral-200 rounded-md group-ui-dragging:border-neutral-300',
+    itemContent: 'flex-1 flex flex-row items-center min-w-0 overflow-hidden gap-2 bg-default border border-neutral-200 rounded-md group-ui-dragging:border-neutral-300',
     handle: 'shrink-0 text-neutral-400',
   },
   variants: {
