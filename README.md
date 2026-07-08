@@ -111,7 +111,6 @@ vyui/
 └── apps/
     └── examples/
         ├── kit-demo/           # styled-component showcase
-        ├── flashcards-demo/    # app-shaped VyApp demo (quiz flow)
         ├── docs-playground/   # docs example bundle
         └── …
 ```

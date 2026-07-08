@@ -12,7 +12,6 @@ packages/
   testing-utils/              — shared test helpers
 apps/examples/
   kit-demo/         styled-component showcase (exercises @vyui/kit)
-  flashcards-demo/  study-quiz app built around the VyApp root shell
   docs-playground/  docs example bundle (live playground sources)
   …                 app-shaped demos (vyai, tiktok-demo, linear-demo, …)
 ```
