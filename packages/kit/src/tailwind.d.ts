@@ -8,6 +8,12 @@ export interface CreateVyuiPresetOptions {
   /** Tailwind shade steps. */
   shades?: number[]
   /**
+   * Restrict the theme safelist to these components (`@vyui/kit/theme` export
+   * names, e.g. `['button', 'tabs']`). Components they render internally are
+   * pulled in automatically. Omit to safelist every packaged theme.
+   */
+  components?: string[]
+  /**
    * Normalized config from `defineVyuiConfig` (`@vyui/kit/config`). When
    * present, `ui.colors` supplies the semantic color set — pass the same object
    * to `provideVyUI` so build + runtime share one source of truth.

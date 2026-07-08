@@ -3,6 +3,7 @@ import { computed, reactive, ref } from 'vue'
 import { runOnBackground } from 'vue-lynx'
 import { OverlayRoot } from '@vyui/core'
 import { useColorMode, VyButton, VyTabs } from '@vyui/kit'
+import SectionScroll from './sections/SectionScroll.vue'
 import ThemeSection from './sections/ThemeSection.vue'
 import DarkModeSection from './sections/DarkModeSection.vue'
 import FormSection from './sections/FormSection.vue'
@@ -70,68 +71,47 @@ const rootClass = computed(() => [
 ].join(' '))
 
 const tab = ref<string | number>('theme')
-const allTabItems = [
+// The gesture tabs (Gestures / Swipe / Scroll) opt back into unmounting: their
+// sections write styles from MT worklets (`setStyleProperty`,
+// `animate(fill: 'forwards')`), which land on the native style object and keep
+// painting through the kept-alive `display: none` on device — ghost cards over
+// other tabs. Content tabs stay kept-alive.
+const tabItems = [
   { value: 'theme',   label: 'Theme', icon: 'icon-park-outline:paint',            slot: 'theme' },
   { value: 'dark',    label: 'Dark',  icon: 'icon-park-outline:moon',             slot: 'dark' },
   { value: 'form',    label: 'Form',  icon: 'icon-park-outline:edit',             slot: 'form' },
   { value: 'display', label: 'View',  icon: 'icon-park-outline:layers',           slot: 'display' },
-  { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures' },
-  { value: 'swipe',   label: 'Swipe',  icon: 'icon-park-outline:check-one',       slot: 'swipe' },
-  { value: 'scroll',  label: 'Scroll', icon: 'icon-park-outline:swipe',           slot: 'scroll' },
+  { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures', unmountOnHide: true },
+  { value: 'swipe',   label: 'Swipe',  icon: 'icon-park-outline:check-one',       slot: 'swipe',    unmountOnHide: true },
+  { value: 'scroll',  label: 'Scroll', icon: 'icon-park-outline:swipe',           slot: 'scroll',   unmountOnHide: true },
   { value: 'island',  label: 'Island', icon: 'icon-park-outline:pill',            slot: 'island' },
   { value: 'overlay', label: 'Modal', icon: 'icon-park-outline:application-menu', slot: 'overlay' },
 ]
-const tabItems = computed(() => allTabItems)
 
-// Tabs whose content is itself a gesture surface or its own scroller (a native
-// `<list>` / bounce `<scroll-view>`). The outer page `<scroll-view>` consumes
-// the vertical touch/pan stream for its own scrolling, which starves those
-// inner gestures (drag-to-reorder, swipe rows, pull a list) — the symptom is
-// "the whole page scrolls instead of the thing under my finger". For these tabs
-// we disable the outer scroll so the inner surface owns the gesture.
-const NON_SCROLLING_TABS = ['gestures', 'swipe', 'scroll']
-const pageScrolls = computed(() => !NON_SCROLLING_TABS.includes(String(tab.value)))
-
-// A non-scrolling tab keeps the same header + padding as the scrolling tabs so
-// switching to it doesn't jolt the tab bar to the top of the screen — only the
-// outer element swaps (scroll-view → non-scrolling view) so the inner gesture
-// surface / own scroller owns the touch stream.
 const showChrome = computed(() => !isLandscape.value)
 
-const pageClass = computed(() => {
-  if (isLandscape.value) {
-    return pageScrolls.value
-      ? 'flex flex-col w-full min-h-[100vh] p-3'
-      : 'flex flex-col w-full h-[100vh] min-h-0 p-3'
-  }
-  if (pageScrolls.value)
-    return 'flex flex-col gap-4 px-5 pt-16 pb-10'
-  // Non-scrolling tab (Gestures / Scroll): same header + padding as the scrolling
-  // tabs, but capped to the viewport so the inner surface owns the touch stream
-  // instead of the page scrolling under the finger.
-  return 'flex flex-col gap-4 w-full h-[100vh] min-h-0 px-5 pt-16 pb-10'
-})
-const tabsUi = computed(() => {
-  if (isLandscape.value) {
-    // Vertical rail (fixed width, pinned to the top via `self-start`) + content
-    // filling the rest of the width. A scrolling tab lets the whole rail+content
-    // block grow past the viewport (the outer `<scroll-view>` owns the scroll);
-    // a non-scrolling tab caps to the viewport so its inner surface owns gestures.
-    return {
-      root: pageScrolls.value ? 'min-h-[calc(100vh-1.5rem)]' : 'flex-1 min-h-0',
-      list: 'w-36 shrink-0 self-start',
-      content: pageScrolls.value
-        ? 'flex-1 min-w-0 ps-3'
-        : 'flex-1 min-w-0 min-h-0 ps-3 overflow-hidden',
-    }
-  }
-  return pageScrolls.value
-    ? {}
+// The page itself never scrolls: content tabs bring their own `<scroll-view>`
+// (see `SectionScroll.vue`) and gesture tabs own their touch stream directly.
+// One stable page element — the previous per-tab `scroll-view`/`view` swap
+// remounted the whole tree (header, tab bar, section) on those switches, and
+// would now also discard every kept-alive panel.
+const pageClass = computed(() =>
+  isLandscape.value
+    ? 'flex flex-col w-full h-[100vh] min-h-0 p-3'
+    : 'flex flex-col gap-4 w-full h-[100vh] min-h-0 px-5 pt-16 pb-6')
+
+// Rail/content sizing only — scrolling is the sections' business.
+const tabsUi = computed(() =>
+  isLandscape.value
+    ? {
+        root: 'flex-1 min-h-0',
+        list: 'w-36 shrink-0 self-start',
+        content: 'flex-1 min-w-0 min-h-0 ps-3 overflow-hidden',
+      }
     : {
         root: 'flex-1 min-h-0',
         content: 'flex-1 min-h-0 overflow-hidden',
-      }
-})
+      })
 
 // ActionSheet header trigger removed for now: ActionSheet wraps the core
 // `Sheet*` primitives whose main-thread worklet currently throws "cannot read
@@ -148,90 +128,85 @@ const tabsUi = computed(() => {
   >
     <OverlayRoot />
 
-    <!-- Swap the outer element by tab rather than toggling `enable-scroll` on a
-         single instance: a content tab gets a real (scrolling) `<scroll-view>`;
-         a full-bleed tab gets a plain non-scrolling `<view>` so its inner
-         gesture surface / native `<list>` / bounce `<scroll-view>` owns the
-         touch stream. Swapping the element type forces a fresh mount, avoiding
-         a `<scroll-view>` getting stuck non-scrollable after a prop flip. -->
-    <component
-      :is="pageScrolls ? 'scroll-view' : 'view'"
-      class="w-full h-full min-h-0"
-      scroll-orientation="vertical"
-    >
-      <view :class="pageClass">
-        <view v-if="showChrome" class="flex flex-col gap-2">
-          <text class="text-highlighted text-2xl font-bold">@vyui/kit demo</text>
-          <text class="text-muted text-sm">Styled components on top of @vyui/core primitives.</text>
-          <!-- App-root color-mode toggle: flips the WHOLE app (drives the root
-               `<view>`'s `dark` class + `:key` remount). -->
-          <view class="flex flex-row gap-1 pt-1">
-            <VyButton
-              v-for="m in modeItems"
-              :key="m.value"
-              size="xs"
-              color="neutral"
-              :variant="mode === m.value ? 'solid' : 'soft'"
-              :label="m.label"
-              @tap="setMode(m.value)"
-            />
-          </view>
+    <view :class="pageClass">
+      <view v-if="showChrome" class="flex flex-col gap-2">
+        <text class="text-highlighted text-2xl font-bold">@vyui/kit demo</text>
+        <text class="text-muted text-sm">Styled components on top of @vyui/core primitives.</text>
+        <!-- App-root color-mode toggle: flips the WHOLE app (drives the root
+             `<view>`'s `dark` class + `:key` remount). -->
+        <view class="flex flex-row gap-1 pt-1">
+          <VyButton
+            v-for="m in modeItems"
+            :key="m.value"
+            size="xs"
+            color="neutral"
+            :variant="mode === m.value ? 'solid' : 'soft'"
+            :label="m.label"
+            @tap="setMode(m.value)"
+          />
         </view>
+      </view>
 
-        <VyTabs
-          v-model="tab"
-          :items="tabItems"
-          variant="pill"
-          size="sm"
-          :orientation="isLandscape ? 'vertical' : 'horizontal'"
-          :direction="isLandscape ? 'inline' : 'stacked'"
-          :ui="tabsUi"
-        >
-          <template #theme>
+      <!-- `unmount-on-hide=false`: a section mounts on first visit and is kept
+           (hidden) after, so revisits are a style flip. `defer-content`: the
+           trigger/indicator flush lands before the section mount, so the bar
+           responds instantly. Content sections scroll themselves via
+           `SectionScroll`; gesture tabs (Gestures/Swipe/Scroll) render bare so
+           their inner surfaces own the touch stream, and opt back into
+           unmounting per-item (see tabItems). -->
+      <VyTabs
+        v-model="tab"
+        :items="tabItems"
+        variant="pill"
+        size="sm"
+        :orientation="isLandscape ? 'vertical' : 'horizontal'"
+        :direction="isLandscape ? 'inline' : 'stacked'"
+        :ui="tabsUi"
+        :unmount-on-hide="false"
+        defer-content
+      >
+        <template #theme>
+          <SectionScroll>
             <ThemeSection
               v-model:color-palettes="colorPalettes"
               v-model:neutral-palette="neutralPalette"
               v-model:radius="radius"
             />
-          </template>
+          </SectionScroll>
+        </template>
 
-          <template #dark>
-            <DarkModeSection />
-          </template>
+        <template #dark>
+          <SectionScroll><DarkModeSection /></SectionScroll>
+        </template>
 
-          <template #form>
-            <FormSection />
-          </template>
+        <template #form>
+          <SectionScroll><FormSection /></SectionScroll>
+        </template>
 
-          <template #display>
-            <DisplaySection />
-          </template>
+        <template #display>
+          <SectionScroll><DisplaySection /></SectionScroll>
+        </template>
 
-          <template #gestures>
-            <GesturesSection />
-          </template>
+        <template #gestures>
+          <GesturesSection />
+        </template>
 
-          <template #swipe>
-            <SwipeDeckSection />
-          </template>
+        <template #swipe>
+          <SwipeDeckSection />
+        </template>
 
-          <template #scroll>
-            <ScrollViewSection />
-          </template>
+        <template #scroll>
+          <ScrollViewSection />
+        </template>
 
-          <template #island>
-            <IslandSection />
-          </template>
+        <template #island>
+          <SectionScroll><IslandSection /></SectionScroll>
+        </template>
 
-          <template #overlay>
-            <OverlaySection />
-          </template>
-        </VyTabs>
-
-        <view v-if="pageScrolls && !isLandscape" class="flex flex-col items-center pt-4 pb-2">
-          <text class="text-dimmed text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
-        </view>
-      </view>
-    </component>
+        <template #overlay>
+          <SectionScroll><OverlaySection /></SectionScroll>
+        </template>
+      </VyTabs>
+    </view>
   </view>
 </template>

@@ -2,8 +2,8 @@
 import SwipeDeckCard from './gestures/SwipeDeckCard.vue'
 
 // Own tab (not squeezed into GesturesSection's card row) so the deck gets
-// room to breathe. Disables the outer page scroll (see App.vue's
-// NON_SCROLLING_TABS) so the drag worklet owns the touch stream.
+// room to breathe. Renders bare (no SectionScroll wrapper — see App.vue) so
+// the drag worklet owns the touch stream.
 </script>
 
 <template>

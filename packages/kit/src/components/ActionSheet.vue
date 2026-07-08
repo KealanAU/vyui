@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme, { leadingIconFg, TRAILING_ICON_FG } from '../theme/actionSheet'
 import { resolveColors } from '../theme/colors'
 import type { SheetDirection } from '@vyui/core'
@@ -10,10 +11,10 @@ import type { AvatarProps } from './Avatar.vue'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.actionSheet`.
  */
-export const buildActionSheet = (appConfig: AppConfig) => {
+export const buildActionSheet = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).actionSheet as Partial<ReturnType<typeof theme>> | undefined
   return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
+})
 
 type ActionSheetVariants = VariantProps<ReturnType<typeof buildActionSheet>>
 
@@ -187,8 +188,34 @@ function handleCancel() {
 
 const cancelLabel = computed(() => (typeof props.cancel === 'string' ? props.cancel : 'Cancel'))
 
+// Rows only differ by (color × disabled); resolve each state's class strings
+// once per props change instead of three slot calls per row per render — the
+// tv invocations are the expensive part on Lynx's interpreter.
+const itemStateUi = computed(() => {
+  const factory = buildActionSheet(appConfig)
+  const { size, ui: uiProp } = props
+  const make = (color?: ActionSheetItem['color'], disabled?: boolean) => {
+    const invoked = factory({ size, color, disabled: disabled || undefined })
+    return {
+      item: invoked.item({ class: uiProp?.item }),
+      itemLeadingIcon: invoked.itemLeadingIcon({ class: uiProp?.itemLeadingIcon }),
+      itemLabel: invoked.itemLabel({ class: uiProp?.itemLabel }),
+    }
+  }
+  const cache = new Map<string, ReturnType<typeof make>>()
+  return (color?: ActionSheetItem['color'], disabled?: boolean) => {
+    const key = `${color}|${!!disabled}`
+    let hit = cache.get(key)
+    if (!hit) {
+      hit = make(color, disabled)
+      cache.set(key, hit)
+    }
+    return hit
+  }
+})
+
 const itemUi = (color?: ActionSheetItem['color'], disabled?: boolean) =>
-  buildActionSheet(appConfig)({ size: props.size, color, disabled: disabled || undefined })
+  itemStateUi.value(color, disabled)
 
 // Lynx SVG can't inherit currentColor — bake the row's foreground into the
 // icon fill at render time (same pattern as Button/Input).
@@ -238,7 +265,7 @@ const trailingIconColor = computed(() => resolveColorHex(appConfig, TRAILING_ICO
           />
           <view
             v-else
-            :class="itemUi(row.item?.color, row.item?.disabled).item({ class: props.ui?.item })"
+            :class="itemUi(row.item?.color, row.item?.disabled).item"
             @tap="row.item && handleSelect(row.item)"
           >
             <slot name="item-leading" :item="row.item!" :index="row.index" :icon-color="itemIconColor(row.item?.color)">
@@ -251,11 +278,11 @@ const trailingIconColor = computed(() => resolveColorHex(appConfig, TRAILING_ICO
                 v-else-if="row.item?.icon"
                 :name="row.item.icon"
                 :color="itemIconColor(row.item?.color)"
-                :class="itemUi(row.item?.color).itemLeadingIcon({ class: props.ui?.itemLeadingIcon })"
+                :class="itemUi(row.item?.color).itemLeadingIcon"
               />
             </slot>
             <slot name="item-label" :item="row.item!" :index="row.index">
-              <text :class="itemUi(row.item?.color).itemLabel({ class: props.ui?.itemLabel })">
+              <text :class="itemUi(row.item?.color).itemLabel">
                 {{ row.item?.label }}
               </text>
             </slot>

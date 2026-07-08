@@ -63,9 +63,20 @@ export function useStyledComponent<TTheme>(
 } {
   const appConfig = useAppConfig()
   const tvFactory = computed(() => {
-    // Builder themes are invoked with the resolved color list; plain-object
-    // themes pass through. `resolveColors` reads `appConfig.ui.colors`, keeping
-    // this reactive to runtime color config.
+    // Factories are memoized on (appConfig, name): the config object is stable
+    // per app and not reactive, so per-instance rebuilds bought nothing and
+    // cost real time on Lynx's interpreter.
+    let perApp = factoryCache.get(appConfig)
+    if (!perApp) {
+      perApp = new Map()
+      factoryCache.set(appConfig, perApp)
+    }
+    const cached = perApp.get(name)
+    if (cached)
+      return cached
+
+    // Builder themes are invoked with the resolved color list
+    // (`appConfig.ui.colors`); plain-object themes pass through.
     const base = typeof theme === 'function'
       ? (theme as (colors: string[]) => unknown)(resolveColors(appConfig))
       : theme
@@ -74,11 +85,16 @@ export function useStyledComponent<TTheme>(
     // while still inheriting everything from the package default. Cast through
     // `unknown` because `tv`'s parameter type is an overloaded generic that
     // doesn't match a `TTheme` constraint cleanly — see TODO above.
-    return tv({ extend: tv(base as never), ...(overrides || {}) } as never) as unknown as TVFactory
+    const factory = tv({ extend: tv(base as never), ...(overrides || {}) } as never) as unknown as TVFactory
+    perApp.set(name, factory)
+    return factory
   })
   const ui = computed(() => tvFactory.value(toValue(variants) as Parameters<TVFactory>[0]))
   return { ui }
 }
+
+/** Built `tv` factories per app config, keyed by component theme name. */
+const factoryCache = new WeakMap<object, Map<string, TVFactory>>()
 
 /**
  * Type-only helper for deriving the `tv` factory return type from a theme

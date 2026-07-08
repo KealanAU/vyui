@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/dropdownMenu'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
@@ -9,10 +10,10 @@ import type { AvatarProps } from './Avatar.vue'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.dropdownMenu`.
  */
-export const buildDropdownMenu = (appConfig: AppConfig) => {
+export const buildDropdownMenu = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).dropdownMenu as Partial<ReturnType<typeof theme>> | undefined
   return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
+})
 
 type DropdownMenuVariants = VariantProps<ReturnType<typeof buildDropdownMenu>>
 
