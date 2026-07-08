@@ -122,7 +122,7 @@ The built-in close region is currently a tappable Lynx `view` without an explici
 
 - The component renders Lynx `view` and `text` elements.
 - SVG glyphs cannot inherit `currentColor` in Lynx, so `iconColor` is resolved to an explicit hex value and passed to built-in icons and custom icon slots.
-- The default theme is light-mode-only.
+- The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming](/theming)).
 
 ## Related components
 

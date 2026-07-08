@@ -3,6 +3,7 @@ import { AspectRatio, Icon } from '@vyui/core'
 import Accordion from './Accordion.vue'
 import ActionSheet from './ActionSheet.vue'
 import Alert from './Alert.vue'
+import App from './App.vue'
 import Avatar from './Avatar.vue'
 import AvatarGroup from './AvatarGroup.vue'
 import Badge from './Badge.vue'
@@ -117,6 +118,7 @@ export const REGISTRY = {
   VyAccordion: Accordion,
   VyActionSheet: ActionSheet,
   VyAlert: Alert,
+  VyApp: App,
   // Pure layout primitive — re-exported from @vyui/core (nothing to theme),
   // registered here so global usage matches the other Vy* components.
   VyAspectRatio: AspectRatio,

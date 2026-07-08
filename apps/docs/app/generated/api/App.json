@@ -1,0 +1,34 @@
+{
+  "props": [
+    {
+      "name": "overlays",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "true",
+      "description": "Mount the overlay host (`OverlayRoot`) as the first child of the root so\nteleported surfaces (Modal, Tray, Toast, …) work without hand-wiring.\nOpt out when placing `<OverlayRoot />` yourself."
+    },
+    {
+      "name": "radius",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Corner radius in rem — sets `--ui-radius` on the root. Omit to keep the\n`@vyui/kit/style.css` default."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\", any>> | undefined",
+      "required": false
+    }
+  ],
+  "events": [
+    {
+      "name": "viewport-change",
+      "type": "[size: { width: number; height: number; }]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{ mode: ColorMode; isDark: boolean; }"
+    }
+  ]
+}

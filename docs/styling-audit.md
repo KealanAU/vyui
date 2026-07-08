@@ -26,11 +26,14 @@ The problems are **enforcement and completion**, not design:
 2. The `styles/shadcn` and `styles/rounded` overlays **violate the single-level `var()`
    rule** that the base `style.css` was just fixed for, and neither has the `.dark`
    neutral-inversion block — they're two generations behind the base token file.
-3. **`bg-white` is hardcoded as the surface color in ~20 themes.** Dark mode inverts the
-   neutral ramp, but `bg-white` doesn't ride the ramp — dark mode currently means white
-   cards, modals, menus and inputs on a dark page. This is the one structural gap vs
-   Nuxt UI: the missing **semantic surface-token tier** (`bg-default` / `bg-elevated` /
-   `text-muted` / `border-default`).
+3. **Fixed in #129:** the semantic surface-token tier (`--ui-bg`/`--ui-bg-muted`/
+   `--ui-bg-elevated`/`--ui-bg-accented`/`--ui-bg-inverted`, `--ui-text-*`,
+   `--ui-border-*`) now exists in `style.css` and is consumed by ~18 themes, so
+   `bg-white` no longer means "white cards on a dark page" across most of the kit. The
+   remaining stragglers are the **Island family** (`island.ts`, `islandButton.ts`, still
+   raw `bg-white`/`border-black`/`text-slate-*`) and the `avatarGroup.ts` overlap-ring
+   `border-white`, which is an intentional gap pending a `ring-bg`-equivalent token (see
+   §5.1–5.2).
 4. The safelist in `tailwind.js` emits **~550 KB of utility CSS** (pre-minify) and still
    ships dead `data-[…]` variants and unusable `ring-*` utilities.
 
@@ -86,20 +89,20 @@ The preset wires semantic colors to raw `var()` strings without `<alpha-value>`,
 Tailwind 3 **skips generating** any `/<alpha>` utility on them. Compiled through the real
 preset: `bg-black/10` and `bg-white/80` emit rules; `bg-neutral-900/50` and
 `bg-neutral-100/50` emit nothing. `button.ts:16-18` documents the rule ("no opacity color
-modifiers … mimic with discrete shades") — these files never got the memo:
+modifiers … mimic with discrete shades").
 
-| Class | Files | Effect on device |
+**Update — soft-variant half fixed in #129, overlay half still open:**
+
+| Class | Files | Status |
 |---|---|---|
-| `bg-neutral-900/50` overlay | `modal.ts:28`, `drawer.ts:18`, `tray.ts:26` | **no dim layer at all** — the fade animates a transparent view |
-| `bg-neutral-900/40` overlay | `actionSheet.ts:27` | same, plus a /40-vs-/50 drift |
-| `bg-neutral-100/50` soft variant | `input.ts:68`, `select.ts:58`, `combobox.ts:54`, `textarea.ts:62`, `pinInput.ts:22`, `numberField.ts:60` | soft resting surface is transparent; only `active:bg-neutral-100` paints |
+| `bg-neutral-900/50` overlay | `modal.ts:28`, `drawer.ts:18`, `tray.ts:26` | **STILL BROKEN** — confirmed unchanged; **no dim layer at all**, the fade animates a transparent view |
+| `bg-neutral-900/40` overlay | `actionSheet.ts:27` | **STILL BROKEN** — same, plus a /40-vs-/50 drift |
+| `bg-neutral-100/50` soft variant | `input.ts:68`, `select.ts:58`, `combobox.ts:54`, `textarea.ts:62`, `pinInput.ts:22`, `numberField.ts:60` | **FIXED** — all six now read `bg-muted active:bg-elevated disabled:bg-muted` (discrete surface tokens, no alpha) |
 
-Fix options (pick one, apply everywhere):
-- **Overlays:** `bg-black/50` — compiles (black parses to rgb), is device-proven
-  (island uses `bg-black/10`), and is dark-mode-correct without ramp participation.
-  Hoist into one shared constant or slot-level convention so the dim level can't fork again.
-- **Soft variants:** discrete shade per the button convention — `bg-neutral-50
-  active:bg-neutral-100 disabled:bg-neutral-50`.
+Remaining fix (overlays only):
+- `bg-black/50` — compiles (black parses to rgb), is device-proven (island uses
+  `bg-black/10`), and is dark-mode-correct without ramp participation. Hoist into one
+  shared constant or slot-level convention so the dim level can't fork again.
 
 A cheap guard: extend `tailwind.test.ts` to compile every theme's emitted class strings
 and fail on classes that produce no CSS. That converts this whole class of bug from
@@ -124,11 +127,14 @@ parity test that parses all three CSS files against `SEMANTIC_TO_PALETTE_DEFAULT
 
 ### 4.3 `label.ts` is off-system
 
-`label.ts:10` uses `text-gray-900` — `gray` is Tailwind's stock palette, not the `neutral`
-semantic (slate). It won't rebrand with `--ui-color-neutral-*` overrides and won't flip in
-dark mode. `label.ts:20` also relies on `after:content-['*']` — pseudo-element support on
-Lynx native is unverified; the required-asterisk may silently not render on device
-(needs a device check, not a code fix, first).
+**Color claim fixed in #129:** `label.ts:10` previously used `text-gray-900` (Tailwind's
+stock palette, not the `neutral` semantic). It now uses `text-highlighted`, a semantic
+surface-tier token (§5.2) — confirmed by reading the current file. It rebrands and flips
+in dark mode correctly.
+
+Still open: `label.ts` relies on `after:content-['*']` for the required asterisk —
+pseudo-element support on Lynx native is unverified; the required-asterisk may silently
+not render on device (needs a device check, not a code fix, first).
 
 ### 4.4 Inline template classes bypass the theme layer
 
@@ -140,61 +146,82 @@ nuxt/ui's slot names).
 ### 4.5 Comment rot
 
 Harmless but misleading during exactly this kind of drift review:
-- `button.ts:19` "No dark mode" — dark mode is landing in the current changeset.
+- ~~`button.ts:19` "No dark mode"~~ — **fixed in #129.** Now reads "Dark mode rides the
+  semantic tokens (`text-default`, `bg-elevated`, …), not `dark:` variants." Same fix
+  landed in `tabs.ts`'s header comment ("Dark rides the semantic tokens").
 - `tailwind.js:155-156` "data-[…] entries … can be dropped once #9 lands" — #9 landed.
-- `tabs.ts:18-25`, `stepper.ts:18`, `dropdownMenu.ts:48,97-98` still describe
-  `data-[state]` wiring the code no longer uses.
+- **Re-verified, still accurate:** `tabs.ts:18-25`, `stepper.ts:18`,
+  `dropdownMenu.ts:48,97-98` still describe `data-[state=…]`/`group-data-[state=…]:`
+  wiring the code no longer uses (the actual classes are `group-ui-active:`,
+  `group-ui-completed:`, `ui-highlighted:`, `group-ui-highlighted:`, etc.). This is the
+  older issue-#9 rot, unrelated to the dark-mode commit — line numbers and content are
+  unchanged.
 
 ---
 
-## 5. Dark mode readiness — the structural gap
+## 5. Dark mode readiness — the structural gap (mostly closed in #129)
 
 The dark strategy (invert the neutral ramp, shift the mode tier) is elegant and correct
-**for everything that reads the ramp**. The problem is what doesn't:
+**for everything that reads the ramp**. §5.2 documents the semantic surface-token tier
+that closes most of the remaining gap; §5.1 is kept as a historical record of what the
+inventory looked like before that tier landed, annotated with what's still outstanding.
 
-### 5.1 `bg-white` surface inventory
+### 5.1 `bg-white` surface inventory (as of the original audit — now mostly migrated)
 
-Hardcoded white surfaces that will NOT flip in dark mode:
+Hardcoded white surfaces that would NOT have flipped in dark mode at audit time:
 
 - **Overlay/menu surfaces:** `modal.ts`, `drawer.ts`, `tray.ts`, `popover.ts`,
-  `dropdownMenu.ts`, `toast.ts`, `combobox.ts`/`select.ts` content panels
+  `dropdownMenu.ts`, `toast.ts`, `combobox.ts`/`select.ts` content panels — **migrated to
+  the surface-token tier in #129** (see §5.2).
 - **Form chrome:** `input.ts`, `textarea.ts`, `numberField.ts`, `pinInput.ts`
-  (`outline` variants), `checkbox.ts` unchecked box, `radioGroup.ts` base+indicator
+  (`outline` variants), `checkbox.ts` unchecked box, `radioGroup.ts` base+indicator —
+  **migrated in #129**, except the `radioGroup.ts` indicator knob and `switch.ts` thumb
+  knob, which stay literal `bg-white` by design (same knob-white exception noted below).
 - **Containers:** `card.ts`, `alert.ts` outline variant, `sortable.ts` item pill,
-  `swipeAction.ts` content, `toggleGroup.ts` items
-- **Island family:** `island.ts` (`bg-white/80` + `border-black/5`),
-  `islandButton.ts` (`text-slate-700/900` — raw slate, bypasses neutral entirely)
+  `swipeAction.ts` content, `toggleGroup.ts` items — **migrated in #129**.
+- **Island family — STILL NOT MIGRATED:** `island.ts` (`bg-white/80` + `border-black/5`),
+  `islandButton.ts` (`text-slate-700/900` — raw slate, bypasses neutral entirely).
+  Confirmed via grep, untouched by the dark-mode commit.
+- **`avatarGroup.ts` — STILL A LITERAL, but intentional:** the avatar overlap ring
+  (`border-white`) stands in for a `ring-bg`-style page-background color; the file's own
+  comment explains there's no semantic equivalent for that yet. This is a known,
+  deliberate gap, not a drive-by miss.
 
 Whites that are **deliberate and should stay**: switch/slider/radio knob whites and
 `text-white` on solid color fills — a -500 solid reads fine on both modes.
 
-### 5.2 The right fix: the semantic surface-token tier
+### 5.2 The semantic surface-token tier — SHIPPED in #129
 
-This is the last missing piece of Nuxt UI parity. Nuxt v3/v4 put `bg-default`,
-`bg-elevated`, `bg-muted`, `text-highlighted/default/muted/dimmed`, `border-default/
-accented` between the palette and the components, and dark mode is defined **once** at
-that tier. vyui skipped it (the Lynx preset only emits `theme.colors` utilities —
-`button.ts:62-64` notes this), so every theme inlined `bg-white` + a private
-`neutral-900/500/400` text hierarchy instead.
+This was the last missing piece of Nuxt UI parity, and it has landed. `style.css`
+(~lines 171–247) now defines a full surface-token tier, redefined with concrete
+`theme()` literals in both `:root` and `.dark` (never nested `var()` — the single-level
+rule from §4.2 applies here too):
 
-Adapting it to Lynx is straightforward and there was already a spike of this work (on the
-stale `feat/dark-mode-color-mode-switch` branch — worth mining, not merging):
+- **Text:** `--ui-text-dimmed`, `--ui-text-muted`, `--ui-text-toned`, `--ui-text`,
+  `--ui-text-highlighted`, `--ui-text-inverted`
+- **Background:** `--ui-bg`, `--ui-bg-muted`, `--ui-bg-elevated`, `--ui-bg-accented`,
+  `--ui-bg-inverted`
+- **Border:** `--ui-border`, `--ui-border-muted`, `--ui-border-accented`,
+  `--ui-border-inverted`
 
-- Add `--ui-bg`, `--ui-bg-elevated`, `--ui-bg-muted`, `--ui-text`, `--ui-text-muted`,
-  `--ui-text-dimmed`, `--ui-border`, `--ui-border-accented` to `style.css`, **holding
-  `theme()` literals per mode** (the single-level `var()` rule forbids
-  `--ui-bg: var(--ui-color-neutral-50)` — same constraint as the mode tier; this is why
-  the tokens must be redefined concretely inside `.dark`, and why the sync-contract
-  generator/test from §4.2 matters more once this tier exists).
-- Register them in `tailwind.js` as `backgroundColor`/`textColor`/`borderColor` extensions
-  (`bg-default`, `bg-elevated`, `text-muted`, `border-default`, …).
-- Migrate the §5.1 inventory mechanically: `bg-white` → `bg-default` (form chrome,
-  cards) or `bg-elevated` (floating surfaces), `text-neutral-900` → `text-highlighted`,
-  `text-neutral-500` → `text-muted`, `text-neutral-400` → `text-dimmed`,
-  `border-neutral-200` → `border-default`, `border-neutral-300` → `border-accented`.
+Registered in `tailwind.js` as `text-*`/`bg-*`/`border-*` utilities (`text-highlighted`,
+`bg-muted`, `bg-elevated`, `border-accented`, …).
 
-Payoff beyond dark mode: one `--ui-bg` override restyles every component, and the ad-hoc
-`900/500/400` text hierarchy becomes a named, greppable convention.
+Already consumed (confirmed via grep) by ~18 themes: `input.ts`, `textarea.ts`,
+`select.ts`, `combobox.ts`, `numberField.ts`, `pinInput.ts`, `card.ts`, `modal.ts`,
+`toast.ts`, `accordion.ts`, `alert.ts`, `radioGroup.ts` (base/legend/label/description —
+indicator knob stays literal `bg-white` by design), `rating.ts`, `switch.ts`
+(label/description — thumb knob stays literal by design), `swipeAction.ts`,
+`toggleGroup.ts`, `label.ts` (§4.3), and others.
+
+**What's left (not migrated, tracked as open findings):**
+- Island family — `island.ts` + `islandButton.ts` (§5.1, drift table §6).
+- `avatarGroup.ts` overlap-ring `border-white` — intentional gap pending a `ring-bg`
+  equivalent (§5.1).
+
+Payoff beyond dark mode: one `--ui-bg` override restyles every migrated component, and
+the text hierarchy is now a named, greppable convention instead of ad-hoc
+`neutral-900/500/400`.
 
 ### 5.3 Icon fills are mode-blind
 
@@ -211,6 +238,17 @@ Minimum fix: make `resolveColorHex` dark-aware (invert neutral shade lookups whe
 active mode is dark — `useColorMode` already knows). Longer term, document loudly that
 `ui.primary`/`ui.gray` must be kept in sync with any CSS-var rebrand, or derive both
 from one config input (`defineVyuiConfig` is already positioned to be that input).
+
+**Still accurate — no library-level fix landed.** Re-verified by reading
+`packages/kit/src/utils/resolveColor.ts`: the `resolveColorHex` signature is unchanged,
+still taking an explicit `shade` param rather than reading `useColorMode()` itself.
+Commit 9490d0f ("bake icon color hex") added a per-consumer *workaround* instead — the
+flashcards-demo example's `iconColors.ts` (`useIconColors()`) manually passed a
+dark-aware shade at each `VyIcon` call site. That workaround is no longer in the tree:
+the whole flashcards-demo app was deleted one commit later (`6d0262f`, "chore: remove
+flashcards demo"). The pattern is still worth mining from git history (`git show
+9490d0f:apps/examples/flashcards-demo/src/iconColors.ts`) as prior art for the eventual
+library-level fix, but there is currently no live consumer demonstrating it.
 
 ---
 
@@ -256,13 +294,16 @@ Lynx bundle regardless of usage.
    neutral inversion block (§4.2). Add ramp-parity test across the three style.css files.
 
 **P1 — before dark mode is called done**
-3. Introduce the semantic surface-token tier and migrate the `bg-white` +
+3. ~~Introduce the semantic surface-token tier and migrate the `bg-white` +
    `text-neutral-900/500/400` + `border-neutral-200/300` inventory (§5.1–5.2).
-   Keep knob whites and solid-fill `text-white`.
+   Keep knob whites and solid-fill `text-white`.~~ **DONE in #129** — tier shipped in
+   `style.css`, consumed by ~18 themes. Remaining stragglers: Island family +
+   `avatarGroup.ts` ring (§5.1).
 4. Make `resolveColorHex` mode-aware for neutral; document the CSS-var ↔ `ui.primary`
    sync requirement (§5.3).
-5. Fix `label.ts` (`text-gray-900` → semantic; device-verify `after:content`) and move
-   `Combobox.vue`'s inline text colors into theme slots (§4.3–4.4).
+5. Fix `label.ts` (`text-gray-900` → semantic — **DONE in #129**; device-verify
+   `after:content` — **still open**) and move `Combobox.vue`'s inline text colors into
+   theme slots (§4.3–4.4, still open).
 
 **P2 — hygiene and payload**
 6. Safelist diet (§7): drop `ring` + `data-[…]`, split per-utility patterns.

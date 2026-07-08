@@ -59,7 +59,7 @@ export default defineAppConfig({
       { label: 'Components', to: '/components' },
       { label: 'Packages', to: '/packages/core' },
       { label: 'Theming', to: '/theming' },
-      { label: 'Roadmap', to: '/roadmap' },
+      { label: 'Roadmap', to: '/getting-started/roadmap' },
       { label: 'Changelog', to: '/changelog' },
     ],
     links: [{

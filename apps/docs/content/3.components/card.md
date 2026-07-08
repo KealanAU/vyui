@@ -85,7 +85,7 @@ Override globally through `appConfig.ui.card` or locally with `ui`.
 | `body` | Body padding and layout. |
 | `footer` | Footer padding and layout. |
 
-The default theme is a light-mode port of Nuxt UI's card. The default variant is `outline`.
+The default theme is a port of Nuxt UI's card, using vyui's semantic surface/border tokens so it adapts automatically under dark mode (see [Theming](/theming)). The default variant is `outline`.
 
 ## Related components
 

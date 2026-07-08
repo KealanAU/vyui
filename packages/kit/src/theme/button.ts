@@ -161,8 +161,15 @@ export default (colors: Color[]) => ({
         trailingIcon: 'ms-auto',
       },
     },
+    // Icon-only: kill the flex gap and center. vue-lynx realizes slot/v-if
+    // comment anchors as real zero-size nodes (`__CreateRawText('')`), so the
+    // empty label/trailing slots still count as flex items — with a `gap-*`
+    // each one adds phantom width after the icon and the "square" renders
+    // wide with the icon off-center left.
     square: {
-      true: '',
+      true: {
+        base: 'justify-center gap-0',
+      },
     },
     loading: {
       true: {

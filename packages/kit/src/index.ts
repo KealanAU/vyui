@@ -17,6 +17,12 @@ export {
 
 export { createTv, tv } from './utils/tv'
 
+// Bake a semantic color to a literal hex for Lynx `<svg>` icons — Lynx
+// rasterizes SVG, so `text-*` classes / `currentColor` never reach the glyph;
+// pass the result to the Icon `color` prop. Shade is the caller's mode
+// awareness (accent tier: 500 light / 400 dark — see `useColorMode().isDark`).
+export { resolveColorHex } from './utils/resolveColor'
+
 // Semantic color set. `VyuiColorRegistry` is the augmentation point for true
 // parity: `declare module '@vyui/kit' { interface VyuiColorRegistry { … } }`
 // adds colors to every component's `color` prop type. See `theme/colors.ts`.
@@ -37,6 +43,7 @@ export {
 export { default as VyAccordion } from './components/Accordion.vue'
 export { default as VyActionSheet } from './components/ActionSheet.vue'
 export { default as VyAlert } from './components/Alert.vue'
+export { default as VyApp } from './components/App.vue'
 // AspectRatio/Icon are pure core primitives (nothing to theme); re-exported here
 // under their `Vy*` name so they sit alongside the other kit components.
 export { AspectRatio as VyAspectRatio, type AspectRatioProps } from '@vyui/core'

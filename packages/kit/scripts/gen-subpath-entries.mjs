@@ -61,10 +61,12 @@ const STANDALONE_ENTRIES = {
     js: [
       'export { provideVyUI } from "../provide.js";',
       'export { useAppConfig } from "../composables/useAppConfig.js";',
+      'export { resolveColorHex } from "../utils/resolveColor.js";',
     ],
     dts: [
       'export { provideVyUI } from "../provide.js";',
       'export { useAppConfig } from "../composables/useAppConfig.js";',
+      'export { resolveColorHex } from "../utils/resolveColor.js";',
     ],
   },
 }
