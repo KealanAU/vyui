@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { VyButton, VyIcon, VyProgress } from '@vyui/kit'
-import { DECK_TEXT_CLASS, type Deck } from '../types'
+import { useIconColors } from '../iconColors'
+import type { Deck } from '../types'
 
 const props = defineProps<{ deck: Deck, results: boolean[] }>()
 const emit = defineEmits<{
   (e: 'retry'): void
   (e: 'done'): void
 }>()
+
+const { accent } = useIconColors()
 
 const total = computed(() => props.deck.questions.length)
 const score = computed(() => props.results.filter(Boolean).length)
@@ -22,7 +25,7 @@ const headline = computed(() => {
 <template>
   <view class="flex flex-col gap-4">
     <view class="flex flex-col items-center gap-2 bg-elevated rounded-lg p-6">
-      <VyIcon name="lucide:trophy" :class="['w-8 h-8', DECK_TEXT_CLASS[deck.color]]" />
+      <VyIcon name="lucide:trophy" :size="32" :color="accent(deck.color)" />
       <text class="text-highlighted text-xl font-bold">{{ headline }}</text>
       <text class="text-muted text-sm">{{ deck.title }} — {{ score }}/{{ total }} correct ({{ percent }}%)</text>
       <VyProgress :model-value="score" :max="total" :color="deck.color" size="sm" class="w-full" />
@@ -36,7 +39,8 @@ const headline = computed(() => {
       >
         <VyIcon
           :name="results[i] ? 'lucide:check' : 'lucide:x'"
-          :class="results[i] ? 'w-4 h-4 text-success' : 'w-4 h-4 text-error'"
+          :size="16"
+          :color="accent(results[i] ? 'success' : 'error')"
         />
         <view class="flex flex-col gap-1 flex-1 min-w-0">
           <text class="text-default text-sm">{{ question.prompt }}</text>
