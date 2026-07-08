@@ -14,9 +14,9 @@ import { ScrollView } from '@vyui/core'
 
 <template>
   <view class="flex flex-col flex-1 min-h-0">
-    <view class="bg-white border border-slate-200 rounded-lg p-3 flex flex-col flex-1 min-h-0 gap-2">
-      <text class="text-slate-900 text-base font-semibold">ScrollView</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-default rounded-lg p-3 flex flex-col flex-1 min-h-0 gap-2">
+      <text class="text-highlighted text-base font-semibold">ScrollView</text>
+      <text class="text-muted text-xs">
         Scroll the panel; overscroll past either edge for the native rubber-band bounce.
       </text>
 
@@ -26,9 +26,9 @@ import { ScrollView } from '@vyui/core'
             <view
               v-for="n in 24"
               :key="n"
-              class="border-b border-slate-100 h-12 flex flex-row items-center px-2"
+              class="border-b border-muted h-12 flex flex-row items-center px-2"
             >
-              <text class="text-slate-900 text-sm">Row {{ n }}</text>
+              <text class="text-highlighted text-sm">Row {{ n }}</text>
             </view>
           </view>
         </ScrollView>

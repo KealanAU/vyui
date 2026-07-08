@@ -4,7 +4,7 @@
 // the consuming app's CSS variables and Tailwind config — see
 // `apps/examples/kit-demo/src/index.css` for the default mapping.
 //
-// Light-mode-only: dark-mode classes from the upstream theme are dropped.
+// Dark rides the semantic tokens: dark-mode classes from the upstream theme are dropped.
 import type { Color } from './colors'
 
 const colorVariant = (c: string) => ({

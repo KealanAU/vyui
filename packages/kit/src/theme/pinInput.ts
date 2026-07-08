@@ -8,7 +8,7 @@ import type { Color } from './colors'
 export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row flex-wrap items-center min-w-0 max-w-full gap-1.5 overflow-hidden',
-    base: 'shrink-0 rounded-md placeholder:text-neutral-400 text-center text-neutral-900 disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
+    base: 'shrink-0 rounded-md placeholder:text-dimmed text-center text-highlighted disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
   },
   variants: {
     size: {
@@ -18,10 +18,10 @@ export default (colors: Color[]) => ({
       xl: { base: 'size-11 text-lg' },
     },
     variant: {
-      outline: 'bg-white border border-neutral-200',
-      soft: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50',
-      subtle: 'bg-neutral-100 border border-neutral-200',
-      ghost: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent',
+      outline: 'bg-default border border-default',
+      soft: 'bg-muted active:bg-elevated disabled:bg-muted',
+      subtle: 'bg-elevated border border-default',
+      ghost: 'bg-transparent active:bg-elevated disabled:bg-transparent',
       none: 'bg-transparent',
     },
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,

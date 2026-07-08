@@ -2,8 +2,9 @@
 import { computed, reactive, ref } from 'vue'
 import { runOnBackground } from 'vue-lynx'
 import { OverlayRoot } from '@vyui/core'
-import { VyTabs } from '@vyui/kit'
+import { useColorMode, VyButton, VyTabs } from '@vyui/kit'
 import ThemeSection from './sections/ThemeSection.vue'
+import DarkModeSection from './sections/DarkModeSection.vue'
 import FormSection from './sections/FormSection.vue'
 import DisplaySection from './sections/DisplaySection.vue'
 import GesturesSection from './sections/GesturesSection.vue'
@@ -28,6 +29,15 @@ const neutralPalette = ref<string>('slate')
 const radius = ref<number>(0.25)
 const isLandscape = ref(false)
 
+// App-level color mode. The singleton drives the root `<view>` (below), so a
+// toggle anywhere flips the WHOLE app. `mode` values order: light | dark | system.
+const { mode, isDark, setMode } = useColorMode()
+const modeItems = [
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System' },
+] as const
+
 function updateViewport(width: number, height: number): void {
   isLandscape.value = width > height
 }
@@ -45,15 +55,23 @@ function onViewportLayoutChange(event: any): void {
 // neutral class — a flat `string[]` so it satisfies the Lynx `<view>` class
 // type (which rejects nested arrays). Applied to the root so every @vyui/kit
 // component below picks up the swapped ramps.
+//
+// The PAGE rides `bg-default` (the base surface token): white in light,
+// slate-900 in dark. It flips on its own — no `dark:` needed — because the
+// single `dark` class appended below flips every semantic `--ui-*` token in the
+// tree at once (see `@vyui/kit/style.css`). The `neutral-${palette}` swatch only
+// re-tints the fixed ramp + neutral `solid` fill; the semantic tokens stay slate.
 const rootClass = computed(() => [
-  'w-full h-full bg-slate-50',
+  'w-full h-full bg-default',
   ...Object.entries(colorPalettes).map(([color, palette]) => `${color}-${palette}`),
   `neutral-${neutralPalette.value}`,
+  ...(isDark.value ? ['dark'] : []),
 ].join(' '))
 
 const tab = ref<string | number>('theme')
 const allTabItems = [
   { value: 'theme',   label: 'Theme', icon: 'icon-park-outline:paint',            slot: 'theme' },
+  { value: 'dark',    label: 'Dark',  icon: 'icon-park-outline:moon',             slot: 'dark' },
   { value: 'form',    label: 'Form',  icon: 'icon-park-outline:edit',             slot: 'form' },
   { value: 'display', label: 'View',  icon: 'icon-park-outline:layers',           slot: 'display' },
   { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures' },
@@ -121,6 +139,7 @@ const tabsUi = computed(() => {
 
 <template>
   <view
+    :key="mode"
     :class="rootClass"
     :style="{ '--ui-radius': `${radius}rem` }"
     :main-thread-bindlayoutchange="onViewportLayoutChange"
@@ -139,9 +158,22 @@ const tabsUi = computed(() => {
       scroll-orientation="vertical"
     >
       <view :class="pageClass">
-        <view v-if="showChrome" class="flex flex-col gap-1">
-          <text class="text-slate-900 text-2xl font-bold">@vyui/kit demo</text>
-          <text class="text-slate-500 text-sm">Styled components on top of @vyui/core primitives.</text>
+        <view v-if="showChrome" class="flex flex-col gap-2">
+          <text class="text-highlighted text-2xl font-bold">@vyui/kit demo</text>
+          <text class="text-muted text-sm">Styled components on top of @vyui/core primitives.</text>
+          <!-- App-root color-mode toggle: flips the WHOLE app (drives the root
+               `<view>`'s `dark` class + `:key` remount). -->
+          <view class="flex flex-row gap-1 pt-1">
+            <VyButton
+              v-for="m in modeItems"
+              :key="m.value"
+              size="xs"
+              color="neutral"
+              :variant="mode === m.value ? 'solid' : 'soft'"
+              :label="m.label"
+              @tap="setMode(m.value)"
+            />
+          </view>
         </view>
 
         <VyTabs
@@ -159,6 +191,10 @@ const tabsUi = computed(() => {
               v-model:neutral-palette="neutralPalette"
               v-model:radius="radius"
             />
+          </template>
+
+          <template #dark>
+            <DarkModeSection />
           </template>
 
           <template #form>
@@ -187,7 +223,7 @@ const tabsUi = computed(() => {
         </VyTabs>
 
         <view v-if="pageScrolls && !isLandscape" class="flex flex-col items-center pt-4 pb-2">
-          <text class="text-slate-400 text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
+          <text class="text-dimmed text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>
         </view>
       </view>
     </component>

@@ -6,9 +6,10 @@
  * Each item renders a `ToggleGroupItem` styled like a button; the
  * `ui-on` attribute is used to flip into the active appearance per
  * color × variant. Variants supported: `outline`, `soft`, `subtle` (matches
- * what nuxt/ui surfaces for non-solid toggles).
+ * what nuxt/ui surfaces for non-solid toggles). Dark rides the semantic tokens.
  */
 import type { Color } from './colors'
+import { type IconFg, iconFgFromToken } from './iconColor'
 
 // Each builder returns the *inactive* + *on-state* surface classes (`base`,
 // applied to the item <view>) separately from the foreground color (`fg`:
@@ -21,23 +22,23 @@ import type { Color } from './colors'
 // `dropdownMenu.ts` / `stepper.ts`.
 const outline = (c: string) =>
   ({
-    base: `border border-neutral-300 bg-white active:bg-${c}-50 active:bg-${c}-100`
+    base: `border border-accented bg-default active:bg-${c}-50 active:bg-${c}-100`
       + ` ui-on:border-${c}-500 ui-on:bg-${c}-50`,
-    fg: `text-neutral-700 group-ui-on:text-${c}-600`,
+    fg: `text-default group-ui-on:text-${c}-600`,
   })
 
 const soft = (c: string) =>
   ({
-    base: `bg-neutral-100 active:bg-${c}-50 active:bg-${c}-100`
+    base: `bg-elevated active:bg-${c}-50 active:bg-${c}-100`
       + ` ui-on:bg-${c}-100`,
-    fg: `text-neutral-700 group-ui-on:text-${c}-600`,
+    fg: `text-default group-ui-on:text-${c}-600`,
   })
 
 const subtle = (c: string) =>
   ({
-    base: `border border-neutral-200 bg-white active:bg-${c}-50 active:bg-${c}-100`
+    base: `border border-default bg-default active:bg-${c}-50 active:bg-${c}-100`
       + ` ui-on:border-${c}-300 ui-on:bg-${c}-100`,
-    fg: `text-neutral-700 group-ui-on:text-${c}-600`,
+    fg: `text-default group-ui-on:text-${c}-600`,
   })
 
 const VARIANT_BUILDERS = { outline, soft, subtle } as const
@@ -52,12 +53,13 @@ const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 // item from the `pressed` state core's Toggle forwards through its slot.
 // Derive it from the same `fg` string the variant emits so class and baked
 // color can't drift.
-export function iconFg(color: string, variant: Variant, on: boolean): { semantic: string, shade: number } {
+export function iconFg(color: string, variant: Variant, on: boolean, isDark = false): IconFg {
   const { fg } = VARIANT_BUILDERS[variant](color)
-  const match = on
-    ? fg.match(/\bgroup-ui-on:text-([a-z0-9-]+)-(\d+)/)
-    : fg.match(/(?:^|\s)text-([a-z0-9-]+)-(\d+)/)
-  return match ? { semantic: match[1], shade: Number(match[2]) } : { semantic: 'neutral', shade: 700 }
+  // on → the `group-ui-on:text-*` accent; off → the resting `text-*` token.
+  const suffix = on
+    ? fg.match(/\bgroup-ui-on:text-(\S+)/)?.[1]
+    : fg.match(/^text-(\S+)/)?.[1]
+  return iconFgFromToken(suffix, isDark)
 }
 
 export default (colors: Color[]) => ({

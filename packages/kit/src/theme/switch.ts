@@ -22,8 +22,8 @@ export default (colors: Color[]) => ({
     base: 'relative flex flex-row items-center justify-start shrink-0 px-0.5 rounded-full transition-colors',
     thumb: 'pointer-events-none flex flex-row items-center justify-center rounded-full bg-white shadow',
     wrapper: 'flex-1 min-w-0 flex flex-col',
-    label: 'text-sm font-medium text-neutral-900',
-    description: 'text-xs text-neutral-500',
+    label: 'text-sm font-medium text-highlighted',
+    description: 'text-xs text-muted',
     icon: 'shrink-0',
   },
   variants: {
@@ -36,7 +36,7 @@ export default (colors: Color[]) => ({
     },
     checked: {
       true: { base: 'justify-end' },
-      false: { base: 'bg-neutral-200' },
+      false: { base: 'bg-accented' },
     },
     disabled: {
       true: { base: 'opacity-50 cursor-not-allowed' },

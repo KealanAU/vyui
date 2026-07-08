@@ -13,10 +13,10 @@ import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
-    root: 'flex flex-row items-center w-full rounded-md border bg-white overflow-hidden',
-    base: 'flex-1 min-w-0 bg-transparent text-center text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
-    increment: 'shrink-0 flex flex-row items-center justify-center text-neutral-600 active:bg-neutral-100 ui-disabled:opacity-50',
-    decrement: 'shrink-0 flex flex-row items-center justify-center text-neutral-600 active:bg-neutral-100 ui-disabled:opacity-50',
+    root: 'flex flex-row items-center w-full rounded-md border bg-default overflow-hidden',
+    base: 'flex-1 min-w-0 bg-transparent text-center text-highlighted placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
+    increment: 'shrink-0 flex flex-row items-center justify-center text-toned active:bg-elevated ui-disabled:opacity-50',
+    decrement: 'shrink-0 flex flex-row items-center justify-center text-toned active:bg-elevated ui-disabled:opacity-50',
     incrementIcon: 'shrink-0',
     decrementIcon: 'shrink-0',
   },
@@ -56,9 +56,9 @@ export default (colors: Color[]) => ({
     // (`enableCSSInheritance: false`), so a `text-*` on the root <view> never
     // reaches the input element.
     variant: {
-      outline: { root: 'bg-white border border-neutral-200' },
-      soft: { root: 'bg-neutral-100/50 disabled:bg-neutral-100/50 border-transparent' },
-      subtle: { root: 'bg-neutral-100 border border-neutral-200' },
+      outline: { root: 'bg-default border border-default' },
+      soft: { root: 'bg-muted disabled:bg-muted border-transparent' },
+      subtle: { root: 'bg-elevated border border-default' },
       ghost: { root: 'bg-transparent disabled:bg-transparent border-transparent' },
       none: { root: 'bg-transparent border-transparent' },
     },

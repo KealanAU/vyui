@@ -23,10 +23,10 @@ export const ICON_FG_SHADE = 500
 // custom-property indirection.
 export default (colors: Color[]) => ({
   slots: {
-    root: 'relative group overflow-hidden bg-white rounded-lg border border-neutral-200 shadow-lg shadow-black/10 p-4 flex flex-row min-w-0 gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
+    root: 'relative group overflow-hidden bg-default rounded-lg border border-default shadow-lg shadow-black/10 p-4 flex flex-row min-w-0 gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
     wrapper: 'w-0 min-w-0 flex-1 flex flex-col',
-    title: 'text-sm font-medium text-neutral-900',
-    description: 'text-sm text-neutral-500',
+    title: 'text-sm font-medium text-highlighted',
+    description: 'text-sm text-muted',
     icon: 'shrink-0 size-5',
     avatar: 'shrink-0',
     avatarSize: '2xl' as const,

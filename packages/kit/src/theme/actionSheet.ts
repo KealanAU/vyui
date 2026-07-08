@@ -1,6 +1,6 @@
 /**
  * ActionSheet theme — Linear-style bottom action menu. Built on the core
- * `Sheet*` primitives (bottom-anchored, drag-to-dismiss). Light-mode only;
+ * `Sheet*` primitives (bottom-anchored, drag-to-dismiss). Dark rides the semantic tokens;
  * `dark:*`, `focus:*`, `focus-visible:*`, `shadow-*` classes dropped.
  *
  * Items default to neutral text; per-color compound variants paint the label
@@ -26,19 +26,19 @@ export default (colors: Color[]) => ({
   slots: {
     overlay: 'fixed inset-0 bg-neutral-900/40',
     content: 'z-[1001] flex flex-col max-h-[100vh] overflow-hidden',
-    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
+    handle: 'self-center w-9 h-1 rounded-full bg-accented mt-1.5 mb-1',
     header: 'flex flex-col gap-0.5 px-4 py-2',
-    title: 'text-neutral-500 text-xs font-semibold uppercase tracking-wider',
-    description: 'text-neutral-700 text-sm',
+    title: 'text-muted text-xs font-semibold uppercase tracking-wider',
+    description: 'text-default text-sm',
     list: 'flex-1 flex flex-col min-h-0 overflow-y-auto pb-1',
-    item: 'flex flex-row items-center gap-3 px-4 py-2.5 transition-colors active:bg-neutral-100',
+    item: 'flex flex-row items-center gap-3 px-4 py-2.5 transition-colors active:bg-elevated',
     itemLeadingIcon: `shrink-0 ${fgClass(leadingIconFg())}`,
     itemLeadingAvatar: 'shrink-0',
-    itemLabel: 'flex-1 text-neutral-900',
+    itemLabel: 'flex-1 text-highlighted',
     itemTrailingIcon: `shrink-0 ${fgClass(TRAILING_ICON_FG)}`,
-    separator: 'mx-4 my-1 h-px bg-neutral-200',
-    cancel: 'mx-4 mb-2 mt-1 flex flex-row items-center justify-center px-4 py-2.5 rounded-xl bg-neutral-100 active:bg-neutral-200',
-    cancelLabel: 'text-neutral-900 font-medium',
+    separator: 'mx-4 my-1 h-px bg-accented',
+    cancel: 'mx-4 mb-2 mt-1 flex flex-row items-center justify-center px-4 py-2.5 rounded-xl bg-elevated active:bg-accented',
+    cancelLabel: 'text-highlighted font-medium',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,

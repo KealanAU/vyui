@@ -2,7 +2,7 @@
  * Tabs theme — adapted from nuxt/ui v3.0.2 `theme/tabs.ts` for Vue-Lynx.
  *
  * Notes on the port:
- *   - Light-mode only: all `dark:*` classes are stripped.
+ *   - Dark rides the semantic tokens: all `dark:*` classes are stripped.
  *   - Focus / focus-visible classes are stripped (Lynx has no DOM focus ring).
  *   - `shadow-*` / `transition-shadow` removed.
  *   - Indicator CSS-vars renamed to the Vy-Lynx prefix
@@ -12,6 +12,7 @@
  *     a concrete tailwind class via `compoundVariants`.
  */
 import type { Color } from './colors'
+import { type IconFg, iconFgFromToken } from './iconColor'
 
 // `enableCSSInheritance: false`: the active/inactive text color must sit on the
 // `label` <text>, not the `trigger` <view> (color set there never reaches the
@@ -24,13 +25,13 @@ import type { Color } from './colors'
 // to the child label as a reliable `group-active:` on Lynx. State colors use
 // `group-data-[state=…]:` (the trigger owns the `group` + `data-state`).
 const pillLabel = (_c: string) =>
-  `group-ui-active:text-white group-ui-inactive:text-neutral-500`
+  `group-ui-active:text-white group-ui-inactive:text-muted`
 
 const pillIndicator = (c: string) => `bg-${c}-500`
 
 // `link`: underline indicator + colored active label.
 const linkLabel = (c: string) =>
-  `group-ui-active:text-${c}-500 group-ui-inactive:text-neutral-500`
+  `group-ui-active:text-${c}-500 group-ui-inactive:text-muted`
 
 const linkIndicator = (c: string) => `bg-${c}-500`
 
@@ -39,11 +40,10 @@ const linkIndicator = (c: string) => `bg-${c}-500`
 // `leadingIcon` never reach the glyph — Tabs.vue bakes the fill per state via
 // the Icon `color` prop (resolved with `resolveColorHex`). Derive it from the
 // same label builder strings so class and baked color can't drift.
-export function iconFg(color: string, variant: 'pill' | 'link', active: boolean): { semantic: string, shade: number } | 'white' {
+export function iconFg(color: string, variant: 'pill' | 'link', active: boolean, isDark = false): IconFg {
   const label = (variant === 'link' ? linkLabel : pillLabel)(color)
   const token = label.match(new RegExp(`group-ui-${active ? 'active' : 'inactive'}:text-(\\S+)`))?.[1]
-  const parts = token?.match(/^([a-z0-9-]+)-(\d+)$/)
-  return parts ? { semantic: parts[1], shade: Number(parts[2]) } : 'white'
+  return iconFgFromToken(token, isDark)
 }
 
 export default (colors: Color[]) => ({
@@ -70,12 +70,12 @@ export default (colors: Color[]) => ({
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: {
       pill: {
-        list: 'bg-neutral-100 rounded-lg',
+        list: 'bg-elevated rounded-lg',
         trigger: 'flex-1 w-full',
         indicator: 'rounded-md',
       },
       link: {
-        list: 'border-neutral-200',
+        list: 'border-default',
         indicator: 'rounded-full',
       },
     },

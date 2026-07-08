@@ -168,14 +168,14 @@ const fruitItems = [
 
 <template>
   <view class="flex flex-col gap-4 pt-2">
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Modal</text>
-      <text class="text-slate-500 text-xs">Dialog with overlay backdrop.</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">Modal</text>
+      <text class="text-muted text-xs">Dialog with overlay backdrop.</text>
       <VyModal v-model:open="modalOpen" title="Modal title" description="A centered dialog with an overlay backdrop.">
         <VyButton color="neutral" variant="subtle" label="Open modal" />
         <template #content>
           <view class="flex flex-col gap-3 p-4">
-            <text class="text-slate-600 text-sm">
+            <text class="text-toned text-sm">
               Modal content goes here. Tap the backdrop or the close control to dismiss.
             </text>
           </view>
@@ -183,9 +183,9 @@ const fruitItems = [
       </VyModal>
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Tray</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">Tray</text>
+      <text class="text-muted text-xs">
         Morphing multi-view sheet — the panel grows/shrinks to fit each view.
         Navigate forward, then Back; the footer stays put across views.
         <text class="font-medium">Floating</text> hovers with a gap + border on
@@ -199,7 +199,7 @@ const fruitItems = [
         <template #default="{ setView, goBack, canGoBack }">
           <VyTrayView id="menu">
             <view class="flex flex-col gap-2">
-              <text class="text-slate-900 text-base font-semibold">Quick actions</text>
+              <text class="text-highlighted text-base font-semibold">Quick actions</text>
               <VyButton color="neutral" variant="soft" label="Share" @tap="setView('share')" />
               <VyButton color="neutral" variant="soft" label="Rename" @tap="setView('share')" />
               <VyButton color="error" variant="soft" label="Delete" @tap="setView('confirm')" />
@@ -209,17 +209,17 @@ const fruitItems = [
           <VyTrayView id="share">
             <view class="flex flex-col gap-2">
               <VyButton v-if="canGoBack" color="neutral" variant="ghost" size="sm" label="← Back" @tap="goBack()" />
-              <text class="text-slate-900 text-base font-semibold">Share</text>
-              <text class="text-slate-500 text-sm">A taller view — the tray grows to fit it.</text>
-              <text class="text-slate-600 text-sm">Anyone with the link can view. Toggle access, copy the URL, or invite by email — plenty of room here so the panel is noticeably taller than the confirm view.</text>
+              <text class="text-highlighted text-base font-semibold">Share</text>
+              <text class="text-muted text-sm">A taller view — the tray grows to fit it.</text>
+              <text class="text-toned text-sm">Anyone with the link can view. Toggle access, copy the URL, or invite by email — plenty of room here so the panel is noticeably taller than the confirm view.</text>
             </view>
           </VyTrayView>
 
           <VyTrayView id="confirm">
             <view class="flex flex-col gap-2">
               <VyButton v-if="canGoBack" color="neutral" variant="ghost" size="sm" label="← Back" @tap="goBack()" />
-              <text class="text-slate-900 text-base font-semibold">Delete item?</text>
-              <text class="text-slate-500 text-sm">A short view — the tray shrinks down.</text>
+              <text class="text-highlighted text-base font-semibold">Delete item?</text>
+              <text class="text-muted text-sm">A short view — the tray shrinks down.</text>
             </view>
           </VyTrayView>
         </template>
@@ -230,9 +230,9 @@ const fruitItems = [
       </VyTray>
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Keyboard-aware tray</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">Keyboard-aware tray</text>
+      <text class="text-muted text-xs">
         Device-only — the web preview has no software keyboard. Focus a field,
         then Cmd+K: the whole panel should rise above the keyboard (bottom
         padding grows, so the panel extends up while its background fills in
@@ -251,8 +251,8 @@ const fruitItems = [
            content and nothing scrolls. -->
       <VyTray v-model:open="kbScrollOpen" keyboard-aware :ui="{ bodyScroll: 'max-h-80' }">
         <view class="flex flex-col gap-3">
-          <text class="text-slate-900 text-base font-semibold">Edit profile</text>
-          <text class="text-slate-400 text-xs">@keyboard: {{ kbLast }}</text>
+          <text class="text-highlighted text-base font-semibold">Edit profile</text>
+          <text class="text-dimmed text-xs">@keyboard: {{ kbLast }}</text>
           <VyInput v-model="kbForm.name" placeholder="Name" @keyboard="onKbProbe" />
           <VyInput v-model="kbForm.handle" placeholder="Handle" @keyboard="onKbProbe" />
           <VyTextarea v-model="kbForm.bio" placeholder="Bio — a few lines" @keyboard="onKbProbe" />
@@ -269,8 +269,8 @@ const fruitItems = [
 
       <VyTray v-model:open="kbLiftOpen" keyboard-aware="lift">
         <view class="flex flex-col gap-2">
-          <text class="text-slate-900 text-base font-semibold">Quick reply</text>
-          <text class="text-slate-400 text-xs">@keyboard: {{ kbLast }}</text>
+          <text class="text-highlighted text-base font-semibold">Quick reply</text>
+          <text class="text-dimmed text-xs">@keyboard: {{ kbLast }}</text>
           <VyInput v-model="kbForm.reply" placeholder="Type a reply…" @keyboard="onKbProbe" />
         </view>
         <template #footer="{ close }">
@@ -279,32 +279,32 @@ const fruitItems = [
       </VyTray>
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Notifications</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">Notifications</text>
+      <text class="text-muted text-xs">
         Tap a notification's button to surface its detail as a transient toast.
       </text>
       <view class="flex flex-col gap-2">
         <view
           v-for="n in notifications"
           :key="n.id"
-          class="flex flex-row items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg"
+          class="flex flex-row items-center gap-3 px-3 py-2.5 bg-muted border border-default rounded-lg"
         >
-          <view class="w-8 h-8 rounded-full bg-white border border-slate-200 flex flex-row items-center justify-center shrink-0">
-            <text class="text-slate-700 text-base">•</text>
+          <view class="w-8 h-8 rounded-full bg-default border border-default flex flex-row items-center justify-center shrink-0">
+            <text class="text-default text-base">•</text>
           </view>
           <view class="flex flex-col flex-1 min-w-0 gap-0.5">
-            <text class="text-slate-900 text-sm font-medium truncate">{{ n.title }}</text>
-            <text class="text-slate-500 text-xs truncate">{{ n.summary }}</text>
+            <text class="text-highlighted text-sm font-medium truncate">{{ n.title }}</text>
+            <text class="text-muted text-xs truncate">{{ n.summary }}</text>
           </view>
           <VyButton color="neutral" variant="soft" size="sm" label="Show" @tap="showNotification(n)" />
         </view>
       </view>
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Stacked toasts (Sonner)</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">Stacked toasts (Sonner)</text>
+      <text class="text-muted text-xs">
         Add a few — they collapse into a pile pinned to the top. Tap any toast
         to fan them out under each other, tap again to collapse. Swipe a toast
         sideways to dismiss it.
@@ -315,9 +315,9 @@ const fruitItems = [
       </view>
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Progress color</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">Progress color</text>
+      <text class="text-muted text-xs">
         The countdown bar can be colored independently of the toast — pass
         `progress.color` a function of the remaining fraction and it recolors as
         it drains: green → amber → red.
@@ -327,9 +327,9 @@ const fruitItems = [
       </view>
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Drawer</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">Drawer</text>
+      <text class="text-muted text-xs">
         Bottom-sheet via SheetRoot with multi-snap: opens at 90%, drag down
         to catch the 40% snap, drag up to return, fling down to dismiss.
       </text>
@@ -357,7 +357,7 @@ const fruitItems = [
              outside it to dismiss. Give the body an explicit close affordance. -->
         <template #body="{ close }">
           <view class="flex flex-col gap-3 px-4 py-2">
-            <text class="text-slate-600 text-sm">
+            <text class="text-toned text-sm">
               This drawer fills the viewport. Drag the handle down to dismiss, or tap Close.
             </text>
             <VyButton color="neutral" variant="solid" label="Close" block @tap="close()" />
@@ -399,9 +399,9 @@ const fruitItems = [
       </VyDrawer>
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">Ghost-close regression</text>
-      <text class="text-slate-500 text-xs">
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">Ghost-close regression</text>
+      <text class="text-muted text-xs">
         A ticker re-renders the panel every 100ms, including while it closes
         (the style-wipe aggravator). Try each close path — the moment the
         panel is off screen, the tap probe must respond and must never come
@@ -423,8 +423,8 @@ const fruitItems = [
         <VyButton color="neutral" variant="subtle" label="Open ghost repro drawer" />
         <template #body>
           <view class="flex flex-col gap-2 px-4 py-2">
-            <text class="text-slate-900 text-2xl font-semibold">Ticks: {{ ghostTicks }}</text>
-            <text class="text-slate-500 text-xs">
+            <text class="text-highlighted text-2xl font-semibold">Ticks: {{ ghostTicks }}</text>
+            <text class="text-muted text-xs">
               Keeps BG patches flowing through the close — before the fix
               these could wipe the worklets' inline animation suppression
               and restart the slide-out keyframe.
@@ -435,26 +435,26 @@ const fruitItems = [
       <VyButton color="primary" variant="soft" :label="`Tap probe: ${ghostTaps}`" block @tap="ghostTaps++" />
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-slate-900 text-base font-semibold">DropdownMenu</text>
-      <text class="text-slate-500 text-xs">Tap-anchored menu.</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">DropdownMenu</text>
+      <text class="text-muted text-xs">Tap-anchored menu.</text>
       <VyDropdownMenu v-model:open="dropdownOpen" :items="dropdownItems">
         <VyButton color="neutral" variant="soft" label="Menu" trailing-icon="icon-park-outline:down" />
       </VyDropdownMenu>
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">Select</text>
-      <text class="text-slate-500 text-xs">Bottom-sheet picker — items pop up from below. This covers the listbox pattern too (no separate Listbox component).</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Select</text>
+      <text class="text-muted text-xs">Bottom-sheet picker — items pop up from below. This covers the listbox pattern too (no separate Listbox component).</text>
       <VySelect v-model="selectCountry" :items="countryItems" placeholder="Pick a country" />
-      <text class="text-slate-500 text-xs">Country: {{ selectCountry }}</text>
+      <text class="text-muted text-xs">Country: {{ selectCountry }}</text>
     </view>
 
-    <view class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
-      <text class="text-slate-900 text-base font-semibold">Combobox / Autocomplete</text>
-      <text class="text-slate-500 text-xs">Typeahead picker — the in-sheet search filters items as you type. This is the autocomplete pattern (no separate component).</text>
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">Combobox / Autocomplete</text>
+      <text class="text-muted text-xs">Typeahead picker — the in-sheet search filters items as you type. This is the autocomplete pattern (no separate component).</text>
       <VyCombobox v-model="comboboxFruit" :items="fruitItems" placeholder="Pick a fruit" search-placeholder="Search fruits…" />
-      <text class="text-slate-500 text-xs">Fruit: {{ comboboxFruit }}</text>
+      <text class="text-muted text-xs">Fruit: {{ comboboxFruit }}</text>
     </view>
   </view>
 

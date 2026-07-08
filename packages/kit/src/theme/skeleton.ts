@@ -2,9 +2,9 @@
  * Skeleton theme — adapted from nuxt/ui v3.0.2 `theme/skeleton.ts` for Vue-Lynx.
  *
  * No core primitive exists for skeleton — it's a plain animated `<view>` block.
- * The semantic `bg-neutral-200` token resolves to a Tailwind color scale via
- * the consuming app's CSS variables (see `apps/examples/kit-demo/src/index.css`).
+ * The `bg-accented` semantic token resolves to a per-mode `--ui-bg-accented`
+ * value in `@vyui/kit/style.css`, so it flips in dark on its own.
  */
 export default {
-  base: 'animate-pulse rounded-md bg-neutral-200',
+  base: 'animate-pulse rounded-md bg-accented',
 }

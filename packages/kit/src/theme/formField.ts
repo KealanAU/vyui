@@ -2,19 +2,19 @@
  * FormField theme — adapted from nuxt/ui v3.0.2 `theme/form-field.ts` for
  * Vue-Lynx. Provides the label / description / hint / help / error scaffold
  * around a field control (Input / Switch / RadioGroup / etc.).
- * Light-mode only; `dark:*`, `focus:*`, `focus-visible:*` classes dropped.
+ * Dark rides the semantic tokens; `dark:*`, `focus:*`, `focus-visible:*` classes dropped.
  */
 export default {
   slots: {
     root: 'flex flex-col min-w-0 max-w-full',
     wrapper: 'flex flex-col min-w-0',
     labelWrapper: 'flex flex-row flex-wrap items-center justify-between min-w-0',
-    label: 'font-medium text-neutral-900',
+    label: 'font-medium text-highlighted',
     container: 'min-w-0 max-w-full mt-1',
-    description: 'text-neutral-500',
+    description: 'text-muted',
     error: 'mt-2 text-error-500',
-    hint: 'text-neutral-500',
-    help: 'mt-2 text-neutral-500',
+    hint: 'text-muted',
+    help: 'mt-2 text-muted',
   },
   variants: {
     size: {

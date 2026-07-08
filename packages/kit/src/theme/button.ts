@@ -16,7 +16,8 @@
 //   • No opacity color modifiers — the preset wires colors to raw `var()` hex,
 //     so `bg-primary/10` can't work. Nuxt's translucent fills/rings are mimicked
 //     with discrete shades: `/10`→`-50`, `/15`→`-100`, `/50`→`-300`, `/25`→`-200`.
-//   • No dark mode.
+//   • Dark mode rides the semantic tokens (`text-default`, `bg-elevated`, …),
+//     not `dark:` variants — the tokens flip under `.dark` (see `style.css`).
 //   • `flex flex-row` instead of `inline-flex` (Lynx flex defaults differ).
 //
 // ── BUILDER THEME (canonical template) ──────────────────────────────────────
@@ -28,6 +29,7 @@
 // union to keep in sync.
 import type { Color } from './colors'
 import { NEUTRAL } from './color-constants'
+import { type IconFg, iconFgFromToken } from './iconColor'
 
 // Each variant returns the surface classes (`base`: bg/border, applied to the
 // root <view>) separately from the foreground color (`fg`: text-*). CSS
@@ -59,17 +61,19 @@ const link = (c: string) =>
 
 // ── Neutral ─────────────────────────────────────────────────────────────────
 // Nuxt treats neutral specially: solid is near-black, the rest sit on
-// default/elevated/accented surfaces. On Lynx the Tailwind preset only emits
-// `theme.colors` utilities (no semantic surface utilities like `bg-elevated`),
-// so map onto the neutral ramp directly. A style re-skins these by overriding
-// the `--ui-color-neutral-*` ramp (the `--base-color` mechanism).
+// default/elevated/accented surfaces. The non-solid variants ride the semantic
+// tokens (`bg-elevated` / `bg-accented` fills, `border-default` / `-accented`,
+// `text-default`) so they flip in dark for free; `solid` uses the high-contrast
+// `bg-inverted` + `text-inverted` pair (near-black-on-white → white-on-dark). A
+// style re-skins all of them at once via `baseColor` (grayify rewrites the slate
+// literals the tokens hold — see `style.css`).
 const neutralVariants = {
-  solid: { base: 'bg-neutral-900 active:bg-neutral-800', fg: 'text-white' },
-  outline: { base: 'border-2 border-solid border-neutral-300 active:bg-neutral-100', fg: 'text-neutral-700' },
-  subtle: { base: 'border-2 border-solid border-neutral-200 bg-neutral-100 active:bg-neutral-200', fg: 'text-neutral-700' },
-  soft: { base: 'bg-neutral-100 active:bg-neutral-200', fg: 'text-neutral-700' },
-  ghost: { base: 'active:bg-neutral-100', fg: 'text-neutral-700' },
-  link: { base: '', fg: 'text-neutral-500 active:text-neutral-700' },
+  solid: { base: 'bg-inverted active:opacity-90', fg: 'text-inverted' },
+  outline: { base: 'border-2 border-solid border-accented active:bg-elevated', fg: 'text-default' },
+  subtle: { base: 'border-2 border-solid border-default bg-elevated active:bg-accented', fg: 'text-default' },
+  soft: { base: 'bg-elevated active:bg-accented', fg: 'text-default' },
+  ghost: { base: 'active:bg-elevated', fg: 'text-default' },
+  link: { base: '', fg: 'text-muted active:text-default' },
 } as const
 
 const VARIANT_BUILDERS = { solid, outline, soft, subtle, ghost, link } as const
@@ -90,11 +94,13 @@ const variantClass = (color: string, variant: Variant) => {
 // glyph and the fill must be baked into the SVG via the Icon `color` prop
 // (Button.vue resolves it with `resolveColorHex`). Derive the fill from the
 // same `fg` string the variant emits so class and baked color can't drift.
-// `link`'s `active:` shade shift is class-only and doesn't reach the icon.
-export function iconFg(color: string, variant: Variant): { semantic: string, shade: number } | 'white' {
+// Neutral variants emit semantic TOKENS (`text-default` / `text-inverted`),
+// which are mode-dependent — pass `isDark` so the baked fill tracks the mode
+// like the CSS token would (`iconFgFromToken`). `link`'s `active:` shade shift
+// is class-only and doesn't reach the icon.
+export function iconFg(color: string, variant: Variant, isDark = false): IconFg {
   const { fg } = color === NEUTRAL ? neutralVariants[variant] : VARIANT_BUILDERS[variant](color)
-  const match = fg.match(/^text-([a-z0-9-]+)-(\d+)/i)
-  return match ? { semantic: match[1], shade: Number(match[2]) } : 'white'
+  return iconFgFromToken(fg.match(/^text-(\S+)/)?.[1], isDark)
 }
 
 // `import type { Color }` keeps the color record typed to the DEFAULT semantic

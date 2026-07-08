@@ -34,7 +34,7 @@ const ui = computed(() => buildPlaceholder(appConfig))
 // `h-12` chip — exactly what a layout-stub placeholder should do.
 //
 // `9 9` keeps the stripe pitch dense enough to read on a phone screen;
-// 1.5px stroke + neutral/slate at ~8% gives enough contrast on `bg-neutral-50`
+// 1.5px stroke + neutral/slate at ~8% gives enough contrast on the `bg-muted` fill
 // without dominating any real content layered above (e.g. demo labels).
 const hatchStyle = {
   backgroundImage:

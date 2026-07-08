@@ -59,6 +59,7 @@ export interface ToggleGroupSlots {
 import { computed } from 'vue'
 import { ToggleGroupItem, ToggleGroupRoot, Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useColorMode } from '../composables/useColorMode'
 import { resolveColorHex } from '../utils/resolveColor'
 
 const props = withDefaults(defineProps<ToggleGroupProps>(), {
@@ -93,9 +94,10 @@ const normalizedItems = computed(() => (props.items ?? []).map(normalizeItem))
 // from the `pressed` state core's Toggle forwards through the item slot
 // (same pattern as Button/Tabs). Fallbacks mirror the theme's
 // `defaultVariants` (`primary` / `outline`).
+const { isDark } = useColorMode()
 const itemIconColor = (pressed: boolean | undefined) => {
-  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'outline', !!pressed)
-  return resolveColorHex(appConfig, fg.semantic, fg.shade)
+  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'outline', !!pressed, isDark.value)
+  return fg === 'white' ? 'white' : resolveColorHex(appConfig, fg.semantic, fg.shade)
 }
 </script>
 

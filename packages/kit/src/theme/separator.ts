@@ -13,14 +13,14 @@ export default (colors: Color[]) => ({
     // `root` direction is set per orientation variant (flex-row/flex-col).
     root: 'flex items-center text-center',
     border: '',
-    container: 'font-medium text-neutral-900 flex flex-row',
+    container: 'font-medium text-highlighted flex flex-row',
     icon: 'shrink-0 size-5',
     label: 'text-sm',
   },
   variants: {
     color: {
       ...Object.fromEntries(colors.filter(c => c !== 'neutral').map(c => [c, { border: `border-${c}-500` }])),
-      neutral: { border: 'border-neutral-200' },
+      neutral: { border: 'border-default' },
     } as Record<Color, { border: string }>,
     orientation: {
       horizontal: {

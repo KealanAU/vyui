@@ -1,5 +1,5 @@
 // Ported from nuxt/ui v3.0.2 `src/theme/select.ts` (which extends `input.ts`)
-// and adapted for Vue-Lynx: light-mode only, semantic Tailwind tokens replace
+// and adapted for Vue-Lynx: dark rides the semantic tokens, Tailwind tokens replace
 // `--ui-*` CSS vars, `focus*` / `shadow*` / `dark:*` / `transition-shadow`
 // classes are dropped, and the result is flattened into a single tv config
 // (no `defu` merge with input theme since `Select` is its own component here).
@@ -23,18 +23,18 @@ export default (colors: Color[]) => ({
     // (`enableCSSInheritance: false`), so a `text-*` on the trigger <view>
     // never reaches those <text> children.
     base: 'w-full rounded-md flex flex-row items-center disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
-    value: 'flex-1 min-w-0 truncate text-start text-neutral-900',
-    placeholder: 'flex-1 min-w-0 truncate text-start text-neutral-400',
-    arrow: 'fill-neutral-200',
-    content: 'max-h-[100vh] w-full bg-white rounded-md border border-neutral-200 overflow-hidden pointer-events-auto',
-    handle: 'self-center w-9 h-1 rounded-full bg-neutral-300 mt-1.5 mb-1',
+    value: 'flex-1 min-w-0 truncate text-start text-highlighted',
+    placeholder: 'flex-1 min-w-0 truncate text-start text-dimmed',
+    arrow: 'fill-default',
+    content: 'max-h-[100vh] w-full bg-default rounded-md border border-default overflow-hidden pointer-events-auto',
+    handle: 'self-center w-9 h-1 rounded-full bg-accented mt-1.5 mb-1',
     sheetHeader: 'px-4 pt-2 pb-1',
-    sheetTitle: 'text-neutral-500 text-xs font-semibold uppercase',
-    viewport: 'flex-1 min-h-0 px-2 py-1 overflow-y-auto divide-y divide-neutral-100 scroll-py-1',
+    sheetTitle: 'text-muted text-xs font-semibold uppercase',
+    viewport: 'flex-1 min-h-0 px-2 py-1 overflow-y-auto divide-y divide-muted scroll-py-1',
     group: 'p-1',
-    empty: 'py-2 text-center text-sm text-neutral-500',
-    label: 'font-semibold text-neutral-900',
-    separator: '-mx-1 my-1 h-px bg-neutral-200',
+    empty: 'py-2 text-center text-sm text-muted',
+    label: 'font-semibold text-highlighted',
+    separator: '-mx-1 my-1 h-px bg-accented',
     // `item` is the row <view> — surface/layout only. Item label color lives on
     // `itemLabel` (the SelectItemText <text>): CSS inheritance is OFF in the
     // Lynx build (`enableCSSInheritance: false`), so a `text-*` on the row
@@ -44,20 +44,20 @@ export default (colors: Color[]) => ({
     itemLeadingAvatar: 'shrink-0',
     itemTrailing: 'ms-auto flex flex-row gap-1.5 items-center',
     itemTrailingIcon: 'shrink-0',
-    itemLabel: 'truncate text-neutral-700 group-ui-checked:text-neutral-900',
+    itemLabel: 'truncate text-default group-ui-checked:text-highlighted',
     leading: 'flex flex-row items-center shrink-0',
-    leadingIcon: 'shrink-0 text-neutral-400',
+    leadingIcon: 'shrink-0 text-dimmed',
     leadingAvatar: 'shrink-0',
     trailing: 'flex flex-row items-center shrink-0 ms-auto',
-    trailingIcon: 'shrink-0 text-neutral-400',
+    trailingIcon: 'shrink-0 text-dimmed',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     variant: {
-      outline: { base: 'bg-white border border-neutral-200' },
-      soft: { base: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
-      subtle: { base: 'bg-neutral-100 border border-neutral-200' },
-      ghost: { base: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent' },
+      outline: { base: 'bg-default border border-default' },
+      soft: { base: 'bg-muted active:bg-elevated disabled:bg-muted' },
+      subtle: { base: 'bg-elevated border border-default' },
+      ghost: { base: 'bg-transparent active:bg-elevated disabled:bg-transparent' },
       none: { base: 'bg-transparent' },
     },
     size: {

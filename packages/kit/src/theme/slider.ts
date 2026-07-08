@@ -10,7 +10,7 @@ export default (colors: Color[]) => ({
     // `root` direction is set per orientation variant (flex-row default,
     // flex-col vertical).
     root: 'relative flex items-center select-none touch-none',
-    track: 'relative bg-neutral-200 overflow-hidden rounded-full grow',
+    track: 'relative bg-accented overflow-hidden rounded-full grow',
     range: 'absolute rounded-full',
     thumb: 'rounded-full bg-white border-2',
   },

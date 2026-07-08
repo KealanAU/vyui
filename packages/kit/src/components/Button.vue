@@ -65,6 +65,7 @@ import { useAppConfig } from '../composables/useAppConfig'
 import { useStyledComponent } from '../composables/useStyledComponent'
 import { Icon as VyIcon } from '@vyui/core'
 import { resolveColorHex } from '../utils/resolveColor'
+import { useColorMode } from '../composables/useColorMode'
 import VyAvatar from './Avatar.vue'
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -107,8 +108,9 @@ const isIconOnly = computed(() =>
 // Lynx SVG can't inherit currentColor — bake the variant's foreground into
 // the icon fill at render time (same pattern as Input/Select). Fallbacks
 // mirror the theme's `defaultVariants` (`primary` / `solid`).
+const { isDark } = useColorMode()
 const iconColor = computed(() => {
-  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'solid')
+  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'solid', isDark.value)
   return fg === 'white' ? 'white' : resolveColorHex(appConfig, fg.semantic, fg.shade)
 })
 

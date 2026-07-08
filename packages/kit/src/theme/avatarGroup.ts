@@ -2,7 +2,7 @@
 //
 // Two Lynx-specific adaptations:
 //   - `ring-bg` (a Nuxt UI semantic that resolves to the page background) is
-//     replaced with `ring-white` since vyui ships light-mode-only.
+//     replaced with `ring-white` since vyui ships dark via semantic tokens.
 //   - `inline-flex` is replaced with `flex`. The `@lynx-js/tailwind-preset`
 //     strips `inline-flex` (Lynx's `display` accepts only `none`, `flex`,
 //     `grid`, `linear`). Without explicit `flex`, `<view>` falls back to

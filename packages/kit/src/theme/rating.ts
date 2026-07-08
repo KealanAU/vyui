@@ -15,7 +15,7 @@ export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-center gap-1',
     base: 'shrink-0',
-    icon: 'text-neutral-300',
+    icon: 'text-dimmed',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,

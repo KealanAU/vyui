@@ -27,12 +27,12 @@ export default (colors: Color[]) => ({
     // Typed-text color sits on `base` (the <input>), not `root`: CSS
     // inheritance is OFF in the Lynx build (`enableCSSInheritance: false`), so a
     // `text-*` on the root <view> never reaches the input element.
-    base: 'flex-1 min-w-0 bg-transparent text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
+    base: 'flex-1 min-w-0 bg-transparent text-highlighted placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
     leading: 'flex flex-row items-center shrink-0',
-    leadingIcon: 'shrink-0 text-neutral-400',
+    leadingIcon: 'shrink-0 text-dimmed',
     leadingAvatar: 'shrink-0',
     trailing: 'flex flex-row items-center shrink-0',
-    trailingIcon: 'shrink-0 text-neutral-400'
+    trailingIcon: 'shrink-0 text-dimmed'
   },
   variants: {
     size: {
@@ -64,10 +64,10 @@ export default (colors: Color[]) => ({
     // Surface only (bg/border) on `root`; typed-text color lives on `base`
     // (the <input>) — see the `slots.base` note re `enableCSSInheritance: false`.
     variant: {
-      outline: { root: 'bg-white border border-neutral-200' },
-      soft: { root: 'bg-neutral-100/50 active:bg-neutral-100 disabled:bg-neutral-100/50' },
-      subtle: { root: 'bg-neutral-100 border border-neutral-200' },
-      ghost: { root: 'bg-transparent active:bg-neutral-100 disabled:bg-transparent' },
+      outline: { root: 'bg-default border border-default' },
+      soft: { root: 'bg-muted active:bg-elevated disabled:bg-muted' },
+      subtle: { root: 'bg-elevated border border-default' },
+      ghost: { root: 'bg-transparent active:bg-elevated disabled:bg-transparent' },
       none: { root: 'bg-transparent' }
     },
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
