@@ -284,7 +284,7 @@ The root does not add a native group or fieldset role, and the visual legend is 
 - The component uses Lynx `view` and `text` nodes rather than DOM `<fieldset>`, `<input type="radio">`, and `<label>` elements.
 - Selection is handled by native `tap` events through the core radio primitives.
 - The indicator is conditionally mounted only for the checked item.
-- The default theme is light-mode oriented and omits DOM focus-ring and hover styles.
+- The default theme uses vyui's semantic tokens, so it adapts automatically under dark mode (see [Theming](/theming)), and omits DOM focus-ring and hover styles.
 - `name`, `id`, and `required` are forwarded to core primitives, but the kit group does not provide standalone native browser form submission.
 - Core direction and looping metadata exist in `@vyui/core`; the kit wrapper does not expose them and does not implement DOM arrow-key behavior.
 

@@ -5,6 +5,15 @@ import { OverlayRoot } from '@vyui/core'
 import App from './App.vue'
 import { resetColorModeForTesting, useColorMode } from '../composables/useColorMode'
 
+// This file mounts via plain `@vue/test-utils` (a real `@vue/runtime-dom` tree,
+// not the vue-lynx renderer that `@vyui/testing-utils` render() drives), so
+// `@layoutchange` compiles to a plain `addEventListener('layoutchange', …)` —
+// dispatch a native Event, not the `bindEvent:*`-prefixed one the Lynx test
+// runtime expects.
+function layoutchange(init: { detail?: unknown, params?: unknown }): Event {
+  return Object.assign(new Event('layoutchange'), init)
+}
+
 // The Lynx testing-env element shim doesn't expose `classList`/`attributes`
 // the way test-utils reads them, so assert via `getAttribute` (the core-test
 // idiom).
@@ -83,5 +92,26 @@ describe('VyApp', () => {
   it('mounts the overlay host by default and skips it when overlays=false', () => {
     expect(mount(App).findComponent(OverlayRoot).exists()).toBe(true)
     expect(mount(App, { props: { overlays: false } }).findComponent(OverlayRoot).exists()).toBe(false)
+  })
+
+  describe('viewport-change', () => {
+    it('emits width/height from the root layoutchange event detail', () => {
+      const wrapper = mount(App, { props: { overlays: false } })
+      wrapper.element.dispatchEvent(layoutchange({ detail: { width: 390, height: 844 } }))
+      expect(wrapper.emitted('viewport-change')).toEqual([[{ width: 390, height: 844 }]])
+    })
+
+    it('falls back to event.params when detail is absent', () => {
+      const wrapper = mount(App, { props: { overlays: false } })
+      wrapper.element.dispatchEvent(layoutchange({ params: { width: 1024, height: 768 } }))
+      expect(wrapper.emitted('viewport-change')).toEqual([[{ width: 1024, height: 768 }]])
+    })
+
+    it('does not emit when width/height are missing or non-numeric', () => {
+      const wrapper = mount(App, { props: { overlays: false } })
+      wrapper.element.dispatchEvent(layoutchange({ detail: {} }))
+      wrapper.element.dispatchEvent(layoutchange({ detail: { width: '390', height: '844' } }))
+      expect(wrapper.emitted('viewport-change')).toBeUndefined()
+    })
   })
 })

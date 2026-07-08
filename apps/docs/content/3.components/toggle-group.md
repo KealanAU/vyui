@@ -179,7 +179,7 @@ The kit item shape does not currently forward an `accessibility-label` to indivi
 - Items respond to Lynx `tap` events through the `@vyui/core` toggle primitives.
 - Lynx SVG does not inherit `currentColor`; built-in icons receive a resolved hex color, and custom slots receive the same value as `iconColor`.
 - Text color classes are applied directly to `leadingIcon` and `label` because CSS inheritance is disabled in the Lynx build.
-- The default theme is light-mode-only.
+- The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming](/theming)).
 
 ## Related components
 

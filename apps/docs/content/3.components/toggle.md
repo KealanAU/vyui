@@ -118,7 +118,7 @@ Provide `accessibility-label` for icon-only toggles. Text in the default slot gi
 
 - The component renders a Lynx `view` through the core primitive and responds to the Lynx `tap` event.
 - Lynx SVG does not inherit `currentColor`, so the theme places foreground classes directly on the built-in icon slot.
-- The default theme is light-mode-only.
+- The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming](/theming)).
 
 ## Built on `@vyui/core`
 

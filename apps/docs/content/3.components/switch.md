@@ -267,7 +267,7 @@ Loading is visual only. Disable the control while loading when repeated interact
 - The component uses Lynx `view` and `text` nodes rather than a DOM checkbox input.
 - Interaction is handled by the core switch's native `tap` event.
 - Thumb translation distances are concrete per size for consistent Lynx rendering.
-- The default theme is light-mode oriented and omits DOM focus-ring and hover styles.
+- The default theme uses vyui's semantic tokens, so it adapts automatically under dark mode (see [Theming](/theming)), and omits DOM focus-ring and hover styles.
 - `name`, `id`, and `required` are passed to the core control, but `VySwitch` does not render a native checkbox input or provide standalone native form submission.
 
 ## Related components

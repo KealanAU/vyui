@@ -276,7 +276,7 @@ Override globally through `appConfig.ui.swipeAction` or locally with `ui`.
 | `actions` | Flex wrapper inside the trailing action panel. |
 | `content` | Flex wrapper around the foreground row content. |
 
-The `side` variant sets `justify-start` or `justify-end` on `actions`. The default theme is light-mode-oriented: the foreground is white and the action wrapper uses `neutral-100`.
+The `side` variant sets `justify-start` or `justify-end` on `actions`. The default theme uses the `bg-default` and `bg-elevated` surface tokens for the foreground and action wrapper, so it adapts automatically under dark mode (see [Theming](/theming)).
 
 ## Accessibility
 
