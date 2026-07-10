@@ -98,8 +98,9 @@ Consumer passes `:aria-label="..."`. Component maps to `accessibility-label`.
 - [x] `handleAndDispatchCustomEvent` — direct call in Lynx env
 - [x] `getActiveElement` — own implementation, returns null in Lynx
 
-### Phase 2 — State announcements (next)
-For each component, add `accessibility-value` that mirrors state:
+### Phase 2 — State announcements (done)
+Shipped — every row below emits `accessibility-value` via `useA11y` (see
+"Status" above). Table kept for the web-ARIA → Lynx-prop mapping reference.
 
 | Component | Current | Needs |
 |-----------|---------|-------|
@@ -117,10 +118,12 @@ For each component, add `accessibility-value` that mirrors state:
 - Add `label?: string` prop only where the component computes a default (Slider, Pagination)
 - Document the public accessibility API in the contributing guide
 
-### Phase 4 — Focus and navigation (future)
-- `trapFocus` is a no-op in Lynx (no keyboard) — stub or remove
-- `useTypeahead` relies on `getActiveElement` which returns null — disable in Lynx
-- `RovingFocus` arrow-key logic silently does nothing — assess if Lynx swipe-to-navigate replaces it
+### Phase 4 — Focus and navigation (not started)
+None of `trapFocus`, `useTypeahead`, or `RovingFocus` exist in `packages/core`
+today — reka-ui's web versions were never ported, so there's nothing to stub
+or remove yet. If/when keyboard-driven focus becomes relevant on a Lynx
+target, revisit whether Lynx swipe-to-navigate replaces roving-focus
+semantics before porting the web pattern.
 - Assess `VisuallyHidden` — web pattern for off-screen accessible labels, not applicable in Lynx
 
 ---

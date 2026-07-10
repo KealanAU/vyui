@@ -1,7 +1,7 @@
 {
   "name": "@vyui/core",
   "type": "module",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Lynx-native UI primitives for Vue",
   "license": "MIT AND Apache-2.0",
   "author": "Kealan Clarke",
@@ -101,7 +101,7 @@
   "devDependencies": {
     "@iconify/vue": "^5.0.1",
     "@lynx-js/react": "^0.116.5",
-    "@lynx-js/testing-environment": "^0.1.11",
+    "@lynx-js/testing-environment": "^0.2.1",
     "@lynx-js/types": "^3.8.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",

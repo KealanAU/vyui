@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "rspeedy dev",
-    "build": "rspeedy build"
+    "dev": "node scripts/gen-icons.mjs && rspeedy dev",
+    "build": "node scripts/gen-icons.mjs && rspeedy build",
+    "gen:icons": "node scripts/gen-icons.mjs"
   },
   "dependencies": {
     "@vyui/core": "workspace:*",
@@ -15,6 +16,7 @@
   "devDependencies": {
     "@iconify-json/icon-park-outline": "^1.2.0",
     "@iconify-json/lucide": "^1.2.108",
+    "@lynx-js/qrcode-rsbuild-plugin": "^0.4.7",
     "@lynx-js/rspeedy": "^0.13.5",
     "@lynx-js/tailwind-preset": "^0.4.0",
     "@lynx-js/types": "^3.8.0",

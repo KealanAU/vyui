@@ -47,7 +47,7 @@ const checked = useVModel(props, 'checked', emits, {
 const { value } = toRefs(props)
 const { forwardRef } = useForwardExpose()
 
-function handleClick(event: MouseEvent) {
+function handleClick(event: any) {
   if (props.disabled)
     return
 

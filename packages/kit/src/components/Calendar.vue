@@ -1,13 +1,14 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/calendar'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
 
-export const buildCalendar = (appConfig: AppConfig) => {
+export const buildCalendar = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).calendar as Partial<ReturnType<typeof theme>> | undefined
   return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
+})
 
 type CalendarVariants = VariantProps<ReturnType<typeof buildCalendar>>
 

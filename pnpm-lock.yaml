@@ -90,7 +90,7 @@ importers:
         specifier: ^4.0.0
         version: 4.3.0
       vue:
-        specifier: ^3.5.13
+        specifier: 3.5.17
         version: 3.5.17(typescript@5.9.3)
       vue-router:
         specifier: ^4.5.0
@@ -139,6 +139,9 @@ importers:
       '@iconify-json/lucide':
         specifier: ^1.2.108
         version: 1.2.108
+      '@lynx-js/qrcode-rsbuild-plugin':
+        specifier: ^0.4.7
+        version: 0.4.7
       '@lynx-js/rspeedy':
         specifier: ^0.13.5
         version: 0.13.6(@rspack/core@1.7.11(@swc/helpers@0.5.21))(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.15))
@@ -185,6 +188,9 @@ importers:
       '@iconify-json/lucide':
         specifier: ^1.2.108
         version: 1.2.108
+      '@lynx-js/qrcode-rsbuild-plugin':
+        specifier: ^0.4.7
+        version: 0.4.7
       '@lynx-js/rspeedy':
         specifier: ^0.13.5
         version: 0.13.6(@rspack/core@1.7.11(@swc/helpers@0.5.21))(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.14))
@@ -234,6 +240,9 @@ importers:
       '@iconify-json/lucide':
         specifier: ^1.2.108
         version: 1.2.108
+      '@lynx-js/qrcode-rsbuild-plugin':
+        specifier: ^0.4.7
+        version: 0.4.7
       '@lynx-js/rspeedy':
         specifier: ^0.13.5
         version: 0.13.6(@rspack/core@1.7.11(@swc/helpers@0.5.21))(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.14))
@@ -286,6 +295,9 @@ importers:
       '@iconify-json/tabler':
         specifier: ^1.2.35
         version: 1.2.35
+      '@lynx-js/qrcode-rsbuild-plugin':
+        specifier: ^0.4.7
+        version: 0.4.7
       '@lynx-js/rspeedy':
         specifier: ^0.13.5
         version: 0.13.6(@rspack/core@1.7.11(@swc/helpers@0.5.21))(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.14))
@@ -332,6 +344,9 @@ importers:
       '@iconify-json/lucide':
         specifier: ^1.2.108
         version: 1.2.108
+      '@lynx-js/qrcode-rsbuild-plugin':
+        specifier: ^0.4.7
+        version: 0.4.7
       '@lynx-js/rspeedy':
         specifier: ^0.13.5
         version: 0.13.6(@rspack/core@1.7.11(@swc/helpers@0.5.21))(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.15))
@@ -387,6 +402,9 @@ importers:
       '@iconify-json/tabler':
         specifier: ^1.2.35
         version: 1.2.35
+      '@lynx-js/qrcode-rsbuild-plugin':
+        specifier: ^0.4.7
+        version: 0.4.7
       '@lynx-js/rspeedy':
         specifier: ^0.13.5
         version: 0.13.6(@rspack/core@1.7.11(@swc/helpers@0.5.21))(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.14))
@@ -442,6 +460,9 @@ importers:
       '@iconify-json/tabler':
         specifier: ^1.2.35
         version: 1.2.35
+      '@lynx-js/qrcode-rsbuild-plugin':
+        specifier: ^0.4.7
+        version: 0.4.7
       '@lynx-js/rspeedy':
         specifier: ^0.13.5
         version: 0.13.6(@rspack/core@1.7.11(@swc/helpers@0.5.21))(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.14))
@@ -540,8 +561,8 @@ importers:
         specifier: ^0.116.5
         version: 0.116.5(@lynx-js/types@3.8.0)(@types/react@18.3.28)
       '@lynx-js/testing-environment':
-        specifier: ^0.1.11
-        version: 0.1.12
+        specifier: ^0.2.1
+        version: 0.2.1
       '@lynx-js/types':
         specifier: ^3.8.0
         version: 3.8.0
@@ -1683,6 +1704,10 @@ packages:
   '@lynx-js/lynx-core@0.1.3':
     resolution: {integrity: sha512-uWzKKYJUK4Q09ZRZxWSAFINnmZb9piWPbvWF9SkLn+3snBl9u/BJa4ekPRcKWAhBmpbtxWH1x27fxe3Q3p5l3Q==}
 
+  '@lynx-js/qrcode-rsbuild-plugin@0.4.7':
+    resolution: {integrity: sha512-7Y4jK5I7lbmzbmmBhXPbbFw+4+mAWkwqzF1+PKLSzgY9BPsnwuEyu4EsrRo7RqyXpgcpunacZC7IgyB6BRDh+g==}
+    engines: {node: '>=18'}
+
   '@lynx-js/react@0.116.5':
     resolution: {integrity: sha512-qhh9mZv7d5hKMQOXoiAOYaWQe/My6MhJ8EcJAi/c9g1EH4TQQoR0Q1o/7dIWj/pZbIiXSt6bgXpTJNQpXr+Qyg==}
     peerDependencies:
@@ -1717,9 +1742,6 @@ packages:
   '@lynx-js/template-webpack-plugin@0.10.9':
     resolution: {integrity: sha512-oQn3TWnCOibwTIOprc/N5lhfTvIusUx+Hs6gxiO3wwhSJri78qP1lj1Ajngs8RsaXM0BeTl2aRxezUCmr3zVbg==}
     engines: {node: '>=18'}
-
-  '@lynx-js/testing-environment@0.1.12':
-    resolution: {integrity: sha512-l//JODf9sEM2TBHKN38/KpLtyrecwzSA2AzNADxiG6VCDDCm+78zsZeqvz/3Y9arUImMj3uUGWWx6wS8D8xnaQ==}
 
   '@lynx-js/testing-environment@0.2.1':
     resolution: {integrity: sha512-Yndi4PntMeZsjcrJ0ZJg3tlB3yMqIPEqceygv7WVu2tiJUJlEMSLFug7ZDtkvYxH6E7J0wSuirkk4AnuBZ5ZUg==}
@@ -10499,6 +10521,8 @@ snapshots:
 
   '@lynx-js/lynx-core@0.1.3': {}
 
+  '@lynx-js/qrcode-rsbuild-plugin@0.4.7': {}
+
   '@lynx-js/react@0.116.5(@lynx-js/types@3.8.0)(@types/react@18.3.28)':
     dependencies:
       '@types/react': 18.3.28
@@ -10580,8 +10604,6 @@ snapshots:
     transitivePeerDependencies:
       - '@lynx-js/lynx-core'
       - tslib
-
-  '@lynx-js/testing-environment@0.1.12': {}
 
   '@lynx-js/testing-environment@0.2.1': {}
 

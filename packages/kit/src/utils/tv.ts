@@ -1,4 +1,5 @@
 import { createTV as createTVOriginal } from 'tailwind-variants'
+import type { AppConfig } from '../types'
 
 /**
  * Public alias for the `createTV` config arg. `tailwind-variants` 0.3.x declares
@@ -20,3 +21,24 @@ export const createTv = (config: TVConfig = {}) => createTVOriginal(config)
  * (storybook, tests). Mirrors `tailwind-variants`' own default `tv` export.
  */
 export const tv = createTv()
+
+/**
+ * Memoize a component's `buildX(appConfig)` theme factory on `appConfig`
+ * identity. Building a factory (`tv({ extend: tv(theme(colors)) })`) is pure
+ * for a given config but was being re-run per component INSTANCE — on Lynx's
+ * interpreter that cost is visible whenever a screenful of components mounts
+ * (e.g. a tab switch). The config object is stable per app (`VyUI.install()`
+ * provides it once; the test fallback is a module constant), so one build per
+ * app per component type is the correct cardinality.
+ */
+export function defineThemeBuilder<T>(build: (appConfig: AppConfig) => T): (appConfig: AppConfig) => T {
+  const cache = new WeakMap<AppConfig, T>()
+  return (appConfig: AppConfig) => {
+    let factory = cache.get(appConfig)
+    if (factory === undefined) {
+      factory = build(appConfig)
+      cache.set(appConfig, factory)
+    }
+    return factory
+  }
+}

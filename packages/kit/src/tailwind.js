@@ -3,8 +3,9 @@
  *
  * Wires the semantic color names used by every theme file (`bg-primary-500`,
  * `text-error-50`, etc.) to the CSS variables defined in `style.css`. Also
- * pre-safelists the color × shade × utility combinations that the themes
- * generate via template literals (Tailwind's static scanner cannot see them).
+ * safelists the EXACT classes the themes emit for the configured color set
+ * (collected by walking the packaged tv configs) — the themes build them via
+ * template literals, which Tailwind's static scanner cannot see.
  *
  * Plain `.js` (CJS-compatible) so Tailwind's jiti-based config loader can
  * import it through package `exports` on any Node version. The color list is
@@ -32,6 +33,10 @@
  */
 
 import { COLORS, NEUTRAL, SHADES } from './theme/color-constants.js'
+// Explicit `.ts` so the source plane resolves under jiti (the example apps'
+// tailwind configs import `src/tailwind.js` directly, and jiti's CJS resolver
+// won't remap `.js` → `.ts`). Vite rewrites this to `./theme/index.js` in dist.
+import * as themeExports from './theme/index.ts'
 
 // Re-exported so a Tailwind config can extend the default set without pulling in
 // the component barrel (`@vyui/kit`) through jiti:
@@ -57,6 +62,89 @@ export { COLORS, NEUTRAL } from './theme/color-constants.js'
  * ```
  */
 export const VYUI_UI_STATES = ['on', 'off', 'completed', 'highlighted', 'inactive', 'dragging']
+
+// Theme-barrel exports that are not tailwind-variants theme configs.
+const NON_THEME_EXPORTS = new Set(['icons', 'ALL_COLORS', 'COLORS', 'NEUTRAL', 'resolveColors'])
+
+/**
+ * Styled components rendered INSIDE other kit components (the `import Vy*`
+ * graph in `src/components`): a consumer safelisting `components: ['button']`
+ * must also get `avatar`'s classes (Button renders a leading `VyAvatar`), and
+ * so on transitively. Keys/values are `@vyui/kit/theme` export names.
+ */
+const THEME_DEPS = {
+  actionSheet: ['avatar'],
+  avatar: ['chip'],
+  avatarGroup: ['avatar'],
+  badge: ['avatar'],
+  button: ['avatar'],
+  calendar: ['alert'],
+  input: ['avatar'],
+  modal: ['button'],
+  textarea: ['avatar'],
+  toast: ['avatar', 'button'],
+}
+
+/** Expand a component list through `THEME_DEPS` to its transitive closure. */
+const expandThemeDeps = (names) => {
+  const seen = new Set()
+  const queue = [...names]
+  while (queue.length) {
+    const name = queue.pop()
+    if (seen.has(name)) continue
+    seen.add(name)
+    queue.push(...(THEME_DEPS[name] ?? []))
+  }
+  return seen
+}
+
+/** Add every whitespace-separated class token found in a tv class value
+ * (string / array / slot-map object) to `into`. */
+const collectStrings = (node, into) => {
+  if (typeof node === 'string') {
+    for (const cls of node.split(/\s+/)) if (cls) into.add(cls)
+  }
+  else if (Array.isArray(node)) {
+    for (const item of node) collectStrings(item, into)
+  }
+  else if (node && typeof node === 'object') {
+    for (const value of Object.values(node)) collectStrings(value, into)
+  }
+}
+
+/**
+ * Collect the EXACT set of class names every packaged theme emits for a given
+ * color list, by walking the tv configs (base/slots/variants/compoundVariants
+ * — `defaultVariants` holds variant NAMES, not classes). Builder themes are
+ * invoked with the resolved colors, so template-literal color classes
+ * (`bg-${c}-500`, `group-ui-active:text-${c}-500`, …) come out as concrete
+ * strings — the classes Tailwind's static scanner cannot see.
+ *
+ * This replaces the previous `(bg|text|ring|border) × color × shade × variant`
+ * safelist patterns, which emitted every COMBINATION (~11k rules, ~550 KB+ of
+ * CSS the device style engine had to ingest) when the themes only ever
+ * reference a small fraction.
+ */
+const collectThemeSafelist = (colors, components) => {
+  const only = components ? expandThemeDeps(components) : undefined
+  const classes = new Set()
+  for (const [name, theme] of Object.entries(themeExports)) {
+    if (NON_THEME_EXPORTS.has(name)) continue
+    if (only && !only.has(name)) continue
+    const config = typeof theme === 'function' ? theme(colors) : theme
+    if (!config || typeof config !== 'object') continue
+    collectStrings(config.base, classes)
+    collectStrings(config.slots, classes)
+    for (const group of Object.values(config.variants ?? {})) {
+      for (const value of Object.values(group ?? {})) collectStrings(value, classes)
+    }
+    for (const compound of [...(config.compoundVariants ?? []), ...(config.compoundSlots ?? [])]) {
+      collectStrings(compound.class, classes)
+      collectStrings(compound.className, classes)
+    }
+  }
+  return [...classes].sort()
+}
 
 const buildScale = (name, neutral, shades) =>
   Object.fromEntries([
@@ -95,6 +183,10 @@ const RADIUS_SCALE = {
  * @param {string[]} [options.colors] Configurable semantic colors (no neutral).
  * @param {string}   [options.neutral] Neutral color name.
  * @param {number[]} [options.shades] Tailwind shade steps.
+ * @param {string[]} [options.components] Restrict the theme safelist to these
+ *   components (`@vyui/kit/theme` export names, e.g. `['button', 'tabs']`).
+ *   Components they render internally are pulled in automatically
+ *   (`THEME_DEPS`). Omit to safelist every packaged theme.
  * @param {object}   [options.ui] Normalized config; `ui.colors` overrides `colors`.
  * @returns {Partial<TailwindConfig>}
  */
@@ -102,7 +194,7 @@ export function createVyuiPreset(options = {}) {
   // Unwrap the normalized `{ ui }` config from defineVyuiConfig; fall back to
   // the flat `{ colors, neutral, shades }` form for direct callers.
   const src = options.ui ?? options
-  const { colors = COLORS, neutral = NEUTRAL, shades = SHADES } = src
+  const { colors = COLORS, neutral = NEUTRAL, shades = SHADES, components } = src
 
   // Silent "class resolves to nothing" is the worst DX here: a semantic color
   // outside the package set generates utilities but only paints if the consumer
@@ -117,6 +209,15 @@ export function createVyuiPreset(options = {}) {
         + 'utilities, but only resolve if you also define matching '
         + '`--ui-color-<name>-*` CSS vars and list them in your runtime '
         + '`theme.colors` (provideVyUI / app.use). Otherwise the classes paint nothing.',
+      )
+    }
+    // Same failure mode for a typo'd component name: the filter would silently
+    // drop a real theme's classes.
+    const unknown = (components ?? []).filter((c) => !(c in themeExports) || NON_THEME_EXPORTS.has(c))
+    if (unknown.length > 0) {
+      console.warn(
+        `[vyui/tailwind] unknown component theme(s) in \`components\`: [${unknown.join(', ')}]. `
+        + 'Names must match the `@vyui/kit/theme` exports (e.g. `button`, `actionSheet`).',
       )
     }
   }
@@ -193,75 +294,23 @@ export function createVyuiPreset(options = {}) {
       },
     },
     safelist: [
-      {
-        pattern: new RegExp(
-          `(bg|text|ring|border)-(${allColors.join('|')})-(${shades.join('|')})`,
-        ),
-        // State variants the kit themes pair with dynamic color utilities. CSS
-        // inheritance is off on Lynx, so state-driven foreground colors live on
-        // child text/icon slots and read the parent's state via the `group-*`
-        // forms — both self and group forms must be safelisted or the scanner
-        // purges them. The `ui-*` class variants replace Lynx-incompatible
-        // `data-[state=…]` selectors (issue #9); the `data-[…]` entries remain
-        // only for not-yet-migrated themes and can be dropped once #9 lands.
-        variants: [
-          'hover',
-          'active',
-          'focus',
-          'disabled',
-          'ui-highlighted',
-          'ui-active',
-          'ui-on',
-          'ui-open',
-          'ui-checked',
-          'group-ui-highlighted',
-          'group-ui-active',
-          'group-ui-completed',
-          'group-ui-inactive',
-          'group-ui-on',
-          'group-ui-open',
-          'group-ui-checked',
-          'data-[highlighted]',
-          'data-[state=active]',
-          'data-[state=on]',
-          'data-[state=open]',
-          'data-[state=checked]',
-          'group-data-[highlighted]',
-          'group-data-[state=active]',
-          'group-data-[state=completed]',
-          'group-data-[state=inactive]',
-          'group-data-[state=on]',
-          'group-data-[state=open]',
-          'group-data-[state=checked]',
-        ],
-      },
+      // Every class the packaged themes emit for THIS color set — variant
+      // prefixes (`active:`, `group-ui-*:`) and arbitrary values
+      // (`shadow-[…var(--ui-color-primary-200)]`) included, since they sit in
+      // the theme strings themselves. Covers a consumer who only pulls the
+      // preset without scanning `@vyui/kit` sources.
+      ...collectThemeSafelist(allColors, components),
       // Semantic tokens — role-based utilities (`text-muted`, `bg-elevated`,
-      // `border-default`, …). Static strings in the theme source, so a consumer
-      // scanning `@vyui/kit` dist already gets them; safelisted too for
-      // consumers who only pull the preset. The pattern over-matches (e.g.
-      // `text-elevated`) but Tailwind only emits names backed by a real utility.
+      // `border-default`, …) kept as a pattern (not just the themes' usages)
+      // so consumers can write any of them without scanning the kit. The
+      // pattern over-matches (e.g. `text-elevated`) but Tailwind only emits
+      // names backed by a real utility.
       {
         pattern: /(bg|text|border)-(default|muted|elevated|accented|toned|dimmed|highlighted|inverted)/,
-        variants: [
-          'active',
-          'disabled',
-          'placeholder',
-          'ui-open',
-          'ui-highlighted',
-          'group-ui-inactive',
-          'group-ui-checked',
-          'group-ui-open',
-          'group-ui-highlighted',
-          'group-ui-dragging',
-        ],
       },
       'divide-default',
       'divide-muted',
       'fill-default',
-      // Focus/highlight ring — generated as a template literal in
-      // `theme/input.ts`; arbitrary values can't be expressed in the regex
-      // pattern above, so safelist the exact strings (keep in sync).
-      ...allColors.map((c) => `shadow-[0_0_0_2px_var(--ui-color-${c}-200)]`),
       'text-white',
     ],
   }

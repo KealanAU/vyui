@@ -45,6 +45,10 @@ export type ExtrapolationType =
   | ExtrapolationAsString
   | undefined
 
+// getVal / isExtrapolate / validateType / internalInterpolate below are
+// duplicated (not shared) with ./interpolation — that file needs a literal
+// `'main thread'` directive per function, so it can't import these. Keep
+// both copies in sync by hand.
 function getVal(
   type: Extrapolation,
   coef: number,

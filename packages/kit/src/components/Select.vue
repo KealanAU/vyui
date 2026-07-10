@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/select'
 import { resolveColors } from '../theme/colors'
 import type { SheetDirection } from '@vyui/core'
@@ -9,10 +10,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.select`.
  */
-export const buildSelect = (appConfig: AppConfig) => {
+export const buildSelect = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).select as Partial<ReturnType<typeof theme>> | undefined
   return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
+})
 
 type SelectVariants = VariantProps<ReturnType<typeof buildSelect>>
 
@@ -83,6 +84,10 @@ export interface SelectProps {
   ui?: Partial<Record<keyof ReturnType<typeof buildSelect>['slots'], any>>
 }
 
+export interface SelectEmits {
+  (e: 'update:modelValue', value: string): void
+}
+
 export interface SelectSlots {
   default(props: { modelValue?: string, open: boolean }): any
   /** Receives `iconColor` so custom icons can match the trigger's resolved theme color. */
@@ -123,7 +128,7 @@ const props = withDefaults(defineProps<SelectProps>(), {
   snapPoints: () => [0.5],
   handle: true,
 })
-const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const emit = defineEmits<SelectEmits>()
 defineSlots<SelectSlots>()
 
 const slots = useSlots()

@@ -20,10 +20,13 @@ import { type IconFg, iconFgFromToken } from './iconColor'
 // the label uses `group-data-[state=…]:`. Indicator keeps its `bg-*` surface.
 
 // `pill`: solid indicator behind the active trigger, light text on top. The
-// `active:` press-feedback that the original carried on the trigger is dropped
-// here: it relied on the trigger's own `active:` pseudo, which doesn't translate
-// to the child label as a reliable `group-active:` on Lynx. State colors use
-// `group-data-[state=…]:` (the trigger owns the `group` + `data-state`).
+// original's color-based `active:` press-feedback stays dropped (it relied on
+// `group-active:` reaching the child label, which is unreliable on Lynx);
+// press feedback is instead `active:opacity-*` on the trigger itself — element
+// opacity needs no CSS inheritance and paints on the main thread the moment
+// the finger lands, long before the BG round-trip commits the switch. State
+// colors use `group-data-[state=…]:` (the trigger owns the `group` +
+// `data-state`).
 const pillLabel = (_c: string) =>
   `group-ui-active:text-white group-ui-inactive:text-muted`
 
@@ -60,7 +63,7 @@ export default (colors: Color[]) => ({
     list: 'relative flex flex-row min-w-0 max-w-full overflow-hidden p-1 group',
     indicator: 'absolute transition-[translate,width] duration-200',
     trigger:
-      'group relative flex flex-row items-center shrink-0 min-w-0 font-medium rounded-md disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
+      'group relative flex flex-row items-center shrink-0 min-w-0 font-medium rounded-md active:opacity-60 disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
     content: 'w-full min-w-0',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',

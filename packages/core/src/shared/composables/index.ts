@@ -22,8 +22,6 @@ export type { DragPoint } from './dragGesture.js'
 export { useAnimate } from './useAnimate.js'
 export type { SlideDirection } from './useAnimate.js'
 
-export { useMtSmoke } from './useMtSmoke.js'
-
 export {
   BOUNCE_CONSTANTS,
   BOUNCING_STATUS,

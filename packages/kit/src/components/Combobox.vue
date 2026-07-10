@@ -10,6 +10,7 @@
  * Disable filtering with `:searchable="false"` to get a plain picker.
  */
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/combobox'
 import { resolveColors } from '../theme/colors'
 import type { SheetDirection } from '@vyui/core'
@@ -19,10 +20,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.combobox`.
  */
-export const buildCombobox = (appConfig: AppConfig) => {
+export const buildCombobox = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).combobox as Partial<ReturnType<typeof theme>> | undefined
   return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
+})
 
 type ComboboxVariants = VariantProps<ReturnType<typeof buildCombobox>>
 
@@ -101,6 +102,10 @@ export interface ComboboxProps {
   ui?: Partial<Record<keyof ReturnType<typeof buildCombobox>['slots'], any>>
 }
 
+export interface ComboboxEmits {
+  (e: 'update:modelValue', value: string | number | (string | number)[]): void
+}
+
 export interface ComboboxSlots {
   /** Trigger value render override. Defaults to label of the selected item(s). */
   default(props: { modelValue: any, open: boolean }): any
@@ -145,7 +150,7 @@ const props = withDefaults(defineProps<ComboboxProps>(), {
   snapPoints: () => [0.9],
   handle: true,
 })
-const emit = defineEmits<{ 'update:modelValue': [value: any] }>()
+const emit = defineEmits<ComboboxEmits>()
 defineSlots<ComboboxSlots>()
 
 const slots = useSlots()

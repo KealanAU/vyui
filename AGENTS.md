@@ -28,4 +28,4 @@ The version step (`pnpm version-packages`) also runs `tools/gen-changelog-docs.t
 
 - `pnpm --filter @vyui/core test` / `pnpm --filter @vyui/kit test` for touched packages.
 - `pnpm --filter <pkg> typecheck` for any package changed.
-- If you touched `packages/core/src/**`, verify the demo via `dev:local` against a fresh dist.
+- If you touched `packages/core/src/**`, verify `kit-demo` still runs cleanly (it's source-aliased, no rebuild needed).

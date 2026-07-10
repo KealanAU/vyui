@@ -1,5 +1,6 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
+import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/radioGroup'
 import { resolveColors } from '../theme/colors'
 import type { AppConfig } from '../types'
@@ -8,10 +9,10 @@ import type { AppConfig } from '../types'
  * Resolve a per-app `tv` factory by merging the package default theme with
  * user overrides pulled from `appConfig.ui.radioGroup`.
  */
-export const buildRadioGroup = (appConfig: AppConfig) => {
+export const buildRadioGroup = defineThemeBuilder((appConfig: AppConfig) => {
   const overrides = (appConfig.ui as Record<string, unknown>).radioGroup as Partial<ReturnType<typeof theme>> | undefined
   return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
+})
 
 type RadioGroupVariants = VariantProps<ReturnType<typeof buildRadioGroup>>
 
@@ -104,15 +105,36 @@ function normalizeItem(item: RadioGroupItem) {
 const normalizedItems = computed(() => (props.items ?? []).map(normalizeItem))
 
 // `checked` per item drives the per-color compound variant for the active dot.
-function itemUi(itemValue: RadioGroupValue, itemDisabled?: boolean) {
-  return buildRadioGroup(appConfig)({
-    color: props.color,
-    size: props.size,
-    orientation: props.orientation,
-    disabled: props.disabled || itemDisabled,
-    checked: props.modelValue === itemValue,
-  })
-}
+// Items only differ by (checked × disabled), so the resolved class strings are
+// cached per state: an N-item group pays 1–2 tv invocations per render instead
+// of 2 slot calls per item (the invocations are the expensive part on Lynx's
+// interpreter). The cache rebuilds when the variant-shaping props change; the
+// checked/disabled args are read at render time so `modelValue` flips stay
+// reactive without invalidating it.
+const itemStateUi = computed(() => {
+  const factory = buildRadioGroup(appConfig)
+  const { color, size, orientation, ui: uiProp } = props
+  const make = (checked: boolean, disabled: boolean) => {
+    const invoked = factory({ color, size, orientation, disabled, checked })
+    return {
+      base: invoked.base({ class: uiProp?.base }),
+      indicator: invoked.indicator({ class: uiProp?.indicator }),
+    }
+  }
+  const cache = new Map<string, ReturnType<typeof make>>()
+  return (checked: boolean, disabled: boolean) => {
+    const key = `${checked}|${disabled}`
+    let hit = cache.get(key)
+    if (!hit) {
+      hit = make(checked, disabled)
+      cache.set(key, hit)
+    }
+    return hit
+  }
+})
+
+const itemUi = (itemValue: RadioGroupValue, itemDisabled?: boolean) =>
+  itemStateUi.value(props.modelValue === itemValue, !!(props.disabled || itemDisabled))
 </script>
 
 <template>
@@ -144,10 +166,10 @@ function itemUi(itemValue: RadioGroupValue, itemDisabled?: boolean) {
             :id="item.id"
             :value="item.value"
             :disabled="item.disabled"
-            :class="itemUi(item.value, item.disabled).base({ class: props.ui?.base })"
+            :class="itemUi(item.value, item.disabled).base"
           >
             <RadioGroupIndicator
-              :class="itemUi(item.value, item.disabled).indicator({ class: props.ui?.indicator })"
+              :class="itemUi(item.value, item.disabled).indicator"
             />
           </RadioGroupItem>
         </view>
