@@ -550,9 +550,6 @@ importers:
       tailwind-merge:
         specifier: ^2.5.4
         version: 2.5.4
-      vue-component-type-helpers:
-        specifier: ^3.3.1
-        version: 3.3.1
     devDependencies:
       '@iconify/vue':
         specifier: ^5.0.1

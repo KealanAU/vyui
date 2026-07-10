@@ -10,9 +10,6 @@ export { useElementRect } from './useElementRect.js'
 
 export { useFocus } from './useFocus.js'
 
-export { useScrollTo } from './useScrollTo.js'
-export type { ScrollAxis, ScrollOptions } from './useScrollTo.js'
-
 export { useDismissableLayer } from './useDismissableLayer.js'
 export type { DismissableLayerEmits, DismissableLayerEvent, UseDismissableLayerOptions } from './useDismissableLayer.js'
 
