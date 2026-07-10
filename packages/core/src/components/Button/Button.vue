@@ -4,6 +4,7 @@
      Ported from `lynx-family/lynx-ui` `packages/lynx-ui-button/src/Button.tsx`
      (Apache 2.0). React render-prop maps to a Vue scoped default slot. -->
 <script lang="ts">
+import type { TouchEvent } from '@lynx-js/types'
 import type { AsTag } from '@/components/Primitive'
 
 export interface ButtonProps {
@@ -19,8 +20,8 @@ export interface ButtonProps {
 }
 
 export type ButtonEmits = {
-  /** Fires on tap when not disabled. */
-  tap: []
+  /** Fires on tap when not disabled, forwarding the Lynx tap event. */
+  tap: [event: TouchEvent]
 }
 </script>
 
@@ -61,9 +62,12 @@ const touchHandlers = useTouchEmulation({
   },
 })
 
-function onTap() {
+// Forward the event: listeners merged in via `asChild` (e.g. ToastClose's
+// `@tap.stop`) may be modifier-wrapped and dereference it — emitting bare
+// crashes them with `undefined.stopPropagation`.
+function onTap(event: TouchEvent) {
   if (props.disabled) return
-  emits('tap')
+  emits('tap', event)
 }
 
 provideButtonContext({

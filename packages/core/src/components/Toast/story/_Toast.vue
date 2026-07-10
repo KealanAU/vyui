@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Button } from '@/components/Button'
 import {
   ToastAction,
   ToastClose,
@@ -54,6 +55,14 @@ const toastBindings = (() => {
         </ToastAction>
         <ToastClose data-testid="close">
           <text>x</text>
+        </ToastClose>
+        <!-- The kit Toast's real close path: ToastClose's modifier-wrapped tap
+             handler rides asChild onto Button, which re-emits it — regression
+             coverage for the emit dropping the event (undefined.stopPropagation). -->
+        <ToastClose as-child>
+          <Button data-testid="close-as-child-button">
+            <text>x</text>
+          </Button>
         </ToastClose>
         <view data-testid="expand-btn" @tap="expand">
           <text>expand</text>

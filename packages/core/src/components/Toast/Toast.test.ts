@@ -46,6 +46,15 @@ describe('Toast — close behaviour', () => {
     expect(q(container, 'last-open-event')?.textContent).toBe('false')
   })
 
+  it('ToastClose as-child over Button closes the toast (modifier handler survives the emit)', async () => {
+    const { container } = render(Toast)
+    await waitForUpdate()
+    fireEvent.tap(q(container, 'close-as-child-button')!)
+    await waitForUpdate()
+    expect(q(container, 'toast')).toBeNull()
+    expect(q(container, 'last-open-event')?.textContent).toBe('false')
+  })
+
   it('ToastAction closes AND emits action', async () => {
     const { container } = render(Toast)
     await waitForUpdate()
