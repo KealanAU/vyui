@@ -60,15 +60,6 @@ export * from './components/Sortable'
 export * from './components/SwipeAction'
 export * from './components/Swiper'
 
-export {
-  type Components,
-  components,
-  type Originals,
-  originals,
-  type Utilities,
-  utilities,
-} from './constants'
-
 // Lynx-native composables (universal — used across tiers)
 export * from './shared/composables'
 
@@ -89,7 +80,6 @@ export {
   useId,
   useLocale,
   useStateMachine,
-  withDefault,
 } from './shared'
 export {
   type AcceptableValue,

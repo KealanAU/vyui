@@ -11,8 +11,8 @@
  * `{}` (truthy but empty) — short-circuiting before the top-level
  * `clientX/clientY` ever gets read.
  *
- * Both bugs hit at least 6 component files (Splitter, Drawer, Slider H/V,
- * ColorArea, ColorSlider). This module is the single source of truth.
+ * Both bugs hit every component that reads drag coordinates (Slider H/V and
+ * any future drag surface). This module is the single source of truth.
  *
  * Conventions
  * -----------
@@ -21,8 +21,8 @@
  *   `boundingClientRect` UI method, viewport-relative). Mixing element- or
  *   page-relative coords with a viewport rect produces a wrong delta.
  * - A `pageX/pageY` fallback is included so callers that compare *deltas*
- *   (Splitter / Drawer) keep working even on event shapes that omit
- *   `clientX/clientY`. The delta math is correct as long as both ends of the
+ *   keep working even on event shapes that omit `clientX/clientY`. The delta
+ *   math is correct as long as both ends of the
  *   subtraction live in the same space.
  *
  * Usage

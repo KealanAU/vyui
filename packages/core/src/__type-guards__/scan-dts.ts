@@ -4,7 +4,7 @@
 // `@vyui/core`'s public declarations (e.g. `HTMLElement`, `KeyboardEvent`) breaks
 // their `tsc`. We can't fully drop the DOM lib from the *emit* config — internal
 // web-fallback paths legitimately touch `window`/`ResizeObserver`/`offsetWidth`
-// (see `shared/useSize.ts`, `shared/utils/convertToPx.ts`) — so instead we assert
+// (see `shared/useSize.ts`) — so instead we assert
 // on the artifact: the shipped `.d.ts` text must name no DOM type.
 
 import { readdirSync, readFileSync } from 'node:fs'

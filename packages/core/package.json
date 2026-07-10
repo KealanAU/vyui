@@ -95,8 +95,7 @@
     "@vueuse/core": "^14.1.0",
     "@vueuse/shared": "^14.1.0",
     "ohash": "^2.0.11",
-    "tailwind-merge": "^2.5.4",
-    "vue-component-type-helpers": "^3.3.1"
+    "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
     "@iconify/vue": "^5.0.1",
