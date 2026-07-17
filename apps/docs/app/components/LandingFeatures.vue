@@ -8,7 +8,7 @@ const features = [
   {
     icon: 'i-lucide-layers',
     title: '@vyui/kit — Styled',
-    description: '48 styled components on top of @vyui/core — VyButton, VyDrawer, VyModal, VyToast, VyIsland, and more. Themeable via Tailwind Variants and an app-config object.',
+    description: '47 styled components on top of @vyui/core — VyButton, VyDrawer, VyModal, VyToast, VyIsland, and more. Themeable via Tailwind Variants and an app-config object.',
   },
   {
     icon: 'i-lucide-blocks',
