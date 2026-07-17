@@ -28,7 +28,8 @@ Use `icon`, `label`, or both. Buttons inherit their size from the nearest `VyIsl
 
 ```vue
 <script setup lang="ts">
-import { VyIsland, VyIslandButton } from '@vyui/kit'
+import { VyIsland } from '@vyui/kit/island'
+import { VyIslandButton } from '@vyui/kit/island-button'
 </script>
 
 <template>
@@ -48,7 +49,8 @@ Set `value` to connect the button to its parent island's `v-model:value`. Matchi
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyIsland, VyIslandButton } from '@vyui/kit'
+import { VyIsland } from '@vyui/kit/island'
+import { VyIslandButton } from '@vyui/kit/island-button'
 
 const active = ref<string | number | null>('inbox')
 </script>
@@ -69,7 +71,8 @@ Declarative behavior props can be combined. On tap, the button applies `value`, 
 
 ```vue
 <script setup lang="ts">
-import { VyIsland, VyIslandButton } from '@vyui/kit'
+import { VyIsland } from '@vyui/kit/island'
+import { VyIslandButton } from '@vyui/kit/island-button'
 </script>
 
 <template>

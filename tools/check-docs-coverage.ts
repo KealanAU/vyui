@@ -14,7 +14,7 @@
  * Usage:
  *   tsx tools/check-docs-coverage.ts
  */
-import { readdirSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -54,6 +54,31 @@ const docPages = new Set(
     .map(f => f.replace(/\.md$/, '')),
 )
 
+// Guard: component docs must teach the slim deep-import path
+// (`@vyui/kit/button`), not the barrel — a single barrel component import ships
+// the whole set on Vue-Lynx (see the installation guide). Names without a deep
+// entry (the `VyUI` plugin, types) stay on the barrel and are allowed.
+const kitSubpaths = Object.keys(
+  JSON.parse(readFileSync(resolve(root, 'packages/kit/package.json'), 'utf8')).exports as Record<string, unknown>,
+)
+  .filter(k => k.startsWith('./') && !k.includes('.', 2))
+  .map(k => k.slice(2))
+
+const hasDeepEntry = (name: string): boolean => {
+  if (!name.startsWith('Vy')) return false
+  const kebab = toKebab(name.slice(2))
+  return kitSubpaths.some(s => kebab === s || kebab.startsWith(`${s}-`))
+}
+
+const barrelImports: string[] = []
+for (const file of readdirSync(contentDir).filter(f => f.endsWith('.md'))) {
+  const text = readFileSync(resolve(contentDir, file), 'utf8')
+  for (const [, names] of text.matchAll(/import \{([^}]+)\} from '@vyui\/kit'/g)) {
+    const offenders = names.split(',').map(n => n.trim().replace(/^type /, '')).filter(hasDeepEntry)
+    if (offenders.length) barrelImports.push(`  - ${file}: ${offenders.join(', ')}`)
+  }
+}
+
 const missing = [...componentPages].filter(p => !docPages.has(p) && !KNOWN_GAPS.has(p)).sort()
 const staleGaps = [...KNOWN_GAPS].filter(p => docPages.has(p)).sort()
 const orphanGaps = [...KNOWN_GAPS].filter(p => !componentPages.has(p)).sort()
@@ -81,6 +106,14 @@ if (orphanGaps.length) {
     `KNOWN_GAPS references components that no longer exist — remove them from `
     + `tools/check-docs-coverage.ts:\n`
     + orphanGaps.map(p => `  - ${p}`).join('\n'),
+  )
+}
+
+if (barrelImports.length) {
+  errors.push(
+    `Component docs import components from the '@vyui/kit' barrel — use the deep `
+    + `entry (e.g. \`@vyui/kit/button\`) so consumers ship only what they use:\n`
+    + barrelImports.join('\n'),
   )
 }
 

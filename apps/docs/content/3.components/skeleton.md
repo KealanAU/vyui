@@ -26,7 +26,7 @@ height: 140px
 
 ```vue
 <script setup lang="ts">
-import { VySkeleton } from '@vyui/kit'
+import { VySkeleton } from '@vyui/kit/skeleton'
 </script>
 
 <template>

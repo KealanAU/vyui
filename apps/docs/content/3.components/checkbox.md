@@ -22,7 +22,7 @@ Bind `v-model` to a boolean, or set it to `'indeterminate'` for the mixed state.
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyCheckbox } from '@vyui/kit'
+import { VyCheckbox } from '@vyui/kit/checkbox'
 
 const accepted = ref(false)
 </script>

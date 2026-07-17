@@ -132,7 +132,8 @@ height: 180px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyInput } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyInput } from '@vyui/kit/input'
 
 const value = ref('hello@vyui.dev')
 const copied = ref(false)
@@ -207,7 +208,8 @@ The kit wrapper exposes its core input instance through `inputRef`.
 
 ```vue
 <script setup lang="ts">
-import { VyButton, VyInput } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyInput } from '@vyui/kit/input'
 import { ref } from 'vue'
 
 const input = ref<any>(null)

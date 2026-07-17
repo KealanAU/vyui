@@ -22,7 +22,10 @@ Provide `defaultValues`, read live state from the default slot, and call the exp
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyForm, VyFormField, VyInput, VyButton } from '@vyui/kit'
+import { VyForm } from '@vyui/kit/form'
+import { VyFormField } from '@vyui/kit/form-field'
+import { VyInput } from '@vyui/kit/input'
+import { VyButton } from '@vyui/kit/button'
 
 const form = ref()
 

@@ -34,7 +34,7 @@ height: 120px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySlider } from '@vyui/kit'
+import { VySlider } from '@vyui/kit/slider'
 
 const volume = ref(40)
 </script>
@@ -53,7 +53,7 @@ Use an array to render one thumb per value.
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySlider } from '@vyui/kit'
+import { VySlider } from '@vyui/kit/slider'
 
 const price = ref([20, 80])
 </script>

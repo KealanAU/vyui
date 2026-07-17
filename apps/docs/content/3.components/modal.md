@@ -31,7 +31,8 @@ Built on the headless [`Dialog`](/components/dialog) primitive from `@vyui/core`
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyModal } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyModal } from '@vyui/kit/modal'
 
 const open = ref(false)
 </script>

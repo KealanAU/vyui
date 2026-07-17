@@ -68,7 +68,7 @@ Use `item.slot` to select a named slot for one item. Every item slot receives `i
 
 ```vue
 <script setup lang="ts">
-import { VyAccordion } from '@vyui/kit'
+import { VyAccordion } from '@vyui/kit/accordion'
 
 const items = [
   { value: 'profile', label: 'Profile', slot: 'profile' },

@@ -33,7 +33,9 @@ Give each screen a `VyTrayView` with a unique `id`. Only the active view mounts,
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyTray, VyTrayView } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyTray } from '@vyui/kit/tray'
+import { VyTrayView } from '@vyui/kit/tray-view'
 
 const open = ref(false)
 </script>
@@ -97,7 +99,7 @@ Any component rendered inside the tray can drive it imperatively with `useTray()
 
 ```vue
 <script setup lang="ts">
-import { useTray } from '@vyui/kit'
+import { useTray } from '@vyui/kit/tray'
 
 const tray = useTray()
 // tray.setView('confirm'); tray.goBack(); tray.close()

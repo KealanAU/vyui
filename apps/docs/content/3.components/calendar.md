@@ -35,7 +35,7 @@ Use `v-model` with a `YYYY-MM-DD` string. Use `default-month` to choose the init
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyCalendar } from '@vyui/kit'
+import { VyCalendar } from '@vyui/kit/calendar'
 
 const date = ref('2026-07-05')
 </script>

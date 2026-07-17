@@ -37,7 +37,8 @@ Styled on top of the `@vyui/core` Sortable primitives, whose underlying gesture 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyIcon, VySortable } from '@vyui/kit'
+import { VyIcon } from '@vyui/kit/icon'
+import { VySortable } from '@vyui/kit/sortable'
 
 const tasks = ref([
   { id: 'design', label: 'Design the screen' },

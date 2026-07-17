@@ -30,7 +30,7 @@ height: 160px
 
 ```vue
 <script setup lang="ts">
-import { VyPinInput } from '@vyui/kit'
+import { VyPinInput } from '@vyui/kit/pin-input'
 import { ref } from 'vue'
 
 const code = ref('')

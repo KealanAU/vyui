@@ -27,7 +27,7 @@ height: 220px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyTabs } from '@vyui/kit'
+import { VyTabs } from '@vyui/kit/tabs'
 
 const active = ref('overview')
 const items = [
@@ -65,7 +65,8 @@ Set an item's `slot` to render a different named slot for its panel. Every conte
 
 ```vue
 <script setup lang="ts">
-import { VyButton, VyTabs } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyTabs } from '@vyui/kit/tabs'
 
 const items = [
   { label: 'Profile', value: 'profile', slot: 'profile' },
@@ -104,7 +105,7 @@ Vertical tabs place the trigger rail beside the active panel. Give the component
 
 ```vue
 <script setup lang="ts">
-import { VyTabs } from '@vyui/kit'
+import { VyTabs } from '@vyui/kit/tabs'
 
 const sections = [
   { label: 'General', value: 'general', icon: 'i-lucide-settings', content: 'General preferences' },

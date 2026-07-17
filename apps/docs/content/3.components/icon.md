@@ -173,7 +173,7 @@ Pass a Vue component instead of a string to render it directly.
 
 ```vue
 <script setup lang="ts">
-import { VyIcon } from '@vyui/kit'
+import { VyIcon } from '@vyui/kit/icon'
 import BrandMark from './BrandMark.vue'
 </script>
 

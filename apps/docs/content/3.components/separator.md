@@ -26,7 +26,7 @@ height: 220px
 
 ```vue
 <script setup lang="ts">
-import { VySeparator } from '@vyui/kit'
+import { VySeparator } from '@vyui/kit/separator'
 </script>
 
 <template>

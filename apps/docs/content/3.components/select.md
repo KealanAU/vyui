@@ -27,7 +27,7 @@ height: 240px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySelect } from '@vyui/kit'
+import { VySelect } from '@vyui/kit/select'
 
 const value = ref<string>()
 const items = ['Vue', 'React', 'Svelte']
@@ -51,7 +51,7 @@ Pass nested arrays to render multiple groups. Structural rows use `type: 'label'
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySelect } from '@vyui/kit'
+import { VySelect } from '@vyui/kit/select'
 
 const value = ref('stockholm')
 const items = [
@@ -80,7 +80,7 @@ Use `valueKey` and `labelKey` when the object shape comes from an API.
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySelect } from '@vyui/kit'
+import { VySelect } from '@vyui/kit/select'
 
 const value = ref('pro')
 const plans = [

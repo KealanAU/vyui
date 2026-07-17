@@ -28,7 +28,8 @@ The default presentation is a bottom sheet. Use controlled state when content ne
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyPopover } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyPopover } from '@vyui/kit/popover'
 
 const open = ref(false)
 </script>
@@ -61,7 +62,8 @@ Configure the sheet height with viewport fractions. The core sheet sorts snap po
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyPopover } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyPopover } from '@vyui/kit/popover'
 
 const open = ref(false)
 </script>
@@ -96,7 +98,8 @@ Use anchored mode for tablet or wide-screen interfaces. `side`, `align`, and `si
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyPopover } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyPopover } from '@vyui/kit/popover'
 
 const open = ref(false)
 </script>
@@ -131,7 +134,8 @@ When anchored content is not dismissible, outside taps emit `close:prevent` and 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyPopover } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyPopover } from '@vyui/kit/popover'
 
 const open = ref(false)
 const blocked = ref(false)
@@ -168,7 +172,8 @@ The `anchor` slot replaces the built-in anchored trigger. It is measured for pla
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyPopover } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyPopover } from '@vyui/kit/popover'
 
 const open = ref(false)
 </script>

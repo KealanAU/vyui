@@ -27,7 +27,8 @@ height: 140px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyLabel, VyNumberField } from '@vyui/kit'
+import { VyLabel } from '@vyui/kit/label'
+import { VyNumberField } from '@vyui/kit/number-field'
 
 const quantity = ref<number | null>(1)
 </script>
@@ -54,7 +55,7 @@ Typed values and stepper changes are clamped to `min` and `max`, then snapped to
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyNumberField } from '@vyui/kit'
+import { VyNumberField } from '@vyui/kit/number-field'
 
 const price = ref<number | null>(2.5)
 </script>
@@ -81,7 +82,7 @@ An empty or invalid committed value becomes `null`. Stepping from an empty field
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyNumberField } from '@vyui/kit'
+import { VyNumberField } from '@vyui/kit/number-field'
 
 const guests = ref<number | null>(null)
 </script>

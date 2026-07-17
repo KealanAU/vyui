@@ -25,11 +25,8 @@ height: 160px
 
 ```vue
 <script setup lang="ts">
-import {
-  VyInput,
-  VyKeyboardAwareResponder,
-  VyKeyboardAwareRoot,
-} from '@vyui/kit'
+import { VyInput } from '@vyui/kit/input'
+import { VyKeyboardAwareResponder, VyKeyboardAwareRoot } from '@vyui/kit/keyboard-aware'
 </script>
 
 <template>

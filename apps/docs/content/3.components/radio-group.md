@@ -27,7 +27,7 @@ height: 240px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyRadioGroup } from '@vyui/kit'
+import { VyRadioGroup } from '@vyui/kit/radio-group'
 
 const plan = ref('pro')
 const items = [
@@ -55,7 +55,7 @@ String and number entries are normalized into matching labels and values.
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyRadioGroup } from '@vyui/kit'
+import { VyRadioGroup } from '@vyui/kit/radio-group'
 
 const seats = ref(5)
 </script>
@@ -79,7 +79,7 @@ Object items can include supporting text and an item-level disabled state.
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyRadioGroup } from '@vyui/kit'
+import { VyRadioGroup } from '@vyui/kit/radio-group'
 
 const delivery = ref('standard')
 const options = [
