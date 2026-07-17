@@ -9,9 +9,10 @@
  * non-functional.
  *
  * This shim fills the gaps with English-only data. The `DateTimeFormat` piece
- * reuses {@link BasicDateFormatter} — the same formatter vyui's date
- * components call directly (see `useDateFormatter`), so native and the
- * polyfill stay consistent.
+ * reuses {@link BasicDateFormatter} — the same formatter behind the public
+ * `useDateFormatter` composable, so an app that formats dates through either
+ * path gets identical output. (No shipped component consumes it yet; date
+ * components are still blocked on native Lynx date-runtime verification.)
  *
  * Self-contained on purpose: no project imports, so this folder can be lifted
  * into a standalone package later. Install once, at app entry, before any
