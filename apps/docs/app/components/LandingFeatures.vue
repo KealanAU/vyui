@@ -13,7 +13,12 @@ const features = [
   {
     icon: 'i-lucide-blocks',
     title: 'Mix them freely',
-    description: 'Kit re-exports everything you need from core. Start with kit, drop down to primitives anywhere you need bespoke styling.',
+    description: 'Import styled Vy* components from kit and reach for raw @vyui/core primitives in the same file wherever you need bespoke styling.',
+  },
+  {
+    icon: 'i-lucide-terminal',
+    title: '@vyui/cli — Own the code',
+    description: 'shadcn-style CLI. vyui add button copies the styled component source into your project — you own and edit it, while headless @vyui/core stays an npm dependency.',
   },
 ]
 </script>

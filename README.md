@@ -22,11 +22,12 @@ But the Lynx ecosystem currently has no extensive UI component library. There's 
 
 ## Architecture
 
-Two packages today, with more planned (see Roadmap):
+Two runtime layers plus a CLI to distribute them, with more planned (see Roadmap):
 
 ```text
 @vyui/core    →  Runtime primitives, ship in your app bundle
 @vyui/kit      →  Styled components built on top of @vyui/core
+@vyui/cli      →  shadcn-style CLI — copy kit component source into your own project
 ```
 
 ### `@vyui/core` — Primitives
@@ -52,6 +53,17 @@ pnpm add @vyui/core
 ### `@vyui/kit` — Styled components
 
 Opinionated styled components layered on top of `@vyui/core`, published for Vue-Lynx apps that want ready-to-use `Vy*` components and theme defaults.
+
+### `@vyui/cli` — Own the components (shadcn-style)
+
+A CLI that copies styled component source into your own project instead of installing it as a package — you own and edit the `.vue` + theme files, while the headless `@vyui/core` primitives stay an npm dependency (the shadcn/Radix model).
+
+```sh
+npx @vyui/cli init             # detect the Vue-Lynx project and wire up tokens + preset
+npx @vyui/cli add button       # copy a component (and its dependencies) into your app
+```
+
+Components come from a versioned, style-namespaced [registry](https://vyui.dev/r) generated from `@vyui/kit` source. See the **[CLI guide](https://vyui.dev/getting-started/cli)**.
 
 ## Quick start
 
@@ -106,6 +118,7 @@ vyui/
 ├── packages/
 │   ├── core/                  # @vyui/core — runtime primitives (published)
 │   ├── kit/                   # @vyui/kit — styled components on top of core
+│   ├── cli/                   # @vyui/cli — shadcn-style init/add CLI + registry
 │   ├── shared-build-config/   # shared Vite build config
 │   └── testing-utils/         # shared test helpers
 └── apps/
@@ -183,7 +196,7 @@ porting, and adapting from them.
   on Nuxt UI's approach. MIT.
 
 * **[shadcn/ui](https://ui.shadcn.com)** — Defined the CLI + registry
-  distribution model that the planned `@vyui/cli` and `vyui.dev/registry/*`
+  distribution model that `@vyui/cli` and the `vyui.dev/r/*` registry
   manifests are modeled on. MIT.
 
 * **[Lynx UI](https://github.com/lynx-family/lynx-ui)** — ByteDance's reference

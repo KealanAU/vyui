@@ -1,8 +1,41 @@
 # @vyui/kit
 
-Alpha. Styled Vue-Lynx components built on `@vyui/core`.
+Styled `Vy*` components for [Vue-Lynx](https://vue.lynxjs.org), built on the
+headless [`@vyui/core`](https://www.npmjs.com/package/@vyui/core) primitives —
+the ready-to-use layer of [Vy UI](https://vyui.dev). Ship native apps for iOS,
+Android, and web from one Vue codebase.
 
-Expect breaking changes on every release until 1.0.0.
+> ⚠️ **Alpha.** Expect breaking changes on every release until 1.0.0.
+
+`@vyui/kit` depends on `@vyui/core` but does **not** re-export the full core
+surface: import styled `Vy*` components from kit, and raw primitives from core.
+
+## Install
+
+```sh
+npm install @vyui/core @vyui/kit
+# or: pnpm add @vyui/core @vyui/kit
+```
+
+Kit ships its styling as a Tailwind preset and a theme stylesheet that need
+wiring alongside the Lynx preset. Follow the
+**[installation guide](https://vyui.dev/getting-started/installation)** for the
+full setup, or use the [`@vyui/cli`](https://www.npmjs.com/package/@vyui/cli) to
+scaffold it — `npx @vyui/cli init`.
+
+## Usage
+
+```vue
+<script setup>
+import { VyButton } from '@vyui/kit'
+</script>
+
+<template>
+  <VyButton color="primary">Click me</VyButton>
+</template>
+```
+
+Full docs, API tables, and live examples: **[vyui.dev](https://vyui.dev)**.
 
 ## Colors
 
