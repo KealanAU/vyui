@@ -79,7 +79,6 @@ export {
   useForwardPropsEmits,
   useId,
   useLocale,
-  useStateMachine,
 } from './shared'
 export {
   type AcceptableValue,

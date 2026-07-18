@@ -27,7 +27,8 @@ height: 140px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyInput, VyLabel } from '@vyui/kit'
+import { VyInput } from '@vyui/kit/input'
+import { VyLabel } from '@vyui/kit/label'
 
 const name = ref('')
 </script>

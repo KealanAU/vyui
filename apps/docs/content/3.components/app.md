@@ -17,7 +17,7 @@ links:
 
 ```vue [src/App.vue]
 <script setup lang="ts">
-import { VyApp } from '@vyui/kit'
+import { VyApp } from '@vyui/kit/app'
 </script>
 
 <template>

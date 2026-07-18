@@ -28,7 +28,7 @@ Use `label` for simple text, or the default slot for custom content. Listen for 
 
 ```vue
 <script setup lang="ts">
-import { VyButton } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
 
 function saveDraft() {
   // Persist the draft.
@@ -208,7 +208,10 @@ height: 210px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyForm, VyFormField, VyInput } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyForm } from '@vyui/kit/form'
+import { VyFormField } from '@vyui/kit/form-field'
+import { VyInput } from '@vyui/kit/input'
 
 const form = ref()
 

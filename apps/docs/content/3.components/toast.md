@@ -29,7 +29,7 @@ height: 220px
 ```vue
 <script setup lang="ts">
 import { ToastProvider, ToastViewport } from '@vyui/core'
-import { VyToast } from '@vyui/kit'
+import { VyToast } from '@vyui/kit/toast'
 import { ref } from 'vue'
 
 const visible = ref(true)
@@ -61,7 +61,7 @@ Pass button prop objects to `actions`. Tapping an action closes the toast after 
 ```vue
 <script setup lang="ts">
 import { ToastProvider } from '@vyui/core'
-import { VyToast } from '@vyui/kit'
+import { VyToast } from '@vyui/kit/toast'
 
 function undo() {
   console.log('Undo deletion')
@@ -92,7 +92,7 @@ One provider coordinates order, measured heights, and expanded state for every t
 ```vue
 <script setup lang="ts">
 import { ToastProvider, ToastViewport } from '@vyui/core'
-import { VyToast } from '@vyui/kit'
+import { VyToast } from '@vyui/kit/toast'
 import { ref } from 'vue'
 
 const toasts = ref([
@@ -140,7 +140,7 @@ height: 220px
 ```vue
 <script setup lang="ts">
 import { ToastProvider, ToastViewport } from '@vyui/core'
-import { VyToast } from '@vyui/kit'
+import { VyToast } from '@vyui/kit/toast'
 import { ref } from 'vue'
 
 const shown = ref(0)

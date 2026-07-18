@@ -26,7 +26,7 @@ height: 180px
 
 ```vue
 <script setup lang="ts">
-import { VyTextarea } from '@vyui/kit'
+import { VyTextarea } from '@vyui/kit/textarea'
 import { ref } from 'vue'
 
 const bio = ref('')
@@ -113,7 +113,8 @@ The kit wrapper exposes its core textarea instance through `textareaRef`.
 
 ```vue
 <script setup lang="ts">
-import { VyButton, VyTextarea } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyTextarea } from '@vyui/kit/textarea'
 import { ref } from 'vue'
 
 const textarea = ref<any>(null)

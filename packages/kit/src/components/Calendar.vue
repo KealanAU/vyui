@@ -60,6 +60,7 @@ export interface CalendarSlots {
 import { computed, ref, watch } from 'vue'
 import { Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { addMonths, buildMonthGrid, type IsoDayCell, normalizeMonth, pad, parseMonth, toIso } from '../utils/date-iso'
 import VyAlert from './Alert.vue'
 
 const props = withDefaults(defineProps<CalendarProps>(), {
@@ -93,7 +94,11 @@ const visibleMonth = computed(() => parseMonth(props.month ?? localMonth.value))
 const disabledSet = computed(() => new Set(props.disabledDates ?? []))
 const title = computed(() => `${MONTHS[visibleMonth.value.month - 1]} ${visibleMonth.value.year}`)
 const orderedWeekdays = computed(() => [...WEEKDAYS.slice(props.weekStartsOn), ...WEEKDAYS.slice(0, props.weekStartsOn)])
-const weeks = computed(() => buildMonthGrid(visibleMonth.value.year, visibleMonth.value.month))
+const weeks = computed(() =>
+  buildMonthGrid(visibleMonth.value.year, visibleMonth.value.month, {
+    weekStartsOn: props.weekStartsOn,
+    fixedWeeks: props.fixedWeeks,
+  }).map(row => row.map(decorateDay)))
 
 watch(() => props.modelValue, (value) => {
   if (value !== undefined) localValue.value = value
@@ -108,100 +113,19 @@ function resolveInitialMonth() {
   return normalizeMonth(source)
 }
 
-function pad(value: number) {
-  return String(value).padStart(2, '0')
-}
-
-function toIso(year: number, month: number, day: number) {
-  return `${year}-${pad(month)}-${pad(day)}`
-}
-
 function todayIso() {
   // Internal fallback only. The public model stays an ISO string.
   const now = new Date()
   return toIso(now.getFullYear(), now.getMonth() + 1, now.getDate())
 }
 
-function parseMonth(value: string) {
-  const match = /^(\d{4})-(\d{2})/.exec(value)
-  const year = match ? Number(match[1]) : 2026
-  const month = match ? Number(match[2]) : 1
+function decorateDay(cell: IsoDayCell): CalendarDay {
   return {
-    year: Number.isFinite(year) ? year : 2026,
-    month: Number.isFinite(month) ? Math.min(12, Math.max(1, month)) : 1,
+    ...cell,
+    selected: selectedValue.value === cell.iso,
+    today: todayIso() === cell.iso,
+    disabled: !!props.disabled || disabledSet.value.has(cell.iso),
   }
-}
-
-function normalizeMonth(value: string) {
-  const { year, month } = parseMonth(value)
-  return `${year}-${pad(month)}`
-}
-
-function daysInMonth(year: number, month: number) {
-  if (month === 2) return isLeapYear(year) ? 29 : 28
-  return [4, 6, 9, 11].includes(month) ? 30 : 31
-}
-
-function isLeapYear(year: number) {
-  return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
-}
-
-function dayOfWeek(year: number, month: number, day: number) {
-  // Sakamoto algorithm, returns 0-6 for Sun-Sat without constructing Date.
-  const offsets = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
-  const adjustedYear = month < 3 ? year - 1 : year
-  return (adjustedYear + Math.floor(adjustedYear / 4) - Math.floor(adjustedYear / 100) + Math.floor(adjustedYear / 400) + offsets[month - 1] + day) % 7
-}
-
-function addMonths(year: number, month: number, delta: number) {
-  const total = year * 12 + (month - 1) + delta
-  return {
-    year: Math.floor(total / 12),
-    month: total % 12 + 1,
-  }
-}
-
-function buildDay(year: number, month: number, day: number, inMonth: boolean): CalendarDay {
-  const iso = toIso(year, month, day)
-  return {
-    iso,
-    day,
-    month,
-    year,
-    inMonth,
-    selected: selectedValue.value === iso,
-    today: todayIso() === iso,
-    disabled: !!props.disabled || disabledSet.value.has(iso),
-  }
-}
-
-function buildMonthGrid(year: number, month: number) {
-  const days: CalendarDay[] = []
-  const currentDays = daysInMonth(year, month)
-  const firstWeekday = dayOfWeek(year, month, 1)
-  const leadingCount = (firstWeekday - props.weekStartsOn + 7) % 7
-  const previous = addMonths(year, month, -1)
-  const previousDays = daysInMonth(previous.year, previous.month)
-
-  for (let i = leadingCount; i > 0; i--) {
-    days.push(buildDay(previous.year, previous.month, previousDays - i + 1, false))
-  }
-
-  for (let day = 1; day <= currentDays; day++) {
-    days.push(buildDay(year, month, day, true))
-  }
-
-  const targetLength = props.fixedWeeks ? 42 : Math.ceil(days.length / 7) * 7
-  const next = addMonths(year, month, 1)
-  for (let day = 1; days.length < targetLength; day++) {
-    days.push(buildDay(next.year, next.month, day, false))
-  }
-
-  const rows: CalendarDay[][] = []
-  for (let i = 0; i < days.length; i += 7) {
-    rows.push(days.slice(i, i + 7))
-  }
-  return rows
 }
 
 function setMonth(year: number, month: number) {

@@ -29,7 +29,8 @@ height: 240px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyButton, VyStepper } from '@vyui/kit'
+import { VyButton } from '@vyui/kit/button'
+import { VyStepper } from '@vyui/kit/stepper'
 
 const step = ref(0)
 const items = [
@@ -68,7 +69,7 @@ Set `icon` on an item to replace its number. Set `disabled` on an item, or on th
 
 ```vue
 <script setup lang="ts">
-import { VyStepper } from '@vyui/kit'
+import { VyStepper } from '@vyui/kit/stepper'
 
 const items = [
   { title: 'Profile', icon: 'i-lucide-user-round' },
@@ -94,7 +95,7 @@ Vertical orientation stacks the items. Set `linear="false"` when users may jump 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyStepper } from '@vyui/kit'
+import { VyStepper } from '@vyui/kit/stepper'
 
 const step = ref(1)
 const items = [

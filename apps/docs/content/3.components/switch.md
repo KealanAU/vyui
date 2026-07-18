@@ -34,7 +34,7 @@ height: 160px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySwitch } from '@vyui/kit'
+import { VySwitch } from '@vyui/kit/switch'
 
 const notifications = ref(true)
 </script>
@@ -57,7 +57,7 @@ Keep each switch bound to the setting it changes. The surrounding row can provid
 ```vue
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { VySwitch } from '@vyui/kit'
+import { VySwitch } from '@vyui/kit/switch'
 
 const preferences = reactive({
   mentions: true,
@@ -112,7 +112,7 @@ Set `loading` while a remote preference is being saved. This changes the thumb i
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySwitch } from '@vyui/kit'
+import { VySwitch } from '@vyui/kit/switch'
 
 const enabled = ref(false)
 const saving = ref(false)

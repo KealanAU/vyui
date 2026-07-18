@@ -27,7 +27,7 @@ height: 140px
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyRating } from '@vyui/kit'
+import { VyRating } from '@vyui/kit/rating'
 
 const rating = ref(3)
 </script>
@@ -46,7 +46,7 @@ Use `count` to change the number of rendered choices.
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyRating } from '@vyui/kit'
+import { VyRating } from '@vyui/kit/rating'
 
 const difficulty = ref(2)
 </script>

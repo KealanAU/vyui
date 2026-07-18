@@ -33,7 +33,7 @@ Both `rowWidth` and `actionWidth` are required because the core gesture primitiv
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySwipeAction } from '@vyui/kit'
+import { VySwipeAction } from '@vyui/kit/swipe-action'
 
 const open = ref(false)
 const archived = ref(false)
@@ -80,7 +80,7 @@ Use the slot's `close` function after a panel action. This animates the row clos
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySwipeAction } from '@vyui/kit'
+import { VySwipeAction } from '@vyui/kit/swipe-action'
 
 const open = ref(false)
 const deleted = ref(false)

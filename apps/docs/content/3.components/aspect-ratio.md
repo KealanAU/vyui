@@ -34,7 +34,7 @@ height: 260px
 Import the component and its public type from the kit barrel.
 
 ```ts
-import { VyAspectRatio, type AspectRatioProps } from '@vyui/kit'
+import { VyAspectRatio, type AspectRatioProps } from '@vyui/kit/aspect-ratio'
 ```
 
 The unprefixed `AspectRatio` primitive is still available from `@vyui/core` if you prefer the raw name.

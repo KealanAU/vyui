@@ -29,7 +29,9 @@ Set each member island to `layer="inline"` so the group is the only component ap
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyIsland, VyIslandButton, VyIslandGroup } from '@vyui/kit'
+import { VyIsland } from '@vyui/kit/island'
+import { VyIslandButton } from '@vyui/kit/island-button'
+import { VyIslandGroup } from '@vyui/kit/island-group'
 
 const visible = ref(true)
 const section = ref<string | number | null>('inbox')

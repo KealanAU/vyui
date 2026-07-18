@@ -36,7 +36,7 @@ Use `type="single"` with a scalar `v-model`. Primitive strings and numbers are n
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyToggleGroup } from '@vyui/kit'
+import { VyToggleGroup } from '@vyui/kit/toggle-group'
 
 const alignment = ref('center')
 const items = [
@@ -58,7 +58,7 @@ Use an array model with `type="multiple"`. Tapping an item adds or removes its v
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyToggleGroup } from '@vyui/kit'
+import { VyToggleGroup } from '@vyui/kit/toggle-group'
 
 const formatting = ref<string[]>(['bold'])
 const items = [

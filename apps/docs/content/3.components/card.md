@@ -19,7 +19,7 @@ links:
 
 ```vue
 <script setup lang="ts">
-import { VyCard } from '@vyui/kit'
+import { VyCard } from '@vyui/kit/card'
 </script>
 
 <template>

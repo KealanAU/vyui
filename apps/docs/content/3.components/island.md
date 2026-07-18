@@ -29,7 +29,8 @@ Compose an island from `VyIslandButton` children. Set `layer="inline"` when the 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyIsland, VyIslandButton } from '@vyui/kit'
+import { VyIsland } from '@vyui/kit/island'
+import { VyIslandButton } from '@vyui/kit/island-button'
 
 const section = ref<string | number | null>('inbox')
 </script>
@@ -52,7 +53,8 @@ Use `mode` to replace the normal row with a named slot. Mode names are free-form
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyIsland, VyIslandButton } from '@vyui/kit'
+import { VyIsland } from '@vyui/kit/island'
+import { VyIslandButton } from '@vyui/kit/island-button'
 
 const mode = ref('default')
 </script>
@@ -84,7 +86,8 @@ Add an `expanded` slot and use an `expand` button to toggle it. For a bottom isl
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VyIsland, VyIslandButton } from '@vyui/kit'
+import { VyIsland } from '@vyui/kit/island'
+import { VyIslandButton } from '@vyui/kit/island-button'
 
 const open = ref(false)
 </script>

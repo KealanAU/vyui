@@ -33,7 +33,7 @@ Pass an `items` array and render each slide through the `item` slot.
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySwiper } from '@vyui/kit'
+import { VySwiper } from '@vyui/kit/swiper'
 
 const current = ref(0)
 const slides = [
@@ -69,7 +69,7 @@ Set `loop` to navigate seamlessly across both ends. Set `autoplay` to `true` for
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VySwiper } from '@vyui/kit'
+import { VySwiper } from '@vyui/kit/swiper'
 
 const current = ref(0)
 const promotions = [
@@ -107,7 +107,7 @@ Omit `items` and place core `SwiperItem` children in the default slot. The wrapp
 <script setup lang="ts">
 import { ref } from 'vue'
 import { SwiperItem } from '@vyui/core'
-import { VySwiper } from '@vyui/kit'
+import { VySwiper } from '@vyui/kit/swiper'
 
 const current = ref(0)
 </script>
