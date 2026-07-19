@@ -144,7 +144,7 @@ const panelStyle = computed(() => {
   // track the real hugged height.
   if (props.fitContent) return duration
   const size = `${maxSnap.value * 100}${axis.value === 'x' ? 'vw' : 'vh'}`
-  return axis.value === 'x' ? { width: size, ...duration } : { height: size, ...duration }
+  return { ...duration, [axis.value === 'x' ? 'width' : 'height']: size }
 })
 
 // `SystemInfo` is not reactive, but the panel receives a layout event whenever
