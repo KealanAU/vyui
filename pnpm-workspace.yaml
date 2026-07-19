@@ -31,7 +31,7 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - nuxt-schema-org@6.2.3
   # 0.4.2 (2026-07-17) is younger than the 7-day gate; needed now for the #190
-  # worklet-loader fix that replaces our local patch. NOT 0.5.x: its pipeline
-  # breaks the Draggable MT worklet transform (syntax error in generated MT
-  # module) — see docs/upstream/vue-lynx-mt-worklet-import-issue.md addendum.
+  # worklet-loader fix that replaces our local patch. NOT 0.5.x: its
+  # `findBalancedEnd` registration extraction chokes on comments inside worklet
+  # bodies — see docs/upstream/vue-lynx-mt-worklet-import-issue.md addendum.
   - vue-lynx@0.4.2
