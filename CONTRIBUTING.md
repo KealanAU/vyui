@@ -89,14 +89,11 @@ vue-lynx's MT worklet loader — which only walks relative imports, not
 These are the recurring footguns. If a worklet-touching change goes sideways,
 ninety percent of the time it's one of these:
 
-- The `worklet-loader-mt` regex only walks **relative imports** — bare
-  `@vyui/core` imports don't propagate to the MT graph. The consumer must
-  reach worklet source via a relative path for SWC to follow the chain.
-- Every demo entry has a **side-effect relative anchor** at the top of its
-  entry file, e.g.
-  `import '../../../../packages/core/src'`. **Don't delete it.** Without it
-  the MT walker never sees the package and worklets disappear from the MT
-  bundle.
+- The MT worklet walker follows the demos' **source aliases** natively
+  (vue-lynx ≥ 0.4.2). Real `node_modules` consumers instead need
+  `pluginVueLynx({ includeWorkletPackages: ['@vyui/core', '@vyui/kit'] })` —
+  without it, bare `@vyui/*` imports never reach the MT graph and worklets
+  crash with `bind of undefined`.
 - **Cross-file `'main thread'` calls work but are fragile.** Inline every
   worklet inside the component that uses it.
 - **Storing arrow functions in `useMainThreadRef<() => void>` kills the
