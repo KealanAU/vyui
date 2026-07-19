@@ -27,6 +27,7 @@ export {
 } from './usePresence'
 
 export {
+  combineGroupState,
   usePresenceGroup,
   type PresenceGroupChild,
   type UsePresenceGroupOptions,
