@@ -74,6 +74,8 @@ export interface ModalProps {
 export interface ModalEmits {
   (e: 'update:open', value: boolean): void
   (e: 'update:modelValue', value: boolean): void
+  /** Fired when `dismissible: false` blocked an outside-tap dismiss. */
+  (e: 'close:prevent'): void
 }
 
 export interface ModalSlots {
@@ -147,6 +149,14 @@ const onUpdateOpen = (value: boolean) => {
 // prop — `<template #footer="{ close }">…@click="close"…`).
 const close = () => onUpdateOpen(false)
 
+// Mirrors Popover: dismissible defaults true; when false, swallow the
+// outside-tap dismiss and surface it as `close:prevent`.
+function onInteractOutside(event: any) {
+  if (props.dismissible) return
+  event?.preventDefault?.()
+  emit('close:prevent')
+}
+
 const ui = computed(() => buildModal(appConfig)({
   transition: props.transition,
 }))
@@ -168,6 +178,7 @@ const resolvedCloseIcon = computed(() => props.closeIcon || appConfig.ui.icons?.
       <DialogContent
         :backdrop-class="overlay ? ui.overlay({ class: props.ui?.overlay }) : undefined"
         :class="ui.content({ class: props.ui?.content })"
+        @interact-outside="onInteractOutside"
       >
         <slot v-if="hasContentSlot" name="content" :close="close" />
 

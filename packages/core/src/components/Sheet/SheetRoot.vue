@@ -47,14 +47,6 @@ export interface SheetRootProps {
    */
   viewportWidth?: number
   /**
-   * Absolute velocity (px/s) above which a fling advances by one snap regardless
-   * of position. Currently unused — the release logic (mirroring
-   * `pickRelease`) implements flick-advance via a 100ms coast projection
-   * instead. Reserved.
-   * @defaultValue `400`
-   */
-  velocityThreshold?: number
-  /**
    * Downward velocity (px/s) at which a fling dismisses from any position
    * (when `enableDragToClose`).
    * @defaultValue `600`
@@ -101,7 +93,6 @@ const props = withDefaults(defineProps<SheetRootProps>(), {
   defaultSnapIndex: 0,
   side: 'bottom',
   snapPoints: () => [1],
-  velocityThreshold: 400,
   dismissVelocity: 600,
   duration: 280,
   enableDragToClose: true,
@@ -175,7 +166,6 @@ provideSheetRootContext({
   snapPoints,
   viewportHeight,
   viewportWidth,
-  velocityThreshold: computed(() => props.velocityThreshold),
   dismissVelocity: computed(() => props.dismissVelocity),
   duration: computed(() => props.duration),
   enableDragToClose: computed(() => props.enableDragToClose),

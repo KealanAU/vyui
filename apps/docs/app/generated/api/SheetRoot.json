@@ -69,13 +69,6 @@
       "description": "Snap points as fractions of viewport extent on the sheet axis, low → high.\ne.g. `[0.25, 0.5, 0.9]`. For `top`/`bottom` this is viewport height;\nfor `left`/`right` this is viewport width."
     },
     {
-      "name": "velocityThreshold",
-      "type": "number | undefined",
-      "required": false,
-      "default": "400",
-      "description": "Absolute velocity (px/s) above which a fling advances by one snap regardless\nof position. Currently unused — the release logic (mirroring\n`pickRelease`) implements flick-advance via a 100ms coast projection\ninstead. Reserved."
-    },
-    {
       "name": "viewportHeight",
       "type": "number | undefined",
       "required": false,

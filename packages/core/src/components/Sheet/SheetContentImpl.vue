@@ -134,13 +134,17 @@ const closeSign = computed(() => directionCloseSign(ctx.side.value))
 // `vh`, not `dvh` — Lynx native drops the dynamic-viewport unit, collapsing
 // the panel to its content height.
 const panelStyle = computed(() => {
+  // Inline longhand overrides the 280ms in the enter/leave keyframe
+  // shorthands below, so the CSS default and the MT settle paths (which
+  // read `durationMsRef`) can't desync when a consumer sets `duration`.
+  const duration = { animationDuration: `${ctx.duration.value}ms` }
   // Content-hug mode: emit no explicit extent so the panel takes its natural
   // content size. `measuredPanelHeight/Width` (from `@layoutchange`) still
   // feeds `panelExtentPx`, so the drag threshold and backdrop-fade progress
   // track the real hugged height.
-  if (props.fitContent) return {}
+  if (props.fitContent) return duration
   const size = `${maxSnap.value * 100}${axis.value === 'x' ? 'vw' : 'vh'}`
-  return axis.value === 'x' ? { width: size } : { height: size }
+  return { ...duration, [axis.value === 'x' ? 'width' : 'height']: size }
 })
 
 // `SystemInfo` is not reactive, but the panel receives a layout event whenever
@@ -221,9 +225,9 @@ const snapTargetPos = computed(() => {
   return positions[positions.length - 1 - idx] ?? 0
 })
 
-// Release physics from SheetRoot's props. `ctx.velocityThreshold` is
-// deliberately not mirrored — `pickRelease` (and the worklet mirror of it)
-// implements flick-advance via the coast projection instead.
+// Release physics from SheetRoot's props. Flick-advance needs no velocity
+// threshold — `pickRelease` (and the worklet mirror of it) implements it
+// via the coast projection instead.
 const dismissVelocityRef = useMainThreadRef<number>(ctx.dismissVelocity.value)
 const durationMsRef = useMainThreadRef<number>(ctx.duration.value)
 const snapPositionsRef = useMainThreadRef<number[]>(snapPositionsPx.value)

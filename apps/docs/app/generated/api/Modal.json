@@ -85,6 +85,10 @@
     {
       "name": "update:open",
       "type": "[value: boolean]"
+    },
+    {
+      "name": "close:prevent",
+      "type": "[]"
     }
   ],
   "slots": [
