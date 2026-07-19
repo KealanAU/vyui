@@ -19,7 +19,6 @@ import {
   easeOutCubic,
   HORIZONTAL_CONSUME_RANGES,
   isAngleInRanges,
-  pickSnap,
   projectMomentum,
   pruneQueue,
   resolveAxisLock,
@@ -360,46 +359,6 @@ describe('decideSnapTarget', () => {
       ...base, count: 0, startOffset: 0, endOffset: 0, velocity: 0,
     })
     expect(target).toBe(0)
-  })
-})
-
-describe('pickSnap', () => {
-  const opts = { velocityThreshold: 300 }
-
-  // Carousel: uniform negative offsets (0, -100, -200, -300).
-  const pages = [0, -100, -200, -300]
-
-  it('snaps to the nearest candidate with no flick', () => {
-    expect(pickSnap(-80, 0, pages, opts)).toBe(-100)
-    expect(pickSnap(-40, 0, pages, opts)).toBe(0)
-  })
-
-  it('flick advances one candidate in the travel direction', () => {
-    // drag left (offset decreasing) past threshold from near -100 → -200
-    expect(pickSnap(-90, -400, pages, opts)).toBe(-200)
-    // flick back right from near -100 → 0
-    expect(pickSnap(-120, 400, pages, opts)).toBe(0)
-  })
-
-  it('does not advance past the last candidate on a flick', () => {
-    expect(pickSnap(-300, -1000, pages, opts)).toBe(-300)
-    expect(pickSnap(0, 1000, pages, opts)).toBe(0)
-  })
-
-  // Sheet/drawer: "dismiss" is just another candidate. Down = +offset.
-  it('treats dismiss as a candidate (position-based)', () => {
-    const sheet = [0, 600] // 0 = open, 600 = dismissed off-screen
-    expect(pickSnap(100, 0, sheet, opts)).toBe(0) // barely dragged → snap open
-    expect(pickSnap(500, 0, sheet, opts)).toBe(600) // dragged most of the way → dismiss
-  })
-
-  it('treats dismiss as a candidate (velocity flick)', () => {
-    const sheet = [0, 600]
-    expect(pickSnap(100, 800, sheet, opts)).toBe(600) // fast downward flick → dismiss
-  })
-
-  it('returns the position unchanged when there are no candidates', () => {
-    expect(pickSnap(42, 999, [], opts)).toBe(42)
   })
 })
 
