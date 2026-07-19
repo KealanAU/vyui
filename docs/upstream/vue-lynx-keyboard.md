@@ -74,16 +74,48 @@ height. Reset to `0` on `blur`.
 
 Reference implementation: `apps/examples/vyai/src/sections/Composer.vue`.
 
+## The lift math: viewport height, not screen height
+
+The lynx-ui `KeyboardAwareRoot` computes the input's distance to the keyboard
+as `SystemInfo.pixelHeight / pixelRatio - rect.bottom` — i.e. against the
+**screen**. But `boundingClientRect` is relative to the **LynxView viewport**.
+Under containers whose view doesn't fill the screen (Lynx Explorer's header),
+the margin is inflated by the chrome above the view and the lift comes up
+short by exactly that much (~50-100px — "the input is half hidden behind the
+keyboard"). vyui's port measures the real viewport via
+`lynx.createSelectorQuery().selectRoot()` and computes the margin against
+that, falling back to the upstream screen math when the root query is
+unavailable.
+
+Three more shortfall sources fixed alongside (all deliberate divergences from
+the React port):
+
+- **`offset` sign.** Upstream ADDS the offset to the translate, which
+  *reduces* the lift — a positive offset pushes the field INTO the keyboard.
+  Both vyui props document offset as extra clearance, so vyui subtracts it
+  (and adds it to the scroll target in scroll mode).
+- **Trigger registration clobber.** Inputs reported focus to their wrapping
+  `KeyboardAwareTrigger` AND self-registered with the root; the
+  self-registration landed last, so the root measured the bare `<input>` and
+  dropped the trigger's offset. A trigger now owns the registration when
+  present.
+- **Bare-input measurement in kit.** `VyInput` / `VyTextarea` render the
+  visual field (border + padding) as a wrapper around the bare core input, so
+  lifts cleared the inner input but left the field's bottom chrome behind the
+  keyboard. Kit fields now wrap themselves in an as-child
+  `KeyboardAwareTrigger`; nested triggers defer to the outermost one so a
+  consumer's own trigger still wins, and a trigger without an explicit
+  `offset` inherits the root's.
+
 ## Open questions / upstream
 
-- **Why is `GlobalEventEmitter` `keyboardstatuschanged` not delivered to the
-  vue-lynx background listener?** Confirm whether vue-lynx wires
-  `lynx.getJSModule('GlobalEventEmitter')` to the same registry the native emit
-  targets, or whether listeners must be registered through a different binding /
-  thread. This is the root blocker for a global (input-agnostic) keyboard hook.
-- **`KeyboardAware*` rework:** re-point `KeyboardAwareRoot` away from
-  `useGlobalKeyboard` and onto the input's `keyboard` event relayed through
-  `KeyboardAwareTrigger` (the Trigger already wraps the input and holds the root
-  context). Consider switching the lift mechanism from the responder's
-  `setNativeProps` transform to the flex-spacer model above.
+- **`GlobalEventEmitter` `keyboardstatuschanged` delivery is fixed upstream**
+  in vue-lynx PR #193 ("route LEPUS global events to GlobalEventEmitter",
+  ships after 0.4.2, plus a `useGlobalEvent` composable). vyui is pinned to
+  0.4.2 (0.5.x Draggable regression), so the element `keyboard` event remains
+  the primary signal; `useGlobalKeyboard` starts working on the day the pin
+  moves past that release.
+- **`KeyboardAware*` rework:** DONE — the root's primary signal is the input's
+  `keyboard` event relayed through the trigger context;
+  `useGlobalKeyboard` is retained as a harmless fallback.
 - **Android:** verify the `keyboard` event payload field names and units.

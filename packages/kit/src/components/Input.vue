@@ -90,7 +90,7 @@ export interface InputSlots {
 
 <script setup lang="ts">
 import { computed, onMounted, ref, useSlots } from 'vue'
-import { Input as CoreInput } from '@vyui/core'
+import { Input as CoreInput, KeyboardAwareTrigger } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 import { Icon as VyIcon } from '@vyui/core'
 import { resolveColorHex } from '../utils/resolveColor'
@@ -172,7 +172,12 @@ defineExpose({ inputRef })
 </script>
 
 <template>
-  <view :class="ui.root({ class: [props.class, props.ui?.root] })">
+  <!-- The trigger makes KeyboardAware lifts measure the STYLED FIELD (this
+       root view — border + padding included), not the bare inner <input>,
+       so the field's bottom chrome clears the keyboard too. Renders nothing
+       extra (as-child) and no-ops without a KeyboardAwareRoot above. -->
+  <KeyboardAwareTrigger as-child>
+    <view :class="ui.root({ class: [props.class, props.ui?.root] })">
     <view
       v-if="hasLeading"
       :class="ui.leading({ class: props.ui?.leading })"
@@ -239,5 +244,6 @@ defineExpose({ inputRef })
         />
       </slot>
     </view>
-  </view>
+    </view>
+  </KeyboardAwareTrigger>
 </template>

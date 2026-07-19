@@ -28,15 +28,16 @@ export interface KeyboardAwareRootProps extends PrimitiveProps {
    */
   forceAttach?: boolean
   /**
-   * Extra clearance in px kept between a self-registered input and the top
-   * of the keyboard. Regions wrapped in a `KeyboardAwareTrigger` use the
-   * trigger's own `offset` instead.
+   * Extra clearance in px kept between the focused field and the top of the
+   * keyboard. A `KeyboardAwareTrigger` with an explicit `offset` of its own
+   * overrides this for the region it wraps.
    */
   offset?: number
   /**
    * Combined height of the Android status bar + bottom navigation bar in px.
-   * Used to correct `boundingClientRect` (which does not include the status
-   * bar on Android) when computing how far to move the responder.
+   * Only used on the fallback path when the root viewport can't be measured:
+   * it corrects the screen-height margin math for `boundingClientRect` not
+   * including the status bar on Android.
    */
   androidStatusBarPlusBottomBarHeight?: number
 }
@@ -120,6 +121,25 @@ const props = withDefaults(defineProps<KeyboardAwareRootProps>(), {
 })
 const emit = defineEmits<KeyboardAwareRootEmits>()
 
+/**
+ * Distance from `bottom` (a viewport-relative rect edge) to the keyboard's
+ * resting edge. Prefers the measured viewport height; falls back to the
+ * upstream screen-height math (with the Android status-bar correction) when
+ * the root query is unavailable.
+ */
+// ponytail: assumes the LynxView's bottom edge sits at the screen bottom
+// (true in Explorer and Sparkling); a bottom-inset container would need the
+// gap below the view subtracted as well.
+async function marginToViewportBottom(bottom: number): Promise<number> {
+  const viewportHeight = await measureViewportHeight()
+  if (viewportHeight > 0)
+    return viewportHeight - bottom
+  const { pixelHeight, pixelRatio, platform } = readSystemInfo()
+  return pixelHeight / pixelRatio
+    - bottom
+    - (platform === 'Android' ? props.androidStatusBarPlusBottomBarHeight : 0)
+}
+
 const keyboardHeightInPx = ref(0)
 const previousResponderTranslateY = ref(0)
 const firstTimeFocused = ref(true)
@@ -154,6 +174,36 @@ function readSystemInfo() {
   }
 }
 
+/**
+ * Height of the LynxView viewport in logical px, measured from the root node.
+ * `boundingClientRect` coords are viewport-relative but `SystemInfo.pixelHeight`
+ * is the whole screen — under containers whose LynxView doesn't fill the screen
+ * (Lynx Explorer's header, embedded views) the screen-based margin is inflated
+ * by the chrome above the view, and the lift comes up short by exactly that
+ * much. Resolves 0 when the root query is unavailable (web / jsdom).
+ */
+function measureViewportHeight(): Promise<number> {
+  const lynxGlobal: any = (globalThis as any).lynx
+  if (typeof lynxGlobal?.createSelectorQuery !== 'function')
+    return Promise.resolve(0)
+  return new Promise((resolve) => {
+    try {
+      lynxGlobal.createSelectorQuery()
+        .selectRoot()
+        .invoke({
+          method: 'boundingClientRect',
+          params: {},
+          success: (res: any) => resolve(typeof res?.height === 'number' ? res.height : 0),
+          fail: () => resolve(0),
+        })
+        .exec()
+    }
+    catch {
+      resolve(0)
+    }
+  })
+}
+
 function keyboardAwareResponderScrollInfoCollected(
   scrollviewId?: string,
   scrollContentId?: string,
@@ -166,11 +216,8 @@ function keyboardAwareResponderScrollInfoCollected(
   // Same one-shot rect read as the React port: capture the bottom margin
   // between the responder and the screen edge once at mount.
   measure(responderRef)
-    .then((rect) => {
-      const { pixelHeight, pixelRatio, platform } = readSystemInfo()
-      const margin = pixelHeight / pixelRatio
-        - rect.bottom
-        - (platform === 'Android' ? props.androidStatusBarPlusBottomBarHeight : 0)
+    .then(async (rect) => {
+      const margin = await marginToViewportBottom(rect.bottom)
       scrollInfo.value = {
         scrollviewId,
         scrollContentId,
@@ -230,12 +277,14 @@ function scrollToTarget(
     return
   Promise.all([measure(focused), measure(responderRef)])
     .then(([focusedRect, responderRect]) => {
+      // Same offset-sign divergence as the transform path: scrolling FURTHER
+      // is what buys clearance, so the offset adds to the scroll target.
       scrollToById(
         scrollviewId,
         keyboardHeightInPx.value
         + focusedRect.bottom
         - responderRect.height
-        - focusedOffset.value
+        + focusedOffset.value
         + offset,
         smooth,
       )
@@ -248,16 +297,18 @@ function doAdjustResponderTransform(
   transition = 'transform 0.28s',
 ) {
   measure(triggerRef)
-    .then((rect) => {
-      const { pixelHeight, pixelRatio, platform } = readSystemInfo()
-      const marginBetweenInputBottomAndScreenBottom = pixelHeight / pixelRatio
-        - rect.bottom
-        - (platform === 'Android' ? props.androidStatusBarPlusBottomBarHeight : 0)
+    .then(async (rect) => {
+      const marginBetweenInputBottomAndScreenBottom
+        = await marginToViewportBottom(rect.bottom)
 
+      // Deliberate divergence from the React port: upstream ADDS the offset,
+      // which reduces the lift (positive offset pushes the trigger INTO the
+      // keyboard). Both vyui props document offset as extra clearance above
+      // the keyboard, so it must increase the lift — subtract it.
       let translateY = marginBetweenInputBottomAndScreenBottom
         - keyboardHeightInPx.value
         + previousResponderTranslateY.value
-        + focusedOffset.value
+        - focusedOffset.value
 
       if (!props.forceAttach && translateY >= 0)
         translateY = 0
@@ -363,6 +414,10 @@ defineExpose({
   /** @internal Test seam — reads the currently-focused trigger ref. */
   __test_focusedRef() {
     return focusedRef.value
+  },
+  /** @internal Test seam — reads the last translateY applied to the responder. */
+  __test_previousTranslateY() {
+    return previousResponderTranslateY.value
   },
 })
 </script>

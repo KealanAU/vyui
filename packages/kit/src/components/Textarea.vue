@@ -74,7 +74,7 @@ export interface TextareaSlots {
 
 <script setup lang="ts">
 import { computed, onMounted, ref, useSlots } from 'vue'
-import { Textarea as CoreTextarea } from '@vyui/core'
+import { KeyboardAwareTrigger, Textarea as CoreTextarea } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 import { Icon as VyIcon } from '@vyui/core'
 import { resolveColorHex } from '../utils/resolveColor'
@@ -138,7 +138,10 @@ defineExpose({ textareaRef })
 </script>
 
 <template>
-  <view :class="ui.root({ class: [props.class, props.ui?.root] })">
+  <!-- Same as VyInput: register the styled field (not the bare <textarea>)
+       with any surrounding KeyboardAwareRoot. -->
+  <KeyboardAwareTrigger as-child>
+    <view :class="ui.root({ class: [props.class, props.ui?.root] })">
     <view
       v-if="hasLeading"
       :class="ui.leading({ class: props.ui?.leading })"
@@ -193,5 +196,6 @@ defineExpose({ textareaRef })
         />
       </slot>
     </view>
-  </view>
+    </view>
+  </KeyboardAwareTrigger>
 </template>

@@ -81,6 +81,7 @@ import {
   directionAxis,
   directionCloseSign,
   useA11y,
+  useSafeArea,
   viewportSnapsToPositions,
 } from '@/shared/composables'
 import { clamp } from '@/shared/clamp'
@@ -128,6 +129,22 @@ const maxSnap = computed(() => {
 const axis = computed(() => directionAxis(ctx.side.value))
 const closeSign = computed(() => directionCloseSign(ctx.side.value))
 
+// Safe-area: keep the panel's content clear of the hardware insets on the
+// edges it docks against — home indicator for bottom sheets, status bar for
+// top sheets, both for full-height side sheets. Insets are zero outside
+// Sparkling / Lynx Explorer, so this is a no-op everywhere else; opt a
+// subtree out by providing zero insets via `provideSafeAreaInsets`.
+const safeArea = useSafeArea()
+const safeAreaStyle = computed(() => {
+  const side = ctx.side.value
+  const pad: Record<string, string> = {}
+  if (safeArea.bottom > 0 && side !== 'top')
+    pad.paddingBottom = `${safeArea.bottom}px`
+  if (safeArea.top > 0 && side !== 'bottom')
+    pad.paddingTop = `${safeArea.top}px`
+  return pad
+})
+
 // Size of the panel as a viewport string, derived from the largest snap
 // fraction. e.g. `snapPoints: [0.75]` → `height: 75vh` for vertical sheets
 // or `width: 75vw` for horizontal sheets. NOTE: vertical sheets must use
@@ -142,9 +159,13 @@ const panelStyle = computed(() => {
   // content size. `measuredPanelHeight/Width` (from `@layoutchange`) still
   // feeds `panelExtentPx`, so the drag threshold and backdrop-fade progress
   // track the real hugged height.
-  if (props.fitContent) return duration
+  if (props.fitContent) return { ...safeAreaStyle.value, ...duration }
   const size = `${maxSnap.value * 100}${axis.value === 'x' ? 'vw' : 'vh'}`
-  return { ...duration, [axis.value === 'x' ? 'width' : 'height']: size }
+  return {
+    ...safeAreaStyle.value,
+    ...duration,
+    [axis.value === 'x' ? 'width' : 'height']: size,
+  }
 })
 
 // `SystemInfo` is not reactive, but the panel receives a layout event whenever
