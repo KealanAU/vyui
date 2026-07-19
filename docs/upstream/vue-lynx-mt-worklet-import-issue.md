@@ -66,8 +66,11 @@
 `@vyui/core` and `@vyui/kit` now publish **per-file, source-shaped ESM** (Vite lib + Rollup `preserveModules`; see `docs/plans/vite-preserve-modules-dist.md`). Every worklet module ships with direct **named** `vue-lynx` imports and its own pre-compiled `registerWorkletInternal(...)` registrations — the shape the whole MT toolchain assumes. This removes the second failure mode (a bundle's `__WEBPACK_EXTERNAL_MODULE_vue_lynx_*` namespace being orphaned by the consumer's registration slicing). A `check-dist-shape` build gate keeps dist source-shaped.
 
 With source-shaped dist, the **only** remaining consumer-side requirement is the Tier-2 **traversal** fix so the consumer's MT loader walks into `@vyui/*` at all:
-- **Now:** the local `patches/vue-lynx@0.4.0.patch` (follows `@/…` + `@vyui/core` / `@vyui/kit`).
-- **Once #190 ships:** drop the patch and set `includeWorkletPackages: ['@vyui/core', '@vyui/kit']`.
+- **RESOLVED:** #190 shipped in vue-lynx 0.4.2; the local patch is gone (we're on ^0.4.2). NPM consumers must set `pluginVueLynx({ includeWorkletPackages: ['@vyui/core', '@vyui/kit'] })`. In-repo demos don't need it — they alias `@vyui/*` at workspace source (`apps/examples/_shared/vyui-aliases.ts`), which the loader follows by default.
+
+### Addendum: 0.5.x blocked by a new MT transform regression
+
+Upgrading past 0.4.2 to 0.5.0/0.5.1 breaks the lynx-env build of `packages/core/src/components/Draggable/Draggable.vue`: the generated MT module fails `builtin:swc-loader` parsing with `× Syntax Error` at its trailing `export default {};` (the error excerpt shows `_onTouchMove`'s registration closing directly before it, suggesting the emitted module is truncated mid-extraction). 0.4.2 compiles the identical source cleanly, so the regression is in 0.5.0's pipeline rework (IFR / element templates, Huxpro/vue-lynx#216), not in our source. Re-attempt the bump once fixed upstream — 0.5.x also carries #249 (persisted `Transition` + `v-show`), #201 (comment-anchor suppression), and #203 (programmatic input `setValue`).
 
 ---
 
