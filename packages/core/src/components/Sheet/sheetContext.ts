@@ -24,12 +24,6 @@ export interface SheetRootContext {
   viewportHeight: ComputedRef<number>
   /** Viewport width in px (resolved from prop / runtime). */
   viewportWidth: ComputedRef<number>
-  /**
-   * Velocity threshold for fling-to-snap (px/s). Currently unused — the
-   * release logic (mirroring `pickRelease`) implements flick-advance via
-   * its coast projection instead. Reserved.
-   */
-  velocityThreshold: ComputedRef<number>
   /** Velocity threshold for fling-to-dismiss (px/s). */
   dismissVelocity: ComputedRef<number>
   /** Animation duration for settle (ms). */

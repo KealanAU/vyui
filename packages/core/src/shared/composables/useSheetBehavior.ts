@@ -1,10 +1,9 @@
 /**
- * Shared snap-and-drag math for edge-anchored overlays (mobile `Sheet`,
- * top-level `Drawer`). Two consumers, two adapters: Sheet drives the
- * transform from main-thread worklets, Drawer drives it from a Vue
- * reactive ref with a CSS transition. The behavior surface — direction
- * → axis mapping, snap point resolution, release decision, progress
- * computation — is identical, so it lives here.
+ * Snap-and-drag math for edge-anchored overlays (`Sheet` and its kit
+ * wrappers). Pure, unit-tested spec functions: Sheet's BG side calls
+ * them directly; its MT worklets keep inline copies of the release
+ * math (SWC's worklet transform can't follow imports from a regular
+ * module — see `SheetContentImpl.vue`).
  *
  * ## Coordinate system
  *
@@ -17,12 +16,8 @@
  *
  * ## Velocity convention
  *
- * `px/s`, positive = toward close. Callers convert as needed
- * (`Drawer` natively tracks px/ms; multiply by 1000).
+ * `px/s`, positive = toward close.
  */
-
-import type { ComputedRef, MaybeRefOrGetter } from 'vue'
-import { computed, toValue } from 'vue'
 
 import { clamp } from '../clamp.js'
 
@@ -103,22 +98,11 @@ export function viewportSnapsToPositions(
   )
 }
 
-/** 0 = closed, 1 = fully open. Clamps out-of-range positions. */
-export function progressFor(position: number, travel: number): number {
-  if (travel <= 0) return 0
-  return clamp(1 - position / travel, 0, 1)
-}
-
 export interface PickReleaseOptions {
   /** Sorted ascending; `[0]` = most open. */
   snapPositions: readonly number[]
   /** `enableDragToClose === false` disables dismiss regardless of position/velocity. */
   enableDragToClose: boolean
-  /**
-   * Velocity (px/s, toward close) above which a fling advances by one snap
-   * regardless of release position.
-   */
-  velocityThreshold: number
   /**
    * Velocity (px/s, toward close) at which a fling triggers dismiss when
    * past the most-closed snap. Set to `Infinity` to disable velocity-based
@@ -161,8 +145,8 @@ export interface PickReleaseResult {
  *      (mouse-friendly fallback — desktop drags rarely have fling velocity)
  * 3. Otherwise pick the snap nearest `projected`. The projection naturally
  *    implements a "flick advances one snap" behavior without a separate
- *    rule, as long as `coastMs * velocityThreshold` is roughly half a
- *    typical snap gap.
+ *    velocity-threshold rule — a real flick's coast carries it past the
+ *    midpoint to the next snap.
  */
 export function pickRelease(
   position: number,
@@ -212,67 +196,5 @@ export function pickRelease(
     snapIndex: nearestIdx,
     targetPosition: snapPositions[nearestIdx],
     dismiss: false,
-  }
-}
-
-// --- Reactive wrapper ----------------------------------------------------
-
-export interface UseSheetBehaviorOptions {
-  direction: MaybeRefOrGetter<SheetDirection>
-  snapPoints: MaybeRefOrGetter<readonly SheetSnap[]>
-  /** Sheet extent in px along the drag axis. */
-  travel: MaybeRefOrGetter<number>
-  /** Fling-to-next-snap threshold (px/s, toward close). */
-  velocityThreshold: MaybeRefOrGetter<number>
-  /** Fling-to-dismiss threshold (px/s, toward close). */
-  dismissVelocity: MaybeRefOrGetter<number>
-  /** Position past most-closed (px) that triggers dismiss on release. */
-  dismissThreshold: MaybeRefOrGetter<number>
-  /** Whether drag past most-closed should dismiss. */
-  enableDragToClose: MaybeRefOrGetter<boolean>
-  /** Inertial coast for release snap selection (ms). Default `100`. */
-  coastMs?: MaybeRefOrGetter<number>
-}
-
-export interface UseSheetBehaviorReturn {
-  axis: ComputedRef<'x' | 'y'>
-  closeSign: ComputedRef<1 | -1>
-  /** Resolved snap positions, sorted ascending (`[0]` = most open). */
-  snapPositions: ComputedRef<number[]>
-  /** Map current position → progress 0 (closed) – 1 (open). */
-  progressFor: (position: number) => number
-  /** Decide where to settle on release (px/s velocity, toward close). */
-  pickRelease: (position: number, velocity: number) => PickReleaseResult
-}
-
-/**
- * Reactive wrapper around the pure helpers. Drawer consumes the whole
- * thing; Sheet's BG side uses `snapPositions` and the pure helpers
- * directly (its MT worklets keep inline copies of the release math —
- * SWC's worklet transform can't follow imports from a regular module).
- */
-export function useSheetBehavior(
-  opts: UseSheetBehaviorOptions,
-): UseSheetBehaviorReturn {
-  const axis = computed(() => directionAxis(toValue(opts.direction)))
-  const closeSign = computed(() => directionCloseSign(toValue(opts.direction)))
-
-  const snapPositions = computed(() =>
-    resolveSnapPositions(toValue(opts.snapPoints), toValue(opts.travel)),
-  )
-
-  return {
-    axis,
-    closeSign,
-    snapPositions,
-    progressFor: (position: number) => progressFor(position, toValue(opts.travel)),
-    pickRelease: (position: number, velocity: number) => pickRelease(position, velocity, {
-      snapPositions: snapPositions.value,
-      enableDragToClose: toValue(opts.enableDragToClose),
-      velocityThreshold: toValue(opts.velocityThreshold),
-      dismissVelocity: toValue(opts.dismissVelocity),
-      dismissThreshold: toValue(opts.dismissThreshold),
-      coastMs: opts.coastMs == null ? 100 : toValue(opts.coastMs),
-    }),
   }
 }

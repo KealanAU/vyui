@@ -46,10 +46,8 @@ export {
   directionAxis,
   directionCloseSign,
   pickRelease,
-  progressFor,
   resolveSnapPositions,
   resolveSnapToPosition,
-  useSheetBehavior,
   viewportSnapsToPositions,
 } from './useSheetBehavior.js'
 export type {
@@ -57,6 +55,4 @@ export type {
   PickReleaseResult,
   SheetDirection,
   SheetSnap,
-  UseSheetBehaviorOptions,
-  UseSheetBehaviorReturn,
 } from './useSheetBehavior.js'

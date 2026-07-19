@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { ref } from 'vue'
 
 import {
   directionAxis,
   directionCloseSign,
   pickRelease,
-  progressFor,
   resolveSnapPositions,
   resolveSnapToPosition,
-  useSheetBehavior,
   viewportSnapsToPositions,
 } from './useSheetBehavior.js'
 
@@ -103,33 +100,11 @@ describe('viewportSnapsToPositions', () => {
   })
 })
 
-describe('progressFor', () => {
-  it('returns 1 at position 0 (fully open), 0 at travel (closed)', () => {
-    expect(progressFor(0, 800)).toBe(1)
-    expect(progressFor(800, 800)).toBe(0)
-  })
-
-  it('returns a linear interpolation in between', () => {
-    expect(progressFor(400, 800)).toBe(0.5)
-    expect(progressFor(80, 800)).toBeCloseTo(0.9, 5)
-  })
-
-  it('clamps to [0, 1] for out-of-range positions', () => {
-    expect(progressFor(-100, 800)).toBe(1)
-    expect(progressFor(2000, 800)).toBe(0)
-  })
-
-  it('returns 0 for non-positive travel', () => {
-    expect(progressFor(50, 0)).toBe(0)
-  })
-})
-
 describe('pickRelease', () => {
   const snapPositions = [80, 480] // 0.9 and 0.4 fractions of an 800px sheet
   const baseOpts = {
     snapPositions,
     enableDragToClose: true,
-    velocityThreshold: 400,
     dismissVelocity: 600,
     dismissThreshold: 80,
   }
@@ -142,8 +117,8 @@ describe('pickRelease', () => {
   it('uses projection to bias toward the direction of fling', () => {
     // Releasing midway between snaps with downward velocity should land
     // on the more-closed snap thanks to the coast. Velocity 500 px/s sits
-    // above velocityThreshold (400) but below dismissVelocity (600), so
-    // we stay in the "settle" path. Coast = (500 * 100)/1000 = 50 px →
+    // below dismissVelocity (600), so we stay in the "settle" path.
+    // Coast = (500 * 100)/1000 = 50 px →
     // projected = 330. Distance to 80 is 250; to 480 is 150 → snap to 480.
     const result = pickRelease(280, 500, baseOpts)
     expect(result.dismiss).toBe(false)
@@ -185,63 +160,5 @@ describe('pickRelease', () => {
   it('returns dismiss:false with snapIndex -1 when there are no snaps', () => {
     const result = pickRelease(100, 0, { ...baseOpts, snapPositions: [] })
     expect(result).toEqual({ snapIndex: -1, targetPosition: 100, dismiss: false })
-  })
-})
-
-describe('useSheetBehavior (reactive wrapper)', () => {
-  it('reacts to direction changes', () => {
-    const direction = ref<'top' | 'bottom' | 'left' | 'right'>('bottom')
-    const { axis, closeSign } = useSheetBehavior({
-      direction,
-      snapPoints: [1],
-      travel: 800,
-      velocityThreshold: 400,
-      dismissVelocity: 600,
-      dismissThreshold: 80,
-      enableDragToClose: true,
-    })
-    expect(axis.value).toBe('y')
-    expect(closeSign.value).toBe(1)
-
-    direction.value = 'left'
-    expect(axis.value).toBe('x')
-    expect(closeSign.value).toBe(-1)
-  })
-
-  it('reacts to snap point + travel changes', () => {
-    const travel = ref(800)
-    const { snapPositions } = useSheetBehavior({
-      direction: 'bottom',
-      snapPoints: [0.5, 0.9],
-      travel,
-      velocityThreshold: 400,
-      dismissVelocity: 600,
-      dismissThreshold: 80,
-      enableDragToClose: true,
-    })
-    expect(snapPositions.value[0]).toBeCloseTo(80, 5)
-    expect(snapPositions.value[1]).toBe(400)
-
-    travel.value = 1000
-    expect(snapPositions.value[0]).toBeCloseTo(100, 5)
-    expect(snapPositions.value[1]).toBe(500)
-  })
-
-  it('exposes progressFor + pickRelease bound to the current options', () => {
-    const { progressFor, pickRelease } = useSheetBehavior({
-      direction: 'bottom',
-      snapPoints: [1],
-      travel: 800,
-      velocityThreshold: 400,
-      dismissVelocity: 600,
-      dismissThreshold: 80,
-      enableDragToClose: true,
-    })
-    expect(progressFor(0)).toBe(1)
-    expect(progressFor(800)).toBe(0)
-
-    const result = pickRelease(0, 0)
-    expect(result.dismiss).toBe(false)
-    expect(result.snapIndex).toBe(0)
   })
 })

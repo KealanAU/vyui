@@ -68,6 +68,9 @@ const handlers = presence?.animationHandlers
       bottom: '0',
       zIndex: '1000',
       backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      // Inline longhand overrides the 280ms keyframe shorthands below so the
+      // fade tracks the sheet's `duration` prop (panel does the same).
+      animationDuration: `${ctx.duration.value}ms`,
     }"
     @tap="emits('tap')"
     @animationstart="handlers?.handleKFStart"

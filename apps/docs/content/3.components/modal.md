@@ -169,7 +169,6 @@ Set `close="false"` to hide the built-in close button.
 
 ### Current API limitations
 
-- `dismissible` is declared and defaults to `true`, but the kit component does not currently forward it to the core dialog. Backdrop taps therefore still dismiss when `dismissible` is `false`.
 - `overlay="false"` removes the dimming class, but the full-screen transparent backdrop still renders, blocks interaction behind the modal, and dismisses on tap.
 - `portal` is retained for API parity, but changing it has no effect. Dialog content is always registered with the Lynx `OverlayRoot`.
 - In uncontrolled mode, the `close()` slot helper only emits updates and does not directly change the core dialog's internal state. Prefer controlled state when using the helper. The built-in close control and backdrop still close uncontrolled dialogs.
@@ -189,7 +188,7 @@ Set `close="false"` to hide the built-in close button.
 | `portal` | `boolean` | `true` | API-parity prop; currently does not change Lynx overlay registration. |
 | `close` | `boolean \| Partial<ButtonProps>` | `true` | Shows the built-in close button and optionally forwards button props. |
 | `closeIcon` | `string` | App icon / `i-lucide-x` | Iconify name for the built-in close button. |
-| `dismissible` | `boolean` | `true` | Declared API prop; currently not wired, so backdrop dismissal remains enabled. |
+| `dismissible` | `boolean` | `true` | When `false`, backdrop taps are blocked and emit `close:prevent` instead of closing. |
 | `class` | `any` | `undefined` | Classes merged onto the trigger wrapper, not the modal panel. |
 | `ui` | `Partial<Record<ModalSlot, any>>` | `undefined` | Per-instance theme slot overrides. |
 
@@ -199,6 +198,7 @@ Set `close="false"` to hide the built-in close button.
 | --- | --- | --- |
 | `update:open` | `boolean` | Open-state update for `v-model:open`. |
 | `update:modelValue` | `boolean` | Open-state update for `v-model`. |
+| `close:prevent` | none | An outside tap was blocked because `dismissible` is `false`. |
 
 ## Slots
 
