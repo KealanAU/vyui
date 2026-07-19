@@ -20,7 +20,7 @@ export interface DialogContentProps extends Omit<DialogContentImplProps, 'trapFo
 
 <script setup lang="ts">
 import { computed, provide, ref, watch } from 'vue'
-import { PresenceState } from '@/components/Presence'
+import { PresenceState, combineGroupState } from '@/components/Presence'
 import { useEmitAsProps, useForwardExpose } from '@/shared'
 import DialogContentModal from './DialogContentModal.vue'
 import DialogContentNonModal from './DialogContentNonModal.vue'
@@ -60,28 +60,12 @@ const panelState = ref<PresenceState>(
   showRef.value ? PresenceState.Entering : PresenceState.Left,
 )
 
-function combine(states: PresenceState[]): PresenceState {
-  // DelayedEntering > Entering > Leaving > Entered > Left precedence.
-  // Inlined from `usePresenceGroup.combineGroupState` (not exported).
-  if (states.some(s => s === PresenceState.DelayedEntering))
-    return PresenceState.DelayedEntering
-  if (states.some(s => s === PresenceState.Entering))
-    return PresenceState.Entering
-  if (states.some(s => s === PresenceState.Leaving))
-    return PresenceState.Leaving
-  if (states.every(s => s === PresenceState.Entered))
-    return PresenceState.Entered
-  if (states.every(s => s === PresenceState.Left))
-    return PresenceState.Left
-  return PresenceState.Left
-}
-
 // Mirror the combined state up to the root context so DialogTrigger/Close
 // can `resolveBusyState` against it without injecting Presence.
 watch(
   [backdropState, panelState],
   ([a, b]) => {
-    rootContext.setGroupState(combine([a, b]))
+    rootContext.setGroupState(combineGroupState([a, b]))
   },
   { immediate: true },
 )

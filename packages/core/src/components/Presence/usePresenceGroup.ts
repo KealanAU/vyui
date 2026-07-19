@@ -69,7 +69,12 @@ export interface UsePresenceGroupReturn {
   mountView: Ref<boolean>
 }
 
-function combineGroupState(states: PresenceState[]): PresenceState {
+/**
+ * Combine member states into the group's state. Exported for overlays that
+ * coordinate their layers with manually-controlled `<Presence>` wrappers
+ * (Dialog's backdrop + panel) instead of `usePresenceGroup`'s render path.
+ */
+export function combineGroupState(states: PresenceState[]): PresenceState {
   // `DelayedEntering` wins over `Entering` so the parent can keep
   // `enableDelay`'d members in their layout-settle phase.
   if (states.some(s => s === PresenceState.DelayedEntering)) {
