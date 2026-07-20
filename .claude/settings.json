@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -c '(.tool_input.file_path // \"\") as $f | ((.tool_input.content // .tool_input.new_string) // \"\") as $c | if ($f | test(\"(^|/)[.]changeset/[^/]+[.]md$\")) and (($c | test(\"(?m)^\\\"?[^:\\\\n]+\\\"?\\\\s*:\\\\s*(minor|major)\\\\s*$\")) or ($c | test(\"(?m)^(minor|major)$\"))) then {hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:\"Changeset declares a minor/major bump. Repo policy is patch by default — approve only if a non-patch bump was explicitly requested.\"}} else empty end'"
+          }
+        ]
+      }
+    ]
+  }
+}
