@@ -71,6 +71,17 @@ export interface InputProps {
   autocapitalize?: string
   /** Forwarded to the underlying `<input>`. Defaults to `'off'` for email and password inputs. */
   autocorrect?: string
+  /**
+   * Native keyboard avoidance (Lynx `avoid-keyboard`): the platform shifts
+   * the whole LynxView up so the focused input clears the keyboard — exact
+   * native window-coordinate math, no JS. Zero-setup alternative to the
+   * `VyKeyboardAware*` family for simple forms; do NOT combine with a
+   * `VyKeyboardAwareRoot`, the two lifts stack. Pair with
+   * `avoidKeyboardSpacing` to also clear the field's bottom chrome.
+   */
+  avoidKeyboard?: boolean
+  /** Extra clearance in px above the keyboard when `avoidKeyboard` is set. */
+  avoidKeyboardSpacing?: number
   /** Focus the input on mount (after `autofocusDelay` ms). */
   autofocus?: boolean
   /** Delay before applying `autofocus`, in milliseconds. */
@@ -223,6 +234,8 @@ defineExpose({ inputRef })
         :autocomplete="autocomplete"
         :autocapitalize="resolvedAutocapitalize"
         :autocorrect="resolvedAutocorrect"
+        :avoid-keyboard="avoidKeyboard"
+        :avoid-keyboard-spacing="avoidKeyboardSpacing"
         :class="ui.base({ class: ['w-full', props.ui?.base] })"
         @update:model-value="$emit('update:modelValue', $event)"
         @confirm="$emit('confirm', $event)"

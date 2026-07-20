@@ -67,6 +67,21 @@ export interface InputProps extends PrimitiveProps {
   autocorrect?: string
   /** When `false`, focus will not raise the software keyboard. */
   showSoftInputOnFocus?: boolean
+  /**
+   * Native keyboard avoidance (Lynx `avoid-keyboard`): when the on-screen
+   * keyboard would cover this focused input, the platform shifts the WHOLE
+   * LynxView up by the overlap — window-coordinate math on the native side,
+   * exact under any container — and restores it on dismiss. Zero-JS
+   * alternative to the `KeyboardAware*` family for simple forms. Do NOT
+   * combine with a `KeyboardAwareRoot`: the two lifts stack.
+   */
+  avoidKeyboard?: boolean
+  /**
+   * Extra clearance in px kept above the keyboard when `avoidKeyboard`
+   * shifts the view. Normalized to a px string on the wire — Android's
+   * native setter only parses string values.
+   */
+  avoidKeyboardSpacing?: number
 }
 
 /**
@@ -418,6 +433,8 @@ defineExpose<InputExposed>({
     :autocapitalize="autocapitalize"
     :autocorrect="autocorrect"
     :show-soft-input-on-focus="showSoftInputOnFocus"
+    :avoid-keyboard="avoidKeyboard || undefined"
+    :avoid-keyboard-spacing="avoidKeyboardSpacing != null ? `${avoidKeyboardSpacing}px` : undefined"
     ignore-focus
     accessibility-traits="keyboard"
     :data-disabled="disabled ? '' : undefined"

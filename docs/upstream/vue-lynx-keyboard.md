@@ -107,6 +107,18 @@ the React port):
   consumer's own trigger still wins, and a trigger without an explicit
   `offset` inherits the root's.
 
+## Native alternative: `avoid-keyboard`
+
+Lynx's `<input>`/`<textarea>` support native `avoid-keyboard` +
+`avoid-keyboard-spacing` props (both iOS and Android): when the keyboard
+would cover the focused input, the platform shifts the WHOLE LynxView up by
+the exact overlap (window-coordinate math, animated, restored on dismiss).
+vyui exposes these as `avoidKeyboard` / `avoidKeyboardSpacing` on core and
+kit Input/Textarea — spacing is normalized to a px string because Android's
+setter only parses strings. Use for simple forms where shifting the entire
+view is acceptable; use `KeyboardAware*` when only a region should move.
+Never combine the two — the lifts stack.
+
 ## Open questions / upstream
 
 - **`GlobalEventEmitter` `keyboardstatuschanged` delivery is fixed upstream**

@@ -45,6 +45,19 @@ describe('Input — default render', () => {
     expect(el.getAttribute('autocorrect')).toBe('off')
   })
 
+  it('forwards native avoid-keyboard, normalizing spacing to a px string', () => {
+    const { container } = render(Input, {
+      avoidKeyboard: true,
+      avoidKeyboardSpacing: 16,
+      'data-testid': 'input',
+    })
+    const el = input(container)
+    expect(el.getAttribute('avoid-keyboard')).not.toBeNull()
+    // Android's native setter only parses string values — the number prop
+    // must reach the element as `"16px"`.
+    expect(el.getAttribute('avoid-keyboard-spacing')).toBe('16px')
+  })
+
   it('renders disabled / readonly attrs and data-* mirrors', () => {
     const { container } = render(_Input, { disabled: true, readonly: true })
     const el = input(container)

@@ -59,6 +59,13 @@ export interface TextareaProps {
   autofocus?: boolean
   /** Delay before applying `autofocus`, in milliseconds. */
   autofocusDelay?: number
+  /**
+   * Native keyboard avoidance (Lynx `avoid-keyboard`) — see `VyInput`'s prop
+   * of the same name. Do NOT combine with a `VyKeyboardAwareRoot`.
+   */
+  avoidKeyboard?: boolean
+  /** Extra clearance in px above the keyboard when `avoidKeyboard` is set. */
+  avoidKeyboardSpacing?: number
   class?: any
   ui?: Partial<Record<keyof ReturnType<typeof buildTextarea>['slots'], any>>
 }
@@ -176,6 +183,8 @@ defineExpose({ textareaRef })
       :required="required"
       :rows="rows"
       :max-length="maxLength"
+      :avoid-keyboard="avoidKeyboard"
+      :avoid-keyboard-spacing="avoidKeyboardSpacing"
       :class="ui.base({ class: props.ui?.base })"
       @update:model-value="$emit('update:modelValue', $event)"
       @confirm="$emit('confirm', $event)"

@@ -45,6 +45,18 @@ export interface TextareaProps extends PrimitiveProps {
   confirmType?: InputConfirmType
   /** When `false`, focus will not raise the software keyboard. */
   showSoftInputOnFocus?: boolean
+  /**
+   * Native keyboard avoidance (Lynx `avoid-keyboard`) — see `Input.vue`'s
+   * prop of the same name: shifts the whole LynxView by the overlap, exact
+   * native math; do NOT combine with a `KeyboardAwareRoot`.
+   */
+  avoidKeyboard?: boolean
+  /**
+   * Extra clearance in px above the keyboard when `avoidKeyboard` shifts
+   * the view. Normalized to a px string on the wire — Android's native
+   * setter only parses string values.
+   */
+  avoidKeyboardSpacing?: number
 }
 
 export interface TextareaExposed {
@@ -309,6 +321,8 @@ defineExpose<TextareaExposed>({
     :input-filter="inputFilter"
     :confirm-type="confirmType"
     :show-soft-input-on-focus="showSoftInputOnFocus"
+    :avoid-keyboard="avoidKeyboard || undefined"
+    :avoid-keyboard-spacing="avoidKeyboardSpacing != null ? `${avoidKeyboardSpacing}px` : undefined"
     ignore-focus
     accessibility-traits="keyboard"
     :data-disabled="disabled ? '' : undefined"
