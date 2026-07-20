@@ -19,6 +19,7 @@
 // this plugin for parity without depending on `@lynx-js/react`.
 
 import { createRequire } from 'node:module'
+import { transformSync } from 'esbuild'
 
 // `runtimePkg` is just the import source SWC writes for the worklet runtime
 // gate (`loadWorkletRuntime`). We pass `vue-lynx` to match vue-lynx's own
@@ -119,7 +120,19 @@ export function transformWorklet(code, id) {
   if (result.errors && result.errors.length > 0) {
     throw new Error(`[vyui:worklet] ${filename}: ${result.errors.map((e) => e.text).join('; ')}`)
   }
-  return reAddMainThreadMarker(stripBodyDirectives(inlineRuntimeGate(result.code)))
+  return reAddMainThreadMarker(stripComments(stripBodyDirectives(inlineRuntimeGate(result.code))))
+}
+
+// Comment-strip worklet modules (esbuild drops normal comments, keeps
+// @__PURE__ and legal comments). The consumer's `worklet-loader-mt` slices our
+// registrations out of this file with hand-rolled text scanners that have
+// repeatedly choked on comment content inside registration bodies (0.4.2
+// counts parens in comments; 0.5.x's findBalancedEnd misreads apostrophes —
+// see docs/upstream/vue-lynx-mt-worklet-import-issue.md). Comment-free bodies
+// are extraction-proof for every scanner generation; native-compat.test.mjs
+// enforces the invariant on dist.
+function stripComments(code) {
+  return transformSync(code, { loader: 'js', charset: 'utf8' }).code
 }
 
 // SWC leaves a bare `'main thread';` directive inside some registration bodies.

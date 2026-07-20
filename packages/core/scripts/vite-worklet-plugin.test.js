@@ -1,3 +1,7 @@
+// @vitest-environment node
+// (esbuild — used by the plugin's comment-strip — refuses to run under jsdom's
+// foreign-realm TextEncoder; these are node script tests anyway.)
+//
 // Regression pin for the worklet pre-compile shared by the Vite build
 // (`@vyui/shared-build-config/vite-worklet-plugin`). The transform strips the
 // `loadWorkletRuntime` import + its alias (vue-lynx doesn't re-export it) and
@@ -125,8 +129,10 @@ describe('worklet plugin: transformWorklet (end-to-end via @lynx-js/react/transf
     expect(out).toBeTypeOf('string')
     // Self-registers on the main thread…
     expect(out).toMatch(/registerWorkletInternal\(\s*["']main-thread["']/)
-    // …with the inlined gate and zero worklet-runtime imports.
-    expect(out).toContain(INLINE_GATE)
+    // …with the inlined gate and zero worklet-runtime imports. (Paren-less
+    // match: the comment-strip esbuild pass re-prints and drops the gate's
+    // redundant outer parens; the unit tests above still pin the exact form.)
+    expect(out).toContain('typeof globalThis !== "undefined" && globalThis.lynxWorkletImpl')
     expect(out).not.toMatch(/loadWorkletRuntime/)
     expect(out).not.toMatch(/import[^\n]*worklet-runtime/)
     // …and carries the top-level `"main thread"` marker the consumer's MT
@@ -136,5 +142,23 @@ describe('worklet plugin: transformWorklet (end-to-end via @lynx-js/react/transf
     // The leftover in-body directive is stripped so the consumer's re-transform
     // doesn't double-register: the only `main thread` string is the marker.
     expect(out.match(/main thread/g)).toHaveLength(1)
+  })
+
+  it('strips comments so consumer extraction scanners cannot misread them', () => {
+    // vue-lynx's worklet-loader-mt slices registrations out of our dist with
+    // text scanners that choke on quotes/parens inside comments (0.5.x
+    // findBalancedEnd). Comment-free output is extraction-proof for every
+    // scanner generation; native-compat.test.mjs enforces the same on dist.
+    const src = [
+      `export function onTap(x) {`,
+      `  'main thread'`,
+      `  // don't trip the scanner (unmatched paren:`,
+      `  return x + 1`,
+      `}`,
+    ].join('\n')
+    const out = transformWorklet(src, `${import.meta.dirname}/onTap.ts`)
+    expect(out).toContain('registerWorkletInternal')
+    expect(out).not.toContain("don't trip")
+    expect(out).not.toMatch(/\/\/|\/\*/)
   })
 })

@@ -98,6 +98,43 @@ test('worklet bodies are self-contained (no module-scope captures)', () => {
   assert.deepEqual(problems, [])
 })
 
+test('worklet bodies are extraction-safe (no comments, no regex literals)', () => {
+  // The consumer's worklet-loader-mt slices registrations out of dist with
+  // hand-rolled text scanners that have misread comment content (vue-lynx
+  // 0.5.x) and would misread regex literals (every version). The build strips
+  // comments from worklet modules (vite-worklet-plugin); this pins both
+  // invariants so a build-config change can't silently reopen the exposure.
+  const linter = new Linter()
+  const problems = worklets.flatMap((w) =>
+    linter
+      .verify(`(${w.src})`, {
+        plugins: {
+          vyui: {
+            rules: {
+              'extraction-safe': {
+                create(ctx) {
+                  return {
+                    Program() {
+                      for (const c of ctx.sourceCode.getAllComments())
+                        ctx.report({ loc: c.loc, message: `comment in body: ${c.value.trim().slice(0, 40)}` })
+                    },
+                    Literal(node) {
+                      if (node.regex) ctx.report({ node, message: `regex literal in body: /${node.regex.pattern}/` })
+                    },
+                  }
+                },
+              },
+            },
+          },
+        },
+        languageOptions: { sourceType: 'script' },
+        rules: { 'vyui/extraction-safe': 'error' },
+      })
+      .map((m) => `${w.file} [${w.id}]: ${m.message}`),
+  )
+  assert.deepEqual(problems, [])
+})
+
 test('no PrimJS regex landmines in dist', () => {
   // \p{…}/\P{…} property escapes and (?<=/(?<! lookbehind fail to parse on
   // PrimJS. Text scan over all dist (deps are external, so this is first-party
