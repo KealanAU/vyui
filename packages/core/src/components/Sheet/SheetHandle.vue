@@ -35,11 +35,12 @@ const root = injectSheetRootContext(null)
 // which margins hold it off that edge.
 const isVertical = computed(() => directionAxis(root?.side.value ?? 'bottom') === 'x')
 
+// Background comes from the `bg-accented` class (below) so it flips in `.dark`
+// — a hardcoded inline `rgba(0,0,0,…)` would vanish on a dark sheet.
 const mergedStyle = computed<VyStyle>(() => ({
   width: isVertical.value ? '4px' : '36px',
   height: isVertical.value ? '36px' : '4px',
   borderRadius: '2px',
-  backgroundColor: 'rgba(0, 0, 0, 0.2)',
   alignSelf: 'center',
   marginTop: isVertical.value ? '0px' : '8px',
   marginBottom: isVertical.value ? '0px' : '8px',
@@ -52,7 +53,7 @@ const mergedStyle = computed<VyStyle>(() => ({
 // explicitly (below), so strip them from the attrs spread to avoid binding
 // them twice — and so the element's `class` type stays non-null (Lynx's
 // `<view>` class prop rejects `null`, which a raw attrs spread would admit).
-const forwardedClass = computed(() => ['vyui-sheet__handle', attrs.class as string])
+const forwardedClass = computed(() => ['vyui-sheet__handle', 'bg-accented', attrs.class as string])
 const restAttrs = computed(() => {
   const { class: _class, style: _style, ...rest } = attrs
   return rest
