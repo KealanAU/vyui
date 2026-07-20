@@ -7,7 +7,10 @@
 
 <template>
   <scroll-view class="w-full h-full" scroll-orientation="vertical">
-    <view class="flex flex-col gap-4 pb-2">
+    <!-- px-1: full-width inputs' 2px focus/highlight box-shadow ring paints
+         outside their box; without this inset the scroll-view + tabs
+         `overflow-hidden` clips it on the sides. -->
+    <view class="flex flex-col gap-4 px-1 pb-2">
       <slot />
       <view class="flex flex-col items-center pt-2 pb-1">
         <text class="text-dimmed text-xs">@vyui/kit · Vue-Lynx · Tailwind v3</text>

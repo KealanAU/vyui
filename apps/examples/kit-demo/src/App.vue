@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, provide, reactive, ref } from 'vue'
 import { runOnBackground } from 'vue-lynx'
 import { OverlayRoot } from '@vyui/core'
-import { useColorMode, VyButton, VyTabs } from '@vyui/kit'
+import { APP_CONFIG_KEY, type AppConfig, useAppConfig, useColorMode, VyButton, VyTabs } from '@vyui/kit'
 import SectionScroll from './sections/SectionScroll.vue'
 import ThemeSection from './sections/ThemeSection.vue'
 import DarkModeSection from './sections/DarkModeSection.vue'
@@ -29,6 +29,26 @@ const colorPalettes = reactive<Record<string, string>>({
 })
 const neutralPalette = ref<string>('slate')
 const radius = ref<number>(0.25)
+
+// Baked icon fills (toast icon, Select/Combobox selection tick) resolve their
+// hex from `appConfig.ui.*` — unlike class-based `text-primary-*`, an <svg>
+// can't read the CSS var the root palette classes swap at runtime. Re-provide
+// the config with the swatches as live getters so those baked colors track the
+// theme too. Identity stays stable, so the tv factory cache isn't invalidated.
+const themeConfig = reactive({
+  ui: {
+    ...useAppConfig().ui,
+    get primary() { return colorPalettes.primary },
+    get secondary() { return colorPalettes.secondary },
+    get success() { return colorPalettes.success },
+    get info() { return colorPalettes.info },
+    get warning() { return colorPalettes.warning },
+    get error() { return colorPalettes.error },
+    get tertiary() { return colorPalettes.tertiary },
+    get gray() { return neutralPalette.value },
+  },
+}) as AppConfig
+provide(APP_CONFIG_KEY, themeConfig)
 const isLandscape = ref(false)
 
 // App-level color mode. The singleton drives the root `<view>` (below), so a
