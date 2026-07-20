@@ -5,6 +5,17 @@ import VyAccordion from '@/components/vyui/Accordion.vue'
 import VyAvatar from '@/components/vyui/Avatar.vue'
 import VyButton from '@/components/vyui/Button.vue'
 import VyChip from '@/components/vyui/Chip.vue'
+// The one raw @vyui/core primitive on the page: Sortable is driven by
+// main-thread gesture worklets that ship inside the node_modules `@vyui/core`
+// dist. It's the worklet smoke-test canary — see lynx.config's
+// `includeWorkletPackages`.
+import { SortableRoot, SortableItem } from '@vyui/core'
+
+const tasks = ref([
+  { id: 'design', label: 'Design the screen' },
+  { id: 'build', label: 'Build the interaction' },
+  { id: 'ship', label: 'Ship the release' },
+])
 
 const accordionOpen = ref<string | number>('q1')
 const accordionItems = [
@@ -67,6 +78,21 @@ const accordionItems = [
       <view class="bg-white border-2 border-solid border-neutral-200 rounded-lg p-4 flex flex-col gap-2">
         <text class="text-neutral-900 text-base font-semibold">Accordion</text>
         <VyAccordion v-model="accordionOpen" :items="accordionItems" />
+      </view>
+
+      <!-- Sortable — main-thread worklet canary (see lynx.config). Rows are a
+           flat 52px pitch (no gap) so SortableItem's MT swap math lines up. -->
+      <view class="bg-white border-2 border-solid border-neutral-200 rounded-lg p-4 flex flex-col gap-2">
+        <text class="text-neutral-900 text-base font-semibold">Sortable</text>
+        <text class="text-neutral-500 text-xs">Long-press a row and drag to reorder — exercises @vyui/core gesture worklets.</text>
+        <SortableRoot v-model="tasks" :item-height="52" class="flex flex-col">
+          <SortableItem v-for="(task, index) in tasks" :key="task.id" :index="index">
+            <view class="h-[52px] flex flex-row items-center gap-2 px-3 border-b border-solid border-neutral-200">
+              <text class="text-neutral-400 text-sm">≡</text>
+              <text class="text-neutral-900 text-sm">{{ index + 1 }}. {{ task.label }}</text>
+            </view>
+          </SortableItem>
+        </SortableRoot>
       </view>
 
       <view class="flex flex-col items-center pt-2 pb-6">

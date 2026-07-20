@@ -1,6 +1,7 @@
 import { parseArgs } from 'node:util'
 import { resolve } from 'node:path'
 import { add } from './commands/add.js'
+import { check } from './commands/check.js'
 import { init } from './commands/init.js'
 import { list } from './commands/list.js'
 import { view } from './commands/view.js'
@@ -12,6 +13,7 @@ const HELP = `${c.bold('vyui')} — add @vyui/kit styled components to your proj
 
 ${c.bold('Usage')}
   vyui init [options]
+  vyui check [options]
   vyui add <component...> [options]
   vyui list [query] [options]
   vyui search [query] [options]
@@ -21,6 +23,7 @@ ${c.bold('Usage')}
 
 ${c.bold('Commands')}
   init                 Set up vyui.config.json + shared library files
+  check                Audit the project for common wiring gaps (worklet allowlist, preset, providers)
   add <component...>   Copy components (and their dependencies) into the project
   list [query]         List or search available components
   search [query]       Alias for list
@@ -78,6 +81,9 @@ async function main(): Promise<void> {
   switch (command) {
     case 'init':
       await init({ ...common, registry: values.registry, style: values.style, baseColor: values['base-color'] })
+      break
+    case 'check':
+      check({ cwd })
       break
     case 'add':
       await add({

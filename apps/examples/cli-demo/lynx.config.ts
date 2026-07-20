@@ -54,6 +54,13 @@ export default defineConfig({
   plugins: [
     pluginVueLynx({
       optionsApi: false,
+      // What `vyui init`/`vyui check` now write into a real consumer's config.
+      // `@vyui/core` stays an npm dependency here (only styled components are
+      // copied to src), so its main-thread worklets live in node_modules —
+      // which vue-lynx's MT loader skips unless the package is allowlisted.
+      // The Sortable card in App.vue is the canary: without this line it throws
+      // `cannot read property 'bind' of undefined` on first long-press.
+      includeWorkletPackages: ['@vyui/core'],
     }),
     pluginTailwindCSS({
       config: 'tailwind.config.ts',
