@@ -1,5 +1,11 @@
 # @vyui/cli
 
+## 0.1.1
+
+### Patch Changes
+
+- Add `vyui check` to audit an initialised project for wiring gaps, and teach `init`/`check` about `lynx.config.*` — writing `includeWorkletPackages: ['@vyui/core']` into `pluginVueLynx(...)`. Without it an npm consumer's main-thread worklets never register and gesture-driven components crash at runtime with `cannot read property 'bind' of undefined`. ([#150](https://github.com/KealanAU/vyui/pull/150))
+
 ## 0.1.0
 
 ### Minor Changes
