@@ -18,6 +18,14 @@ export interface AppProps {
    * `@vyui/kit/style.css` default.
    */
   radius?: number
+  /**
+   * Provide app-wide safe-area insets to the whole tree (`useSafeArea()`).
+   * `false` opts the app out with zeros (e.g. a fullscreen surface drawing its
+   * own chrome). Omit to use the container's reported insets as-is. A subtree
+   * can still override with its own `provideSafeAreaInsets`.
+   * @defaultValue true
+   */
+  safeArea?: boolean
   class?: any
   ui?: Partial<Record<keyof AppTV['slots'], any>>
 }
@@ -39,7 +47,7 @@ export interface AppSlots {
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { OverlayRoot } from '@vyui/core'
+import { OverlayRoot, getSafeAreaInsets, provideSafeAreaInsets } from '@vyui/core'
 import { useColorMode } from '../composables/useColorMode'
 import { useStyledComponent } from '../composables/useStyledComponent'
 
@@ -54,6 +62,11 @@ defineSlots<AppSlots>()
 const { mode, isDark } = useColorMode()
 
 const { ui } = useStyledComponent('app', theme, () => ({}))
+
+// App-root safe-area provider: `false` forces zeros for the whole tree (else
+// useSafeArea falls back to the container read anyway); a subtree can still
+// override with its own `provideSafeAreaInsets`.
+provideSafeAreaInsets(props.safeArea === false ? { top: 0, bottom: 0 } : getSafeAreaInsets())
 
 // String form — the Lynx view style type has no custom-property index key.
 const rootStyle = computed(() =>

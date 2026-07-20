@@ -176,6 +176,10 @@ const ui = computed(() => buildCombobox(appConfig)({
 // neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
+// The selected-item tick is baked too (a class can't reach the rasterized svg).
+// Uses the accent ramp (mode-independent), so it reads in light and dark.
+const checkColor = computed(() => resolveColorHex(appConfig, props.color, 500))
+
 // Shared open state bridges `ComboboxRoot` (item-tap closes it; trigger
 // toggles it) and `SheetRoot` (drag-to-close, backdrop-tap). Whichever side
 // flips it, the other observes through this ref.
@@ -279,7 +283,9 @@ const displayLabel = computed(() => {
           <view :class="ui.viewport({ class: props.ui?.viewport })">
             <ComboboxEmpty :class="ui.empty({ class: props.ui?.empty })">
               <slot name="empty" :search-term="searchTerm">
-                <text>No results</text>
+                <!-- Lynx enableCSSInheritance:false — empty's text-muted sits on
+                     the wrapping <view>, so the color must land on the text. -->
+                <text class="text-muted">No results</text>
               </slot>
             </ComboboxEmpty>
 
@@ -327,6 +333,7 @@ const displayLabel = computed(() => {
                       <ComboboxItemIndicator>
                         <VyIcon
                           :name="resolvedSelectedIcon"
+                          :color="checkColor"
                           :class="ui.itemTrailingIcon({ class: props.ui?.itemTrailingIcon })"
                         />
                       </ComboboxItemIndicator>

@@ -150,6 +150,10 @@ const ui = computed(() => buildSelect(appConfig)({
 // neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
+// The selected-item tick is baked too (a class can't reach the rasterized svg).
+// Uses the accent ramp (mode-independent), so it reads in light and dark.
+const checkColor = computed(() => resolveColorHex(appConfig, props.color, 500))
+
 // Shared open state bridges `SelectRoot` (item-tap closes it; SelectTrigger
 // toggles it) and `SheetRoot` (drag-to-close, backdrop-tap). Whichever side
 // flips it, the other observes through this ref.
@@ -270,6 +274,7 @@ const displayValue = computed(() => {
                       <SelectItemIndicator>
                         <VyIcon
                           :name="resolvedSelectedIcon"
+                          :color="checkColor"
                           :class="ui.itemTrailingIcon({ class: props.ui?.itemTrailingIcon })"
                         />
                       </SelectItemIndicator>

@@ -59,6 +59,13 @@ export interface TextareaProps {
   autofocus?: boolean
   /** Delay before applying `autofocus`, in milliseconds. */
   autofocusDelay?: number
+  /**
+   * Native keyboard avoidance (Lynx `avoid-keyboard`) — see `VyInput`'s prop
+   * of the same name. Do NOT combine with a `VyKeyboardAwareRoot`.
+   */
+  avoidKeyboard?: boolean
+  /** Extra clearance in px above the keyboard when `avoidKeyboard` is set. */
+  avoidKeyboardSpacing?: number
   class?: any
   ui?: Partial<Record<keyof ReturnType<typeof buildTextarea>['slots'], any>>
 }
@@ -74,7 +81,7 @@ export interface TextareaSlots {
 
 <script setup lang="ts">
 import { computed, onMounted, ref, useSlots } from 'vue'
-import { Textarea as CoreTextarea } from '@vyui/core'
+import { KeyboardAwareTrigger, Textarea as CoreTextarea } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 import { Icon as VyIcon } from '@vyui/core'
 import { resolveColorHex } from '../utils/resolveColor'
@@ -138,7 +145,10 @@ defineExpose({ textareaRef })
 </script>
 
 <template>
-  <view :class="ui.root({ class: [props.class, props.ui?.root] })">
+  <!-- Same as VyInput: register the styled field (not the bare <textarea>)
+       with any surrounding KeyboardAwareRoot. -->
+  <KeyboardAwareTrigger as-child>
+    <view :class="ui.root({ class: [props.class, props.ui?.root] })">
     <view
       v-if="hasLeading"
       :class="ui.leading({ class: props.ui?.leading })"
@@ -173,6 +183,8 @@ defineExpose({ textareaRef })
       :required="required"
       :rows="rows"
       :max-length="maxLength"
+      :avoid-keyboard="avoidKeyboard"
+      :avoid-keyboard-spacing="avoidKeyboardSpacing"
       :class="ui.base({ class: props.ui?.base })"
       @update:model-value="$emit('update:modelValue', $event)"
       @confirm="$emit('confirm', $event)"
@@ -193,5 +205,6 @@ defineExpose({ textareaRef })
         />
       </slot>
     </view>
-  </view>
+    </view>
+  </KeyboardAwareTrigger>
 </template>

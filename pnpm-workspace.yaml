@@ -28,10 +28,15 @@ allowBuilds:
   esbuild: true
   sharp: true
   vue-demi: false
+# 0.5.1's worklet-loader-mt registration scan chokes on comments inside worklet
+# bodies; patch makes findBalancedEnd comment-aware. Drop when upstream #287
+# (AST-span extraction) ships.
+patchedDependencies:
+  vue-lynx@0.5.1: patches/vue-lynx@0.5.1.patch
 minimumReleaseAgeExclude:
   - nuxt-schema-org@6.2.3
-  # 0.4.2 (2026-07-17) is younger than the 7-day gate; needed now for the #190
-  # worklet-loader fix that replaces our local patch. NOT 0.5.x: its pipeline
-  # breaks the Draggable MT worklet transform (syntax error in generated MT
-  # module) — see docs/upstream/vue-lynx-mt-worklet-import-issue.md addendum.
-  - vue-lynx@0.4.2
+  # 0.5.1 (2026-07-17) is younger than the 7-day gate. Its `findBalancedEnd`
+  # extraction bug (comments in worklet bodies) is fixed by our local patch in
+  # patches/ until upstream #287 ships — see
+  # docs/upstream/vue-lynx-mt-worklet-import-issue.md addendum.
+  - vue-lynx@0.5.1

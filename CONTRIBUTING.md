@@ -104,6 +104,21 @@ ninety percent of the time it's one of these:
   reach the MT graph. Don't narrow that list — tree-shaking will eat your
   worklets.
 
+- The consumer's MT slice keeps **only** the `registerWorkletInternal(...)`
+  registrations from our dist (no named imports, no module scope). Any free
+  identifier in a worklet body that isn't a known MT global is a device-side
+  `ReferenceError` — `scripts/native-compat.test.mjs` gates this on every
+  `pnpm build` in `packages/core`.
+- vue-lynx's loader slices those registrations out of our dist with **text
+  scanners** that have repeatedly misread comments/regexes in worklet bodies
+  (0.4.2 counts parens in comments; 0.5.x misreads apostrophes). Our build
+  strips comments from worklet modules and `native-compat` pins the invariant,
+  so published dist is extraction-proof regardless of the consumer's vue-lynx
+  version. After **any vue-lynx bump**, run the end-to-end canary before
+  device testing: build a demo, then
+  `node tools/audit-worklet-bundle.mjs apps/examples/kit-demo/dist/main.web.bundle`
+  (fails on any worklet id referenced without a registration).
+
 Related upstream vue-lynx worklet/tree-shaking issues are documented in
 `docs/upstream/vue-lynx-mt-worklet-import-issue.md`. If you hit something
 that smells related, check that doc first before debugging from scratch.

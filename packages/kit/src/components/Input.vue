@@ -71,6 +71,17 @@ export interface InputProps {
   autocapitalize?: string
   /** Forwarded to the underlying `<input>`. Defaults to `'off'` for email and password inputs. */
   autocorrect?: string
+  /**
+   * Native keyboard avoidance (Lynx `avoid-keyboard`): the platform shifts
+   * the whole LynxView up so the focused input clears the keyboard — exact
+   * native window-coordinate math, no JS. Zero-setup alternative to the
+   * `VyKeyboardAware*` family for simple forms; do NOT combine with a
+   * `VyKeyboardAwareRoot`, the two lifts stack. Pair with
+   * `avoidKeyboardSpacing` to also clear the field's bottom chrome.
+   */
+  avoidKeyboard?: boolean
+  /** Extra clearance in px above the keyboard when `avoidKeyboard` is set. */
+  avoidKeyboardSpacing?: number
   /** Focus the input on mount (after `autofocusDelay` ms). */
   autofocus?: boolean
   /** Delay before applying `autofocus`, in milliseconds. */
@@ -90,7 +101,7 @@ export interface InputSlots {
 
 <script setup lang="ts">
 import { computed, onMounted, ref, useSlots } from 'vue'
-import { Input as CoreInput } from '@vyui/core'
+import { Input as CoreInput, KeyboardAwareTrigger } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
 import { Icon as VyIcon } from '@vyui/core'
 import { resolveColorHex } from '../utils/resolveColor'
@@ -172,7 +183,12 @@ defineExpose({ inputRef })
 </script>
 
 <template>
-  <view :class="ui.root({ class: [props.class, props.ui?.root] })">
+  <!-- The trigger makes KeyboardAware lifts measure the STYLED FIELD (this
+       root view — border + padding included), not the bare inner <input>,
+       so the field's bottom chrome clears the keyboard too. Renders nothing
+       extra (as-child) and no-ops without a KeyboardAwareRoot above. -->
+  <KeyboardAwareTrigger as-child>
+    <view :class="ui.root({ class: [props.class, props.ui?.root] })">
     <view
       v-if="hasLeading"
       :class="ui.leading({ class: props.ui?.leading })"
@@ -218,6 +234,8 @@ defineExpose({ inputRef })
         :autocomplete="autocomplete"
         :autocapitalize="resolvedAutocapitalize"
         :autocorrect="resolvedAutocorrect"
+        :avoid-keyboard="avoidKeyboard"
+        :avoid-keyboard-spacing="avoidKeyboardSpacing"
         :class="ui.base({ class: ['w-full', props.ui?.base] })"
         @update:model-value="$emit('update:modelValue', $event)"
         @confirm="$emit('confirm', $event)"
@@ -239,5 +257,6 @@ defineExpose({ inputRef })
         />
       </slot>
     </view>
-  </view>
+    </view>
+  </KeyboardAwareTrigger>
 </template>

@@ -45,6 +45,18 @@ export interface TextareaProps extends PrimitiveProps {
   confirmType?: InputConfirmType
   /** When `false`, focus will not raise the software keyboard. */
   showSoftInputOnFocus?: boolean
+  /**
+   * Native keyboard avoidance (Lynx `avoid-keyboard`) — see `Input.vue`'s
+   * prop of the same name: shifts the whole LynxView by the overlap, exact
+   * native math; do NOT combine with a `KeyboardAwareRoot`.
+   */
+  avoidKeyboard?: boolean
+  /**
+   * Extra clearance in px above the keyboard when `avoidKeyboard` shifts
+   * the view. Normalized to a px string on the wire — Android's native
+   * setter only parses string values.
+   */
+  avoidKeyboardSpacing?: number
 }
 
 export interface TextareaExposed {
@@ -230,9 +242,13 @@ function handleInput(event: any) {
   emit('input', value, selectionStart, selectionEnd, isComposing)
 }
 
+// A surrounding Trigger owns the registration when present — see Input.vue's
+// handleFocus for why self-registering as well would clobber it.
 function handleFocus(event: any) {
-  triggerContext?.onInputFocused?.()
-  if (rootContext) {
+  if (triggerContext) {
+    triggerContext.onInputFocused()
+  }
+  else if (rootContext) {
     selfRef.current = currentElement.value
     rootContext.onAwareTriggerFocused?.(selfRef)
   }
@@ -241,8 +257,10 @@ function handleFocus(event: any) {
 }
 
 function handleBlur(event: any) {
-  triggerContext?.onInputBlurred?.()
-  rootContext?.onAwareTriggerBlurred?.(selfRef)
+  if (triggerContext)
+    triggerContext.onInputBlurred()
+  else
+    rootContext?.onAwareTriggerBlurred?.(selfRef)
   const value: string = event?.detail?.value ?? event?.target?.value ?? props.modelValue ?? ''
   emit('blur', value)
 }
@@ -268,8 +286,10 @@ function handleKeyboard(event: any) {
     height: Number(d.keyBoardHeight ?? d.keyboardHeight ?? d.height ?? 0) || 0,
     safeAreaBottom: Number(d.safeAreaBottom ?? 0) || 0,
   }
-  triggerContext?.onInputKeyboard?.(info)
-  rootContext?.onAwareTriggerKeyboardChanged?.(selfRef, info)
+  if (triggerContext)
+    triggerContext.onInputKeyboard(info)
+  else
+    rootContext?.onAwareTriggerKeyboardChanged?.(selfRef, info)
   emit('keyboard', info)
 }
 
@@ -301,6 +321,8 @@ defineExpose<TextareaExposed>({
     :input-filter="inputFilter"
     :confirm-type="confirmType"
     :show-soft-input-on-focus="showSoftInputOnFocus"
+    :avoid-keyboard="avoidKeyboard || undefined"
+    :avoid-keyboard-spacing="avoidKeyboardSpacing != null ? `${avoidKeyboardSpacing}px` : undefined"
     ignore-focus
     accessibility-traits="keyboard"
     :data-disabled="disabled ? '' : undefined"

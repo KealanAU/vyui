@@ -67,6 +67,21 @@ export interface InputProps extends PrimitiveProps {
   autocorrect?: string
   /** When `false`, focus will not raise the software keyboard. */
   showSoftInputOnFocus?: boolean
+  /**
+   * Native keyboard avoidance (Lynx `avoid-keyboard`): when the on-screen
+   * keyboard would cover this focused input, the platform shifts the WHOLE
+   * LynxView up by the overlap — window-coordinate math on the native side,
+   * exact under any container — and restores it on dismiss. Zero-JS
+   * alternative to the `KeyboardAware*` family for simple forms. Do NOT
+   * combine with a `KeyboardAwareRoot`: the two lifts stack.
+   */
+  avoidKeyboard?: boolean
+  /**
+   * Extra clearance in px kept above the keyboard when `avoidKeyboard`
+   * shifts the view. Normalized to a px string on the wire — Android's
+   * native setter only parses string values.
+   */
+  avoidKeyboardSpacing?: number
 }
 
 /**
@@ -337,9 +352,15 @@ function handleInput(event: any) {
   emit('input', value, selectionStart, selectionEnd, isComposing)
 }
 
+// A surrounding Trigger owns the registration when present: it reports its
+// WRAPPER element (the visual field) and its own offset. Self-registering as
+// well would clobber both — the root keeps only the last report — so the lift
+// would measure the bare input and drop the trigger's offset.
 function handleFocus(event: any) {
-  triggerContext?.onInputFocused?.()
-  if (rootContext) {
+  if (triggerContext) {
+    triggerContext.onInputFocused()
+  }
+  else if (rootContext) {
     selfRef.current = currentElement.value
     rootContext.onAwareTriggerFocused?.(selfRef)
   }
@@ -348,8 +369,10 @@ function handleFocus(event: any) {
 }
 
 function handleBlur(event: any) {
-  triggerContext?.onInputBlurred?.()
-  rootContext?.onAwareTriggerBlurred?.(selfRef)
+  if (triggerContext)
+    triggerContext.onInputBlurred()
+  else
+    rootContext?.onAwareTriggerBlurred?.(selfRef)
   const value: string = event?.detail?.value ?? event?.target?.value ?? props.modelValue ?? ''
   emit('blur', value)
 }
@@ -376,8 +399,10 @@ function handleKeyboard(event: any) {
     height: Number(d.keyBoardHeight ?? d.keyboardHeight ?? d.height ?? 0) || 0,
     safeAreaBottom: Number(d.safeAreaBottom ?? 0) || 0,
   }
-  triggerContext?.onInputKeyboard?.(info)
-  rootContext?.onAwareTriggerKeyboardChanged?.(selfRef, info)
+  if (triggerContext)
+    triggerContext.onInputKeyboard(info)
+  else
+    rootContext?.onAwareTriggerKeyboardChanged?.(selfRef, info)
   emit('keyboard', info)
 }
 
@@ -408,6 +433,8 @@ defineExpose<InputExposed>({
     :autocapitalize="autocapitalize"
     :autocorrect="autocorrect"
     :show-soft-input-on-focus="showSoftInputOnFocus"
+    :avoid-keyboard="avoidKeyboard || undefined"
+    :avoid-keyboard-spacing="avoidKeyboardSpacing != null ? `${avoidKeyboardSpacing}px` : undefined"
     ignore-focus
     accessibility-traits="keyboard"
     :data-disabled="disabled ? '' : undefined"

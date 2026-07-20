@@ -3,7 +3,14 @@ import { beforeAll, expect, vi } from 'vitest'
 import { configureAxe } from 'vitest-axe'
 import * as matchers from 'vitest-axe/matchers'
 import '@testing-library/jest-dom/vitest'
-import 'vitest-canvas-mock'
+
+// vitest-canvas-mock needs the jsdom-environment globals; script tests
+// (`@vitest-environment node`, e.g. vite-worklet-plugin.test.js) don't have
+// them — testing-utils' setup installs a `window`, but not the constructor
+// the mock patches, so gate on that constructor rather than `window`.
+if (typeof HTMLCanvasElement !== 'undefined') {
+  await import('vitest-canvas-mock')
+}
 
 expect.extend(matchers)
 
@@ -52,6 +59,8 @@ const _prevOnSwitchedToMainThread = (globalThis as any).onSwitchedToMainThread
 }
 
 beforeAll(() => {
+  if (typeof window === 'undefined') return // node-env script tests
+
   window.HTMLElement.prototype.scrollIntoView = vi.fn()
 
   const originalGetComputedStyle = window.getComputedStyle

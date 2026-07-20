@@ -254,6 +254,183 @@ describe('KeyboardAware* — keyboard event routing', () => {
   })
 })
 
+describe('KeyboardAware* — lift math and registration priority', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // Every rect measures zero under the test environment, so the untranslated
+  // margin is a large positive constant (screen height) and absolute
+  // translateY values are env-dependent. `forceAttach` skips the >= 0 clamp,
+  // and comparing two renders isolates the OFFSET term — pinning its sign:
+  // a positive offset must increase the lift (extra clearance), not push the
+  // field into the keyboard.
+  async function translateAfterKeyboard(template: string) {
+    const rootRef = ref<any>(null)
+    const { container } = render({
+      components: { KeyboardAwareRoot, KeyboardAwareResponder, KeyboardAwareTrigger, Input },
+      setup: () => ({ rootRef, value: ref('') }),
+      template,
+    })
+    await nextTick()
+    const input = container.querySelector('[data-testid="ka-input"]')!
+    fireEvent.focus(input, { detail: { value: '' } })
+    fireEvent.keyboard(input, { detail: { show: 1, keyBoardHeight: 320 } })
+    await waitForUpdate()
+    await waitForUpdate()
+    return { rootRef, translateY: rootRef.value.__test_previousTranslateY() as number }
+  }
+
+  it('applies offset as extra clearance (root offset, self-registered input)', async () => {
+    const base = await translateAfterKeyboard(`
+      <KeyboardAwareRoot ref="rootRef" force-attach>
+        <KeyboardAwareResponder>
+          <Input v-model="value" data-testid="ka-input" />
+        </KeyboardAwareResponder>
+      </KeyboardAwareRoot>
+    `)
+    const withOffset = await translateAfterKeyboard(`
+      <KeyboardAwareRoot ref="rootRef" :offset="16" force-attach>
+        <KeyboardAwareResponder>
+          <Input v-model="value" data-testid="ka-input" />
+        </KeyboardAwareResponder>
+      </KeyboardAwareRoot>
+    `)
+    expect(withOffset.translateY).toBe(base.translateY - 16)
+  })
+
+  it('a trigger without an explicit offset inherits the root offset; an explicit one wins', async () => {
+    const base = await translateAfterKeyboard(`
+      <KeyboardAwareRoot ref="rootRef" force-attach>
+        <KeyboardAwareResponder>
+          <KeyboardAwareTrigger>
+            <Input v-model="value" data-testid="ka-input" />
+          </KeyboardAwareTrigger>
+        </KeyboardAwareResponder>
+      </KeyboardAwareRoot>
+    `)
+    const inherited = await translateAfterKeyboard(`
+      <KeyboardAwareRoot ref="rootRef" :offset="10" force-attach>
+        <KeyboardAwareResponder>
+          <KeyboardAwareTrigger>
+            <Input v-model="value" data-testid="ka-input" />
+          </KeyboardAwareTrigger>
+        </KeyboardAwareResponder>
+      </KeyboardAwareRoot>
+    `)
+    const overridden = await translateAfterKeyboard(`
+      <KeyboardAwareRoot ref="rootRef" :offset="10" force-attach>
+        <KeyboardAwareResponder>
+          <KeyboardAwareTrigger :offset="5">
+            <Input v-model="value" data-testid="ka-input" />
+          </KeyboardAwareTrigger>
+        </KeyboardAwareResponder>
+      </KeyboardAwareRoot>
+    `)
+    expect(inherited.translateY).toBe(base.translateY - 10)
+    expect(overridden.translateY).toBe(base.translateY - 5)
+  })
+
+  // The refs the root tracks are vue-lynx ShadowElements; their `_selector`
+  // (`[vue-ref-N]`) maps back to the matching attribute on the rendered DOM
+  // node, which is how these tests pin WHICH element got registered.
+  function vueRefSelector(el: Element | null) {
+    const name = el?.getAttributeNames().find(n => n.startsWith('vue-ref'))
+    return name ? `[${name}]` : null
+  }
+
+  // A wrapping Trigger owns the registration: the root must track the
+  // trigger's WRAPPER element, not get clobbered by the input's own
+  // self-registration (which measures the bare <input> and has no offset).
+  it('the trigger wrapper (not the bare input) is what the root tracks', async () => {
+    const rootRef = ref<any>(null)
+    const { container } = render({
+      components: { KeyboardAwareRoot, KeyboardAwareResponder, KeyboardAwareTrigger, Input },
+      setup: () => ({ rootRef, value: ref('') }),
+      template: `
+        <KeyboardAwareRoot ref="rootRef">
+          <KeyboardAwareResponder>
+            <KeyboardAwareTrigger data-testid="wrap">
+              <Input v-model="value" data-testid="ka-input" />
+            </KeyboardAwareTrigger>
+          </KeyboardAwareResponder>
+        </KeyboardAwareRoot>
+      `,
+    })
+    await nextTick()
+    fireEvent.focus(container.querySelector('[data-testid="ka-input"]')!, { detail: { value: '' } })
+    await waitForUpdate()
+
+    const focused = rootRef.value.__test_focusedRef()
+    expect(focused).not.toBeNull()
+    expect((focused.current as any)._selector)
+      .toBe(vueRefSelector(container.querySelector('[data-testid="wrap"]')))
+  })
+
+  // Mirrors kit VyInput's internal structure (kit can't mount cross-package,
+  // so the equivalent shape is pinned here): an as-child trigger must
+  // register the slotted field view itself, without rendering a wrapper.
+  it('as-child trigger registers the slotted element (kit field-wrapper shape)', async () => {
+    const rootRef = ref<any>(null)
+    const { container } = render({
+      components: { KeyboardAwareRoot, KeyboardAwareResponder, KeyboardAwareTrigger, Input },
+      setup: () => ({ rootRef, value: ref('') }),
+      template: `
+        <KeyboardAwareRoot ref="rootRef">
+          <KeyboardAwareResponder>
+            <KeyboardAwareTrigger as-child>
+              <view data-testid="field">
+                <Input v-model="value" data-testid="ka-input" />
+              </view>
+            </KeyboardAwareTrigger>
+          </KeyboardAwareResponder>
+        </KeyboardAwareRoot>
+      `,
+    })
+    await nextTick()
+    fireEvent.focus(container.querySelector('[data-testid="ka-input"]')!, { detail: { value: '' } })
+    await waitForUpdate()
+
+    const focused = rootRef.value.__test_focusedRef()
+    expect(focused).not.toBeNull()
+    expect((focused.current as any)._selector)
+      .toBe(vueRefSelector(container.querySelector('[data-testid="field"]')))
+  })
+
+  // Kit inputs render an internal field-level trigger, so consumer code that
+  // wraps a kit input in its own trigger nests two — the OUTER one (the
+  // consumer's intent) must stay authoritative.
+  it('nested triggers defer to the outermost one', async () => {
+    const rootRef = ref<any>(null)
+    const { container } = render({
+      components: { KeyboardAwareRoot, KeyboardAwareResponder, KeyboardAwareTrigger, Input },
+      setup: () => ({ rootRef, value: ref('') }),
+      template: `
+        <KeyboardAwareRoot ref="rootRef">
+          <KeyboardAwareResponder>
+            <KeyboardAwareTrigger data-testid="outer">
+              <KeyboardAwareTrigger data-testid="inner">
+                <Input v-model="value" data-testid="ka-input" />
+              </KeyboardAwareTrigger>
+            </KeyboardAwareTrigger>
+          </KeyboardAwareResponder>
+        </KeyboardAwareRoot>
+      `,
+    })
+    await nextTick()
+    fireEvent.focus(container.querySelector('[data-testid="ka-input"]')!, { detail: { value: '' } })
+    await waitForUpdate()
+
+    const focused = rootRef.value.__test_focusedRef()
+    expect(focused).not.toBeNull()
+    expect((focused.current as any)._selector)
+      .toBe(vueRefSelector(container.querySelector('[data-testid="outer"]')))
+  })
+})
+
 describe('KeyboardAware* — root test seam', () => {
   it('exposes __test_setKeyboardStatus to drive the keyboard height in tests', async () => {
     const rootRef = ref<any>(null)

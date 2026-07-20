@@ -14,7 +14,8 @@ import type { PrimitiveProps } from '@/components/Primitive'
 export interface KeyboardAwareTriggerProps extends PrimitiveProps {
   /**
    * Extra pixels to leave between the bottom of the trigger and the top of
-   * the keyboard once it has been pulled into view.
+   * the keyboard once it has been pulled into view. When omitted, the
+   * surrounding `KeyboardAwareRoot`'s `offset` applies.
    */
   offset?: number
 }
@@ -26,12 +27,15 @@ import { Primitive, usePrimitiveElement } from '@/components/Primitive'
 import type { KeyboardAwareKeyboardInfo } from './keyboardAwareContext'
 import {
   injectKeyboardAwareRootContext,
+  injectKeyboardAwareTriggerContext,
   provideKeyboardAwareTriggerContext,
 } from './keyboardAwareContext'
 
+// `offset` deliberately has NO default: an explicit 0 would override the
+// root's `offset` (the root only falls back to its own when the trigger
+// reports `undefined`).
 const props = withDefaults(defineProps<KeyboardAwareTriggerProps>(), {
   as: 'view',
-  offset: 0,
 })
 
 const { primitiveElement, currentElement } = usePrimitiveElement()
@@ -73,7 +77,13 @@ function onInputKeyboard(info: KeyboardAwareKeyboardInfo) {
   rootContext?.onAwareTriggerKeyboardChanged?.(triggerRef.value, info)
 }
 
-provideKeyboardAwareTriggerContext({
+// Nested triggers: kit inputs render an internal field-level trigger, so a
+// consumer wrapping `VyInput` in their own trigger produces two. The OUTER
+// one carries the consumer's intent (their wrapper element + offset) — when
+// one exists, re-provide it untouched so this inner trigger is a pass-through.
+const outerTrigger = injectKeyboardAwareTriggerContext(null)
+
+provideKeyboardAwareTriggerContext(outerTrigger ?? {
   onInputFocused,
   onInputBlurred,
   onInputKeyboard,

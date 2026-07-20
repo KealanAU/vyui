@@ -32,9 +32,14 @@ const indicatorStyle = ref<IndicatorStyle>({
   size: 0,
   position: 0,
 })
-// Flipped to `true` after the first non-zero measurement so the pill fades in
-// instead of flashing at the wrong size/position on first paint.
-const hasMeasured = ref(false)
+// The pill stays hidden AND un-transitioned until `ready` — flipped one
+// microtask after the first real measurement. One deferral, two jobs: the
+// initial `0 → size` commit paints invisibly (no flash at the wrong size), and
+// the theme's `transition-[translate,width]` only arms afterwards, so the pill
+// never animates growing in from zero on mount / CSS reload — only genuine tab
+// switches slide. PrimJS has no `queueMicrotask`; a resolved Promise hops the
+// queue (same idiom as `TabsTrigger`'s deferred registration).
+const ready = ref(false)
 
 /**
  * Measure the active trigger relative to the tabs list via Lynx's
@@ -76,7 +81,10 @@ async function updateIndicatorStyle() {
       position: triggerRect.top - listRect.top,
     }
   }
-  hasMeasured.value = true
+  // Real size committed — arm opacity + transition one microtask later so the
+  // initial paint neither flashes nor animates.
+  if (!ready.value)
+    Promise.resolve().then(() => { ready.value = true })
 }
 
 // Re-measure on active value / orientation / direction changes, plus on the
@@ -105,17 +113,23 @@ watch(
 // transform as concrete pixel values so the indicator actually paints.
 const indicatorInlineStyle = computed(() => {
   const { size, position } = indicatorStyle.value
+  // `transitionProperty: 'none'` (inline) overrides the theme class until the
+  // pill is `ready`; `undefined` drops the inline value so the class's
+  // `transition-[translate,width]` takes over for subsequent switches.
+  const transitionProperty = ready.value ? undefined : 'none'
   if (context.orientation.value === 'horizontal') {
     return {
       width: `${size}px`,
       transform: `translateX(${position}px)`,
-      opacity: hasMeasured.value ? 1 : 0,
+      opacity: ready.value ? 1 : 0,
+      transitionProperty,
     }
   }
   return {
     height: `${size}px`,
     transform: `translateY(${position}px)`,
-    opacity: hasMeasured.value ? 1 : 0,
+    opacity: ready.value ? 1 : 0,
+    transitionProperty,
   }
 })
 </script>

@@ -1,7 +1,7 @@
 import { defineComponent, h, nextTick, onMounted } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { OverlayRoot } from '@vyui/core'
+import { OverlayRoot, type SafeAreaInsets, useSafeArea } from '@vyui/core'
 import App from './App.vue'
 import { resetColorModeForTesting, useColorMode } from '../composables/useColorMode'
 
@@ -92,6 +92,22 @@ describe('VyApp', () => {
   it('mounts the overlay host by default and skips it when overlays=false', () => {
     expect(mount(App).findComponent(OverlayRoot).exists()).toBe(true)
     expect(mount(App, { props: { overlays: false } }).findComponent(OverlayRoot).exists()).toBe(false)
+  })
+
+  it('provides app-wide safe-area insets that `safeArea: false` zeroes out', () => {
+    const seen: SafeAreaInsets[] = []
+    const Probe = defineComponent({
+      setup() {
+        seen.push(useSafeArea())
+        return () => h('text', 'probe')
+      },
+    })
+    // `false` opts the whole app out with zeros (the container read is zero under jsdom too).
+    mount(App, {
+      props: { overlays: false, safeArea: false },
+      slots: { default: () => h(Probe) },
+    })
+    expect(seen.at(-1)).toEqual({ top: 0, bottom: 0 })
   })
 
   describe('viewport-change', () => {

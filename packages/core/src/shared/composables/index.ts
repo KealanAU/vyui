@@ -43,6 +43,14 @@ export { useA11y } from './useA11y.js'
 export type { A11yDescriptor, A11yProps, A11yRole, A11yTrait } from './useA11y.js'
 
 export {
+  getSafeAreaInsets,
+  getSafeAreaInsetsFromGlobalProps,
+  provideSafeAreaInsets,
+  useSafeArea,
+} from './useSafeArea.js'
+export type { SafeAreaInsets } from './useSafeArea.js'
+
+export {
   directionAxis,
   directionCloseSign,
   pickRelease,
