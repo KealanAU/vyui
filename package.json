@@ -20,7 +20,7 @@
     "gen:schemas": "tsx tools/gen-schemas.ts"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.0",
+    "@changesets/cli": "2.31.0",
     "@eslint/js": "^10.0.1",
     "@svitejs/changesets-changelog-github-compact": "^1.2.0",
     "@vue/compiler-sfc": "3.5.17",

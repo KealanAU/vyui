@@ -8,6 +8,7 @@ export interface ProjectInfo {
   packageJson?: string
   appEntry?: string
   tailwindConfig?: string
+  lynxConfig?: string
   css?: string
   sourceDir: string
   alias?: { prefix: string, srcDir: string }
@@ -16,6 +17,7 @@ export interface ProjectInfo {
 
 const APP_ENTRIES = ['src/index.ts', 'src/main.ts', 'src/index.js', 'src/main.js']
 const TAILWIND_CONFIGS = ['tailwind.config.ts', 'tailwind.config.js', 'tailwind.config.mjs', 'tailwind.config.cjs']
+const LYNX_CONFIGS = ['lynx.config.ts', 'lynx.config.js', 'lynx.config.mjs', 'lynx.config.cjs']
 const CSS_ENTRIES = ['src/index.css', 'src/style.css', 'src/main.css', 'src/app.css']
 
 export function detectProject(cwd: string): ProjectInfo {
@@ -28,12 +30,14 @@ export function detectProject(cwd: string): ProjectInfo {
   }
   const appEntry = firstExisting(cwd, APP_ENTRIES) ?? findSourceFile(cwd, /\bcreateApp\s*\(/)
   const tailwindConfig = firstExisting(cwd, TAILWIND_CONFIGS)
+  const lynxConfig = firstExisting(cwd, LYNX_CONFIGS)
   const css = detectCss(cwd, appEntry)
   return {
     cwd,
     packageJson,
     appEntry,
     tailwindConfig,
+    lynxConfig,
     css,
     sourceDir: alias?.srcDir ?? (existsSync(join(cwd, 'src')) ? 'src' : '.'),
     alias,

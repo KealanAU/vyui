@@ -1,0 +1,24 @@
+diff --git a/dist/changesets-cli.cjs.js b/dist/changesets-cli.cjs.js
+index 9f0bd6c5f96011be225269a71365a878cb822bb7..69fd268b766c938d38682ebddbb5cbe893f55201 100644
+--- a/dist/changesets-cli.cjs.js
++++ b/dist/changesets-cli.cjs.js
+@@ -870,7 +870,9 @@ async function infoAllow404(packageJson) {
+ // we check `npm info` before publishing but `npm info` can return stale data at times
+ // so we need to gracefully handle this situation
+ function isAlreadyPublishedError(output) {
+-  return output.includes("cannot publish over the previously published version");
++  // npm 11.5.1+ OIDC trusted publishing emits E403 --json errors with no
++  // `summary`, so `output` can be undefined here; guard before `.includes`.
++  return typeof output === "string" && output.includes("cannot publish over the previously published version");
+ }
+ // we have this so that we can do try a publish again after a publish without
+ // the call being wrapped in the npm request limit and causing the publishes to potentially never run
+@@ -954,7 +956,7 @@ async function internalPublish(packageJson, opts, twoFactorState) {
+     let json = getLastJsonObjectFromString(stderr.toString()) || getLastJsonObjectFromString(stdout.toString());
+     if (json !== null && json !== void 0 && json.error) {
+       var _json$error$detail;
+-      if (json.error.code === "E403" && isAlreadyPublishedError(json.error.summary)) {
++      if (json.error.code === "E403" && (isAlreadyPublishedError(json.error.summary) || isAlreadyPublishedError(stderr.toString()) || isAlreadyPublishedError(stdout.toString()))) {
+         // we don't need to log anything here, it just turned out the version was already published so we gracefully exit the publish process
+         return {
+           result: "skipped"

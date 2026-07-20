@@ -78,6 +78,18 @@ The upstream fix is to make `findBalancedEnd` comment-aware (0.5.x already ships
 
 **UPDATE (2026-07-20):** bumped to 0.5.1 with a local patch (`patches/vue-lynx@0.5.1.patch`) that adds comment skipping to `findBalancedEnd` in the loader dist. Verified: full build + tests green, `audit-worklet-bundle` clean on kit-demo (158 refs / 0 unresolved) and docs-playground (144 / 0), and a differential check confirms the pristine loader silently drops registrations on a lone-apostrophe comment while the patched one extracts all. The real fix is upstream PR #287 (AST-span extraction via `@babel/parser`); drop the patch and the `patchedDependencies` entry in `pnpm-workspace.yaml` when it ships. Consumer note: peer ranges now allow `^0.4.2 || ^0.5.1`, but consumers on *stock* 0.5.x still corrupt on comments in their own worklet bodies (our dist is mostly comment-stripped by esbuild; `useAnimate.js` keeps a few benign ones) — point them at #287 until it lands.
 
+### Addendum: descriptive error for an unregistered worklet (Fix B — `@lynx-js/react`, not vue-lynx)
+
+Even with `includeWorkletPackages`, the *symptom* of forgetting it (or of any unregistered worklet) is inscrutable: `main-thread.js exception: TypeError: cannot read property 'bind' of undefined`. The crash is **not** in vue-lynx — it's in `@lynx-js/react`'s worklet runtime, `worklet-runtime/lib/workletRuntime.js` (bundled into `dist/main.js` + `dist/dev.js`), at:
+
+```js
+obj[key] = lynxWorkletImpl._workletMap[subObj._wkltId].bind({ ...subObj });
+```
+
+When the `_wkltId`'s `registerWorkletInternal(...)` never reached the MT bundle (npm package the loader didn't traverse), `_workletMap[id]` is `undefined` and `.bind` throws with no context.
+
+**Reference impl (`patches/@lynx-js__react@0.116.5.patch`):** guard the lookup and throw a named, actionable error instead — `[lynx worklet] "<id>" is not registered on the main thread … add that package to pluginVueLynx({ includeWorkletPackages: [...] })`. Patched in all three shipped forms (`lib` source + `dist/main.js` + `dist/dev.js`) so it fires in dev and prod. **The upstream PR targets lynx-stack's `@lynx-js/react` worklet-runtime, not vue-lynx.** To see it fire, drop `includeWorkletPackages` from `apps/examples/cli-demo/lynx.config.ts` (whose Sortable card renders a raw `@vyui/core` worklet primitive) and rebuild. Fix A (publisher-declared worklet packages, which would remove the `includeWorkletPackages` requirement entirely) is tracked separately.
+
 ---
 
 ## Environment

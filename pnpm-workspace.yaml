@@ -32,6 +32,8 @@ allowBuilds:
 # bodies; patch makes findBalancedEnd comment-aware. Drop when upstream #287
 # (AST-span extraction) ships.
 patchedDependencies:
+  '@changesets/cli@2.31.0': patches/@changesets__cli@2.31.0.patch
+  '@lynx-js/react@0.116.5': patches/@lynx-js__react@0.116.5.patch
   vue-lynx@0.5.1: patches/vue-lynx@0.5.1.patch
 minimumReleaseAgeExclude:
   - nuxt-schema-org@6.2.3
