@@ -10,7 +10,7 @@
   "dependencies": {
     "@vyui/core": "workspace:*",
     "@vyui/kit": "workspace:*",
-    "vue-lynx": "^0.4.2"
+    "vue-lynx": "^0.5.1"
   },
   "devDependencies": {
     "@iconify-json/icon-park-outline": "^1.2.0",

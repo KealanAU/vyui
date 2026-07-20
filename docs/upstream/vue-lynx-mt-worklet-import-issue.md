@@ -76,6 +76,8 @@ Upgrading past 0.4.2 to 0.5.0/0.5.1 breaks the lynx-env build of `packages/core/
 
 The upstream fix is to make `findBalancedEnd` comment-aware (0.5.x already ships an `isInsideComment` helper in the same file, unused here). Until then 0.5.x is blocked repo-wide, not just for demos: our published dist keeps comments inside `registerWorkletInternal(...)` bodies, so npm consumers on a 0.5.x `worklet-loader-mt` would hit the same corruption against `@vyui/*` dist. Re-attempt the bump once fixed upstream — 0.5.x also carries #249 (persisted `Transition` + `v-show`), #201 (comment-anchor suppression), and #203 (programmatic input `setValue`).
 
+**UPDATE (2026-07-20):** bumped to 0.5.1 with a local patch (`patches/vue-lynx@0.5.1.patch`) that adds comment skipping to `findBalancedEnd` in the loader dist. Verified: full build + tests green, `audit-worklet-bundle` clean on kit-demo (158 refs / 0 unresolved) and docs-playground (144 / 0), and a differential check confirms the pristine loader silently drops registrations on a lone-apostrophe comment while the patched one extracts all. The real fix is upstream PR #287 (AST-span extraction via `@babel/parser`); drop the patch and the `patchedDependencies` entry in `pnpm-workspace.yaml` when it ships. Consumer note: peer ranges now allow `^0.4.2 || ^0.5.1`, but consumers on *stock* 0.5.x still corrupt on comments in their own worklet bodies (our dist is mostly comment-stripped by esbuild; `useAnimate.js` keeps a few benign ones) — point them at #287 until it lands.
+
 ---
 
 ## Environment
