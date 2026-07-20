@@ -28,6 +28,7 @@ export interface ToastViewportProps extends PrimitiveProps {
 import { getCurrentInstance, h, onUnmounted, useAttrs, useSlots } from 'vue'
 import { registerOverlay, unregisterOverlay } from '@/components/OverlayRoot/overlayStore'
 import { useId } from '@/shared'
+import { useSafeArea } from '@/shared/composables'
 
 // reka-ui wraps the viewport in a `<Teleport>` to escape the document flow.
 // Lynx has no Teleport — and an inline `position: fixed` viewport stays
@@ -60,6 +61,10 @@ const ALIGN: Record<string, string> = {
   right: 'flex-end',
 }
 
+// Keep the stack clear of the hardware insets (notch up top, home-indicator
+// pill at the bottom) — the same container safe-area the Sheet panels pad by.
+const safeArea = useSafeArea()
+
 function viewportStyle(): Record<string, any> {
   const [edgeRaw, alignRaw] = props.position.split('-')
   const edge = edgeRaw === 'top' ? 'top' : 'bottom'
@@ -70,7 +75,7 @@ function viewportStyle(): Record<string, any> {
     position: 'fixed',
     left: '0px',
     right: '0px',
-    [edge]: '0px',
+    [edge]: `${safeArea[edge]}px`,
     display: 'flex',
     flexDirection: 'column',
     alignItems: ALIGN[align] ?? 'center',
