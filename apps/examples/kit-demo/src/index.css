@@ -151,11 +151,9 @@
  * repo loaded it, so the classes had no way to be seen — in a browser or on
  * device — before this. Keep the two in step.
  *
- * The open question they answer: the stops are `var()` refs, and no other part
- * of the kit puts a `var()` inside a `linear-gradient()`. `.luna-gradient-literal`
- * is the control — same two stops, hex inlined. If the control paints and the
- * `-rose` tile above it doesn't, Lynx can't resolve vars inside gradients and
- * the overlay must inline its stops.
+ * Settles a question no other part of the kit answers: Lynx DOES resolve a
+ * `var()` inside a `linear-gradient()`, so the stops can stay tokens and flip
+ * with the mode rather than being inlined per theme.
  */
 :root {
   --ui-gradient-a: #ff3d63;
@@ -175,4 +173,3 @@
 .luna-gradient-berry { background: linear-gradient(0deg, var(--ui-gradient-b), var(--ui-gradient-c)); }
 .luna-gradient-afterglow { background: linear-gradient(150deg, var(--ui-gradient-b) 8.42%, var(--ui-gradient-c) 81.71%); }
 .luna-gradient-ocean { background: linear-gradient(0deg, var(--ui-gradient-c) 60%, var(--ui-gradient-d) 120%); }
-.luna-gradient-literal { background: linear-gradient(0deg, #ff3d63, #ff5d99); }

@@ -98,17 +98,16 @@ const paletteHex = (name: string) => palettes.find(p => p.name === name)?.hex ??
 // (e.g. `rounded-md` → `calc(var(--ui-radius) * 1.5)`).
 const radiusSteps = [0, 0.125, 0.25, 0.375, 0.5] as const
 
-// LUNA's five shipped gradients (see index.css), plus the literal-hex control.
-// The five use `var()` stops; the control inlines the same two hexes. If the
-// control paints and `rose` doesn't, Lynx won't resolve vars inside a
-// `linear-gradient()` and `styles/lunaris/style.css` has to inline its stops.
+// LUNA's five shipped gradients (defined in index.css, mirroring the
+// `styles/lunaris` overlay). They're consumer utilities — no kit component
+// paints a gradient — so this row is the only place they render, same as the
+// icon showcase below.
 const lunaGradients = [
-  { class: 'luna-gradient', label: 'gradient' },
-  { class: 'luna-gradient-rose', label: 'rose' },
-  { class: 'luna-gradient-berry', label: 'berry' },
-  { class: 'luna-gradient-afterglow', label: 'afterglow' },
-  { class: 'luna-gradient-ocean', label: 'ocean' },
-  { class: 'luna-gradient-literal', label: 'literal (control)' },
+  'luna-gradient',
+  'luna-gradient-rose',
+  'luna-gradient-berry',
+  'luna-gradient-afterglow',
+  'luna-gradient-ocean',
 ]
 
 const showcaseIcons = [
@@ -242,15 +241,15 @@ const colorShowcaseIcons: { icon: string, semantic: 'primary' | 'secondary' | 's
     <!-- LUNA gradients -->
     <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
       <text class="text-highlighted text-base font-semibold">LUNA gradients</text>
-      <text class="text-muted text-xs">Ships with the <text class="font-mono">lunaris</text> style. Stops are <text class="font-mono">var()</text> refs — if the last tile paints and the others don't, Lynx can't resolve vars inside a gradient.</text>
+      <text class="text-muted text-xs">Utility classes shipped by the <text class="font-mono">lunaris</text> style — apply them yourself; no component paints one.</text>
       <view class="flex flex-row flex-wrap gap-3 pt-1">
         <view
           v-for="g in lunaGradients"
-          :key="g.class"
+          :key="g"
           class="flex flex-col items-center gap-1 w-20"
         >
-          <view :class="[g.class, 'w-20 h-14 rounded-md border border-default']" />
-          <text class="text-muted text-xs text-center">{{ g.label }}</text>
+          <view :class="[g, 'w-20 h-14 rounded-md border border-default']" />
+          <text class="text-muted text-xs text-center">{{ g.replace('luna-gradient-', '') || 'gradient' }}</text>
         </view>
       </view>
     </view>

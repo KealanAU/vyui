@@ -217,9 +217,13 @@
  * `lunaGradientPlugin`. Plain classes rather than preset components so the
  * overlay stays token-layer (no `tailwind.js` fork).
  *
- * The `var()` refs are single-hop — the tokens above hold literal hex — but
- * var() INSIDE a `linear-gradient()` is not something the kit exercises
- * elsewhere; verify on device before relying on these.
+ * The `var()` refs are single-hop (the tokens above hold literal hex) AND they
+ * resolve inside `linear-gradient()` — checked in the kit-demo Theme tab, which
+ * mirrors this block. That's why the stops stay tokens: they flip with `.dark`
+ * on their own instead of needing a gradient class per mode.
+ *
+ * These are consumer utilities. No kit component paints a gradient; apply them
+ * to your own container, as LUNA's own examples do.
  */
 .luna-gradient {
   background: linear-gradient(160deg, var(--ui-gradient-a), var(--ui-gradient-b), var(--ui-gradient-c), var(--ui-gradient-d));
