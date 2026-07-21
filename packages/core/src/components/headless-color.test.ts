@@ -62,4 +62,25 @@ describe('@vyui/core ships no color', () => {
       expect(offending).toEqual([])
     },
   )
+
+  // The same leak from the other direction. `SheetHandle` reached for
+  // `bg-accented` — a @vyui/kit token utility — to get a background that
+  // survived dark mode. It fixed the symptom but hardcoded kit's vocabulary
+  // into a package that must not know kit exists: meaningless without kit's
+  // Tailwind preset, and redundant, since every kit theme already puts that
+  // class on the slot it passes down.
+  const kitToken
+    = /['"`\s](?:bg|text|border)-(?:default|muted|elevated|accented|inverted|dimmed|toned|highlighted)['"`\s]/
+
+  it.each(files.map(f => [f.slice(componentsDir.length + 1), f] as const))(
+    '%s uses no @vyui/kit token class',
+    (_name, path) => {
+      const offending = code(readFileSync(path, 'utf8'))
+        .split('\n')
+        .filter(line => kitToken.test(line))
+        .map(line => line.trim())
+
+      expect(offending).toEqual([])
+    },
+  )
 })
