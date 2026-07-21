@@ -151,9 +151,11 @@
  * repo loaded it, so the classes had no way to be seen — in a browser or on
  * device — before this. Keep the two in step.
  *
- * Settles a question no other part of the kit answers: Lynx DOES resolve a
- * `var()` inside a `linear-gradient()`, so the stops can stay tokens and flip
- * with the mode rather than being inlined per theme.
+ * Settles a question no other part of the kit answers: native Lynx DOES resolve
+ * a single-level `var()` inside a `linear-gradient()` (device-proven 2026-07-21
+ * in Lynx Explorer, not just the web bundle — the distinction matters, a browser
+ * resolves two levels where native stops at one). So the stops stay tokens and
+ * flip with the mode instead of being inlined per theme.
  */
 :root {
   --ui-gradient-a: #ff3d63;

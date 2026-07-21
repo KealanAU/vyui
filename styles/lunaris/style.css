@@ -218,9 +218,10 @@
  * overlay stays token-layer (no `tailwind.js` fork).
  *
  * The `var()` refs are single-hop (the tokens above hold literal hex) AND they
- * resolve inside `linear-gradient()` — checked in the kit-demo Theme tab, which
- * mirrors this block. That's why the stops stay tokens: they flip with `.dark`
- * on their own instead of needing a gradient class per mode.
+ * resolve inside `linear-gradient()` — device-proven 2026-07-21 in Lynx Explorer
+ * via the kit-demo Theme tab, which mirrors this block. That's why the stops
+ * stay tokens: one class set flips with `.dark` on its own, instead of needing a
+ * `.dark` variant of every gradient class with its stops inlined.
  *
  * These are consumer utilities. No kit component paints a gradient; apply them
  * to your own container, as LUNA's own examples do.
