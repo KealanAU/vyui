@@ -30,7 +30,11 @@ export default (colors: Color[]) => ({
     // as long as it read that way (docs/styling-audit.md §4.1). `black` parses
     // to rgb, so the modifier applies, and a scrim needs no mode awareness.
     overlay: 'fixed inset-0 bg-black/50',
-    content: 'z-[1001] flex flex-col max-h-[100vh] overflow-hidden',
+    // `bg-default` is required, not decorative: core's Sheet ships no color
+    // (headless), so without it the panel is transparent. It used to inherit
+    // core's hardcoded `#fff`, which is exactly the bug — that white ignored
+    // dark mode. Every other Sheet-backed theme already sets this.
+    content: 'z-[1001] flex flex-col max-h-[100vh] overflow-hidden bg-default',
     handle: 'self-center w-9 h-1 rounded-full bg-accented mt-1.5 mb-1',
     header: 'flex flex-col gap-0.5 px-4 py-2',
     title: 'text-muted text-xs font-semibold uppercase tracking-wider',

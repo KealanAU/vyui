@@ -69,7 +69,8 @@ const handlers = presence?.animationHandlers
       right: '0',
       bottom: '0',
       zIndex: '1000',
-      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      // No `backgroundColor` — headless. It was inline here, which no class can
+      // override, so a consumer's dim class on this element was silently dead.
       // Inline longhand overrides the 280ms keyframe shorthands below so the
       // fade tracks the sheet's `duration` prop (panel does the same).
       animationDuration: `${ctx.duration.value}ms`,
