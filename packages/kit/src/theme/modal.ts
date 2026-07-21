@@ -25,7 +25,12 @@
  */
 export default {
   slots: {
-    overlay: 'fixed inset-0 bg-neutral-900/50',
+    // Dim: `bg-black/50`, NOT an alpha on a semantic color. The preset wires
+    // semantic colors to raw `var()` without `<alpha-value>`, so Tailwind skips
+    // generating `bg-neutral-900/50` entirely — this slot painted nothing for
+    // as long as it read that way (docs/styling-audit.md §4.1). `black` parses
+    // to rgb, so the modifier applies, and a scrim needs no mode awareness.
+    overlay: 'fixed inset-0 bg-black/50',
     content: 'relative overflow-hidden bg-default divide-y divide-default flex flex-col w-[calc(100vw-2rem)] max-w-lg max-h-[calc(100vh-1rem)] rounded-lg border border-default',
     header: 'flex flex-row items-center gap-1.5 px-4 py-3 min-h-12',
     wrapper: '',

@@ -32,6 +32,11 @@ export function resolveColorHex(
   if (!palette && name === 'neutral' && typeof ui.gray === 'string') palette = ui.gray as string
   if (!palette) palette = SEMANTIC_TO_PALETTE_DEFAULT[name] ?? 'slate'
 
-  const scale = (twColors as unknown as Record<string, Record<string, string>>)[palette]
+  const scale = (twColors as unknown as Record<string, Record<string, string> | string>)[palette]
+  // `black` / `white` are single strings in `tailwindcss/colors`, not 11-shade
+  // scales — they have no shade to index, so every shade resolves to the one
+  // value. Without this a monochrome accent silently fell back to slate-500 for
+  // baked SVG fills while its Tailwind classes painted black.
+  if (typeof scale === 'string') return scale
   return scale?.[String(shade)] ?? FALLBACK_HEX
 }

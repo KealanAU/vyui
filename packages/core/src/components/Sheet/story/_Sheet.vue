@@ -32,8 +32,10 @@ const open = ref(false)
       <SheetTrigger data-testid="trigger">
         <text>open sheet</text>
       </SheetTrigger>
-      <SheetBackdrop data-testid="backdrop" />
-      <SheetContent data-testid="content">
+      <!-- Core ships no color, so the story supplies the dim and the panel
+           surface itself — the same job `@vyui/kit`'s themes do. -->
+      <SheetBackdrop data-testid="backdrop" :style="{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }" />
+      <SheetContent data-testid="content" :style="{ backgroundColor: '#fff' }">
         <SheetHandle />
         <SheetView>
           <text data-testid="view-text">sheet content</text>

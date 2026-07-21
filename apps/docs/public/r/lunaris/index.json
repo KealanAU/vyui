@@ -1,7 +1,7 @@
 {
   "$schema": "https://vyui.dev/registry-index.json",
   "registry": "https://vyui.dev/r",
-  "style": "default",
+  "style": "lunaris",
   "components": [
     {
       "name": "accordion",

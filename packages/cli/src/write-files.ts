@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, relative, resolve, win32 } from 'node:path'
-import type { VyuiConfig } from './config.js'
+import { GRAY_SENTINEL, type VyuiConfig } from './config.js'
 import type { RegistryFile } from './registry-schema.js'
 import { rewriteImports } from './rewrite-imports.js'
 import { c, log } from './utils.js'
@@ -102,7 +102,7 @@ export function writeFiles(
     // VERBATIM (the sentinel lives in `style.css`, a VERBATIM file, AND in
     // `plugin.ts`, which goes through rewriteImports).
     const rewritten = VERBATIM.has(file.type) ? file.content : rewriteImports(file, config)
-    const content = rewritten.replaceAll('__VYUI_GRAY__', config.baseColor)
+    const content = rewritten.replaceAll(GRAY_SENTINEL, config.baseColor)
     if (dryRun) {
       result.planned.push(dest)
       log.step(`${c.cyan('plan')} ${rel(projectRoot, dest)}`)

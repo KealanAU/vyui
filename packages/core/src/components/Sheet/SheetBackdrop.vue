@@ -20,15 +20,22 @@ export interface SheetBackdropProps {
 </script>
 
 <script setup lang="ts">
+import { useAttrs } from 'vue'
 import { Presence } from '@/components/Presence'
 import { OverlayPortal } from '@/components/OverlayRoot'
 import SheetBackdropImpl from './SheetBackdropImpl.vue'
 import { injectSheetRootContext } from './sheetContext'
 
+// See `SheetContent` — `OverlayPortal` renders nothing in place, so `class` /
+// `style` must be forwarded onto the impl explicitly or the consumer's dim
+// class is dropped.
+defineOptions({ inheritAttrs: false })
+
 const props = withDefaults(defineProps<SheetBackdropProps>(), {
   dismissOnTap: true,
 })
 
+const attrs = useAttrs()
 const ctx = injectSheetRootContext()
 
 function onTap() {
@@ -40,7 +47,7 @@ function onTap() {
 <template>
   <Presence :show="ctx.open.value">
     <OverlayPortal>
-      <SheetBackdropImpl @tap="onTap" />
+      <SheetBackdropImpl v-bind="attrs" @tap="onTap" />
     </OverlayPortal>
   </Presence>
 </template>
