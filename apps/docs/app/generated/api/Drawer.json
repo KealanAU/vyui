@@ -84,7 +84,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "Render the drawer in a portal. Currently advisory — core `SheetContent` mounts in place."
+      "description": "Render the drawer in a portal. Advisory — sheet content is always portalled through `OverlayRoot`."
     },
     {
       "name": "side",
