@@ -23,9 +23,10 @@ The problems are **enforcement and completion**, not design:
 1. **Verified bug:** opacity modifiers on semantic colors (`bg-neutral-900/50`,
    `bg-neutral-100/50`) generate **no CSS at all** — every modal/drawer/tray overlay and
    every `soft` input-family variant references a class that doesn't exist.
-2. The `styles/shadcn` and `styles/rounded` overlays **violate the single-level `var()`
+2. ~~The `styles/shadcn` and `styles/rounded` overlays **violate the single-level `var()`
    rule** that the base `style.css` was just fixed for, and neither has the `.dark`
-   neutral-inversion block — they're two generations behind the base token file.
+   neutral-inversion block — they're two generations behind the base token file.~~
+   **Fixed** — see §4.2; a registry test now guards it.
 3. **Fixed in #129:** the semantic surface-token tier (`--ui-bg`/`--ui-bg-muted`/
    `--ui-bg-elevated`/`--ui-bg-accented`/`--ui-bg-inverted`, `--ui-text-*`,
    `--ui-border-*`) now exists in `style.css` and is consumed by ~18 themes, so
@@ -113,15 +114,24 @@ and fail on classes that produce no CSS. That converts this whole class of bug f
 
 ### 4.2 `styles/shadcn` and `styles/rounded` are behind the base token file
 
-Both overlays' mode tiers hold **nested `var()` refs** (`--ui-primary:
-var(--ui-color-primary-900)` — `shadcn/style.css:110-115,122-127`;
-`rounded/style.css:110-115,125-131`). This is the exact two-level `var()` collapse the
-pending dark-mode changeset just fixed in the base `style.css` (mode tier must hold
-`theme()` literals — Lynx resolves one level only). On device these overlays' `bg-primary`
-shorthands will collapse.
+**FIXED.** Both overlays' mode tiers held **nested `var()` refs** (`--ui-primary:
+var(--ui-color-primary-900)`) — the same two-level `var()` collapse the dark-mode
+changeset fixed in the base `style.css` (mode tier must hold `theme()` literals; Lynx
+resolves one level only). On device their `bg-primary` / `text-primary` shorthands
+collapsed. Both now hold literals, and `registry-output.test.ts` asserts that no shipped
+style's `style.css` declares a `--ui-*` token whose value opens with `var(` — so the
+class of bug is now a red test rather than a device-only surprise.
 
-Both also have a `.dark` block that only shifts the mode tier — **neither inverts the
-neutral ramp**, so dark mode under either overlay flips accents but not surfaces/text.
+Blast radius inside the library was **zero**: excluding comments, neither `@vyui/kit` nor
+`@vyui/core` emits a single bare mode-tier utility — every component resolves the ramp
+directly (`bg-${c}-500`, `text-${c}-600`). The mode tier exists purely as consumer-facing
+API, so the bug only bit apps that wrote `bg-primary` / `text-error` themselves. That is
+still worth fixing (it is a published contract), but it explains why nothing looked wrong
+in the demos.
+
+The second half of the original finding — "neither inverts the neutral ramp, so dark mode
+flips accents but not surfaces/text" — was fixed earlier (both overlays now carry the full
+semantic token set in `.dark`).
 
 The base `style.css` sync contract now spans three hand-kept copies of the ramp blocks
 (base + 2 overlays) plus `color-constants.js`. That contract needs either a generator
@@ -298,8 +308,10 @@ Lynx bundle regardless of usage.
 **P0 — broken on device today**
 1. Replace all alpha-modifier classes (§4.1): overlays → shared `bg-black/50`-style
    constant; soft variants → discrete shades. Add the compile-time "class emits CSS" test.
-2. Fix `styles/shadcn` + `styles/rounded`: mode tier → `theme()` literals; add the `.dark`
-   neutral inversion block (§4.2). Add ramp-parity test across the three style.css files.
+2. ~~Fix `styles/shadcn` + `styles/rounded`: mode tier → `theme()` literals; add the `.dark`
+   neutral inversion block (§4.2).~~ **Done**, with a nested-`var()` guard in
+   `registry-output.test.ts`. Ramp-parity across the (now five) `style.css` files is still
+   hand-kept — see §4.2.
 
 **P1 — before dark mode is called done**
 3. ~~Introduce the semantic surface-token tier and migrate the `bg-white` +

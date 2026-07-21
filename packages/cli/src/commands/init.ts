@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { BASE_COLORS, DEFAULT_BASE_COLOR, configPath, defaultConfig, detectTsconfigAlias, hasPathsEntryForPrefix, readConfig, resolveRegistry, styleRegistry, writeConfig } from '../config.js'
+import { BASE_COLORS, DEFAULT_BASE_COLOR, GRAY_SENTINEL, configPath, defaultConfig, detectTsconfigAlias, hasPathsEntryForPrefix, readConfig, resolveRegistry, styleRegistry, writeConfig } from '../config.js'
 import { detectProject } from '../project-info.js'
 import { fetchItem, fetchStyles } from '../registry.js'
 import { applyProjectUpdates, planProjectUpdates } from '../update-project.js'
@@ -91,6 +91,20 @@ export async function init(opts: InitOptions): Promise<void> {
     css: project.css,
   })
   const initItem = await fetchItem(styleRegistry(config), 'init')
+
+  // `--base-color` only does anything if the style's `style.css` carries the
+  // `__VYUI_GRAY__` sentinel for `writeFiles` to substitute. Styles that ship a
+  // designed palette of their own (e.g. `luna`, whose greys ARE the style) hold
+  // literal values instead, so the flag would silently no-op. Say so rather
+  // than letting the user believe it applied.
+  // Only when the user actually picked one — staying on the default is not a
+  // choice worth interrupting.
+  const choseBaseColor = opts.baseColor !== undefined || baseColor !== DEFAULT_BASE_COLOR
+  const styleCss = initItem.files.find(file => file.target === 'style.css')?.content ?? ''
+  if (choseBaseColor && !styleCss.includes(GRAY_SENTINEL)) {
+    log.warn(`Style "${style}" ships its own neutral palette, so --base-color "${baseColor}" was not applied. Edit the copied style.css to change its greys.`)
+  }
+
   const updatePlan = planProjectUpdates(project, config)
 
   log.info(opts.dryRun ? 'Previewing changes…' : 'Applying project setup…')

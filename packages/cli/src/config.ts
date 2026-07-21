@@ -10,6 +10,13 @@ export const DEFAULT_REGISTRY = 'https://vyui.dev/r'
 /** Default style namespace when none is configured or passed via `--style`. */
 export const DEFAULT_STYLE = 'default'
 
+/**
+ * Placeholder a style's `style.css` / `plugin.ts` carries wherever the neutral
+ * palette belongs; `writeFiles` swaps it for the chosen `baseColor`. A style
+ * with no sentinel has a designed palette of its own and ignores `--base-color`.
+ */
+export const GRAY_SENTINEL = '__VYUI_GRAY__'
+
 /** Neutral/gray palettes the `__VYUI_GRAY__` sentinel can be substituted for. */
 export const BASE_COLORS: readonly string[] = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
