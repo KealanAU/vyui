@@ -23,6 +23,7 @@ export interface SheetContentProps {
 
 <script setup lang="ts">
 import { Presence } from '@/components/Presence'
+import { OverlayPortal } from '@/components/OverlayRoot'
 import SheetContentImpl from './SheetContentImpl.vue'
 import { injectSheetRootContext } from './sheetContext'
 
@@ -36,8 +37,10 @@ const ctx = injectSheetRootContext()
 
 <template>
   <Presence :show="ctx.open.value">
-    <SheetContentImpl :drag-disabled="props.dragDisabled" :fit-content="props.fitContent">
-      <slot />
-    </SheetContentImpl>
+    <OverlayPortal>
+      <SheetContentImpl :drag-disabled="props.dragDisabled" :fit-content="props.fitContent">
+        <slot />
+      </SheetContentImpl>
+    </OverlayPortal>
   </Presence>
 </template>
