@@ -117,3 +117,32 @@ describe('overlayRoot', () => {
     expect(painted[2].getAttribute('data-overlay-test')).toBe('stack-3')
   })
 })
+
+/**
+ * `OverlayPortal` renders NOTHING in place — it registers its slot and
+ * `OverlayRoot` paints it elsewhere. So a component using it has no root
+ * element for `class` / `style` to fall through to, and Vue drops them
+ * silently: no warning, no error, the styles simply never arrive.
+ *
+ * `SheetContent` and `SheetBackdrop` shipped that way. Every `@vyui/kit` theme
+ * class on a sheet panel — `bg-default`, borders, radius — was discarded, and
+ * core's own hardcoded `#fff` / `position: fixed` / `z-index` silently stood in
+ * for them, so nothing looked wrong until core stopped shipping color and the
+ * panels turned transparent.
+ *
+ * The contract: use `OverlayPortal`, forward `useAttrs()` onto whatever you
+ * render inside it, and set `inheritAttrs: false` so Vue doesn't also try the
+ * (nonexistent) root. `DialogContentModal` does the same via `h()`.
+ */
+describe('OverlayPortal consumers forward attrs', () => {
+  it.each(['Sheet/SheetContent.vue', 'Sheet/SheetBackdrop.vue'])('%s', async (file) => {
+    const { readFileSync } = await import('node:fs')
+    const { resolve } = await import('node:path')
+    const source = readFileSync(resolve(process.cwd(), 'src/components', file), 'utf8')
+
+    expect(source).toContain('<OverlayPortal>')
+    expect(source).toContain('useAttrs()')
+    expect(source).toContain('inheritAttrs: false')
+    expect(source).toMatch(/v-bind="attrs"/)
+  })
+})
