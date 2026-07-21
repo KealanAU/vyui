@@ -5,6 +5,7 @@
   "styles": [
     "default",
     "rounded",
-    "shadcn"
+    "shadcn",
+    "liquid-glass"
   ]
 }

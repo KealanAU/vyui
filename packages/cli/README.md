@@ -73,6 +73,20 @@ canonical kit; the `style` chosen at `init` is stored in `vyui.config.json` and
 every `add` pulls from that namespace. To re-style a project, change `style` in
 the config (then re-`add --overwrite`).
 
+| Style | Look |
+| --- | --- |
+| `default` | The canonical kit — green accent, 0.25rem radius, solid surfaces. |
+| `rounded` | `default` with a 0.75rem radius. |
+| `shadcn` | shadcn/ui — monochrome zinc accent, 0.5rem radius, near-black solid button. |
+| `liquid-glass` | iOS — Apple system accents, translucent surfaces, hairline separators, 0.875rem radius. Lynx has no `backdrop-filter`, so this is the translucency half of the material, not a blurred backdrop. |
+
+```bash
+npx @vyui/cli init --style liquid-glass
+```
+
+`init` also prompts with the registry's catalog when `--style` is omitted, and
+`vyui styles` lists what the configured registry offers.
+
 ### Authoring a style — work from the cheapest layer up
 
 vyui separates **structure** (`.vue`), **appearance** (`theme/*.ts`), and
@@ -89,6 +103,11 @@ const STYLES = [
     name: 'shadcn',
     overlay: resolve(root, 'styles/shadcn'),                    // tokens (style.css)
     appConfig: { primary: 'zinc', button: { defaultVariants: { color: 'neutral' } } },
+  },
+  {
+    name: 'liquid-glass',
+    overlay: resolve(root, 'styles/liquid-glass'),              // tokens (style.css)
+    appConfig: { primary: 'blue' },                             // aligns baked icon fills
   },
 ]
 ```
