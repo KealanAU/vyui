@@ -21,6 +21,7 @@ export interface SheetBackdropProps {
 
 <script setup lang="ts">
 import { Presence } from '@/components/Presence'
+import { OverlayPortal } from '@/components/OverlayRoot'
 import SheetBackdropImpl from './SheetBackdropImpl.vue'
 import { injectSheetRootContext } from './sheetContext'
 
@@ -38,6 +39,8 @@ function onTap() {
 
 <template>
   <Presence :show="ctx.open.value">
-    <SheetBackdropImpl @tap="onTap" />
+    <OverlayPortal>
+      <SheetBackdropImpl @tap="onTap" />
+    </OverlayPortal>
   </Presence>
 </template>

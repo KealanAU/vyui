@@ -1,8 +1,10 @@
 <!-- Copyright 2026 The Lynx Authors. All rights reserved.
      Licensed under the Apache License Version 2.0.
 
-     Renders inside `<Presence>` so `inject(PresenceContextKey)` resolves to
-     the parent's payload. Binds `@animationstart` / `@animationend` etc. on
+     Renders inside `<Presence>`, but painted by `OverlayRoot` — so
+     `inject(PresenceContextKey)` resolves through the provides `OverlayPortal`
+     captured at registration, not through tree ancestry.
+     Binds `@animationstart` / `@animationend` etc. on
      the root `<view>` — Lynx fires these as plain BG-thread events on
      keyframe animations, so they advance Presence into Entered / Left. -->
 <script setup lang="ts">

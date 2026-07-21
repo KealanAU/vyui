@@ -33,7 +33,7 @@ export interface DrawerProps {
   transition?: boolean
   /** Render the dim overlay behind the content. */
   overlay?: boolean
-  /** Render the drawer in a portal. Currently advisory — core `SheetContent` mounts in place. */
+  /** Render the drawer in a portal. Advisory — sheet content is always portalled through `OverlayRoot`. */
   portal?: boolean
   /** When `false`, tapping the overlay does not close the drawer. */
   dismissible?: boolean

@@ -161,8 +161,13 @@ describe('SheetBackdrop — Presence wiring', () => {
     const { render } = await import('@vyui/testing-utils')
     const { default: SheetRoot } = await import('./SheetRoot.vue')
     const { default: SheetBackdrop } = await import('./SheetBackdrop.vue')
+    const { OverlayRoot, overlayEntries } = await import('@/components/OverlayRoot')
+    overlayEntries.value = []
 
     const open = ref(initialOpen)
+    // `OverlayRoot` is where the backdrop actually paints — SheetBackdrop only
+    // registers a portal entry (#12). Mirrors the app-root shell every consumer
+    // mounts (`<VyApp>` / the demo `App.vue`s).
     const Wrapper = defineComponent({
       setup() {
         return { open }
@@ -171,8 +176,9 @@ describe('SheetBackdrop — Presence wiring', () => {
         <SheetRoot v-model:open="open" :viewport-height="800">
           <SheetBackdrop data-testid="backdrop" />
         </SheetRoot>
+        <OverlayRoot />
       `,
-      components: { SheetRoot, SheetBackdrop },
+      components: { SheetRoot, SheetBackdrop, OverlayRoot },
     })
 
     const { container } = render(Wrapper)
@@ -304,5 +310,51 @@ describe('SheetContentImpl — viewport height unit (no dvh)', () => {
     expect(sfc).toContain('vyui-sheet-slide-out-to-right')
     expect(sfc).toContain('vyui-sheet-slide-in-from-left')
     expect(sfc).toContain('vyui-sheet-slide-out-to-left')
+  })
+})
+
+// Portal (#12): SheetContent / SheetBackdrop paint through the app-root
+// `<OverlayRoot>` so they escape an ancestor's `overflow: hidden` on Lynx
+// native. Registration is mount-scoped, so with no OverlayRoot rendered the
+// impls never mount — which is also why this can assert without tripping the
+// MTS-binding crash the rest of this file works around.
+describe('Sheet — OverlayRoot portal', () => {
+  async function mountSheet(open: boolean) {
+    const { render } = await import('@vyui/testing-utils')
+    const { default: SheetRoot } = await import('./SheetRoot.vue')
+    const { default: SheetContent } = await import('./SheetContent.vue')
+    const { default: SheetBackdrop } = await import('./SheetBackdrop.vue')
+
+    return render(defineComponent({
+      setup() {
+        return () => h(SheetRoot, { open }, {
+          default: () => [h(SheetBackdrop), h(SheetContent)],
+        })
+      },
+    }))
+  }
+
+  it('registers backdrop + content while open and clears on unmount', async () => {
+    const { overlayEntries } = await import('@/components/OverlayRoot')
+    const { waitForUpdate } = await import('@vyui/testing-utils')
+    overlayEntries.value = []
+
+    const { unmount } = await mountSheet(true)
+    await waitForUpdate()
+    expect(overlayEntries.value.length).toBe(2)
+
+    unmount()
+    await waitForUpdate()
+    expect(overlayEntries.value.length).toBe(0)
+  })
+
+  it('registers nothing while closed', async () => {
+    const { overlayEntries } = await import('@/components/OverlayRoot')
+    const { waitForUpdate } = await import('@vyui/testing-utils')
+    overlayEntries.value = []
+
+    await mountSheet(false)
+    await waitForUpdate()
+    expect(overlayEntries.value.length).toBe(0)
   })
 })
