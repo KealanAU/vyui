@@ -94,11 +94,11 @@ export async function init(opts: InitOptions): Promise<void> {
 
   // `--base-color` only does anything if the style's `style.css` carries the
   // `__VYUI_GRAY__` sentinel for `writeFiles` to substitute. Styles that ship a
-  // designed palette of their own (e.g. `luna`, whose greys ARE the style) hold
-  // literal values instead, so the flag would silently no-op. Say so rather
-  // than letting the user believe it applied.
-  // Only when the user actually picked one — staying on the default is not a
-  // choice worth interrupting.
+  // designed palette of their own (e.g. `lunaris`, whose greys ARE the style)
+  // hold literal values instead, so the flag would silently no-op — say so
+  // rather than letting the user believe it applied. Only when they actually
+  // picked one, though: staying on the default is not a choice worth
+  // interrupting.
   const choseBaseColor = opts.baseColor !== undefined || baseColor !== DEFAULT_BASE_COLOR
   const styleCss = initItem.files.find(file => file.target === 'style.css')?.content ?? ''
   if (choseBaseColor && !styleCss.includes(GRAY_SENTINEL)) {

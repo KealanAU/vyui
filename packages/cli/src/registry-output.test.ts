@@ -40,32 +40,29 @@ describe('published registry contracts', () => {
     expect(plugin).toContain('"color": "neutral"')
   })
 
+  const styles = readJson<{ styles: string[] }>(join(publicDir, 'r/styles.json')).styles
+
+  const styleCss = (style: string): string => {
+    const init = readJson<RegistryItem>(join(publicDir, `r/${style}/init.json`))
+    return init.files.find(file => file.target === 'style.css')?.content ?? ''
+  }
+
   // Lynx native resolves ONE level of var() indirection. A token whose value is
   // itself a `var(--ui-color-*)` ref therefore collapses on device — invisible
   // in a browser preview, broken on a phone. `shadcn` and `rounded` both
   // shipped that way (docs/styling-audit.md §4.2); this pins every style's
   // shipped style.css so no overlay reintroduces it.
-  it.each(
-    readJson<{ styles: string[] }>(join(publicDir, 'r/styles.json')).styles,
-  )('style %s ships no nested var() token values', (style) => {
-    const init = readJson<RegistryItem>(join(publicDir, `r/${style}/init.json`))
-    const css = init.files.find(file => file.target === 'style.css')?.content
-    expect(css).toBeTypeOf('string')
+  it.each(styles)('style %s ships no nested var() token values', (style) => {
+    const css = styleCss(style)
+    expect(css).not.toBe('')
 
-    const nested = (css as string)
+    const nested = css
       .split('\n')
       .filter(line => /^\s*--ui-[\w-]+:\s*var\(/.test(line))
 
     expect(nested).toEqual([])
   })
 
-  // A style overlay REPLACES `style.css` wholesale rather than cascading over
-  // it, so every style re-declares the entire token surface (120 declarations)
-  // by hand. Five copies now exist. If the base gains a token and an overlay
-  // doesn't, components under that style paint an undefined var — transparent
-  // text and invisible surfaces, only on device. These two tests pin the
-  // contract: complete token coverage everywhere, and `rounded` (whose whole
-  // premise is "base, but a bigger radius") differing in exactly that one token.
   // Comments are stripped first, and it matters twice: every style.css opens
   // with a banner mentioning `:root`/`.dark` in prose, and several carry a
   // literal `}` inside a comment (`bg-${c}-500`) that would otherwise close the
@@ -84,13 +81,16 @@ describe('published registry contracts', () => {
     )
   }
 
-  const styleCss = (style: string): string => {
-    const init = readJson<RegistryItem>(join(publicDir, `r/${style}/init.json`))
-    return init.files.find(file => file.target === 'style.css')?.content ?? ''
-  }
-
-  const styles = readJson<{ styles: string[] }>(join(publicDir, 'r/styles.json')).styles
   const baseTokens = tokensOf(styleCss('default'))
+
+  // A style overlay REPLACES `style.css` wholesale rather than cascading over
+  // it, so every style re-declares the entire token surface by hand. If the base
+  // gains a token and an overlay doesn't, components under that style paint an
+  // undefined var — transparent text and invisible surfaces, only on device.
+  it('parses the full base token surface', () => {
+    // Guard the guard: a parser that finds nothing passes every assertion below.
+    expect(baseTokens.size).toBeGreaterThan(100)
+  })
 
   it.each(styles.filter(style => style !== 'default'))(
     'style %s declares every base token',
@@ -100,11 +100,10 @@ describe('published registry contracts', () => {
     },
   )
 
+  // `rounded`'s whole premise is "the base, with a bigger radius".
   it('rounded overrides nothing but the radius', () => {
     const own = tokensOf(styleCss('rounded'))
     const changed = [...baseTokens].filter(([name, value]) => own.get(name) !== value)
     expect(changed.map(([name]) => name)).toEqual([':root--ui-radius'])
-    // Guard the guard: a parser that finds nothing would pass every assertion.
-    expect(baseTokens.size).toBeGreaterThan(100)
   })
 })

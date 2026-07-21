@@ -133,12 +133,37 @@ The second half of the original finding — "neither inverts the neutral ramp, s
 flips accents but not surfaces/text" — was fixed earlier (both overlays now carry the full
 semantic token set in `.dark`).
 
-The base `style.css` sync contract now spans three hand-kept copies of the ramp blocks
-(base + 2 overlays) plus `color-constants.js`. That contract needs either a generator
-(the `__VYUI_GRAY__` machinery already rewrites these files at init — extend it) or a
-parity test that parses all three CSS files against `SEMANTIC_TO_PALETTE_DEFAULT`.
+The base `style.css` sync contract now spans four hand-kept copies of the ramp blocks
+(base + 3 overlays) plus `color-constants.js`. `registry-output.test.ts` now pins the part
+that actually breaks silently — every style must declare every token the base declares, so
+a new base token fails CI until the overlays follow. Value parity beyond that is still
+unenforced (it is largely what a style *is*), except for `rounded`, which is asserted to
+differ from the base in `--ui-radius` alone.
 
-### 4.3 `label.ts` is off-system
+### 4.3 Two token roles the system has no name for
+
+Porting LUNA (`styles/lunaris`) surfaced two gaps where an external system draws a
+distinction vyui currently can't express. Neither is a luna-specific problem — both are
+equally true of the base theme; LUNA just makes them legible by naming the tiers.
+
+**No elevation tier.** `--ui-bg` does double duty as the page background *and* the
+floating-panel background: `modal.ts:29`, `popover.ts:14`, `drawer.ts:19` and
+`select.ts:29` all paint `bg-default`, and so does the app root. In light mode both are
+white and nothing looks wrong. In dark, a popover is `slate-900` on a `slate-900` page —
+separated only by its border. LUNA carries three surface tiers for exactly this
+(`canvas` → `paper` → `paper-clear`, `#0d0d0d` → `#1a1a1a` → `#232323`). Fix is either a
+new raised-surface token or pointing floating panels at `bg-muted`; both are kit-wide
+changes across the component themes, and both want doing alongside §4.1.
+
+**No on-accent foreground token.** `button.ts:45` hardcodes `text-white` for every solid
+variant. That holds while solid surfaces are `bg-${c}-500`, but it is an assumption, not a
+token — there is no `--ui-primary-content` to pair with `--ui-primary`. LUNA specifies one
+per accent (`primary-content` is `#010101` on its light-pink dark-mode primary, i.e. black
+text). No kit component paints on the mode tier today (§4.2), so nothing is currently
+wrong; it becomes wrong the moment a component does, or a consumer sets an accent light
+enough that white-on-it fails contrast.
+
+### 4.4 `label.ts` is off-system
 
 **Color claim fixed in #129:** `label.ts:10` previously used `text-gray-900` (Tailwind's
 stock palette, not the `neutral` semantic). It now uses `text-highlighted`, a semantic
@@ -149,14 +174,14 @@ Still open: `label.ts` relies on `after:content-['*']` for the required asterisk
 pseudo-element support on Lynx native is unverified; the required-asterisk may silently
 not render on device (needs a device check, not a code fix, first).
 
-### 4.4 Inline template classes bypass the theme layer
+### 4.5 Inline template classes bypass the theme layer
 
 `Combobox.vue:237-238` hardcodes `text-neutral-900` / `text-neutral-400` on the display
 label directly in the template. Those colors are unreachable by `appConfig.ui.combobox`
 and `props.ui` — they belong in `combobox.ts` slots (`value` / `placeholder`, matching
 nuxt/ui's slot names).
 
-### 4.5 Comment rot
+### 4.6 Comment rot
 
 Harmless but misleading during exactly this kind of drift review:
 - ~~`button.ts:19` "No dark mode"~~ — **fixed in #129.** Now reads "Dark mode rides the
@@ -225,7 +250,7 @@ Already consumed (confirmed via grep) by ~18 themes: `input.ts`, `textarea.ts`,
 `toast.ts`, `accordion.ts`, `alert.ts`, `radioGroup.ts` (base/legend/label/description —
 indicator knob stays literal `bg-white` by design), `rating.ts`, `switch.ts`
 (label/description — thumb knob stays literal by design), `swipeAction.ts`,
-`toggleGroup.ts`, `label.ts` (§4.3), and others.
+`toggleGroup.ts`, `label.ts` (§4.4), and others.
 
 **What's left (not migrated, tracked as open findings):**
 - Island family — `island.ts` + `islandButton.ts` (§5.1, drift table §6).
@@ -323,12 +348,12 @@ Lynx bundle regardless of usage.
    sync requirement (§5.3).
 5. Fix `label.ts` (`text-gray-900` → semantic — **DONE in #129**; device-verify
    `after:content` — **still open**) and move `Combobox.vue`'s inline text colors into
-   theme slots (§4.3–4.4, still open).
+   theme slots (§4.4–4.5, still open).
 
 **P2 — hygiene and payload**
 6. Safelist diet (§7): drop `ring` + `data-[…]`, split per-utility patterns.
 7. Extract the shared `focusRing(c)` helper; delete the hand-sync comment pair.
-8. Sweep the stale comments (§4.5).
+8. Sweep the stale comments (§4.6).
 
 **P3 — keep it from drifting again**
 9. Write `docs/styling.md` — promote the conventions that currently live only in file

@@ -36,8 +36,9 @@
  *   • LUNA has no radius, spacing or border-weight opinion (its Tailwind preset
  *     is `{ fontSize, colors }` and nothing else), so `--ui-radius` keeps the
  *     base 0.25rem.
- *   • LUNA's `backdrop`, `paper-clear` and `primary-content` token groups have
- *     no vyui equivalent yet — see docs/styling-audit.md §4.1.
+ *   • LUNA's `backdrop` group has no vyui equivalent yet (docs/styling-audit.md
+ *     §4.1), nor do `paper-clear` (no elevation tier) and `primary-content` (no
+ *     on-accent foreground token) — §4.3.
  *
  * This file holds literal values rather than the `__VYUI_GRAY__` sentinel, so
  * `--base-color` does not apply (LUNA's greys ARE the style); `init` warns if

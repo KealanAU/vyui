@@ -143,3 +143,36 @@
 .dark.neutral-neutral { --ui-bg: #171717; --ui-bg-muted: #262626; --ui-bg-elevated: #262626; --ui-bg-accented: #404040; --ui-bg-inverted: #ffffff; --ui-text-dimmed: #737373; --ui-text-muted: #a3a3a3; --ui-text-toned: #d4d4d4; --ui-text: #e5e5e5; --ui-text-highlighted: #ffffff; --ui-text-inverted: #171717; --ui-border: #262626; --ui-border-muted: #262626; --ui-border-accented: #404040; --ui-border-inverted: #ffffff; }
 .dark.neutral-luna { --ui-bg: #0d0d0d; --ui-bg-muted: #1a1a1a; --ui-bg-elevated: #2c2c2c; --ui-bg-accented: #505050; --ui-bg-inverted: #f8f8f8; --ui-text-dimmed: #6e6e6e; --ui-text-muted: #b3b3b3; --ui-text-toned: #d9d9d9; --ui-text: #d9d9d9; --ui-text-highlighted: #f8f8f8; --ui-text-inverted: #010101; --ui-border: rgba(248, 248, 248, 0.32); --ui-border-muted: #333333; --ui-border-accented: #656565; --ui-border-inverted: #f8f8f8; }
 .dark.neutral-stone { --ui-bg: theme('colors.stone.900'); --ui-bg-muted: theme('colors.stone.800'); --ui-bg-elevated: theme('colors.stone.800'); --ui-bg-accented: theme('colors.stone.700'); --ui-bg-inverted: theme('colors.white'); --ui-text-dimmed: theme('colors.stone.500'); --ui-text-muted: theme('colors.stone.400'); --ui-text-toned: theme('colors.stone.300'); --ui-text: theme('colors.stone.200'); --ui-text-highlighted: theme('colors.white'); --ui-text-inverted: theme('colors.stone.900'); --ui-border: theme('colors.stone.800'); --ui-border-muted: theme('colors.stone.800'); --ui-border-accented: theme('colors.stone.700'); --ui-border-inverted: theme('colors.white'); }
+
+/*
+ * LUNA signature gradients — a VERBATIM copy of the `.luna-gradient-*` block in
+ * `styles/lunaris/style.css`, which is a registry overlay and therefore ships
+ * only to projects scaffolded with `vyui init --style lunaris`. Nothing in this
+ * repo loaded it, so the classes had no way to be seen — in a browser or on
+ * device — before this. Keep the two in step.
+ *
+ * The open question they answer: the stops are `var()` refs, and no other part
+ * of the kit puts a `var()` inside a `linear-gradient()`. `.luna-gradient-literal`
+ * is the control — same two stops, hex inlined. If the control paints and the
+ * `-rose` tile above it doesn't, Lynx can't resolve vars inside gradients and
+ * the overlay must inline its stops.
+ */
+:root {
+  --ui-gradient-a: #ff3d63;
+  --ui-gradient-b: #ff5d99;
+  --ui-gradient-c: #a998bf;
+  --ui-gradient-d: #3dd5e9;
+}
+.dark {
+  --ui-gradient-a: #ff7385;
+  --ui-gradient-b: #fe69a1;
+  --ui-gradient-c: #a998bf;
+  --ui-gradient-d: #00d0f1;
+}
+
+.luna-gradient { background: linear-gradient(160deg, var(--ui-gradient-a), var(--ui-gradient-b), var(--ui-gradient-c), var(--ui-gradient-d)); }
+.luna-gradient-rose { background: linear-gradient(0deg, var(--ui-gradient-a), var(--ui-gradient-b)); }
+.luna-gradient-berry { background: linear-gradient(0deg, var(--ui-gradient-b), var(--ui-gradient-c)); }
+.luna-gradient-afterglow { background: linear-gradient(150deg, var(--ui-gradient-b) 8.42%, var(--ui-gradient-c) 81.71%); }
+.luna-gradient-ocean { background: linear-gradient(0deg, var(--ui-gradient-c) 60%, var(--ui-gradient-d) 120%); }
+.luna-gradient-literal { background: linear-gradient(0deg, #ff3d63, #ff5d99); }
