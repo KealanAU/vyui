@@ -359,7 +359,11 @@ const slotProps = computed(() => ({ open: open.value, close }))
       :style="{
         position: 'relative',
         width: '100%',
-        backgroundColor: '#fff',
+        /* No `backgroundColor`: headless. The row must still be OPAQUE so the
+           actions behind it don't show through, but that color is the
+           consumer's to pick — @vyui/kit's theme puts `bg-default` on this
+           slot, which an inline style here would silently outrank (white row
+           on a dark page). */
       }"
     >
       <slot v-bind="slotProps" />

@@ -23,9 +23,10 @@ The problems are **enforcement and completion**, not design:
 1. **Verified bug:** opacity modifiers on semantic colors (`bg-neutral-900/50`,
    `bg-neutral-100/50`) generate **no CSS at all** — every modal/drawer/tray overlay and
    every `soft` input-family variant references a class that doesn't exist.
-2. The `styles/shadcn` and `styles/rounded` overlays **violate the single-level `var()`
+2. ~~The `styles/shadcn` and `styles/rounded` overlays **violate the single-level `var()`
    rule** that the base `style.css` was just fixed for, and neither has the `.dark`
-   neutral-inversion block — they're two generations behind the base token file.
+   neutral-inversion block — they're two generations behind the base token file.~~
+   **Fixed** — see §4.2; a registry test now guards it.
 3. **Fixed in #129:** the semantic surface-token tier (`--ui-bg`/`--ui-bg-muted`/
    `--ui-bg-elevated`/`--ui-bg-accented`/`--ui-bg-inverted`, `--ui-text-*`,
    `--ui-border-*`) now exists in `style.css` and is consumed by ~18 themes, so
@@ -113,22 +114,56 @@ and fail on classes that produce no CSS. That converts this whole class of bug f
 
 ### 4.2 `styles/shadcn` and `styles/rounded` are behind the base token file
 
-Both overlays' mode tiers hold **nested `var()` refs** (`--ui-primary:
-var(--ui-color-primary-900)` — `shadcn/style.css:110-115,122-127`;
-`rounded/style.css:110-115,125-131`). This is the exact two-level `var()` collapse the
-pending dark-mode changeset just fixed in the base `style.css` (mode tier must hold
-`theme()` literals — Lynx resolves one level only). On device these overlays' `bg-primary`
-shorthands will collapse.
+**FIXED.** Both overlays' mode tiers held **nested `var()` refs** (`--ui-primary:
+var(--ui-color-primary-900)`) — the same two-level `var()` collapse the dark-mode
+changeset fixed in the base `style.css` (mode tier must hold `theme()` literals; Lynx
+resolves one level only). On device their `bg-primary` / `text-primary` shorthands
+collapsed. Both now hold literals, and `registry-output.test.ts` asserts that no shipped
+style's `style.css` declares a `--ui-*` token whose value opens with `var(` — so the
+class of bug is now a red test rather than a device-only surprise.
 
-Both also have a `.dark` block that only shifts the mode tier — **neither inverts the
-neutral ramp**, so dark mode under either overlay flips accents but not surfaces/text.
+Blast radius inside the library was **zero**: excluding comments, neither `@vyui/kit` nor
+`@vyui/core` emits a single bare mode-tier utility — every component resolves the ramp
+directly (`bg-${c}-500`, `text-${c}-600`). The mode tier exists purely as consumer-facing
+API, so the bug only bit apps that wrote `bg-primary` / `text-error` themselves. That is
+still worth fixing (it is a published contract), but it explains why nothing looked wrong
+in the demos.
 
-The base `style.css` sync contract now spans three hand-kept copies of the ramp blocks
-(base + 2 overlays) plus `color-constants.js`. That contract needs either a generator
-(the `__VYUI_GRAY__` machinery already rewrites these files at init — extend it) or a
-parity test that parses all three CSS files against `SEMANTIC_TO_PALETTE_DEFAULT`.
+The second half of the original finding — "neither inverts the neutral ramp, so dark mode
+flips accents but not surfaces/text" — was fixed earlier (both overlays now carry the full
+semantic token set in `.dark`).
 
-### 4.3 `label.ts` is off-system
+The base `style.css` sync contract now spans four hand-kept copies of the ramp blocks
+(base + 3 overlays) plus `color-constants.js`. `registry-output.test.ts` now pins the part
+that actually breaks silently — every style must declare every token the base declares, so
+a new base token fails CI until the overlays follow. Value parity beyond that is still
+unenforced (it is largely what a style *is*), except for `rounded`, which is asserted to
+differ from the base in `--ui-radius` alone.
+
+### 4.3 Two token roles the system has no name for
+
+Porting LUNA (`styles/lunaris`) surfaced two gaps where an external system draws a
+distinction vyui currently can't express. Neither is a luna-specific problem — both are
+equally true of the base theme; LUNA just makes them legible by naming the tiers.
+
+**No elevation tier.** `--ui-bg` does double duty as the page background *and* the
+floating-panel background: `modal.ts:29`, `popover.ts:14`, `drawer.ts:19` and
+`select.ts:29` all paint `bg-default`, and so does the app root. In light mode both are
+white and nothing looks wrong. In dark, a popover is `slate-900` on a `slate-900` page —
+separated only by its border. LUNA carries three surface tiers for exactly this
+(`canvas` → `paper` → `paper-clear`, `#0d0d0d` → `#1a1a1a` → `#232323`). Fix is either a
+new raised-surface token or pointing floating panels at `bg-muted`; both are kit-wide
+changes across the component themes, and both want doing alongside §4.1.
+
+**No on-accent foreground token.** `button.ts:45` hardcodes `text-white` for every solid
+variant. That holds while solid surfaces are `bg-${c}-500`, but it is an assumption, not a
+token — there is no `--ui-primary-content` to pair with `--ui-primary`. LUNA specifies one
+per accent (`primary-content` is `#010101` on its light-pink dark-mode primary, i.e. black
+text). No kit component paints on the mode tier today (§4.2), so nothing is currently
+wrong; it becomes wrong the moment a component does, or a consumer sets an accent light
+enough that white-on-it fails contrast.
+
+### 4.4 `label.ts` is off-system
 
 **Color claim fixed in #129:** `label.ts:10` previously used `text-gray-900` (Tailwind's
 stock palette, not the `neutral` semantic). It now uses `text-highlighted`, a semantic
@@ -139,14 +174,14 @@ Still open: `label.ts` relies on `after:content-['*']` for the required asterisk
 pseudo-element support on Lynx native is unverified; the required-asterisk may silently
 not render on device (needs a device check, not a code fix, first).
 
-### 4.4 Inline template classes bypass the theme layer
+### 4.5 Inline template classes bypass the theme layer
 
 `Combobox.vue:237-238` hardcodes `text-neutral-900` / `text-neutral-400` on the display
 label directly in the template. Those colors are unreachable by `appConfig.ui.combobox`
 and `props.ui` — they belong in `combobox.ts` slots (`value` / `placeholder`, matching
 nuxt/ui's slot names).
 
-### 4.5 Comment rot
+### 4.6 Comment rot
 
 Harmless but misleading during exactly this kind of drift review:
 - ~~`button.ts:19` "No dark mode"~~ — **fixed in #129.** Now reads "Dark mode rides the
@@ -215,7 +250,7 @@ Already consumed (confirmed via grep) by ~18 themes: `input.ts`, `textarea.ts`,
 `toast.ts`, `accordion.ts`, `alert.ts`, `radioGroup.ts` (base/legend/label/description —
 indicator knob stays literal `bg-white` by design), `rating.ts`, `switch.ts`
 (label/description — thumb knob stays literal by design), `swipeAction.ts`,
-`toggleGroup.ts`, `label.ts` (§4.3), and others.
+`toggleGroup.ts`, `label.ts` (§4.4), and others.
 
 **What's left (not migrated, tracked as open findings):**
 - Island family — `island.ts` + `islandButton.ts` (§5.1, drift table §6).
@@ -298,8 +333,10 @@ Lynx bundle regardless of usage.
 **P0 — broken on device today**
 1. Replace all alpha-modifier classes (§4.1): overlays → shared `bg-black/50`-style
    constant; soft variants → discrete shades. Add the compile-time "class emits CSS" test.
-2. Fix `styles/shadcn` + `styles/rounded`: mode tier → `theme()` literals; add the `.dark`
-   neutral inversion block (§4.2). Add ramp-parity test across the three style.css files.
+2. ~~Fix `styles/shadcn` + `styles/rounded`: mode tier → `theme()` literals; add the `.dark`
+   neutral inversion block (§4.2).~~ **Done**, with a nested-`var()` guard in
+   `registry-output.test.ts`. Ramp-parity across the (now five) `style.css` files is still
+   hand-kept — see §4.2.
 
 **P1 — before dark mode is called done**
 3. ~~Introduce the semantic surface-token tier and migrate the `bg-white` +
@@ -311,12 +348,12 @@ Lynx bundle regardless of usage.
    sync requirement (§5.3).
 5. Fix `label.ts` (`text-gray-900` → semantic — **DONE in #129**; device-verify
    `after:content` — **still open**) and move `Combobox.vue`'s inline text colors into
-   theme slots (§4.3–4.4, still open).
+   theme slots (§4.4–4.5, still open).
 
 **P2 — hygiene and payload**
 6. Safelist diet (§7): drop `ring` + `data-[…]`, split per-utility patterns.
 7. Extract the shared `focusRing(c)` helper; delete the hand-sync comment pair.
-8. Sweep the stale comments (§4.5).
+8. Sweep the stale comments (§4.6).
 
 **P3 — keep it from drifting again**
 9. Write `docs/styling.md` — promote the conventions that currently live only in file

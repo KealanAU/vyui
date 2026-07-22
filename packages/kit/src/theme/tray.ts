@@ -23,7 +23,12 @@
 export default {
   slots: {
     // Dim behind the panel (same as Drawer).
-    overlay: 'fixed inset-0 bg-neutral-900/50',
+    // Dim: `bg-black/50`, NOT an alpha on a semantic color. The preset wires
+    // semantic colors to raw `var()` without `<alpha-value>`, so Tailwind skips
+    // generating `bg-neutral-900/50` entirely — this slot painted nothing for
+    // as long as it read that way (docs/styling-audit.md §4.1). `black` parses
+    // to rgb, so the modifier applies, and a scrim needs no mode awareness.
+    overlay: 'fixed inset-0 bg-black/50',
     // The sheet panel. `fitContent` on core SheetContent means no explicit
     // height — it hugs handle + morph + footer. `variant` supplies the
     // edge/inset + border + radius chrome below.

@@ -73,9 +73,21 @@ const STYLES: StyleDef[] = [
     // merged at runtime via appConfig.ui.button. `primary: 'zinc'` aligns baked
     // SVG icon fills with the zinc CSS-var palette.
     appConfig: {
-      primary: 'zinc',
+      // Baked SVG icon fills resolve their hex from `appConfig.ui.primary`, so
+      // it must name the SAME palette the `--ui-color-primary-*` vars hold. The
+      // overlay writes those as `slate` for the `__VYUI_GRAY__` rewrite, so this
+      // takes the sentinel too — otherwise icons drift from every surface the
+      // moment a consumer picks a `--base-color` other than the default.
+      primary: '__VYUI_GRAY__',
       button: { defaultVariants: { color: 'neutral' } },
     },
+  },
+  {
+    name: 'lunaris',
+    overlay: resolve(root, 'styles/lunaris'), // tokens only (style.css): LUNA signature-gradient variant
+    // `rose` matches the `--ui-color-primary-*` ramp the overlay installs, so
+    // baked icon fills track the pink accent.
+    appConfig: { primary: 'rose' },
   },
   // Token-only like `rounded`: translucent iOS-style surfaces + system accents
   // + a 14px radius. `primary: 'blue'` only aligns the baked SVG icon fills
@@ -309,10 +321,15 @@ export const VyUI: Plugin<VyUIPluginOptions> = {
  * `:root` and `.dark`), so a zinc/stone app gets a matching base gray for BOTH
  * its ramp and its baked tokens (tokens can't `var()`-ref the ramp on Lynx —
  * single-level rule — so this build-time rewrite is how "neutral drives the
- * surfaces/text/borders" actually happens). Safe because `slate` appears ONLY in
- * the neutral ramp + those tokens; the accent ramps use their own palettes
- * (green/blue/…) and `theme('colors.white')` token values are intentionally left
- * literal. With `baseColor: 'slate'` the output is byte-identical to this source.
+ * surfaces/text/borders" actually happens). `theme('colors.white')` token values
+ * are intentionally left literal. With `baseColor: 'slate'` the output is
+ * byte-identical to this source.
+ *
+ * A style opts an ACCENT ramp into the same rewrite by writing it as `slate`:
+ * `shadcn` does this for `primary`, because shadcn/ui has no separate brand hue
+ * — its accent is the base gray. Styles with a designed palette of their own
+ * (`luna`, `lunaris`) hold literal values and are untouched here, so
+ * `--base-color` correctly no-ops for them (init warns).
  */
 function grayifySlate(css: string): string {
   return css.replace(

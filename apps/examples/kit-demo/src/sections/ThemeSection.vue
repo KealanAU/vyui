@@ -2,7 +2,35 @@
 import { ref } from 'vue'
 import { VyBadge, VyButton, VyIcon, VySelect } from '@vyui/kit'
 
-type PaletteName = 'green' | 'rose' | 'blue' | 'violet' | 'amber' | 'teal' | 'pink' | 'orange'
+type PaletteName = 'green' | 'rose' | 'blue' | 'violet' | 'amber' | 'teal' | 'pink' | 'orange' | 'zinc' | 'black'
+
+// Style presets. A vyui "style" (what `vyui init --style <name>` bakes in — see
+// the STYLES array in tools/gen-registry.ts) is almost entirely a TOKEN-layer
+// choice, so each preset here is just a saved position of the knobs below:
+// which grey family the semantic tokens use, which palette `primary` renders
+// as, and the radius base. Picking one moves those knobs; they stay live after.
+//
+// `luna` and `lunaris` share the LUNA grey family and differ only in accent —
+// that is the actual relationship between the two upstream variants.
+//
+// NOT covered: the per-component `appConfig` deltas a style can also carry
+// (shadcn's near-black default button). The tv factory is memoized on the
+// provided config (see useStyledComponent), so those can't be swapped live
+// without a fresh config object — `apps/examples/shadcn-demo` shows that half.
+const stylePresets = {
+  default: { neutral: 'slate', primary: 'green', radius: 0.25 },
+  // `luna` is not a registry style — LUNA's neutral variant is `lunaris` with a
+  // monochrome accent, which is a palette choice, not a style. It stays here as
+  // a preset because that composition is exactly why it needs no namespace.
+  luna: { neutral: 'luna', primary: 'black', radius: 0.25 },
+  lunaris: { neutral: 'luna', primary: 'rose', radius: 0.25 },
+  // shadcn's accent follows `--base-color`, so both knobs move together; this
+  // shows the `--base-color zinc` configuration.
+  shadcn: { neutral: 'zinc', primary: 'zinc', radius: 0.5 },
+} as const
+type StyleName = keyof typeof stylePresets
+const styleNames = Object.keys(stylePresets) as StyleName[]
+const activeStyle = ref<StyleName>('default')
 
 // Active semantic color for the top showcase — pick one from the dropdown and
 // the sample components below lock to it. Includes the custom `tertiary`.
@@ -22,6 +50,14 @@ const colorPalettes = defineModel<Record<string, string>>('colorPalettes', { req
 const neutralPalette = defineModel<string>('neutralPalette', { required: true })
 const radius = defineModel<number>('radius', { required: true })
 
+function setStyle(name: StyleName): void {
+  const preset = stylePresets[name]
+  activeStyle.value = name
+  neutralPalette.value = preset.neutral
+  colorPalettes.value.primary = preset.primary
+  radius.value = preset.radius
+}
+
 // `primary` and `neutral` use the swatch grid; the other configurable colors
 // (incl. the custom `tertiary`) use a compact swatch + Select instead.
 const otherColors = ['secondary', 'success', 'info', 'warning', 'error', 'tertiary'] as const
@@ -35,15 +71,22 @@ const palettes: { name: PaletteName, hex: string }[] = [
   { name: 'teal',   hex: '#14b8a6' },
   { name: 'pink',   hex: '#ec4899' },
   { name: 'orange', hex: '#f97316' },
+  { name: 'zinc',   hex: '#71717a' },
+  // Monochrome accent — the shadcn/LUNA near-black button. Not a Tailwind
+  // palette; the ramp is spelled out in index.css.
+  { name: 'black',  hex: '#171717' },
 ]
 
-// Neutral swatch grid — Tailwind's gray families.
+// Neutral swatch grid — Tailwind's gray families, plus `luna`: the LUNA design
+// system's own grey family (canvas / paper / content / line), which is what the
+// `luna` and `lunaris` style presets ride. See index.css.
 const neutralPalettes: { name: string, hex: string }[] = [
   { name: 'slate',   hex: '#64748b' },
   { name: 'gray',    hex: '#6b7280' },
   { name: 'zinc',    hex: '#71717a' },
   { name: 'neutral', hex: '#737373' },
   { name: 'stone',   hex: '#78716c' },
+  { name: 'luna',    hex: '#5d5d5d' },
 ]
 
 // Select options for the non-swatch colors.
@@ -54,6 +97,18 @@ const paletteHex = (name: string) => palettes.find(p => p.name === name)?.hex ??
 // resolves to a multiple of it via the @vyui/kit Tailwind preset
 // (e.g. `rounded-md` → `calc(var(--ui-radius) * 1.5)`).
 const radiusSteps = [0, 0.125, 0.25, 0.375, 0.5] as const
+
+// LUNA's five shipped gradients (defined in index.css, mirroring the
+// `styles/lunaris` overlay). They're consumer utilities — no kit component
+// paints a gradient — so this row is the only place they render, same as the
+// icon showcase below.
+const lunaGradients = [
+  'luna-gradient',
+  'luna-gradient-rose',
+  'luna-gradient-berry',
+  'luna-gradient-afterglow',
+  'luna-gradient-ocean',
+]
 
 const showcaseIcons = [
   'icon-park-outline:home',
@@ -159,6 +214,42 @@ const colorShowcaseIcons: { icon: string, semantic: 'primary' | 'secondary' | 's
         </view>
         <view class="w-36">
           <VySelect v-model="colorPalettes[c]" :items="paletteItems" :placeholder="c" size="sm" />
+        </view>
+      </view>
+    </view>
+
+    <!-- Style presets -->
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <view class="flex flex-row items-baseline justify-between">
+        <text class="text-highlighted text-base font-semibold">Style</text>
+        <text class="text-muted text-xs">{{ activeStyle }}</text>
+      </view>
+      <text class="text-muted text-xs">The registry styles (<text class="font-mono">vyui init --style</text>). Each one just moves the knobs on this page — grey family, <text class="font-mono">primary</text> palette, radius — so keep tweaking after picking one.</text>
+      <view class="flex flex-row flex-wrap gap-2 pt-1">
+        <VyButton
+          v-for="name in styleNames"
+          :key="name"
+          size="xs"
+          color="neutral"
+          :variant="activeStyle === name ? 'solid' : 'soft'"
+          :label="name"
+          @tap="setStyle(name)"
+        />
+      </view>
+    </view>
+
+    <!-- LUNA gradients -->
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-3">
+      <text class="text-highlighted text-base font-semibold">LUNA gradients</text>
+      <text class="text-muted text-xs">Utility classes shipped by the <text class="font-mono">lunaris</text> style — apply them yourself; no component paints one.</text>
+      <view class="flex flex-row flex-wrap gap-3 pt-1">
+        <view
+          v-for="g in lunaGradients"
+          :key="g"
+          class="flex flex-col items-center gap-1 w-20"
+        >
+          <view :class="[g, 'w-20 h-14 rounded-md border border-default']" />
+          <text class="text-muted text-xs text-center">{{ g.replace('luna-gradient-', '') || 'gradient' }}</text>
         </view>
       </view>
     </view>

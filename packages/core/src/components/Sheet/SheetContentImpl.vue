@@ -690,10 +690,15 @@ const a11y = useA11y(() => ({
 </template>
 
 <style>
+/* No `background-color` — @vyui/core is headless and ships no color, matching
+   the "No defaults" contract every sibling overlay documents (see
+   `DialogContentImpl`'s `backdropStyle`). This class previously hardcoded
+   `#fff`, which beat the consumer's `bg-default` on source order and pinned
+   every Sheet-backed surface — drawer, tray, action sheet, select, combobox,
+   popover — to white in BOTH color modes. Style the panel from the consumer. */
 .vyui-sheet__content {
   position: fixed;
   z-index: 1001;
-  background-color: #fff;
   display: flex;
   flex-direction: column;
   overflow: hidden;

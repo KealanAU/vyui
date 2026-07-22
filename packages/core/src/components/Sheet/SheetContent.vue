@@ -22,23 +22,39 @@ export interface SheetContentProps {
 </script>
 
 <script setup lang="ts">
+import { useAttrs } from 'vue'
 import { Presence } from '@/components/Presence'
 import { OverlayPortal } from '@/components/OverlayRoot'
 import SheetContentImpl from './SheetContentImpl.vue'
 import { injectSheetRootContext } from './sheetContext'
+
+// `OverlayPortal` paints its slot through the app-root `<OverlayRoot>` and
+// renders NOTHING in place, so there is no root element for `class` / `style`
+// to fall through to — they have to be forwarded onto the impl by hand, the
+// same way `DialogContentModal` spreads `useAttrs()` into its render. Without
+// this, every consumer class on `<SheetContent>` was silently dropped: the kit
+// themes' `bg-default` never reached the panel, and core's own hardcoded
+// `#fff` / `position: fixed` / `z-index` stood in for them, which is why the
+// omission stayed invisible until core stopped shipping color.
+defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<SheetContentProps>(), {
   dragDisabled: false,
   fitContent: false,
 })
 
+const attrs = useAttrs()
 const ctx = injectSheetRootContext()
 </script>
 
 <template>
   <Presence :show="ctx.open.value">
     <OverlayPortal>
-      <SheetContentImpl :drag-disabled="props.dragDisabled" :fit-content="props.fitContent">
+      <SheetContentImpl
+        v-bind="attrs"
+        :drag-disabled="props.dragDisabled"
+        :fit-content="props.fitContent"
+      >
         <slot />
       </SheetContentImpl>
     </OverlayPortal>
