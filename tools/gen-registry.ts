@@ -89,6 +89,14 @@ const STYLES: StyleDef[] = [
     // baked icon fills track the pink accent.
     appConfig: { primary: 'rose' },
   },
+  // Token-only like `rounded`: translucent iOS-style surfaces + system accents
+  // + a 14px radius. `primary: 'blue'` only aligns the baked SVG icon fills
+  // with the blue ramp (icons can't read CSS vars — see VyIcon).
+  {
+    name: 'liquid-glass',
+    overlay: resolve(root, 'styles/liquid-glass'),
+    appConfig: { primary: 'blue' },
+  },
 ]
 
 const kitPkg = JSON.parse(readFileSync(resolve(root, 'packages/kit/package.json'), 'utf8'))

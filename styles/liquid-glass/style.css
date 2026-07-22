@@ -1,0 +1,256 @@
+/*
+ * @vyui/kit — `liquid-glass` style tokens (overlay over the default style.css).
+ *
+ * iOS-flavoured "liquid glass": translucent surfaces, hairline separators,
+ * Apple system accent colors, and a continuous-looking corner radius. A
+ * TOKEN-ONLY overlay — it ships ONLY `style.css`, so the generated
+ * `r/liquid-glass/` registry reuses every base `.vue` + `theme/*.ts` verbatim.
+ *
+ * ── WHAT "GLASS" MEANS HERE ────────────────────────────────────────────────
+ * Lynx has NO `backdrop-filter` (its `filter` shorthand only blurs an element's
+ * OWN content — see `@lynx-js/tailwind-preset`'s `blur-*`), so a true
+ * frosted-backdrop material is not expressible on device. What this style does
+ * instead is the other half of the material: surfaces and fills are translucent
+ * `rgba()` so whatever sits behind them shows through, edges are hairline
+ * separators rather than solid borders, and the radius scale is bumped. Over a
+ * flat background it reads as "soft iOS"; over imagery / a scrolling list —
+ * sheets, modals, sticky bars — it reads as glass.
+ *
+ * ── DELTAS FROM `default` ──────────────────────────────────────────────────
+ *   • Accents: Apple system colors at the MODE tier (`--ui-primary` etc. hold
+ *     the literal iOS blue/green/red/… rather than a Tailwind -500), with the
+ *     closest Tailwind palette under each ramp so `bg-primary-100`-style
+ *     utilities still resolve.
+ *   • Surfaces: `--ui-bg*` are translucent — a white/dark glass base plus the
+ *     iOS grey `systemFill` ladder (0.08 → 0.20 alpha) for the muted/elevated/
+ *     accented fills, preserving the base file's fill hierarchy.
+ *   • Borders: iOS `separator` alphas instead of solid slate.
+ *   • `--ui-radius: 0.875rem` (14px) — iOS control/card corners.
+ *   • Text + the neutral ramp stay on `slate` `theme()` literals so the
+ *     install-time `baseColor` substitution (`__VYUI_GRAY__`) still applies.
+ *
+ * Alpha lives in the token VALUE, not in a `/alpha` class modifier: Tailwind
+ * can't emit an alpha variant of a `var()`-backed semantic color, so
+ * `bg-default/70` produces no CSS (see docs/styling-audit.md).
+ *
+ * Values are `theme()` literals or plain `rgba()` — never `var(--ui-color-*)`
+ * refs, which collapse on device (Lynx resolves one level of var()). See the
+ * token + SYNC CONTRACT banners in `packages/kit/src/style.css`.
+ */
+:root {
+  /* primary */
+  --ui-color-primary-50:  theme('colors.blue.50');
+  --ui-color-primary-100: theme('colors.blue.100');
+  --ui-color-primary-200: theme('colors.blue.200');
+  --ui-color-primary-300: theme('colors.blue.300');
+  --ui-color-primary-400: theme('colors.blue.400');
+  --ui-color-primary-500: theme('colors.blue.500');
+  --ui-color-primary-600: theme('colors.blue.600');
+  --ui-color-primary-700: theme('colors.blue.700');
+  --ui-color-primary-800: theme('colors.blue.800');
+  --ui-color-primary-900: theme('colors.blue.900');
+  --ui-color-primary-950: theme('colors.blue.950');
+
+  /* secondary */
+  --ui-color-secondary-50:  theme('colors.indigo.50');
+  --ui-color-secondary-100: theme('colors.indigo.100');
+  --ui-color-secondary-200: theme('colors.indigo.200');
+  --ui-color-secondary-300: theme('colors.indigo.300');
+  --ui-color-secondary-400: theme('colors.indigo.400');
+  --ui-color-secondary-500: theme('colors.indigo.500');
+  --ui-color-secondary-600: theme('colors.indigo.600');
+  --ui-color-secondary-700: theme('colors.indigo.700');
+  --ui-color-secondary-800: theme('colors.indigo.800');
+  --ui-color-secondary-900: theme('colors.indigo.900');
+  --ui-color-secondary-950: theme('colors.indigo.950');
+
+  /* success */
+  --ui-color-success-50:  theme('colors.green.50');
+  --ui-color-success-100: theme('colors.green.100');
+  --ui-color-success-200: theme('colors.green.200');
+  --ui-color-success-300: theme('colors.green.300');
+  --ui-color-success-400: theme('colors.green.400');
+  --ui-color-success-500: theme('colors.green.500');
+  --ui-color-success-600: theme('colors.green.600');
+  --ui-color-success-700: theme('colors.green.700');
+  --ui-color-success-800: theme('colors.green.800');
+  --ui-color-success-900: theme('colors.green.900');
+  --ui-color-success-950: theme('colors.green.950');
+
+  /* info */
+  --ui-color-info-50:  theme('colors.sky.50');
+  --ui-color-info-100: theme('colors.sky.100');
+  --ui-color-info-200: theme('colors.sky.200');
+  --ui-color-info-300: theme('colors.sky.300');
+  --ui-color-info-400: theme('colors.sky.400');
+  --ui-color-info-500: theme('colors.sky.500');
+  --ui-color-info-600: theme('colors.sky.600');
+  --ui-color-info-700: theme('colors.sky.700');
+  --ui-color-info-800: theme('colors.sky.800');
+  --ui-color-info-900: theme('colors.sky.900');
+  --ui-color-info-950: theme('colors.sky.950');
+
+  /* warning */
+  --ui-color-warning-50:  theme('colors.orange.50');
+  --ui-color-warning-100: theme('colors.orange.100');
+  --ui-color-warning-200: theme('colors.orange.200');
+  --ui-color-warning-300: theme('colors.orange.300');
+  --ui-color-warning-400: theme('colors.orange.400');
+  --ui-color-warning-500: theme('colors.orange.500');
+  --ui-color-warning-600: theme('colors.orange.600');
+  --ui-color-warning-700: theme('colors.orange.700');
+  --ui-color-warning-800: theme('colors.orange.800');
+  --ui-color-warning-900: theme('colors.orange.900');
+  --ui-color-warning-950: theme('colors.orange.950');
+
+  /* error */
+  --ui-color-error-50:  theme('colors.red.50');
+  --ui-color-error-100: theme('colors.red.100');
+  --ui-color-error-200: theme('colors.red.200');
+  --ui-color-error-300: theme('colors.red.300');
+  --ui-color-error-400: theme('colors.red.400');
+  --ui-color-error-500: theme('colors.red.500');
+  --ui-color-error-600: theme('colors.red.600');
+  --ui-color-error-700: theme('colors.red.700');
+  --ui-color-error-800: theme('colors.red.800');
+  --ui-color-error-900: theme('colors.red.900');
+  --ui-color-error-950: theme('colors.red.950');
+
+  /* neutral — a FIXED slate scale (does not invert; see the DARK MODE banner) */
+  --ui-color-neutral-50:  theme('colors.slate.50');
+  --ui-color-neutral-100: theme('colors.slate.100');
+  --ui-color-neutral-200: theme('colors.slate.200');
+  --ui-color-neutral-300: theme('colors.slate.300');
+  --ui-color-neutral-400: theme('colors.slate.400');
+  --ui-color-neutral-500: theme('colors.slate.500');
+  --ui-color-neutral-600: theme('colors.slate.600');
+  --ui-color-neutral-700: theme('colors.slate.700');
+  --ui-color-neutral-800: theme('colors.slate.800');
+  --ui-color-neutral-900: theme('colors.slate.900');
+  --ui-color-neutral-950: theme('colors.slate.950');
+
+  /*
+   * Mode tier — picks the active shade for shorthand utilities (`bg-primary`).
+   * Holds `theme()` LITERALS, not `var(--ui-color-*-500)` refs: `bg-primary`
+   * resolves `var(--ui-primary)` (one hop) and Lynx native stops after one hop,
+   * so a nested var() ref here would collapse on device. To rebrand the mode
+   * tier, override these directly (overriding the `--ui-color-*` ramp no longer
+   * flows through). The heavily-used ramp utilities (`bg-primary-500`) resolve
+   * the ramp in one hop and still honor `--ui-color-*` overrides.
+   *
+   * `liquid-glass`: Apple's light-mode system colors, verbatim — no Tailwind
+   * shade lands on them (systemBlue is more saturated than blue-500, systemRed
+   * warmer than red-500), and a hex here is as single-hop as a `theme()` call.
+   */
+  --ui-primary:   #007aff; /* systemBlue */
+  --ui-secondary: #5856d6; /* systemIndigo */
+  --ui-success:   #34c759; /* systemGreen */
+  --ui-info:      #5ac8fa; /* systemTeal */
+  --ui-warning:   #ff9500; /* systemOrange */
+  --ui-error:     #ff3b30; /* systemRed */
+
+  /*
+   * ── SEMANTIC TOKENS (mode-aware; flip in `.dark`) ──────────────────────────
+   * Role-based aliases every theme + consumer uses INSTEAD of raw ramp classes,
+   * so app chrome flips for free with zero `dark:`. `theme()` LITERALS only
+   * (single-level var() rule) — redefined concretely in `.dark` below.
+   */
+
+  /* Text — foreground tiers, dim → strong. `text-default` = `var(--ui-text)`. */
+  --ui-text-dimmed:      theme('colors.slate.400');
+  --ui-text-muted:       theme('colors.slate.500');
+  --ui-text-toned:       theme('colors.slate.600');
+  --ui-text:             theme('colors.slate.700');
+  --ui-text-highlighted: theme('colors.slate.900');
+  /* High-contrast foreground for `bg-inverted` fills (paired). */
+  --ui-text-inverted:    theme('colors.white');
+
+  /*
+   * Background — THE GLASS. Same hierarchy as `default` (surface, then fills
+   * light → strong), but every value is translucent so content behind a card /
+   * sheet / bar shows through:
+   *   • `bg-default` — the glass pane itself: mostly-opaque white, so text on
+   *     it stays legible over an arbitrary backdrop (Lynx can't blur it — see
+   *     the header). This is the one to keep high; dropping it much below 0.7
+   *     starts to fail contrast over busy content.
+   *   • `bg-muted` / `bg-elevated` / `bg-accented` — Apple's grey `systemFill`
+   *     ladder. Neutral-grey rgb so a fill reads the same over a light or dark
+   *     pane, alpha alone carrying the "stronger fill" step.
+   */
+  --ui-bg:          rgba(255, 255, 255, 0.72);
+  --ui-bg-muted:    rgba(120, 120, 128, 0.08);
+  --ui-bg-elevated: rgba(120, 120, 128, 0.12);
+  --ui-bg-accented: rgba(120, 120, 128, 0.20);
+  --ui-bg-inverted: rgba(28, 28, 30, 0.92);
+
+  /* Border — iOS `separator` hairlines, not solid slate. */
+  --ui-border:          rgba(60, 60, 67, 0.18);
+  --ui-border-muted:    rgba(60, 60, 67, 0.10);
+  --ui-border-accented: rgba(60, 60, 67, 0.29);
+  --ui-border-inverted: rgba(28, 28, 30, 0.92);
+
+  /*
+   * Border-radius base — see the scale in `packages/kit/src/style.css`.
+   * 0.875rem ≈ 14px, the iOS control/card corner. Bigger than every other
+   * shipped style on purpose: rounded corners are most of what sells "iOS"
+   * before any material effect does.
+   */
+  --ui-radius: 0.875rem;
+}
+
+/*
+ * Dark tokens. See the DARK MODE banner. Only the mode tier + semantic tokens
+ * are redefined; the neutral ramp stays FIXED (raw `neutral-*` classes do not
+ * flip), and the accent ramps inherit `:root`. Values are literals — `theme()`
+ * or `rgba()`, never a var() ref. Applied via a `.dark` class on an app-root
+ * ancestor (`useColorMode`); custom-property inheritance flows to descendants.
+ */
+.dark {
+  /* Mode tier — Apple's dark-mode system colors (their own brighter pairs). */
+  --ui-primary:   #0a84ff;
+  --ui-secondary: #5e5ce6;
+  --ui-success:   #30d158;
+  --ui-info:      #64d2ff;
+  --ui-warning:   #ff9f0a;
+  --ui-error:     #ff453a;
+
+  /* Text — designed dark values (not a mechanical ramp flip). */
+  --ui-text-dimmed:      theme('colors.slate.500');
+  --ui-text-muted:       theme('colors.slate.400');
+  --ui-text-toned:       theme('colors.slate.300');
+  --ui-text:             theme('colors.slate.200');
+  --ui-text-highlighted: theme('colors.white');
+  --ui-text-inverted:    theme('colors.slate.900');
+
+  /*
+   * Background — dark glass. The pane goes near-black-translucent; the grey
+   * fill ladder keeps the same rgb as light mode and only lifts its alpha
+   * (Apple's dark `systemFill` steps), so fills stay visible on it.
+   */
+  --ui-bg:          rgba(28, 28, 30, 0.72);
+  --ui-bg-muted:    rgba(120, 120, 128, 0.16);
+  --ui-bg-elevated: rgba(120, 120, 128, 0.24);
+  --ui-bg-accented: rgba(120, 120, 128, 0.32);
+  --ui-bg-inverted: rgba(255, 255, 255, 0.92);
+
+  /* Border — the separator flips to a white hairline. */
+  --ui-border:          rgba(255, 255, 255, 0.16);
+  --ui-border-muted:    rgba(255, 255, 255, 0.08);
+  --ui-border-accented: rgba(255, 255, 255, 0.28);
+  --ui-border-inverted: rgba(255, 255, 255, 0.92);
+}
+
+/*
+ * ── Modal (Dialog) open/close motion ───────────────────────────────────────
+ * Inherited verbatim from the base style — see `packages/kit/src/style.css`
+ * for the rationale (lifecycle classes, first-open flash, keyframe source).
+ */
+.vy-modal-overlay { opacity: 0; }
+.vy-modal-overlay.ui-open { opacity: 1; }
+.vy-modal-overlay.ui-entering { animation: vyui-fade-in 250ms ease-out both; }
+.vy-modal-overlay.ui-leaving  { animation: vyui-fade-out 200ms ease-in both; }
+
+.vy-modal-content { opacity: 0; }
+.vy-modal-content.ui-open { opacity: 1; }
+.vy-modal-content.ui-entering { animation: vyui-zoom-in 250ms ease-out both; }
+.vy-modal-content.ui-leaving  { animation: vyui-zoom-out 200ms ease-in both; }
