@@ -1,19 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/sortable'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.sortable`.
- */
-export const buildSortable = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).sortable as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
-
-type SortableVariants = VariantProps<ReturnType<typeof buildSortable>>
+type SortableTV = ThemeTV<typeof theme>
+type SortableVariants = VariantProps<SortableTV>
 
 export interface SortableProps<T = unknown> {
   /** Controlled ordered items. Bind with `v-model`. */
@@ -29,7 +19,7 @@ export interface SortableProps<T = unknown> {
   longPressMs?: number
   size?: SortableVariants['size']
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildSortable>['slots'], any>>
+  ui?: Partial<Record<keyof SortableTV['slots'], any>>
 }
 
 export interface SortableEmits<T = unknown> {
@@ -44,7 +34,7 @@ export interface SortableSlots<T = unknown> {
 <script setup lang="ts" generic="T = unknown">
 import { computed } from 'vue'
 import { SortableRoot, SortableItem } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<SortableProps<T>>(), {
   disabled: false,
@@ -52,9 +42,7 @@ const props = withDefaults(defineProps<SortableProps<T>>(), {
 const emit = defineEmits<SortableEmits<T>>()
 defineSlots<SortableSlots<T>>()
 
-const appConfig = useAppConfig()
-
-const ui = computed(() => buildSortable(appConfig)({
+const { ui } = useStyledComponent('sortable', theme, () => ({
   size: props.size,
   disabled: props.disabled,
 }))

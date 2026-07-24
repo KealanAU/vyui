@@ -73,7 +73,6 @@ import {
   type DialogContentPresenceContext,
 } from './dialogContentContext'
 import { injectDialogRootContext } from './DialogRoot.vue'
-import { useWarning } from './utils'
 
 defineOptions({ inheritAttrs: false })
 
@@ -88,18 +87,6 @@ const { forwardRef } = useForwardExpose()
 
 rootContext.titleId ||= useId(undefined, 'vy-dialog-title')
 rootContext.descriptionId ||= useId(undefined, 'vy-dialog-description')
-
-// Dev-only accessibility warning — no-op on Lynx (see `utils.ts`).
-if (__DEV__) {
-  useWarning({
-    titleName: 'DialogTitle',
-    contentName: 'DialogContent',
-    componentLink: 'dialog.html#title',
-    titleId: rootContext.titleId,
-    descriptionId: rootContext.descriptionId,
-    contentElement: rootContext.contentElement,
-  })
-}
 
 // reka-ui's `DismissableLayer` listens for outside pointer events; on Lynx the
 // equivalent is a `tap` on the full-screen backdrop `<view>`. The tap surfaces

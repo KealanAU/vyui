@@ -9,23 +9,12 @@
  * "combobox" is the same control where free-form entry would also be kept.
  * Disable filtering with `:searchable="false"` to get a plain picker.
  */
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/combobox'
-import { resolveColors } from '../theme/colors'
 import type { SheetDirection } from '@vyui/core'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.combobox`.
- */
-export const buildCombobox = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).combobox as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type ComboboxVariants = VariantProps<ReturnType<typeof buildCombobox>>
+type ComboboxTV = ThemeTV<typeof theme>
+type ComboboxVariants = VariantProps<ComboboxTV>
 
 /**
  * Item shape — strings/numbers accepted directly; objects pull their
@@ -99,7 +88,7 @@ export interface ComboboxProps {
   /** When `items` are objects, which field to use as the label. */
   labelKey?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildCombobox>['slots'], any>>
+  ui?: Partial<Record<keyof ComboboxTV['slots'], any>>
 }
 
 export interface ComboboxEmits {
@@ -140,6 +129,7 @@ import {
   Icon as VyIcon,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { resolveColorHex } from '../utils/resolveColor'
 
 const props = withDefaults(defineProps<ComboboxProps>(), {
@@ -162,7 +152,7 @@ const resolvedTrailingIcon = computed(() => props.trailingIcon || appConfig.ui.i
 const resolvedSelectedIcon = computed(() => props.selectedIcon || appConfig.ui.icons?.check || 'i-lucide-check')
 const resolvedSearchIcon = computed(() => props.searchIcon || appConfig.ui.icons?.search || 'i-lucide-search')
 
-const ui = computed(() => buildCombobox(appConfig)({
+const { ui } = useStyledComponent('combobox', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,

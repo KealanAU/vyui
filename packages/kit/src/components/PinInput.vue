@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/pinInput'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.pinInput`.
- */
-export const buildPinInput = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).pinInput as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type PinInputVariants = VariantProps<ReturnType<typeof buildPinInput>>
+type PinInputTV = ThemeTV<typeof theme>
+type PinInputVariants = VariantProps<PinInputTV>
 
 export interface PinInputProps {
   /**
@@ -43,7 +32,7 @@ export interface PinInputProps {
   /** Forwarded to the underlying core control. */
   id?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildPinInput>['slots'], any>>
+  ui?: Partial<Record<keyof PinInputTV['slots'], any>>
 }
 
 export interface PinInputEmits {
@@ -57,7 +46,7 @@ export interface PinInputSlots {}
 <script setup lang="ts">
 import { computed } from 'vue'
 import { PinInputRoot, PinInputInput } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<PinInputProps>(), {
   length: 5,
@@ -66,8 +55,6 @@ const props = withDefaults(defineProps<PinInputProps>(), {
 })
 const emit = defineEmits<PinInputEmits>()
 defineSlots<PinInputSlots>()
-
-const appConfig = useAppConfig()
 
 // The core root models its value as an array of per-box characters. Mirror the
 // flat-string facade by splitting on the way in and joining on the way out.
@@ -83,7 +70,7 @@ const coreType = computed<'number' | 'text'>(() =>
   props.type === 'numeric' ? 'number' : 'text',
 )
 
-const ui = computed(() => buildPinInput(appConfig)({
+const { ui } = useStyledComponent('pinInput', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,

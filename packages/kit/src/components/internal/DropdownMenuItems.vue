@@ -9,7 +9,7 @@
 import type {
   DropdownMenuItem,
   DropdownMenuItemSlotProps,
-  buildDropdownMenu,
+  DropdownMenuTV,
 } from '../DropdownMenu.vue'
 
 export interface MenuRow {
@@ -21,8 +21,8 @@ export interface MenuRow {
 
 export interface DropdownMenuItemsProps {
   rows: MenuRow[]
-  ui: ReturnType<ReturnType<typeof buildDropdownMenu>>
-  uiOverrides?: Partial<Record<keyof ReturnType<typeof buildDropdownMenu>['slots'], any>>
+  ui: ReturnType<DropdownMenuTV>
+  uiOverrides?: Partial<Record<keyof DropdownMenuTV['slots'], any>>
   labelKey?: string
   descriptionKey?: string
   childrenIcon: string

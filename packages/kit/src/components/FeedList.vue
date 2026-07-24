@@ -1,18 +1,9 @@
 <script lang="ts">
-import { tv } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/feedList'
 import type { FeedListRefreshState } from '@vyui/core'
-import type { AppConfig } from '../types'
+import type { ThemeTV } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.feedList`.
- */
-export const buildFeedList = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).feedList as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
+type FeedListTV = ThemeTV<typeof theme>
 
 export interface FeedListProps<T = unknown> {
   /** Items to render. Each becomes a `<list-item>` with an `item-key`. */
@@ -53,7 +44,7 @@ export interface FeedListProps<T = unknown> {
   /** No more data to load — stops `loadMore` and shows the end-of-list footer. */
   noMoreData?: boolean
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildFeedList>['slots'], any>>
+  ui?: Partial<Record<keyof FeedListTV['slots'], any>>
 }
 
 export interface FeedListEmits {
@@ -87,18 +78,14 @@ export interface FeedListSlots<T = unknown> {
 </script>
 
 <script setup lang="ts" generic="T = unknown">
-import { computed } from 'vue'
 import { FeedList as CoreFeedList } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<FeedListProps<T>>(), {})
 const emit = defineEmits<FeedListEmits>()
 defineSlots<FeedListSlots<T>>()
 
-const appConfig = useAppConfig()
-
-const ui = computed(() => buildFeedList(appConfig))
-const cls = computed(() => ui.value({ class: props.class }))
+const { ui: cls } = useStyledComponent('feedList', theme, () => ({ class: props.class }))
 </script>
 
 <template>

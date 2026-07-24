@@ -1,17 +1,5 @@
 <script lang="ts">
-import { tv } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/skeleton'
-import type { AppConfig } from '../types'
-
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.skeleton`.
- */
-export const buildSkeleton = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).skeleton as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
 
 export interface SkeletonProps {
   class?: any
@@ -23,19 +11,16 @@ export interface SkeletonSlots {
 </script>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<SkeletonProps>(), {})
 defineSlots<SkeletonSlots>()
 
-const appConfig = useAppConfig()
-
-const ui = computed(() => buildSkeleton(appConfig))
+const { ui } = useStyledComponent('skeleton', theme, () => ({ class: props.class }))
 </script>
 
 <template>
-  <view :class="ui({ class: props.class })">
+  <view :class="ui">
     <slot />
   </view>
 </template>

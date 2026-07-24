@@ -1,21 +1,10 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/badge'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { AvatarProps } from './Avatar.vue'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.badge`.
- */
-export const buildBadge = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).badge as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type BadgeVariants = VariantProps<ReturnType<typeof buildBadge>>
+type BadgeTV = ThemeTV<typeof theme>
+type BadgeVariants = VariantProps<BadgeTV>
 
 export interface BadgeProps {
   color?: BadgeVariants['color']
@@ -44,7 +33,7 @@ export interface BadgeProps {
   /** Text label. Overridden by the default slot if provided. */
   label?: string | number
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildBadge>['slots'], any>>
+  ui?: Partial<Record<keyof BadgeTV['slots'], any>>
 }
 
 export interface BadgeSlots {
@@ -57,15 +46,13 @@ export interface BadgeSlots {
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Icon as VyIcon } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import VyAvatar from './Avatar.vue'
 
 const props = withDefaults(defineProps<BadgeProps>(), {})
 defineSlots<BadgeSlots>()
 
-const appConfig = useAppConfig()
-
-const ui = computed(() => buildBadge(appConfig)({
+const { ui } = useStyledComponent('badge', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,

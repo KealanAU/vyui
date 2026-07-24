@@ -77,13 +77,9 @@ export function scanModule(file, code) {
 }
 
 function collect(dir) {
-  const out = []
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) out.push(...collect(full))
-    else if (entry.name.endsWith('.js')) out.push(full)
-  }
-  return out
+  return readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter(e => e.isFile() && e.name.endsWith('.js'))
+    .map(e => join(e.parentPath, e.name))
 }
 
 export function checkDistShape(distDir) {

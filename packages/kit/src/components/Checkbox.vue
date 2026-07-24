@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/checkbox'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.checkbox`.
- */
-export const buildCheckbox = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).checkbox as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type CheckboxVariants = VariantProps<ReturnType<typeof buildCheckbox>>
+type CheckboxTV = ThemeTV<typeof theme>
+type CheckboxVariants = VariantProps<CheckboxTV>
 
 export interface CheckboxProps {
   /** Controlled checked value. `'indeterminate'` renders the mixed state. */
@@ -39,7 +28,7 @@ export interface CheckboxProps {
   /** Forwarded to the underlying CheckboxRoot. */
   required?: boolean
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildCheckbox>['slots'], any>>
+  ui?: Partial<Record<keyof CheckboxTV['slots'], any>>
 }
 
 export interface CheckboxEmits {
@@ -56,6 +45,7 @@ export interface CheckboxSlots {
 import { computed } from 'vue'
 import { CheckboxIndicator, CheckboxRoot, Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<CheckboxProps>(), {
   modelValue: false,
@@ -69,7 +59,7 @@ const appConfig = useAppConfig()
 const resolvedIcon = computed(() => props.icon || appConfig.ui.icons?.check || 'i-lucide-check')
 const resolvedIndeterminateIcon = computed(() => props.indeterminateIcon || appConfig.ui.icons?.minus || 'i-lucide-minus')
 
-const ui = computed(() => buildCheckbox(appConfig)({
+const { ui } = useStyledComponent('checkbox', theme, () => ({
   color: props.color,
   size: props.size,
   checked: props.modelValue === true || props.modelValue === 'indeterminate',

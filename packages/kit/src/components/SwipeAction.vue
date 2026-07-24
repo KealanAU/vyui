@@ -1,19 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/swipeAction'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.swipeAction`.
- */
-export const buildSwipeAction = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).swipeAction as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
-
-type SwipeActionVariants = VariantProps<ReturnType<typeof buildSwipeAction>>
+type SwipeActionTV = ThemeTV<typeof theme>
+type SwipeActionVariants = VariantProps<SwipeActionTV>
 
 export interface SwipeActionProps {
   /**
@@ -43,7 +33,7 @@ export interface SwipeActionProps {
    */
   side?: SwipeActionVariants['side']
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildSwipeAction>['slots'], any>>
+  ui?: Partial<Record<keyof SwipeActionTV['slots'], any>>
 }
 
 export interface SwipeActionEmits {
@@ -60,9 +50,8 @@ export interface SwipeActionSlots {
 </script>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { SwipeAction as CoreSwipeAction } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<SwipeActionProps>(), {
   defaultOpen: false,
@@ -73,9 +62,7 @@ const props = withDefaults(defineProps<SwipeActionProps>(), {
 const emit = defineEmits<SwipeActionEmits>()
 defineSlots<SwipeActionSlots>()
 
-const appConfig = useAppConfig()
-
-const ui = computed(() => buildSwipeAction(appConfig)({
+const { ui } = useStyledComponent('swipeAction', theme, () => ({
   side: props.side,
 }))
 

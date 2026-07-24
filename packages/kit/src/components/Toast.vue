@@ -1,22 +1,11 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme, { ICON_FG_SHADE } from '../theme/toast'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
 import type { ButtonProps } from './Button.vue'
 import type { AvatarProps } from './Avatar.vue'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.toast`.
- */
-export const buildToast = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).toast as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type ToastVariants = VariantProps<ReturnType<typeof buildToast>>
+type ToastTV = ThemeTV<typeof theme>
+type ToastVariants = VariantProps<ToastTV>
 
 export interface ToastProps {
   /** Title text. Overridden by the `title` slot. */
@@ -75,7 +64,7 @@ export interface ToastProps {
   /** Iconify name for the close button. Defaults to `appConfig.ui.icons.close`. */
   closeIcon?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildToast>['slots'], any>>
+  ui?: Partial<Record<keyof ToastTV['slots'], any>>
 }
 
 export interface ToastEmits {
@@ -97,6 +86,7 @@ export interface ToastSlots {
 import { computed } from 'vue'
 import { ToastRoot, ToastTitle, ToastDescription, ToastAction, ToastClose, ToastSwipe, Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { resolveColorHex } from '../utils/resolveColor'
 import VyAvatar from './Avatar.vue'
 import VyButton from './Button.vue'
@@ -114,7 +104,7 @@ defineSlots<ToastSlots>()
 
 const appConfig = useAppConfig()
 
-const ui = computed(() => buildToast(appConfig)({
+const { ui } = useStyledComponent('toast', theme, () => ({
   color: props.color,
   orientation: props.orientation,
   title: !!props.title,

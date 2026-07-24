@@ -1,21 +1,10 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/dropdownMenu'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { AvatarProps } from './Avatar.vue'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.dropdownMenu`.
- */
-export const buildDropdownMenu = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).dropdownMenu as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type DropdownMenuVariants = VariantProps<ReturnType<typeof buildDropdownMenu>>
+export type DropdownMenuTV = ThemeTV<typeof theme>
+type DropdownMenuVariants = VariantProps<DropdownMenuTV>
 
 export interface DropdownMenuItem {
   /** Text label rendered in the item. */
@@ -101,7 +90,7 @@ export interface DropdownMenuProps {
   /** Iconify name for the loading spinner. Defaults to `appConfig.ui.icons.loading`. */
   loadingIcon?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildDropdownMenu>['slots'], any>>
+  ui?: Partial<Record<keyof DropdownMenuTV['slots'], any>>
 }
 
 export interface DropdownMenuEmits {
@@ -117,7 +106,7 @@ export interface DropdownMenuItemSlotProps {
   item: DropdownMenuItem
   active: boolean
   index: number
-  ui: ReturnType<ReturnType<typeof buildDropdownMenu>>
+  ui: ReturnType<DropdownMenuTV>
 }
 
 export interface DropdownMenuSlots {
@@ -163,6 +152,7 @@ import {
   useElementRect,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import DropdownMenuItems from './internal/DropdownMenuItems.vue'
 
 const props = withDefaults(defineProps<DropdownMenuProps>(), {
@@ -181,7 +171,7 @@ const resolvedChildrenIcon = computed(() => props.childrenIcon || appConfig.ui.i
 const resolvedCheckedIcon = computed(() => props.checkedIcon || appConfig.ui.icons?.check || 'i-lucide-check')
 const resolvedLoadingIcon = computed(() => props.loadingIcon || appConfig.ui.icons?.loading || 'i-lucide-loader-circle')
 
-const ui = computed(() => buildDropdownMenu(appConfig)({
+const { ui } = useStyledComponent('dropdownMenu', theme, () => ({
   size: props.size,
 }))
 

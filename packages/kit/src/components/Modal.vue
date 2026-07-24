@@ -1,26 +1,10 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/modal'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { ButtonProps } from './Button.vue'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.modal`.
- *
- * SCOPE — VyModal is for short blocking alerts / confirms only (typically
- * two lines of text + one or two actions). For non-trivial overlays use
- * `VyDrawer`: it gives you snap points, drag-to-dismiss, and bottom-sheet
- * ergonomics built on `SheetRoot`. The previous `fullscreen` variant was
- * removed — a full-screen Modal is just `<VyDrawer :snap-points="[1]">`.
- */
-export const buildModal = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).modal as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
-
-type ModalVariants = VariantProps<ReturnType<typeof buildModal>>
+type ModalTV = ThemeTV<typeof theme>
+type ModalVariants = VariantProps<ModalTV>
 
 export interface ModalProps {
   /** Controlled open state — bind with `v-model:open`. */
@@ -68,7 +52,7 @@ export interface ModalProps {
    */
   dismissible?: boolean
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildModal>['slots'], any>>
+  ui?: Partial<Record<keyof ModalTV['slots'], any>>
 }
 
 export interface ModalEmits {
@@ -99,7 +83,7 @@ export interface ModalSlots {
   title(props?: {}): any
   description(props?: {}): any
   /** Override the default close button. */
-  close(props: { ui: ReturnType<ReturnType<typeof buildModal>> }): any
+  close(props: { ui: ReturnType<ModalTV> }): any
 }
 </script>
 
@@ -115,6 +99,7 @@ import {
   DialogClose,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import VyButton from './Button.vue'
 
 const props = withDefaults(defineProps<ModalProps>(), {
@@ -157,7 +142,7 @@ function onInteractOutside(event: any) {
   emit('close:prevent')
 }
 
-const ui = computed(() => buildModal(appConfig)({
+const { ui } = useStyledComponent('modal', theme, () => ({
   transition: props.transition,
 }))
 

@@ -1,20 +1,11 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
+import { tv } from 'tailwind-variants'
 import theme from '../theme/radioGroup'
 import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.radioGroup`.
- */
-export const buildRadioGroup = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).radioGroup as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type RadioGroupVariants = VariantProps<ReturnType<typeof buildRadioGroup>>
+type RadioGroupTV = ThemeTV<typeof theme>
+type RadioGroupVariants = VariantProps<RadioGroupTV>
 
 export type RadioGroupValue = string | number
 
@@ -47,7 +38,7 @@ export interface RadioGroupProps {
   size?: RadioGroupVariants['size']
   orientation?: RadioGroupVariants['orientation']
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildRadioGroup>['slots'], any>>
+  ui?: Partial<Record<keyof RadioGroupTV['slots'], any>>
 }
 
 export interface RadioGroupEmits {
@@ -65,6 +56,7 @@ export interface RadioGroupSlots {
 import { computed, useId } from 'vue'
 import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<RadioGroupProps>(), {
   orientation: 'vertical',
@@ -77,7 +69,7 @@ const appConfig = useAppConfig()
 
 const groupId = computed(() => props.id ?? useId())
 
-const ui = computed(() => buildRadioGroup(appConfig)({
+const { ui } = useStyledComponent('radioGroup', theme, () => ({
   color: props.color,
   size: props.size,
   orientation: props.orientation,
@@ -112,7 +104,11 @@ const normalizedItems = computed(() => (props.items ?? []).map(normalizeItem))
 // checked/disabled args are read at render time so `modelValue` flips stay
 // reactive without invalidating it.
 const itemStateUi = computed(() => {
-  const factory = buildRadioGroup(appConfig)
+  // This path re-invokes the factory per (checked, disabled) combo, which
+  // `useStyledComponent` doesn't expose — rebuild the same per-app factory it
+  // uses (identical config → identical output).
+  const overrides = (appConfig.ui as Record<string, unknown>).radioGroup as Partial<ReturnType<typeof theme>> | undefined
+  const factory = tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
   const { color, size, orientation, ui: uiProp } = props
   const make = (checked: boolean, disabled: boolean) => {
     const invoked = factory({ color, size, orientation, disabled, checked })

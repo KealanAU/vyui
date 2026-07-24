@@ -1,22 +1,13 @@
 <script lang="ts">
 import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme, { leadingIconFg, TRAILING_ICON_FG } from '../theme/actionSheet'
 import { resolveColors } from '../theme/colors'
+import type { ThemeTV } from '../composables/useStyledComponent'
 import type { SheetDirection } from '@vyui/core'
-import type { AppConfig } from '../types'
 import type { AvatarProps } from './Avatar.vue'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.actionSheet`.
- */
-export const buildActionSheet = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).actionSheet as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type ActionSheetVariants = VariantProps<ReturnType<typeof buildActionSheet>>
+type ActionSheetTV = ThemeTV<typeof theme>
+type ActionSheetVariants = VariantProps<ActionSheetTV>
 
 export interface ActionSheetItem {
   /** Row label. */
@@ -78,7 +69,7 @@ export interface ActionSheetProps {
   cancel?: boolean | string
   size?: ActionSheetVariants['size']
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildActionSheet>['slots'], any>>
+  ui?: Partial<Record<keyof ActionSheetTV['slots'], any>>
 }
 
 export interface ActionSheetEmits {
@@ -130,6 +121,7 @@ import {
   Icon as VyIcon,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { resolveColorHex } from '../utils/resolveColor'
 import VyAvatar from './Avatar.vue'
 
@@ -153,7 +145,7 @@ function onOpenChange(value: boolean) {
   emit('update:modelValue', value)
 }
 
-const ui = computed(() => buildActionSheet(appConfig)({
+const { ui } = useStyledComponent('actionSheet', theme, () => ({
   size: props.size,
 }))
 
@@ -192,7 +184,10 @@ const cancelLabel = computed(() => (typeof props.cancel === 'string' ? props.can
 // once per props change instead of three slot calls per row per render — the
 // tv invocations are the expensive part on Lynx's interpreter.
 const itemStateUi = computed(() => {
-  const factory = buildActionSheet(appConfig)
+  // `useStyledComponent` only exposes the invoked `ui`, not the factory, so
+  // rebuild it here with the same config for the per-(color × disabled) memo.
+  const overrides = (appConfig.ui as Record<string, unknown>).actionSheet as Partial<ReturnType<typeof theme>> | undefined
+  const factory = tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
   const { size, ui: uiProp } = props
   const make = (color?: ActionSheetItem['color'], disabled?: boolean) => {
     const invoked = factory({ size, color, disabled: disabled || undefined })

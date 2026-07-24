@@ -1,19 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/swiper'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.swiper`.
- */
-export const buildSwiper = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).swiper as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
-
-type SwiperVariants = VariantProps<ReturnType<typeof buildSwiper>>
+type SwiperTV = ThemeTV<typeof theme>
+type SwiperVariants = VariantProps<SwiperTV>
 
 export interface SwiperProps {
   /** Controlled active index. Bind with `v-model`. */
@@ -46,7 +36,7 @@ export interface SwiperProps {
   /** Show the fixed dot indicator strip. Opt-in. */
   showIndicators?: boolean
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildSwiper>['slots'], any>>
+  ui?: Partial<Record<keyof SwiperTV['slots'], any>>
 }
 
 export interface SwiperEmits {
@@ -62,7 +52,7 @@ export interface SwiperSlots {
 <script setup lang="ts">
 import { computed, ref, useSlots } from 'vue'
 import { SwiperItem, SwiperRoot } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<SwiperProps>(), {
   direction: 'horizontal',
@@ -74,11 +64,10 @@ const props = withDefaults(defineProps<SwiperProps>(), {
 const emit = defineEmits<SwiperEmits>()
 defineSlots<SwiperSlots>()
 
-const appConfig = useAppConfig()
 const slots = useSlots()
 const containerWidth = ref(0)
 
-const ui = computed(() => buildSwiper(appConfig)({
+const { ui } = useStyledComponent('swiper', theme, () => ({
   direction: props.direction,
   size: props.size,
 }))
