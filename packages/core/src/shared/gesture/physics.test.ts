@@ -23,6 +23,7 @@ import {
   pruneQueue,
   resolveAxisLock,
   rubberEffect,
+  settleDurationMs,
   sortableDropTarget,
 } from './physics'
 
@@ -377,6 +378,28 @@ describe('projectMomentum', () => {
   })
   it('zero velocity stays put', () => {
     expect(projectMomentum(7, 0, 5)).toBe(7)
+  })
+})
+
+describe('settleDurationMs', () => {
+  it('falls back to maxMs for a slow or stationary release', () => {
+    expect(settleDurationMs(200, 0, 300)).toBe(300)
+    // 200 / 100 * 1000 = 2000 → clamped to maxMs.
+    expect(settleDurationMs(200, 100, 300)).toBe(300)
+  })
+  it('floors a violent flick at minMs', () => {
+    // 50 / 5000 * 1000 = 10 → floored to 120.
+    expect(settleDurationMs(50, 5000, 300)).toBe(120)
+  })
+  it('scales linearly between the bounds for a medium flick', () => {
+    // 200 / 800 * 1000 = 250.
+    expect(settleDurationMs(200, 800, 300)).toBeCloseTo(250)
+  })
+  it('is sign-agnostic (uses magnitudes)', () => {
+    expect(settleDurationMs(-200, -800, 300)).toBeCloseTo(250)
+  })
+  it('honors a custom floor', () => {
+    expect(settleDurationMs(10, 5000, 300, 80)).toBe(80)
   })
 })
 

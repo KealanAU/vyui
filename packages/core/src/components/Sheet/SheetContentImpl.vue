@@ -501,11 +501,18 @@ function _onTouchEnd() {
     && (velocity >= dismissVelocityRef.current
       || projected > mostClosed + extentPx * 0.4)
 
-  // Settle timings derive from SheetRoot's `duration` prop: snap settle uses
-  // the full duration; dismiss is a slightly quicker 0.9× cut (matches the
-  // previous hardcoded 280 / 250ms feel at the default duration).
+  // Settle timing scales with release speed: a hard flick reaches its target in
+  // less time (`remaining / speed`), so the settle plays quicker; a slow or
+  // stationary release yields a huge time that clamps to `durationMs`, keeping
+  // the unflicked feel. Floored at 120ms so a violent flick can't snap
+  // instantly. MIRRORS `settleDurationMs` in physics.ts (worklets can't import
+  // it — keep in sync); dismiss keeps its 0.9× cut over the scaled base.
+  const MIN_SETTLE_MS = 120
   if (shouldDismiss) {
-    const dismissMs = Math.round(durationMs * 0.9)
+    let base = (Math.abs(extentPx - pos) / Math.max(Math.abs(velocity), 0.001)) * 1000
+    if (base < MIN_SETTLE_MS) base = MIN_SETTLE_MS
+    if (base > durationMs) base = durationMs
+    const dismissMs = Math.round(base * 0.9)
     // Slide off from the live drag position (`animation: none` suppresses the
     // `.ui-leaving` keyframe so it can't snap to translateY(0) first; the
     // frame-1 re-pin in `_settleTo` guards the flick case). `@transitionend`
@@ -526,12 +533,15 @@ function _onTouchEnd() {
       }
     }
     const target = positions.length > 0 ? positions[idx] : 0
+    let settleMs = (Math.abs(target - pos) / Math.max(Math.abs(velocity), 0.001)) * 1000
+    if (settleMs < MIN_SETTLE_MS) settleMs = MIN_SETTLE_MS
+    if (settleMs > durationMs) settleMs = durationMs
     // Below fully open, inline `animation: none` stays on the panel so a
     // later non-drag close can't start `.ui-leaving` from translateY(0)
     // (`_slideOffFromCurrent` drives those closes). At fully open the
     // inline animation is cleared (empty-string value) so the keyframe paths
     // apply again.
-    _settleTo(target, _translate(target), durationMs, 'ease-out', target === 0)
+    _settleTo(target, _translate(target), Math.round(settleMs), 'ease-out', target === 0)
     runOnBackground(_settle as any)(idx)
   }
 }
