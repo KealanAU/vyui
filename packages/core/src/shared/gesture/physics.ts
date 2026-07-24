@@ -367,6 +367,33 @@ export function projectMomentum(position: number, velocity: number, decel = 5): 
   return position + velocity / decel
 }
 
+/**
+ * Settle duration (ms) for a released drag, scaled by release speed. `time =
+ * distance / speed`: a hard flick covers the remaining travel in less time, so
+ * the settle plays quicker; a slow or stationary release yields a huge time
+ * that clamps to `maxMs` (the component's configured duration), preserving the
+ * unflicked feel. Floored at `minMs` so a violent flick can't snap instantly.
+ *
+ * Sign-agnostic — only the magnitudes of distance and velocity matter.
+ * Mirrored inline by `SheetContentImpl`'s `_onTouchEnd` worklet (worklets
+ * can't call across files — keep the two in sync).
+ */
+export function settleDurationMs(
+  remainingPx: number,
+  velocity: number,
+  maxMs: number,
+  minMs = 120,
+): number {
+  'main thread'
+  const speed = Math.max(Math.abs(velocity), 1e-3)
+  const ms = (Math.abs(remainingPx) / speed) * 1000
+  if (ms < minMs)
+    return minMs
+  if (ms > maxMs)
+    return maxMs
+  return ms
+}
+
 export type SwipeActionDecision = 'commit' | 'open' | 'close'
 
 export interface SwipeActionDecisionOpts {

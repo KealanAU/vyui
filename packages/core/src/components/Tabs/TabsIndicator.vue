@@ -41,13 +41,23 @@ const indicatorStyle = ref<IndicatorStyle>({
 // queue (same idiom as `TabsTrigger`'s deferred registration).
 const ready = ref(false)
 
+// The list rect only moves on a layout change (or an orientation/dir flip), so
+// cache it and re-measure only then. A plain tab switch reuses the cache and
+// costs a single trigger `boundingClientRect` round-trip instead of two.
+// ponytail: assumes the list rect is stable between `layoutTick` bumps —
+// TabsList + TabsTrigger bump it from their own `@layoutchange`, so a list that
+// shifts without emitting one would read stale until the next bump.
+let cachedListRect: Awaited<ReturnType<typeof useElementRect>> | null = null
+
 /**
  * Measure the active trigger relative to the tabs list via Lynx's
  * `boundingClientRect` (see `useElementRect`). Replaces the prior
  * `querySelectorAll('[role="tab"]')` + `offsetWidth`/`offsetLeft` reads which
- * relied on a DOM that does not exist on Lynx native.
+ * relied on a DOM that does not exist on Lynx native. `refreshList` re-measures
+ * the cached list rect (a layout/orientation/dir change); a tab switch leaves
+ * it false and measures only the trigger.
  */
-async function updateIndicatorStyle() {
+async function updateIndicatorStyle(refreshList = false) {
   const activeValue = context.modelValue.value
   if (activeValue === undefined)
     return
@@ -57,10 +67,10 @@ async function updateIndicatorStyle() {
   if (!triggerEl || !listEl)
     return
 
-  const [triggerRect, listRect] = await Promise.all([
-    useElementRect(triggerEl),
-    useElementRect(listEl),
-  ])
+  if (refreshList || cachedListRect == null)
+    cachedListRect = await useElementRect(listEl)
+  const listRect = cachedListRect
+  const triggerRect = await useElementRect(triggerEl)
 
   // First paint on Lynx can return a zero rect; skip that frame and wait for
   // the follow-up `@layoutchange` (which bumps `layoutTick` and re-runs us).
@@ -87,23 +97,28 @@ async function updateIndicatorStyle() {
     Promise.resolve().then(() => { ready.value = true })
 }
 
-// Re-measure on active value / orientation / direction changes, plus on the
-// `layoutTick` that `TabsList` + `TabsTrigger` bump from their
-// `@layoutchange`. The triggers map is intentionally NOT a watch source:
-// mutating it (from `TabsTrigger`'s deferred registration) used to wake this
-// `flush: 'post'` watcher mid-patch under nested Tabs and produce
+// A tab switch moves the trigger but not the list — reuse the cached list rect.
+watch(
+  () => context.modelValue.value,
+  () => { updateIndicatorStyle() },
+  { flush: 'post' },
+)
+
+// Orientation / direction / `layoutTick` changes can move the list itself, so
+// refresh the cached list rect. `layoutTick` is bumped by `TabsList` +
+// `TabsTrigger` from their `@layoutchange`; `immediate` drives the first
+// measurement once the triggers paint. The triggers map is intentionally NOT a
+// watch source: mutating it (from `TabsTrigger`'s deferred registration) used
+// to wake this `flush: 'post'` watcher mid-patch under nested Tabs and produce
 // `Cannot read property 'parent' of null` from `node-ops.parentNode`. The
-// trigger element is read inside `updateIndicatorStyle` instead — the
-// layoutchange tick is sufficient to drive the first measurement once the
-// triggers paint.
+// trigger element is read inside `updateIndicatorStyle` instead.
 watch(
   () => [
-    context.modelValue.value,
     context.orientation.value,
     context?.dir?.value,
     context.layoutTick.value,
   ],
-  () => { updateIndicatorStyle() },
+  () => { updateIndicatorStyle(true) },
   { immediate: true, flush: 'post' },
 )
 

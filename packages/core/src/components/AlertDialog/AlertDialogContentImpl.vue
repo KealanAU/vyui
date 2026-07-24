@@ -2,10 +2,9 @@
 import type { PrimitiveProps } from '@/components/Primitive'
 
 /**
- * Emits kept for API parity with reka-ui's `DialogContentImpl`. All four are
- * inert on Lynx: there is no focus model (`openAutoFocus` / `closeAutoFocus`)
- * and an AlertDialog is never dismissed by an outside tap, so
- * `interactOutside` / `pointerDownOutside` are declared but never fired.
+ * Emits kept for API parity with reka-ui's `DialogContentImpl`. Both are inert
+ * on Lynx: there is no focus model, so `openAutoFocus` / `closeAutoFocus` never
+ * fire.
  */
 export type AlertDialogContentImplEmits = {
   /** Auto-focus on open. Inert on Lynx — kept so call sites mirror reka-ui. */

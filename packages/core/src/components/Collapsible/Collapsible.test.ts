@@ -90,6 +90,31 @@ describe('given a Collapsible with `unmountOnHide:false`', () => {
   })
 })
 
+describe('given a keep-mounted Collapsible (height morph)', () => {
+  it('collapses the content to height:0 while closed', async () => {
+    const { container } = render(Collapsible, { unmountOnHide: false })
+    await waitForUpdate()
+    const content = container.querySelector('[hidden]')!
+    expect(content).not.toBeNull()
+    expect(content.getAttribute('style') ?? '').toContain('height: 0px')
+  })
+
+  it('tweens to the measured natural height on open', async () => {
+    const { container } = render(Collapsible, { unmountOnHide: false })
+    await waitForUpdate()
+    const content = container.querySelector('[hidden]')!
+    const contentId = content.id
+    // The inner wrapper reports its natural height via @layoutchange; the outer
+    // container then animates to that concrete px value.
+    fireEvent.layoutchange(content.firstElementChild!, { detail: { height: 120 } })
+    fireEvent.tap(container.querySelector('[data-testid="trigger"]')!)
+    await waitForUpdate()
+    const open = container.querySelector(`#${contentId}`)!
+    expect(open.getAttribute('style') ?? '').toContain('height: 120px')
+    expect(open.hasAttribute('hidden')).toBe(false)
+  })
+})
+
 describe('given an open uncontrolled Collapsible', () => {
   describe('when first rendered', () => {
     let container: Element
