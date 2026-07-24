@@ -18,7 +18,9 @@ export default (colors: Color[]) => ({
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
     size: {
       sm: { thumb: 'size-4' },
-      md: { thumb: 'size-4.5' },
+      // 18px, not `size-4.5` — Tailwind v3's spacing scale has no 4.5 step, so
+      // that class compiled to nothing and the default thumb rendered 0×0.
+      md: { thumb: 'size-[18px]' },
       lg: { thumb: 'size-5' },
       xl: { thumb: 'size-6' },
     },

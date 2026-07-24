@@ -1,13 +1,19 @@
 <!-- Copyright 2026 The Lynx Authors. All rights reserved.
      Licensed under the Apache License Version 2.0.
 
-     Main-thread touch + thumb-paint path for Slider, used in place of
-     SliderImpl when `mainThreadDrag` is on. The drag runs entirely on the
-     main thread: rect measurement is cached in MT refs (refreshed on
-     `layoutchange`), each `touchmove` worklet computes the next value, snaps
-     to `step`, and paints the active thumb's transform directly via
-     `setStyleProperty`. BG only sees one round-trip per gesture — on
-     `touchend` — which the root commits as a `valueCommit`. -->
+     The Slider's only drag implementation. Everything runs on the main
+     thread: the track rect is cached in MT refs (measured on the BG from
+     `@layoutchange`), each `touchmove` worklet computes the next value, snaps
+     to `step`, and paints the active thumb's transform and the filled range
+     directly via `setStyleProperty`. BG only sees one round-trip per gesture —
+     on `touchend` — which the root commits as a `valueCommit`.
+
+     A background-thread implementation used to sit alongside this one, driving
+     the drag through per-frame `update:modelValue`. It was removed in 2026-07:
+     it measured correctly but felt worse than the worklet path on device, and
+     keeping both meant every fix landed twice. Keyboard stepping (arrow / home
+     / end) went with it — those handlers never fired on Lynx native, which has
+     no key events to bind. -->
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
 
@@ -28,9 +34,10 @@ function encodeStartEdge(edge: 'left' | 'right' | 'top' | 'bottom'): StartEdgeCo
 
 <script setup lang="ts">
 import { watch } from 'vue'
-import { runOnBackground, useMainThreadRef } from 'vue-lynx'
+import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import { Primitive } from '@/components/Primitive'
+import { useResizeObserver } from '@/shared/composables'
 import { injectSliderRootContext } from './SliderRoot.vue'
 import { injectSliderOrientationContext } from './utils'
 
@@ -41,9 +48,15 @@ const props = withDefaults(defineProps<SliderImplMTSProps>(), {
 const root = injectSliderRootContext()
 const orientation = injectSliderOrientationContext()
 
+// Vitest's vue-lynx harness doesn't run the SWC worklet transform, so the
+// `:main-thread-bind*` props arrive as null and `applySetWorkletEvent` throws
+// while applying the ops. Bind them only outside the harness — the component
+// still mounts and renders there, but the drag itself is device-only.
+const mtBound = !(globalThis as any).lynxTestingEnv
+
 const trackRef = useMainThreadRef<any>(null)
 
-// Track rect, refreshed on `layoutchange` and on first `touchstart`. Stored as
+// Track rect in PAGE coordinates, refreshed on `layoutchange`. Stored as
 // individual scalar refs because `useMainThreadRef<object>` is less reliable
 // across the worklet boundary than primitives — see comment in Sheet.
 const rectXRef = useMainThreadRef<number>(0)
@@ -51,7 +64,7 @@ const rectYRef = useMainThreadRef<number>(0)
 const rectWRef = useMainThreadRef<number>(0)
 const rectHRef = useMainThreadRef<number>(0)
 
-// 0 = horizontal (read clientX, paint translateX), 1 = vertical.
+// 0 = horizontal (read pageX, paint translateX), 1 = vertical.
 const axisRef = useMainThreadRef<0 | 1>(orientation.size === 'width' ? 0 : 1)
 const startEdgeRef = useMainThreadRef<StartEdgeCode>(encodeStartEdge(orientation.startEdge.value))
 
@@ -64,23 +77,56 @@ const activeIndexRef = useMainThreadRef<number>(-1)
 // stable BG-anchor position so paint deltas are relative to it.
 const startValuesRef = useMainThreadRef<number[]>([])
 
-function _measureRect() {
+// Lynx's main-thread `Element` has no `getBoundingClientRect` (see
+// `@lynx-js/types` main-thread/element.d.ts — the MT surface is
+// get/setAttribute, setStyleProperty, querySelector, invoke, animate), so the
+// track has to be measured on the BG and pushed across. Same shape Sheet uses
+// for its panel extent: BG `@layoutchange` -> `runOnMainThread` setter, since
+// plain BG writes to `MainThreadRef.current` are silently dropped. The
+// dispatch is post-mount, so it can't hit the setup-time MT-ref registration
+// race.
+//
+// `layoutchange` reports position relative to the PAGE, which is why the touch
+// worklets read `pageX`/`pageY` rather than `clientX`/`clientY` — the two
+// differ once an ancestor scrolls (FeedList's PTR worklets read `pageY` for
+// the same reason).
+function _setRect(x: number, y: number, w: number, h: number) {
   'main thread'
-  const el = trackRef as unknown as {
-    current?: { getBoundingClientRect?: () => { x: number, y: number, width: number, height: number } }
-  }
-  const r = el.current?.getBoundingClientRect?.()
-  if (r) {
-    rectXRef.current = r.x
-    rectYRef.current = r.y
-    rectWRef.current = r.width
-    rectHRef.current = r.height
-  }
+  rectXRef.current = x
+  rectYRef.current = y
+  rectWRef.current = w
+  rectHRef.current = h
 }
 
-function _onLayoutChange() {
+const { onLayoutChange } = useResizeObserver((r) => {
+  void runOnMainThread(_setRect as any)(r.left, r.top, r.width, r.height)
+})
+
+// Thumb + range elements, resolved ON the main thread from the track's own
+// subtree.
+//
+// The obvious alternative — having each `SliderThumbImpl` push its element
+// handle into a shared `MainThreadRef` on mount — is what this component used
+// to do, and it never worked: that push runs on the background thread, where
+// `MainThreadRef.current` assignment is a silent no-op, so the list was always
+// empty and the paint below never ran. Resolving from MT sidesteps the thread
+// boundary entirely, and also dodges the mount-time race between a
+// `runOnMainThread` dispatch and MT-ref registration.
+//
+// A CLASS selector, not `[data-vyui-slider-thumb]` — Lynx's selector engine is
+// a narrow subset and class matching is the part everything else in the repo
+// leans on.
+const thumbElsRef = useMainThreadRef<any[]>([])
+const rangeElRef = useMainThreadRef<any>(null)
+
+function _resolveEls() {
   'main thread'
-  _measureRect()
+  const track = trackRef.current
+  if (!track || typeof track.querySelectorAll !== 'function') return
+  const els = track.querySelectorAll('.vyui-slider-thumb')
+  if (els && els.length > 0) thumbElsRef.current = els
+  if (typeof track.querySelector === 'function')
+    rangeElRef.current = track.querySelector('.vyui-slider-range')
 }
 
 /** Snap `v` to `step` and clamp to `[min, max]`. */
@@ -151,10 +197,9 @@ function _paintActiveThumb(value: number) {
   'main thread'
   const idx = activeIndexRef.current
   if (idx < 0) return
-  const handles = root.thumbHandlesMT.current
-  if (!handles || idx >= handles.length) return
-  const h = handles[idx]
-  const el = h?.elementRef?.current as { setStyleProperty?: (k: string, v: string) => void } | null
+  const els = thumbElsRef.current
+  if (idx >= els.length) return
+  const el = els[idx] as { setStyleProperty?: (k: string, v: string) => void } | null
   if (!el?.setStyleProperty) return
 
   const min = root.minMT.current
@@ -188,6 +233,47 @@ function _paintActiveThumb(value: number) {
 }
 
 /**
+ * Repaint the filled range from the MT-side values.
+ *
+ * The BG only learns the new value on `touchend`, so without this the fill —
+ * the part of the control that actually reads as "the value" — sat frozen for
+ * the whole gesture and snapped on release while the thumb glided.
+ *
+ * Writes the same two edge offsets `SliderRange`'s BG style computes, so the
+ * commit's re-render lands on identical values and there is nothing to reset.
+ */
+function _paintRange(vals: number[]) {
+  'main thread'
+  const el = rangeElRef.current as { setStyleProperty?: (k: string, v: string) => void } | null
+  if (!el?.setStyleProperty) return
+  const min = root.minMT.current
+  const max = root.maxMT.current
+  const span = max - min
+  if (span <= 0) return
+
+  // Mirrors `convertValueToPercentage` + SliderRange's offset math: a single
+  // thumb always fills from the start edge, multi-thumb spans lowest..highest.
+  let lo = 100
+  let hi = 0
+  for (let i = 0; i < vals.length; i++) {
+    let pct = ((vals[i] - min) / span) * 100
+    if (pct < 0) pct = 0
+    if (pct > 100) pct = 100
+    if (pct < lo) lo = pct
+    if (pct > hi) hi = pct
+  }
+  if (vals.length <= 1) lo = 0
+
+  // startEdge codes: 0 left, 1 right, 2 top, 3 bottom — the range's end edge is
+  // always the opposite side.
+  const edge = startEdgeRef.current
+  const startName = edge === 0 ? 'left' : edge === 1 ? 'right' : edge === 2 ? 'top' : 'bottom'
+  const endName = edge === 0 ? 'right' : edge === 1 ? 'left' : edge === 2 ? 'bottom' : 'top'
+  el.setStyleProperty(startName, `${lo}%`)
+  el.setStyleProperty(endName, `${100 - hi}%`)
+}
+
+/**
  * Reset the active thumb's transform to its BG-side centering. Called on
  * touchend so the next BG render (with the new committed value re-anchoring
  * the thumb) lands at the right pixel without any leftover MT delta.
@@ -196,10 +282,9 @@ function _resetActiveThumbTransform() {
   'main thread'
   const idx = activeIndexRef.current
   if (idx < 0) return
-  const handles = root.thumbHandlesMT.current
-  if (!handles || idx >= handles.length) return
-  const h = handles[idx]
-  const el = h?.elementRef?.current as { setStyleProperty?: (k: string, v: string) => void } | null
+  const els = thumbElsRef.current
+  if (idx >= els.length) return
+  const el = els[idx] as { setStyleProperty?: (k: string, v: string) => void } | null
   if (!el?.setStyleProperty) return
   const edge = startEdgeRef.current
   if (axisRef.current === 0) {
@@ -210,14 +295,19 @@ function _resetActiveThumbTransform() {
   }
 }
 
-function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+function _onTouchStart(e: { touches: Array<{ pageX: number, pageY: number }> }) {
   'main thread'
   if (root.disabledMT.current) return
-  // Re-measure here in case `layoutchange` hasn't fired yet (first interaction
-  // after mount on some Lynx builds).
-  if (rectWRef.current === 0 && rectHRef.current === 0) _measureRect()
+  // Unmeasured track — bail instead of starting a gesture. `_valueFromTouch`
+  // would map every coordinate to `min`, silently clobbering the consumer's
+  // value with 0 and then refusing to move.
+  if ((axisRef.current === 0 ? rectWRef.current : rectHRef.current) <= 0) return
+  // Thumb/range elements are resolved lazily: the first touch is guaranteed to
+  // land after the subtree is painted, whereas mount time is not.
+  if (thumbElsRef.current.length === 0) _resolveEls()
+  if (thumbElsRef.current.length === 0) return
   const t = e.touches[0]
-  const value = _valueFromTouch(t.clientX, t.clientY)
+  const value = _valueFromTouch(t.pageX, t.pageY)
   const idx = _pickClosestIndex(value)
   activeIndexRef.current = idx
   // Snapshot all start values so multi-thumb paint can compute per-thumb
@@ -233,19 +323,21 @@ function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }>
   for (let i = 0; i < src.length; i++) next.push(i === idx ? value : src[i])
   root.valuesMT.current = next
   _paintActiveThumb(value)
+  _paintRange(next)
 }
 
-function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+function _onTouchMove(e: { touches: Array<{ pageX: number, pageY: number }> }) {
   'main thread'
   if (activeIndexRef.current === -1) return
   const t = e.touches[0]
-  const value = _valueFromTouch(t.clientX, t.clientY)
+  const value = _valueFromTouch(t.pageX, t.pageY)
   const idx = activeIndexRef.current
   const src = root.valuesMT.current
   const next: number[] = []
   for (let i = 0; i < src.length; i++) next.push(i === idx ? value : src[i])
   root.valuesMT.current = next
   _paintActiveThumb(value)
+  _paintRange(next)
 }
 
 function _onTouchEnd() {
@@ -268,21 +360,20 @@ function _commit(values: number[]) {
   root.commitFromMT(values)
 }
 
-// Initial rect comes from `:main-thread-bindlayoutchange` which fires once
-// after mount on the MT side. `_onTouchStart` re-measures defensively if the
-// layout event hasn't landed yet.
+// Initial rect comes from the BG `@layoutchange` below, which fires once after
+// mount — before any touch can reach a painted element.
 </script>
 
 <template>
   <Primitive
     data-vyui-slider-impl
     v-bind="props"
-    :main-thread-ref="trackRef"
-    :main-thread-bindtouchstart="_onTouchStart"
-    :main-thread-bindtouchmove="_onTouchMove"
-    :main-thread-bindtouchend="_onTouchEnd"
-    :main-thread-bindtouchcancel="_onTouchEnd"
-    :main-thread-bindlayoutchange="_onLayoutChange"
+    :main-thread-ref="mtBound ? trackRef : undefined"
+    :main-thread-bindtouchstart="mtBound ? _onTouchStart : undefined"
+    :main-thread-bindtouchmove="mtBound ? _onTouchMove : undefined"
+    :main-thread-bindtouchend="mtBound ? _onTouchEnd : undefined"
+    :main-thread-bindtouchcancel="mtBound ? _onTouchEnd : undefined"
+    @layoutchange="onLayoutChange"
   >
     <slot />
   </Primitive>

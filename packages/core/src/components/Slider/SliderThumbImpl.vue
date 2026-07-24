@@ -8,8 +8,8 @@ export interface SliderThumbImplProps extends PrimitiveProps {
 
 <script setup lang="ts">
 import { useMounted } from '@vueuse/core'
-import { computed, onMounted, onUnmounted, useAttrs } from 'vue'
-import { useMainThreadRef } from 'vue-lynx'
+import { computed, useAttrs } from 'vue'
+
 import { useCollection } from '@/components/Collection'
 import { Primitive } from '@/components/Primitive'
 import type { VyStyle } from '@/shared/types'
@@ -95,34 +95,6 @@ const thumbStyle = computed<VyStyle>(() => ({
   display: !isMounted.value && value.value === undefined ? 'none' : undefined,
 }))
 
-// MT-side ref the SliderImplMTS touch worklets paint translate transforms
-// onto. Only meaningful when `rootContext.mtsEnabled.value` is true; bound
-// unconditionally because `useMainThreadRef` is safe in any environment.
-const thumbMTRef = useMainThreadRef<any>(null)
-// Plain object that BG can read at mount time. `useMainThreadRef.current` is
-// populated during render, so we lift it into a regular ref the registry can
-// consume — same pattern Sortable uses (see `SortableItem` styleRef).
-const elementHandle: { current: any | null } = { current: null }
-
-onMounted(() => {
-  rootContext.thumbElements.value.push(thumbElement.value)
-  if (rootContext.mtsEnabled.value) {
-    elementHandle.current = (thumbMTRef as unknown as { current: any | null }).current
-    rootContext.thumbHandlesMT.current = [
-      ...rootContext.thumbHandlesMT.current,
-      { index: props.index, elementRef: elementHandle },
-    ]
-  }
-})
-
-onUnmounted(() => {
-  const i = rootContext.thumbElements.value.findIndex(i => i === thumbElement.value)
-  rootContext.thumbElements.value.splice(i, 1)
-  if (rootContext.mtsEnabled.value) {
-    rootContext.thumbHandlesMT.current = rootContext.thumbHandlesMT.current
-      .filter(h => h.elementRef !== elementHandle)
-  }
-})
 </script>
 
 <template>
@@ -130,7 +102,7 @@ onUnmounted(() => {
     <Primitive
       v-bind="{ ...$attrs, ...a11y }"
       :ref="forwardRef"
-      :main-thread-ref="rootContext.mtsEnabled.value ? thumbMTRef : undefined"
+      class="vyui-slider-thumb"
       :data-disabled="rootContext.disabled.value ? '' : undefined"
       :data-orientation="rootContext.orientation.value"
       :as-child="asChild"

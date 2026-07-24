@@ -7,21 +7,6 @@ export interface SliderOrientationPrivateProps {
   inverted: boolean
 }
 
-export type SliderOrientationPrivateEmits = {
-  slideEnd: []
-  slideStart: [value: number]
-  slideMove: [value: number]
-  homeKeyDown: [event: any]
-  endKeyDown: [event: any]
-  stepKeyDown: [event: any, direction: number]
-}
-
-export function getNextSortedValues(prevValues: number[] = [], nextValue: number, atIndex: number) {
-  const nextValues = [...prevValues]
-  nextValues[atIndex] = nextValue
-  return nextValues.sort((a, b) => a - b)
-}
-
 export function convertValueToPercentage(value: number, min: number, max: number) {
   const maxSteps = max - min
   const percentPerStep = 100 / maxSteps
@@ -44,22 +29,6 @@ export function getLabel(index: number, totalValues: number) {
 }
 
 /**
- * Given a `values` array and a `nextValue`, determine which value in
- * the array is closest to `nextValue` and return its index.
- *
- * @example
- * // returns 1
- * getClosestValueIndex([10, 30], 25);
- */
-export function getClosestValueIndex(values: number[], nextValue: number) {
-  if (values.length === 1)
-    return 0
-  const distances = values.map(value => Math.abs(value - nextValue))
-  const closestDistance = Math.min(...distances)
-  return distances.indexOf(closestDistance)
-}
-
-/**
  * Offsets the thumb centre point while sliding to ensure it remains
  * within the bounds of the slider when reaching the edges
  */
@@ -77,7 +46,7 @@ export function getThumbInBoundsOffset(width: number, left: number, direction: n
  * // returns [1, 9]
  * getStepsBetweenValues([10, 11, 20]);
  */
-export function getStepsBetweenValues(values: number[]) {
+function getStepsBetweenValues(values: number[]) {
   return values.slice(0, -1).map((value, index) => values[index + 1] - value)
 }
 
@@ -103,23 +72,13 @@ export function hasMinStepsBetweenValues(values: number[], minStepsBetweenValues
 }
 
 // https://github.com/tmcw-up-for-adoption/simple-linear-scale/blob/master/index.js
-export function linearScale(input: readonly [number, number], output: readonly [number, number]) {
+function linearScale(input: readonly [number, number], output: readonly [number, number]) {
   return (value: number) => {
     if (input[0] === input[1] || output[0] === output[1])
       return output[0]
     const ratio = (output[1] - output[0]) / (input[1] - input[0])
     return output[0] + ratio * (value - input[0])
   }
-}
-
-export { getDecimalCount, roundValue } from '@/shared/clamp'
-
-type SlideDirection = 'from-left' | 'from-right' | 'from-bottom' | 'from-top'
-export const BACK_KEYS: Record<SlideDirection, string[]> = {
-  'from-left': ['Home', 'PageDown', 'ArrowDown', 'ArrowLeft'],
-  'from-right': ['Home', 'PageDown', 'ArrowDown', 'ArrowRight'],
-  'from-bottom': ['Home', 'PageDown', 'ArrowDown', 'ArrowLeft'],
-  'from-top': ['Home', 'PageUp', 'ArrowUp', 'ArrowLeft'],
 }
 
 type Side = 'top' | 'right' | 'bottom' | 'left'
