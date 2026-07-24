@@ -2,22 +2,6 @@ import type { MaybeRef } from 'vue'
 import { computed, unref } from 'vue'
 
 /**
- * Provides locale-aware string filtering functions.
- * Uses `Intl.Collator` for comparison when available to ensure proper Unicode
- * handling, and falls back to a case-insensitive comparison otherwise.
- *
- * @param options - Optional collator options to customize comparison behavior.
- *   See [Intl.CollatorOptions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator/Collator#options) for details.
- * @returns An object with methods to check if a string starts with, ends with, or contains a substring.
- *
- * @example
- * const { startsWith, endsWith, contains } = useFilter();
- *
- * startsWith('hello', 'he'); // true
- * endsWith('hello', 'lo'); // true
- * contains('hello', 'ell'); // true
- */
-/**
  * Safely applies Unicode NFC normalization.
  *
  * Lynx's JS engine (PrimJS) does not implement `String.prototype.normalize`,
@@ -50,6 +34,22 @@ function createCompare(options: Intl.CollatorOptions | undefined): Compare {
   }
 }
 
+/**
+ * Provides locale-aware string filtering functions.
+ * Uses `Intl.Collator` for comparison when available to ensure proper Unicode
+ * handling, and falls back to a case-insensitive comparison otherwise.
+ *
+ * @param options - Optional collator options to customize comparison behavior.
+ *   See [Intl.CollatorOptions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator/Collator#options) for details.
+ * @returns An object with methods to check if a string starts with, ends with, or contains a substring.
+ *
+ * @example
+ * const { startsWith, endsWith, contains } = useFilter();
+ *
+ * startsWith('hello', 'he'); // true
+ * endsWith('hello', 'lo'); // true
+ * contains('hello', 'ell'); // true
+ */
 export function useFilter(options?: MaybeRef<Intl.CollatorOptions>) {
   const computedOptions = computed(() => unref(options))
   const compare = computed(() => createCompare(computedOptions.value))

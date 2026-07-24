@@ -45,7 +45,6 @@ export function useSize(element: MaybeElementRef) {
           height = el.offsetHeight
         }
 
-        // temporary disable width/height from resize observer. borderSizeEntry seems to be incorrect
         size.value = { width, height }
       })
 

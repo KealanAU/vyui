@@ -4,7 +4,7 @@ import type {
   AlertDialogContentImplProps,
 } from './AlertDialogContentImpl.vue'
 
-/** Preventable outside-interaction / focus events — see `AlertDialogContentImpl`. */
+/** Focus lifecycle events (inert on Lynx) — see `AlertDialogContentImpl`. */
 export type AlertDialogContentEmits = AlertDialogContentImplEmits
 
 export interface AlertDialogContentProps extends Omit<AlertDialogContentImplProps, 'trapFocus'> {

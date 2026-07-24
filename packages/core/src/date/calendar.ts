@@ -125,7 +125,7 @@ export function startOfDecade(dateObj: DateValue) {
 }
 
 export function endOfDecade(dateObj: DateValue) {
-  // round to the lowest nearest 10 when building the decade
+  // round up to the end of the decade (the highest nearest 10)
   return endOfYear(dateObj.add({ years: Math.ceil((dateObj.year + 1) / 10) * 10 - dateObj.year - 1 }).set({ day: 35, month: 12 }))
 }
 
