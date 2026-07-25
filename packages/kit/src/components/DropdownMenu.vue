@@ -272,9 +272,8 @@ const backdropStyle = computed<Record<string, any> | undefined>(() => {
     else                        { justifyContent = 'center' }
   }
 
-  // Higher than the island's `zIndex: 50` so the menu paints above the dock
-  // it anchors to.
-  return { display: 'flex', alignItems, justifyContent, zIndex: 60, ...padding }
+  // No zIndex: OverlayBackdrop's default 1000 already clears the island's 50.
+  return { display: 'flex', alignItems, justifyContent, ...padding }
 })
 </script>
 
