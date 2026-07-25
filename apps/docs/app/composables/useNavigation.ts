@@ -107,7 +107,10 @@ interface CategoryConfig {
 }
 
 const CATEGORY_CONFIG: CategoryConfig[] = [
-  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started'] },
+  // /guides rides along with Getting Started rather than owning a tab: without
+  // it here, guide pages fall through to categories[0] and render the Getting
+  // Started sidebar anyway — this makes that explicit and puts the guides in it.
+  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started', '/guides'] },
   // '/components' must stay first — the sidebar groups items[0]'s children.
   { id: 'components', title: 'Components', icon: 'i-lucide-boxes', paths: ['/components', '/packages'] },
   { id: 'composables', title: 'Composables', icon: 'i-lucide-square-function', paths: ['/composables'] },
