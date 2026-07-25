@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
+
 const EXAMPLE = 'landing-profile'
 
 // `at` is the phone's centre as a % of the cluster box.
@@ -27,7 +29,12 @@ const showCode = ref(false)
 const revealed = ref(false)
 const root = ref<HTMLElement>()
 
-const example = useExample(EXAMPLE, showCode)
+// Mobile skips the phone cluster entirely (see the `display: none` below), so
+// the source is all there is to show there.
+const isMobile = useMediaQuery('(max-width: 639px)')
+const codeVisible = computed(() => showCode.value || isMobile.value)
+
+const example = useExample(EXAMPLE, codeVisible)
 const highlighted = computed(() => example.value?.highlighted ?? '')
 
 let observer: IntersectionObserver | undefined
@@ -63,9 +70,18 @@ onBeforeUnmount(() => {
         </p>
       </div>
 
+      <!-- Mobile gets the platform row instead of the cluster; the phones are
+           ~80px wide there and cost three Lynx runtimes to render. -->
+      <div class="reveal mt-8 flex justify-center gap-2 sm:hidden">
+        <span v-for="item in TARGETS" :key="item.id" class="inline-flex items-center gap-1.5 rounded-full border border-default px-3 py-1 text-xs text-toned">
+          <UIcon :name="item.icon" class="size-3.5" />
+          {{ item.label }}
+        </span>
+      </div>
+
       <!-- Hidden via `visibility`, never v-if: each phone owns a Lynx runtime,
            so unmounting re-boots three Web Workers per toggle. -->
-      <div class="reveal reveal-1 stage mx-auto mt-24">
+      <div class="reveal reveal-1 stage mx-auto mt-10 sm:mt-24">
         <div class="cell cluster" :data-hidden="showCode">
           <span class="cluster-dots" aria-hidden="true" />
 
@@ -93,7 +109,7 @@ onBeforeUnmount(() => {
 
               <div class="screen">
                 <ClientOnly>
-                  <LynxPreview :name="EXAMPLE" height="540px" :pixel-ratio="1" />
+                  <LynxPreview v-if="!isMobile" :name="EXAMPLE" height="540px" :pixel-ratio="1" />
                   <template #fallback>
                     <div class="screen-fallback" aria-hidden="true">
                       <div class="target-skeleton size-16 rounded-full" />
@@ -132,7 +148,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <div class="cell code-view" :data-hidden="!showCode">
+        <div class="cell code-view" :data-hidden="!codeVisible">
           <div class="code-panel">
             <div class="code-bar">
               <UIcon name="i-lucide-file-code-2" class="size-3.5 shrink-0 text-dimmed" />
@@ -143,6 +159,7 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 size="xs"
+                class="hidden sm:inline-flex"
                 aria-label="Back to the devices"
                 @click="showCode = false"
               />
@@ -494,6 +511,12 @@ section {
 
 .target-skeleton {
   background: color-mix(in srgb, var(--ui-bg-elevated) 70%, var(--ui-bg));
+}
+
+/* The runtimes are gated by `v-if="!isMobile"`; this just takes the empty
+   phone shells out of the layout at the same breakpoint. */
+@media (max-width: 639px) {
+  .cluster { display: none; }
 }
 
 /* Capped so `--phone-w * scale * 4.6` still fits the container — past that the
