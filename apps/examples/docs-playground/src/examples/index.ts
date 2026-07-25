@@ -29,6 +29,7 @@ import ButtonSlots from './button/ButtonSlots.vue'
 import ButtonStyling from './button/ButtonStyling.vue'
 import ButtonVariants from './button/ButtonVariants.vue'
 import CalendarExample from './calendar/CalendarExample.vue'
+import DraggableExample from './draggable/DraggableExample.vue'
 import IconColor from './icon/IconColor.vue'
 import IconExample from './icon/IconExample.vue'
 import IconSize from './icon/IconSize.vue'
@@ -108,6 +109,7 @@ export const examples: Record<string, Component> = {
   'button-styling': ButtonStyling,
   'button-variants': ButtonVariants,
   'calendar-example': CalendarExample,
+  'draggable-example': DraggableExample,
   'icon-color': IconColor,
   'icon-example': IconExample,
   'icon-size': IconSize,

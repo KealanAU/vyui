@@ -22,8 +22,8 @@ height: 280px
 ---
 ::
 
-::callout{icon="i-lucide-pointer" color="warning"}
-Drag-to-reorder isn't wired up in the web preview yet, so the items won't move here — view this on a device or in Lynx Explorer for the real interaction. The code below runs as-is on iOS and Android.
+::callout{icon="i-lucide-pointer"}
+Works with touch and mouse: press and hold a row (~150ms) to lift it, then drag to reorder — in the preview above as well as on device.
 ::
 
 ::callout{icon="i-lucide-box"}
@@ -50,17 +50,17 @@ const tasks = ref([
 
 <template>
   <VySortable v-model="tasks">
-    <template #item="{ item, index }">
+    <template #item="{ item }">
       <view class="flex min-w-0 flex-1 flex-row items-center gap-3">
         <VyIcon name="i-lucide-grip-vertical" class="shrink-0 text-neutral-400" />
-        <text class="min-w-0 flex-1">{{ index + 1 }}. {{ item.label }}</text>
+        <text class="min-w-0 flex-1">{{ item.label }}</text>
       </view>
     </template>
   </VySortable>
 </template>
 ```
 
-Press and hold a row for 250 ms, then drag vertically. A quick tap or an early scroll movement does not start a reorder.
+Press and hold a row for 150 ms, then drag vertically. A quick tap or an early scroll movement does not start a reorder.
 
 ### Immediate drag
 
@@ -126,7 +126,7 @@ Set `disabled` to prevent every row from arming or dragging.
 | --- | --- | --- | --- |
 | `modelValue` | `T[]` | `undefined` | Controlled ordered items, used by `v-model`. |
 | `disabled` | `boolean` | `false` | Prevents drag activation for every row. |
-| `longPressMs` | `number` | `250` | Hold duration in milliseconds before a row lifts. Use `0` for immediate activation. |
+| `longPressMs` | `number` | `150` | Hold duration in milliseconds before a row lifts. Use `0` for immediate activation. |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Themed row scale and fixed reorder height. |
 | `class` | `any` | `undefined` | Classes merged onto the root slot. |
 | `ui` | `Partial<Record<SortableSlot, any>>` | `undefined` | Per-instance theme slot overrides. |

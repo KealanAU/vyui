@@ -13,7 +13,7 @@ links:
 
 ## Overview
 
-`VySwiper` is the styled carousel wrapper around the `@vyui/core` `SwiperRoot` and `SwiperItem` primitives. It supports controlled index state, data-driven or manual slides, measured full-width pages, seamless looping, autoplay, horizontal gesture locking, and optional indicators.
+`VySwiper` is the styled carousel built on the `@vyui/core` `SwiperRoot` and `SwiperItem` primitives. Slides follow the finger natively, snap to the nearest page on release, and a quick flick advances even before the halfway point. It supports controlled index state, data-driven or manual slides, measured full-width pages, seamless looping, autoplay, axis locking, and opt-in indicator dots.
 
 ::component-code
 ---
@@ -22,13 +22,17 @@ height: 280px
 ---
 ::
 
-::callout{icon="i-lucide-pointer" color="warning"}
-Swipe gestures aren't wired up in the web preview yet, so the slides won't drag here — view this on a device or in Lynx Explorer for the real interaction. The code below runs as-is on iOS and Android.
+::callout{icon="i-lucide-pointer"}
+Works with touch and mouse: drag the slides in the preview above with a mouse, or swipe on device — both drive the same gesture.
+::
+
+::callout{icon="i-lucide-box"}
+Styled on top of the `@vyui/core` Swiper primitives, whose gesture is a shared main-thread drag controller. Reach for [`SwiperRoot`](#built-on-vyuicore) directly when you need spacing, alignment, RTL, or custom thresholds.
 ::
 
 ## Usage
 
-Pass an `items` array and render each slide through the `item` slot.
+Bind the active index with `v-model`, pass an `items` array, and render each slide through the `item` slot.
 
 ```vue
 <script setup lang="ts">
@@ -44,11 +48,7 @@ const slides = [
 </script>
 
 <template>
-  <VySwiper
-    v-model="current"
-    :items="slides"
-    show-indicators
-  >
+  <VySwiper v-model="current" :items="slides" show-indicators>
     <template #item="{ item, index }">
       <view class="h-48 p-6 bg-neutral-100">
         <text class="text-xl font-semibold">{{ item.title }}</text>
@@ -60,11 +60,11 @@ const slides = [
 </template>
 ```
 
-When `itemWidth` is omitted, the wrapper measures its container and makes each slide fill the available width. It uses `300px` until a positive layout measurement is available.
+When `itemWidth` is omitted, the wrapper measures its container and makes each slide fill the available width (using `300px` until the first layout measurement arrives). Set `itemWidth` explicitly for fixed-width slides.
 
 ### Loop and autoplay
 
-Set `loop` to navigate seamlessly across both ends. Set `autoplay` to `true` for the core `3000ms` interval, or pass an interval in milliseconds.
+Set `loop` to navigate seamlessly across both ends — the edge slides are cloned so motion continues over the seam instead of rewinding. Set `autoplay` to `true` for the default `3000ms` interval, or pass an interval in milliseconds.
 
 ```vue
 <script setup lang="ts">
@@ -97,11 +97,11 @@ const promotions = [
 </template>
 ```
 
-Autoplay pauses during a drag. Without `loop`, it stops advancing at the final slide.
+Autoplay pauses while the user is dragging and resumes after the release settles. Without `loop`, autoplay stops advancing at the final slide.
 
 ### Manual slides
 
-Omit `items` and place core `SwiperItem` children in the default slot. The wrapper derives `itemCount` from the number of rendered top-level slot nodes.
+Omit `items` and place core `SwiperItem` children in the default slot. The wrapper derives the item count from the number of top-level slot nodes, so keep the slot to direct `SwiperItem` children.
 
 ```vue
 <script setup lang="ts">
@@ -124,19 +124,12 @@ const current = ref(0)
 </template>
 ```
 
-Prefer direct top-level `SwiperItem` children. Fragments or unrelated top-level nodes are also counted and can make the wrapper's derived item count inaccurate.
+### Indicators
 
-### Indicator size
-
-Use `size` to change the indicator dots. Indicators are opt-in.
+Indicators are opt-in via `showIndicators` and appear when there is more than one slide. The active dot is derived from `modelValue`, so keep it bound. `size` scales the dots.
 
 ```vue
-<VySwiper
-  v-model="current"
-  :items="slides"
-  size="lg"
-  show-indicators
->
+<VySwiper v-model="current" :items="slides" size="lg" show-indicators>
   <template #item="{ item }">
     <view class="h-48 p-6">
       <text>{{ item.title }}</text>
@@ -172,62 +165,67 @@ Use `class` for the root or `ui` for individual theme slots.
 
 ## Features and behavior
 
-- `v-model` controls the zero-based active index and receives updates after a completed swipe or autoplay step.
-- With `items`, one core `SwiperItem` is created per entry. Without `items`, the default slot must supply the slides.
-- Non-looping swipers clamp at the first and last item. Looping swipers render leading and trailing clone sets for continuous seam-crossing motion.
-- `axisLock` waits for a predominantly horizontal gesture and yields a vertical drag to the surrounding scroll surface.
+- `v-model` controls the zero-based active index; it updates after a completed swipe or autoplay step, and changing it programmatically animates the track to the new slide.
+- Release snaps to the nearest page: a drag past `0.3` of the slide width advances, and a flick of at least `300px/s` advances one slide from where the drag started, even on a short drag.
+- Non-looping swipers clamp at the first and last slide. Looping swipers clone the slide set on both sides of the track so seam crossings are continuous; in loop mode a programmatic index change takes the shortest path, including over the seam.
+- `axisLock` classifies the gesture once it moves ~8px: within 45° of horizontal the swiper consumes it, otherwise the drag is released to the surrounding scroll surface. Use it whenever a swiper sits inside a vertical scroller.
 - `itemWidth` sets the slide and snap width. When omitted, the measured wrapper width follows layout changes such as device rotation.
-- `showIndicators` renders fixed overlay dots outside the moving track when there is more than one item.
-- Keep `modelValue` bound when showing indicators. The active dot is derived from that prop.
-
-### Gesture behavior
-
-The kit wrapper uses the core defaults for gesture physics:
-
-| Behavior | Core value | Result |
-| --- | --- | --- |
-| Position threshold | `0.3` of one snap unit | A sufficiently long drag advances to the adjacent item. |
-| Velocity threshold | `300px/s` | A quick flick advances even before the position threshold. |
-| Snap duration | `300ms` | Release and programmatic index changes animate to rest. |
-| Axis cone | Within `45°` of horizontal | Used only when `axisLock` is enabled. |
-| Autoplay interval | `3000ms` | Used when `autoplay` is `true`. |
-
-The snap unit is `itemWidth` in `VySwiper`. The core primitive also supports spacing, alignment, offset limits, RTL, custom thresholds, and programmatic `setIndex`, but the current kit wrapper does not expose those options.
+- `showIndicators` renders the dot strip as a fixed overlay outside the moving track.
 
 ::warning
 `direction="vertical"` only moves the indicator strip to a vertical layout. Slides, track movement, and gesture recognition remain horizontal.
 ::
 
-## Props
+## API
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `modelValue` | `number` | `0` internally | Controlled zero-based active index used by `v-model`. |
-| `items` | `any[]` | `undefined` | Data rendered as one slide per entry through the `item` slot. |
-| `itemWidth` | `number` | Measured width / `300` | Width of each slide and snap unit in pixels. |
-| `loop` | `boolean` | `false` | Enables circular navigation with seamless cloned edges. |
-| `autoplay` | `boolean \| number` | `false` | Enables autoplay; a number sets the interval in milliseconds. |
-| `axisLock` | `boolean` | `false` | Consumes only predominantly horizontal gestures. |
-| `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | Indicator layout direction; it does not change the swipe axis. |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Indicator gap and dot size. |
-| `showIndicators` | `boolean` | `false` | Shows the fixed indicator overlay when more than one slide exists. |
-| `class` | `any` | `undefined` | Classes merged onto the root slot. |
-| `ui` | `Partial<Record<SwiperSlot, any>>` | `undefined` | Per-instance theme slot overrides. |
+These tables are generated directly from the component source.
 
-## Emits
+### Props
 
-| Event | Payload | Description |
-| --- | --- | --- |
-| `update:modelValue` | `number` | Active index changed after swipe, autoplay, or an underlying state update. |
+::component-props{name="Swiper"}
+::
 
-The kit wrapper does not forward the core `swipeStart` or `swipeEnd` events.
+### Emits
 
-## Slots
+::component-emits{name="Swiper"}
+::
 
-| Slot | Props | Description |
-| --- | --- | --- |
-| `item` | `{ item: any, index: number }` | Renders each entry when `items` is provided. |
-| `default` | — | Manual slide content when `items` is omitted; normally direct `SwiperItem` children. |
+The kit wrapper does not forward the core `swipeStart` / `swipeEnd` events — use `SwiperRoot` directly when you need drag lifecycle callbacks.
+
+### Slots
+
+::component-slots{name="Swiper"}
+::
+
+## Built on `@vyui/core`
+
+`VySwiper` composes the headless `SwiperRoot` and `SwiperItem` primitives. Use them directly for the options the kit wrapper does not expose: item spacing (`spaceBetween`), viewport alignment (`align` / `containerWidth`), RTL, offset clamping (`offsetLimit`), custom snap thresholds and duration, `disabled`, and the drag lifecycle emits. `SwiperRoot` also exposes a `setIndex(index)` method (via template ref) that wraps or clamps and animates to a slide.
+
+```vue
+<SwiperRoot v-model="current" :item-width="300" :item-count="3" :space-between="12">
+  <SwiperItem>...</SwiperItem>
+  <SwiperItem>...</SwiperItem>
+  <SwiperItem>...</SwiperItem>
+  <template #overlay>
+    <!-- fixed content that must not move with the track -->
+  </template>
+</SwiperRoot>
+```
+
+#### `SwiperRoot` props
+
+::component-props{name="SwiperRoot"}
+::
+
+#### `SwiperRoot` emits
+
+::component-emits{name="SwiperRoot"}
+::
+
+#### `SwiperItem` props
+
+::component-props{name="SwiperItem"}
+::
 
 ## Styling and theming
 
@@ -241,24 +239,22 @@ Override globally through `appConfig.ui.swiper` or locally with `ui`.
 | `indicator` | Inactive indicator dot. |
 | `indicatorActive` | Additional class applied to the active dot. |
 
-The `direction` variant positions the indicator strip horizontally at the bottom or vertically at the right. The `size` variant controls dot diameter and spacing. Defaults are `horizontal` and `md`.
+The `direction` variant positions the indicator strip horizontally at the bottom or vertically at the right. The `size` variant (`sm` / `md` / `lg`) controls dot diameter and spacing. Defaults are `horizontal` and `md`.
 
 ## Accessibility
 
-`VySwiper` does not currently add carousel, group, slide, or live-region semantics. The indicator dots are visual `view` elements, not controls, and the component has no keyboard navigation. Give each slide meaningful accessible content, avoid placing essential information only in an automatically changing slide, and provide separate native controls when users must be able to move directly between slides.
-
-Loop mode renders two cloned copies of the slide slot around the real slides. Those clones are not hidden from the accessibility tree by the current primitive, so test looped carousels with VoiceOver and TalkBack before using them for complex interactive content.
+- The swiper does not add carousel, group, or live-region semantics, and the indicator dots are visual elements, not controls. There is no keyboard navigation — provide separate accessible controls when users must be able to move directly between slides, and avoid placing essential information only in an automatically advancing slide.
+- Loop mode renders cloned copies of the slide slot that are not hidden from the accessibility tree. Test looped carousels with VoiceOver and TalkBack before using them for interactive content.
 
 ## Platform notes
 
-- Drag tracking, velocity, snapping, looping, and autoplay run through Lynx main-thread worklets for responsive native gestures.
-- Use `axisLock` when a swiper sits inside a vertical list so vertical intent can remain with the parent scroller.
-- The wrapper listens for Lynx `layoutchange` to update full-width slides after its container changes size.
-- The implementation is horizontal-only today. Web carousel expectations such as arrow-key navigation, hover pause, and ARIA carousel roles are not built in.
-- Avoid rapidly changing slide identity or count during a gesture, especially in loop mode where the slot is cloned.
+- Drag tracking, velocity sampling, snapping, looping, and autoplay all run in Lynx main-thread worklets, so slides track the finger without a background-thread round trip.
+- Touch and mouse are both wired: on-device swipes use touch events, while desktop browsers (Lynx web) drive the same worklets from mouse events — the live preview above works with a mouse. There is no keyboard support.
+- The wrapper listens for Lynx `layoutchange` to update full-width slides after its container resizes.
+- Avoid changing slide identity or count during a gesture, especially in loop mode where the slot is cloned.
 
 ## Related components
 
 - [`SwipeAction`](/components/swipe-action) for revealing row actions with a horizontal gesture.
+- [`Draggable`](/components/draggable) — the headless pan-gesture primitive family behind vyui's drag surfaces.
 - `Tabs` for persistent, directly selectable peer views.
-- `Stepper` for an explicit multi-step flow.

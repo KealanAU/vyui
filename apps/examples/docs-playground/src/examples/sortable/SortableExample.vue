@@ -12,10 +12,10 @@ const tasks = ref([
 
 <template>
   <VySortable v-model="tasks" class="w-full">
-    <template #item="{ item, index }">
+    <template #item="{ item }">
       <view class="flex min-w-0 flex-1 flex-row items-center gap-3">
         <VyIcon name="i-lucide-grip-vertical" class="shrink-0 text-neutral-400" />
-        <text class="min-w-0 flex-1">{{ index + 1 }}. {{ item.label }}</text>
+        <text class="min-w-0 flex-1">{{ item.label }}</text>
       </view>
     </template>
   </VySortable>

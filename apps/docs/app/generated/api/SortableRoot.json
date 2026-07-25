@@ -37,7 +37,7 @@
       "name": "longPressMs",
       "type": "number | undefined",
       "required": false,
-      "default": "250",
+      "default": "150",
       "description": "Long-press activation delay in ms. Set to 0 to drag immediately."
     },
     {
