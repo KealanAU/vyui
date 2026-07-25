@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Branded social card rendered to PNG at build time by nuxt-og-image.
-// title/description are passed per-route via defineOgImageComponent so each
+// title/description are passed per-route via defineOgImage so each
 // page gets its own card. Styles are inline because the renderer (takumi)
 // supports only a flexbox/inline-style subset — no external CSS or classes.
 withDefaults(defineProps<{ title?: string, description?: string }>(), {

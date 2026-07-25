@@ -74,7 +74,7 @@ useSeoMeta({
     description: "Release notes for Vy UI — @vyui/core and @vyui/kit.",
 });
 
-defineOgImageComponent("Default", {
+defineOgImage("Default", {
     title: "Changelog",
     description: "Release notes for Vy UI — @vyui/core and @vyui/kit.",
 });
