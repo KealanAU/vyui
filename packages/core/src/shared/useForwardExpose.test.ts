@@ -1,6 +1,6 @@
 // Adapted from reka-ui (MIT) — https://github.com/unovue/reka-ui
 //
-// Clean-room rewrite off `@vue/test-utils`. The original suite asserted on a
+// Rewritten off `@vue/test-utils`. The original suite asserted on a
 // stringified DOM element (`[object HTMLSpanElement]`) reflected through a
 // wrapper attribute, which the vue-lynx dual-thread `__SetAttribute` pipeline
 // does NOT propagate back to a `mount()` wrapper. Both `$el` and the rendered

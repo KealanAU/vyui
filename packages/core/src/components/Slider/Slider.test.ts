@@ -1,6 +1,6 @@
 // Adapted from reka-ui (MIT) — https://github.com/unovue/reka-ui
 //
-// Clean-room rewrite against the Lynx Slider rebuild. The drag lives entirely
+// Rewritten against the Lynx Slider rebuild. The drag lives entirely
 // in SliderImplMTS's main-thread worklets, which cannot run under vitest (the
 // SWC worklet transform isn't wired here), so there is no way to drive a
 // gesture from a test. What IS reachable is the contract either side of it:
