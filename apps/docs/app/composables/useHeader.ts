@@ -22,17 +22,14 @@ export function useHeader() {
       to: '/packages/kit',
     }],
   }, {
-    label: 'Theming',
-    to: '/theming',
-    active: route.path === '/theming' || route.path.startsWith('/theming/'),
-  }, {
-    label: 'Roadmap',
-    to: '/getting-started/roadmap',
-    active: route.path === '/getting-started/roadmap',
+    label: 'Guides',
+    to: '/guides',
+    active: route.path === '/guides' || route.path.startsWith('/guides/'),
   }])
-  // Changelog is an icon button beside GitHub instead of a nav item — see
-  // header.links in app.config.ts. It stays in mobileLinks, which is the only
-  // nav on small screens.
+  // Three entries by design; the rest have homes elsewhere. Theming owns the
+  // Styling tab in <AppDocsNav>, Roadmap sits in the Getting Started sidebar,
+  // and Changelog is an icon button beside GitHub (header.links in
+  // app.config.ts). All three stay in mobileLinks, which is the only nav below lg.
 
   const mobileLinks = computed<NavigationMenuItem[]>(() => [{
     label: 'Get Started',
@@ -54,6 +51,11 @@ export function useHeader() {
     icon: 'i-lucide-palette',
     to: '/theming',
     active: route.path === '/theming' || route.path.startsWith('/theming/'),
+  }, {
+    label: 'Guides',
+    icon: 'i-lucide-book-open',
+    to: '/guides',
+    active: route.path === '/guides' || route.path.startsWith('/guides/'),
   }, {
     label: 'Roadmap',
     icon: 'i-lucide-map',
