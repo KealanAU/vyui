@@ -36,6 +36,32 @@ const ctx = injectSortableRootContext()
 // element and would otherwise travel with the drag transform).
 const isDragging = computed(() => ctx.draggingIndex.value === props.index)
 
+/**
+ * Row style. The lifted row is raised in the paint order on WEB ONLY.
+ *
+ * Lynx web re-targets pointer events by position, so a row dragged downward
+ * slides under the rows it passes, they swallow the mousemove/mouseup, and the
+ * gesture strands mid-drag. A `zIndex` fixes it there — flex items open a
+ * stacking context without needing `position`.
+ *
+ * Lynx native must not get it: z-indexing promotes the view out of its layout
+ * position and the dragged row jumps to a screen-absolute Y. It has no use for
+ * it either — native delivers the whole gesture to the element the touch
+ * started on regardless of what is painted above.
+ *
+ * Read at render, not setup: `SystemInfo` can resolve late, and this only
+ * re-evaluates when `isDragging` flips — long after boot.
+ */
+const rowStyle = computed(() => {
+  const style: Record<string, unknown> = {
+    height: `${ctx.itemHeight.value}px`,
+    flexShrink: 0,
+  }
+  if ((globalThis as any).SystemInfo?.platform === 'web')
+    style.zIndex = isDragging.value ? 1 : 0
+  return style
+})
+
 const containerRef = useMainThreadRef<any>(null)
 const touchStartYRef = useMainThreadRef<number>(0)
 const touchStartTimeRef = useMainThreadRef<number>(0)
@@ -475,19 +501,7 @@ function _cancelActivation() {
     :main-thread-bindmousedown="_onMouseDown"
     :main-thread-bindmousemove="_onMouseMove"
     :main-thread-bindmouseup="_onMouseUp"
-    :style="{
-      height: `${ctx.itemHeight.value}px`,
-      flexShrink: 0,
-      // Rows are plain flex siblings, so paint order is DOM order: without a
-      // lift the dragged row slides UNDER every row after it (dragging down),
-      // and those rows then swallow the pointer so its own move/up worklets
-      // never fire. Set from the background, not a worklet — the re-render
-      // that `isDragging` triggers wipes MT-set inline styles. No `position`
-      // to go with it: a z-index on a FLEX ITEM opens a stacking context on
-      // its own, and positioning the row detaches it on Lynx native (the
-      // drag jumped to a screen-absolute Y).
-      zIndex: isDragging ? 1 : 0,
-    }"
+    :style="rowStyle"
   >
     <slot :dragging="isDragging" :index="props.index" />
   </view>
