@@ -13,6 +13,7 @@ import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
 
 import Presence, { PresenceContextKey } from './Presence'
 import type { PresenceContextType } from './types'
+import { MAX_STUCK_MS } from './usePresence'
 import { PresenceState } from './utils'
 
 const CONTENT_TEXT = 'PresenceContent'
@@ -233,6 +234,39 @@ describe('Presence — state machine via inject', () => {
     // machine must force itself to Left.
     await frames(40)
     await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Left)
+    expect(probe.ctx.controllers.mount.value).toBe(false)
+  })
+
+  it('force-resolves Leaving after MAX_STUCK_MS when the animation end event never arrives', async () => {
+    const probe = mountWithProbe({ initialShow: true })
+    await waitForUpdate()
+    await frames(40)
+    await waitForUpdate()
+
+    probe.setOpen(false)
+    await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Leaving)
+
+    // Animation starts but its end/cancel is lost — the web failure mode.
+    probe.ctx.animationHandlers.handleKFStart()
+    await frames(40)
+    await waitForUpdate()
+    // Past MAX_WAIT_FRAMES, but an animation is in flight so the frame
+    // timeout must NOT fire. Only the wall-clock cap may resolve this.
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Leaving)
+
+    // Jump the clock rather than sleeping 3s. Offset (not a fixed value) so
+    // anything else reading Date.now stays monotonic.
+    const realNow = Date.now
+    vi.spyOn(Date, 'now').mockImplementation(() => realNow() + MAX_STUCK_MS + 1)
+    try {
+      await frames(4)
+      await waitForUpdate()
+    }
+    finally {
+      vi.mocked(Date.now).mockRestore()
+    }
     expect(probe.ctx.controllers.state.value).toBe(PresenceState.Left)
     expect(probe.ctx.controllers.mount.value).toBe(false)
   })

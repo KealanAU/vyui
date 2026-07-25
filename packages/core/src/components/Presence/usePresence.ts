@@ -52,6 +52,20 @@ export interface UsePresenceRefOptions {
 export const MAX_WAIT_FRAMES = 24
 
 /**
+ * Absolute wall-clock ceiling on how long Entering/Leaving may stay
+ * unresolved while an animation is (or claims to be) in flight. On web,
+ * end/cancel events can be lost outright — a child unmounted mid-transition
+ * never delivers its end, and DOM bubbling feeds child animation events into
+ * these handlers in the first place — which would otherwise wedge the machine
+ * forever (a stuck Leaving keeps the invisible backdrop mounted, eating every
+ * tap under it). Wall-clock, not frames: rAF cadence varies wildly across
+ * environments (jsdom chains near-instantly; 120Hz devices double-tick). 3s
+ * is far above any real enter/leave animation, so it only fires on genuinely
+ * lost events. Not in upstream lynx-ui as of 2026-07.
+ */
+export const MAX_STUCK_MS = 3000
+
+/**
  * The core animation state machine for `<Presence>`.
  *
  * Listens to `bindanimationstart` / `bindanimationend` / `bindanimationcancel`
@@ -99,6 +113,9 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   // Tracks the very first render so onClose doesn't fire when the component
   // first mounts in the terminal Left state.
   const isInitialRender = { current: true }
+  // Dedupes open/close notifications across re-entries — a reopen-during-close
+  // routes back through Entered without ever reaching Left (upstream parity).
+  const hasNotifiedOpen = { current: false }
   // Always-fresh mirror of `show.value` so event handlers can branch on the
   // most recent intent without re-running the composable body.
   const showRef = { current: show.value }
@@ -148,7 +165,14 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       }
     }
     if (s === PresenceState.Leaving && notAnimating()) {
-      setPresenceState(PresenceState.Left)
+      if (showRef.current) {
+        // show flipped back on while leaving — remount instead of tearing
+        // down (upstream parity; see handleStateLeft).
+        restartShow()
+      }
+      else {
+        setPresenceState(PresenceState.Left)
+      }
     }
   }
 
@@ -156,10 +180,13 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   // Plain callables — Lynx binds these as the `bindanimation*` /
   // `bindtransition*` listeners on the consumer's root `<view>`.
 
+  // These deliberately do NOT bump the entering/leaving loop ids (upstream
+  // lynx-ui does). Bumping killed the frame watchdog the moment any animation
+  // started, leaving the machine trusting an end/cancel event that web can
+  // lose — see {@link MAX_STUCK_MS}. The watchdogs poll through animations
+  // instead.
   const handleKFStart = () => {
     isKFAnimating.current = true
-    enteringLoopIdRef.current += 1
-    leavingLoopIdRef.current += 1
     log(
       debugLog,
       `[vyui-presence][usePresence] KF start, loopId: ${leavingLoopIdRef.current}`,
@@ -169,8 +196,6 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
 
   const handleTransitionStart = () => {
     isTransitionAnimating.current = true
-    enteringLoopIdRef.current += 1
-    leavingLoopIdRef.current += 1
     log(
       debugLog,
       `[vyui-presence][usePresence] Transition start, loopId: ${leavingLoopIdRef.current}`,
@@ -217,11 +242,27 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   // ----- state-side effects -------------------------------------------------
 
   const handleStateEntered = () => {
+    if (hasNotifiedOpen.current) return
+    hasNotifiedOpen.current = true
     onOpen?.()
   }
 
   const handleStateLeft = () => {
-    if (!isInitialRender.current) {
+    if (showRef.current) {
+      // show flipped back on while we were leaving — remount instead of
+      // tearing down. Without this (upstream lynx-ui parity, drifted after
+      // the original port), a reopen that races Leaving → Left strands
+      // show=true with nothing mounted and the show watcher never re-fires:
+      // the trigger goes permanently dead.
+      log(
+        debugLog,
+        '[vyui-presence][usePresence] skip mount=false because show=true (Left)',
+      )
+      restartShow()
+      return
+    }
+    if (!isInitialRender.current && hasNotifiedOpen.current) {
+      hasNotifiedOpen.current = false
       onClose?.()
     }
     log(debugLog, '[vyui-presence][usePresence] set mount=false (Left)')
@@ -229,51 +270,92 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   }
 
   const handleStateLeaving = () => {
+    enteringLoopIdRef.current += 1 // cancel any pending entering wait
     leavingWaitFramesRef.current = 0
     leavingLoopIdRef.current += 1
     const loopId = leavingLoopIdRef.current
+    const startedAt = Date.now()
     log(
       debugLog,
       `[vyui-presence][usePresence] leaving loop scheduled, loopId: ${loopId}`,
     )
     const tryLeft = () => {
-      // loopId mismatch ⇒ an animation started during the delay; abandon.
+      // loopId mismatch ⇒ a newer Leaving cycle superseded this one.
       if (loopId !== leavingLoopIdRef.current) return
-      if (!notAnimating()) return
-      if (leavingWaitFramesRef.current >= MAX_WAIT_FRAMES) {
-        log(
-          debugLog,
-          `[vyui-presence][usePresence] leaving timeout reached, loopId: ${loopId}, frames: ${leavingWaitFramesRef.current}`,
-        )
-        setPresenceState(PresenceState.Left)
-        return
+      // Resolved through the normal end-event path — nothing to watch.
+      if (state.value !== PresenceState.Leaving) return
+      if (notAnimating()) {
+        leavingWaitFramesRef.current += 1
+        if (leavingWaitFramesRef.current >= MAX_WAIT_FRAMES) {
+          log(
+            debugLog,
+            `[vyui-presence][usePresence] leaving timeout reached, loopId: ${loopId}, frames: ${leavingWaitFramesRef.current}`,
+          )
+          if (showRef.current) restartShow()
+          else setPresenceState(PresenceState.Left)
+          return
+        }
       }
-      leavingWaitFramesRef.current += 1
+      else {
+        leavingWaitFramesRef.current = 0
+        if (Date.now() - startedAt >= MAX_STUCK_MS) {
+          // End/cancel never arrived (web) — clear the wedged flags so the
+          // next cycle starts clean, and force-resolve.
+          log(
+            debugLog,
+            `[vyui-presence][usePresence] leaving STUCK cap reached, loopId: ${loopId} — forcing Left`,
+          )
+          isKFAnimating.current = false
+          isTransitionAnimating.current = false
+          if (showRef.current) restartShow()
+          else setPresenceState(PresenceState.Left)
+          return
+        }
+      }
       delayFrames(1, tryLeft)
     }
     delayFrames(1, tryLeft)
   }
 
   const handleStateEnteringWithDelay = () => {
+    leavingLoopIdRef.current += 1 // cancel any pending leaving wait
     enteringWaitFramesRef.current = 0
     enteringLoopIdRef.current += 1
     const loopId = enteringLoopIdRef.current
+    const startedAt = Date.now()
     log(
       debugLog,
       `[vyui-presence][usePresence] entering loop scheduled, loopId: ${loopId}`,
     )
     const tryEntered = () => {
       if (loopId !== enteringLoopIdRef.current) return
-      if (!notAnimating()) return
-      if (enteringWaitFramesRef.current >= MAX_WAIT_FRAMES) {
-        log(
-          debugLog,
-          `[vyui-presence][usePresence] entering timeout reached, loopId: ${loopId}, frames: ${enteringWaitFramesRef.current}`,
-        )
-        setPresenceState(PresenceState.Entered)
-        return
+      if (state.value !== getEnteringStateWithDelay()) return
+      if (notAnimating()) {
+        enteringWaitFramesRef.current += 1
+        if (enteringWaitFramesRef.current >= MAX_WAIT_FRAMES) {
+          log(
+            debugLog,
+            `[vyui-presence][usePresence] entering timeout reached, loopId: ${loopId}, frames: ${enteringWaitFramesRef.current}`,
+          )
+          if (showRef.current) setPresenceState(PresenceState.Entered)
+          else setPresenceState(PresenceState.Leaving)
+          return
+        }
       }
-      enteringWaitFramesRef.current += 1
+      else {
+        enteringWaitFramesRef.current = 0
+        if (Date.now() - startedAt >= MAX_STUCK_MS) {
+          log(
+            debugLog,
+            `[vyui-presence][usePresence] entering STUCK cap reached, loopId: ${loopId} — forcing Entered`,
+          )
+          isKFAnimating.current = false
+          isTransitionAnimating.current = false
+          if (showRef.current) setPresenceState(PresenceState.Entered)
+          else setPresenceState(PresenceState.Leaving)
+          return
+        }
+      }
       delayFrames(1, tryEntered)
     }
     delayFrames(1, tryEntered)
@@ -289,7 +371,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       '[vyui-presence][usePresence] schedule set Entering in 8 frames',
     )
     delayFrames(8, () => {
-      if (scheduleId !== showScheduleIdRef.current) return
+      if (scheduleId !== showScheduleIdRef.current || !showRef.current) return
       setPresenceState(PresenceState.Entering)
     })
     if (getEnableDelay()) {
@@ -298,10 +380,17 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
         '[vyui-presence][usePresence] schedule set DelayedEntering in 16 frames',
       )
       delayFrames(16, () => {
-        if (scheduleId !== showScheduleIdRef.current) return
+        if (scheduleId !== showScheduleIdRef.current || !showRef.current) return
         setPresenceState(PresenceState.DelayedEntering)
       })
     }
+  }
+
+  // Invalidate any pending show schedule and start a fresh one — the
+  // re-entry path for "show flipped back on while leaving" (upstream parity).
+  function restartShow() {
+    showScheduleIdRef.current += 1
+    handleShow(showScheduleIdRef.current)
   }
 
   const handleDismiss = () => {
@@ -315,6 +404,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
         debugLog,
         '[vyui-presence][usePresence] show=false -> set PresenceState.Leaving',
       )
+      enteringLoopIdRef.current += 1 // cancel any pending entering wait
       setPresenceState(PresenceState.Leaving)
     }
     else if (
