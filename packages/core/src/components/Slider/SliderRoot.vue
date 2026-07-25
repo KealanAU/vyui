@@ -77,7 +77,12 @@ export interface SliderRootContext {
   maxMT: MainThreadRef<number>
   stepMT: MainThreadRef<number>
   disabledMT: MainThreadRef<boolean>
+  /** `minStepsBetweenThumbs * step` — the raw gap the worklets compare against. */
+  minGapMT: MainThreadRef<number>
+  /** Set by the drag worklets; gates the background's own value push. */
+  draggingMT: MainThreadRef<boolean>
   /** BG callback the MTS impl invokes from a touchend worklet. */
+  updateFromMT: (nextValues: number[]) => void
   commitFromMT: (nextValues: number[]) => void
 }
 
@@ -164,6 +169,12 @@ const minMT = useMainThreadRef<number>(props.min)
 const maxMT = useMainThreadRef<number>(props.max)
 const stepMT = useMainThreadRef<number>(props.step)
 const disabledMT = useMainThreadRef<boolean>(props.disabled)
+// Owned by SliderImplMTS's worklets for the length of a gesture.
+const draggingMT = useMainThreadRef<boolean>(false)
+// Pre-multiplied because `minStepsBetweenThumbs` is expressed in steps but the
+// worklets compare raw values.
+const minGap = computed(() => minStepsBetweenThumbs.value * step.value)
+const minGapMT = useMainThreadRef<number>(minGap.value)
 
 // Only the constructor's `INIT_MT_REF` carries a value BG -> MT; plain BG
 // writes to `.current` are a silent no-op (dev-warn only). Every later sync
@@ -193,7 +204,15 @@ function _setDisabled(v: boolean) {
 
 function _setValues(v: number[]) {
   'main thread'
+  // Mid-gesture the main thread is the source of truth; this push is the echo
+  // of its own live `update:modelValue` and must not stomp a newer value.
+  if (draggingMT.current) return
   valuesMT.current = v
+}
+
+function _setMinGap(v: number) {
+  'main thread'
+  minGapMT.current = v
 }
 
 watch(() => props.min, (v) => { void runOnMainThread(_setMin as any)(v) })
@@ -201,29 +220,65 @@ watch(() => props.max, (v) => { void runOnMainThread(_setMax as any)(v) })
 watch(() => props.step, (v) => { void runOnMainThread(_setStep as any)(v) })
 watch(() => props.disabled, (v) => { void runOnMainThread(_setDisabled as any)(v) })
 watch(currentModelValue, (v) => { void runOnMainThread(_setValues as any)([...v]) }, { deep: true })
+watch(minGap, (v) => { void runOnMainThread(_setMinGap as any)(v) })
+
+/**
+ * Shared validation for values arriving from the drag worklets. They already
+ * snapped to `step`, clamped to the range, kept the array sorted and honoured
+ * `minStepsBetweenThumbs`, so a failure here means a stale MT mirror rather
+ * than routine filtering.
+ */
+function isValidFromMT(nextValues: number[]): boolean {
+  if (props.disabled) return false
+  const prev = currentModelValue.value
+  // A payload that doesn't line up with the live thumbs would clobber the
+  // consumer's value with `next[0] ?? 0`.
+  if (nextValues.length !== prev.length || nextValues.some(v => !Number.isFinite(v)))
+    return false
+  return hasMinStepsBetweenValues(nextValues, minGap.value)
+}
+
+// Value as it stood when the current gesture began. `valueCommit` compares
+// against this rather than against the previous frame — the live updates below
+// have already written the new value by the time the commit lands, so a
+// frame-to-frame check would find nothing changed and never fire.
+let valuesBeforeGesture: number[] | null = null
+
+/**
+ * Per-frame value while a drag is in flight. Emits `update:modelValue` only —
+ * `valueCommit` stays a once-per-gesture signal, so consumers can still use it
+ * to fire off a save.
+ */
+function updateFromMT(nextValues: number[]) {
+  if (!isValidFromMT(nextValues)) return
+  const prev = currentModelValue.value
+  if (valuesBeforeGesture === null) valuesBeforeGesture = prev
+  if (nextValues.some((v, i) => v !== prev[i]))
+    writeModelValue(nextValues)
+}
 
 /**
  * Called from the MTS touchend worklet (via `runOnBackground`) with the final
- * snapped values — the one background round-trip per gesture. The worklets
- * already snapped to `step` and clamped to the range; `minStepsBetweenThumbs`
- * is enforced here because it is a whole-set invariant the per-thumb MT math
- * doesn't carry.
+ * snapped values — the one background round-trip per gesture.
+ *
+ * The worklets already snapped to `step`, clamped to the range, kept the array
+ * sorted and honoured `minStepsBetweenThumbs`, so the checks below are a
+ * backstop against a stale MT mirror rather than routine filtering. They must
+ * stay cheap and total: a rejection here strands the MT-painted fill, which has
+ * no way to learn the commit didn't land.
  */
 function commitFromMT(nextValues: number[]) {
-  if (props.disabled) return
+  const before = valuesBeforeGesture ?? currentModelValue.value
+  valuesBeforeGesture = null
+  if (!isValidFromMT(nextValues)) return
+  // Two different comparisons: the write is against the CURRENT value (the live
+  // updates usually got there first, so this is normally a no-op), the commit
+  // against the value the gesture started from.
   const prev = currentModelValue.value
-  // A payload that doesn't line up with the live thumbs means the MT mirror is
-  // stale, not that the user dragged to a new value — writing it through would
-  // clobber the consumer's value with `next[0] ?? 0`.
-  if (nextValues.length !== prev.length || nextValues.some(v => !Number.isFinite(v)))
-    return
-  if (!hasMinStepsBetweenValues(nextValues, minStepsBetweenThumbs.value * step.value))
-    return
-  const changed = nextValues.some((v, i) => v !== prev[i])
-  if (changed) {
+  if (nextValues.some((v, i) => v !== prev[i]))
     writeModelValue(nextValues)
+  if (nextValues.some((v, i) => v !== before[i]))
     emits('valueCommit', commitShape(nextValues))
-  }
 }
 
 provideSliderRootContext({
@@ -241,6 +296,9 @@ provideSliderRootContext({
   maxMT,
   stepMT,
   disabledMT,
+  minGapMT,
+  draggingMT,
+  updateFromMT,
   commitFromMT,
 })
 </script>

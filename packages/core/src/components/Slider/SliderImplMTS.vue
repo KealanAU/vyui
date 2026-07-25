@@ -56,15 +56,21 @@ const mtBound = !(globalThis as any).lynxTestingEnv
 
 const trackRef = useMainThreadRef<any>(null)
 
-// Track rect in PAGE coordinates, refreshed on `layoutchange`. Stored as
-// individual scalar refs because `useMainThreadRef<object>` is less reliable
-// across the worklet boundary than primitives — see comment in Sheet.
-const rectXRef = useMainThreadRef<number>(0)
-const rectYRef = useMainThreadRef<number>(0)
+// Track SIZE only, refreshed on `layoutchange`. Stored as individual scalar
+// refs because `useMainThreadRef<object>` is less reliable across the worklet
+// boundary than primitives — see comment in Sheet.
+//
+// Deliberately not its position. `layoutchange` reports top/left relative to
+// the PAGE; a touch reports pageX/pageY relative to the VIEWPORT. Inside a
+// scroll-view the two drift apart by the scroll offset, so an offset rebuilt as
+// `pageY - top` is only correct while nothing has scrolled — measured on device
+// at top 2805 against pageY 448. `touches[0].x`/`.y` are already measured from
+// the bound element's origin, so the mapping needs no origin of its own and
+// nothing to re-sync on scroll.
 const rectWRef = useMainThreadRef<number>(0)
 const rectHRef = useMainThreadRef<number>(0)
 
-// 0 = horizontal (read pageX, paint translateX), 1 = vertical.
+// 0 = horizontal (read the touch x offset, paint the left/right anchor), 1 = vertical.
 const axisRef = useMainThreadRef<0 | 1>(orientation.size === 'width' ? 0 : 1)
 const startEdgeRef = useMainThreadRef<StartEdgeCode>(encodeStartEdge(orientation.startEdge.value))
 
@@ -73,9 +79,10 @@ watch(() => orientation.startEdge.value, (v) => {
 })
 
 const activeIndexRef = useMainThreadRef<number>(-1)
-// Snapshot of all thumb values at touchstart — used to compute each thumb's
-// stable BG-anchor position so paint deltas are relative to it.
-const startValuesRef = useMainThreadRef<number[]>([])
+// True for the length of a gesture. The main thread owns the values while it is
+// set, so the background's own `valuesMT` push is ignored — otherwise a live
+// `update:modelValue` echoes straight back and can stomp a newer MT value.
+const draggingRef = useMainThreadRef<boolean>(false)
 
 // Lynx's main-thread `Element` has no `getBoundingClientRect` (see
 // `@lynx-js/types` main-thread/element.d.ts — the MT surface is
@@ -86,20 +93,14 @@ const startValuesRef = useMainThreadRef<number[]>([])
 // dispatch is post-mount, so it can't hit the setup-time MT-ref registration
 // race.
 //
-// `layoutchange` reports position relative to the PAGE, which is why the touch
-// worklets read `pageX`/`pageY` rather than `clientX`/`clientY` — the two
-// differ once an ancestor scrolls (FeedList's PTR worklets read `pageY` for
-// the same reason).
-function _setRect(x: number, y: number, w: number, h: number) {
+function _setSize(w: number, h: number) {
   'main thread'
-  rectXRef.current = x
-  rectYRef.current = y
   rectWRef.current = w
   rectHRef.current = h
 }
 
 const { onLayoutChange } = useResizeObserver((r) => {
-  void runOnMainThread(_setRect as any)(r.left, r.top, r.width, r.height)
+  void runOnMainThread(_setSize as any)(r.width, r.height)
 })
 
 // Thumb + range elements, resolved ON the main thread from the track's own
@@ -141,17 +142,21 @@ function _snapClamp(v: number, min: number, max: number, step: number): number {
   return out
 }
 
-/** Convert a touch coordinate into a logical value, snapped + clamped. */
-function _valueFromTouch(touchX: number, touchY: number): number {
+/**
+ * Convert an ELEMENT-RELATIVE touch offset into a logical value, snapped and
+ * clamped. `touches[0].x`/`.y` are already measured from the bound element's
+ * own origin, which is why no rect position is involved.
+ */
+function _valueFromTouch(localX: number, localY: number): number {
   'main thread'
   let local: number
   let extent: number
   if (axisRef.current === 0) {
-    local = touchX - rectXRef.current
+    local = localX
     extent = rectWRef.current
   }
   else {
-    local = touchY - rectYRef.current
+    local = localY
     extent = rectHRef.current
   }
   if (extent <= 0) return root.minMT.current
@@ -167,6 +172,34 @@ function _valueFromTouch(touchX: number, touchY: number): number {
   const max = root.maxMT.current
   const raw = min + frac * (max - min)
   return _snapClamp(raw, min, max, root.stepMT.current)
+}
+
+/**
+ * Move thumb `idx` to `value` and re-sort. Mirrors the old background
+ * `updateValues`: thumbs are allowed to cross, and the array is kept
+ * monotonically increasing so the range fill and `valueCommit` stay coherent.
+ */
+function _applyValue(values: number[], idx: number, value: number): number[] {
+  'main thread'
+  const next: number[] = []
+  for (let i = 0; i < values.length; i++) next.push(i === idx ? value : values[i])
+  next.sort((a, b) => a - b)
+  return next
+}
+
+/**
+ * `minStepsBetweenThumbs`, enforced per frame rather than at commit time. A
+ * violating frame is simply dropped so the thumb stops dead at the limit —
+ * checking it only on `touchend` would let the drag paint past the limit and
+ * then snap back on release.
+ */
+function _hasMinGap(vals: number[], gap: number): boolean {
+  'main thread'
+  if (gap <= 0) return true
+  for (let i = 1; i < vals.length; i++) {
+    if (vals[i] - vals[i - 1] < gap) return false
+  }
+  return true
 }
 
 /** Pick the thumb closest to `target` value. Single-thumb returns 0. */
@@ -186,12 +219,25 @@ function _pickClosestIndex(target: number): number {
   return bestIdx
 }
 
+/** `startEdge` code -> the CSS property the thumb and range anchor on. */
+function _edgeName(edge: StartEdgeCode): string {
+  'main thread'
+  if (edge === 0) return 'left'
+  if (edge === 1) return 'right'
+  if (edge === 2) return 'top'
+  return 'bottom'
+}
+
 /**
- * Paint the active thumb's transform to its current value position. The BG
- * anchor (`[startEdge]: calc(% + offset)`) stays at the touchstart value
- * during the drag, so we translate by the px delta from that anchor and
- * compose the original centering (`translateX(-50%)` / `translateY(±50%)`)
- * onto the same `transform` declaration.
+ * Paint the active thumb at its value.
+ *
+ * This writes the SAME anchor property the background style computes
+ * (`[startEdge]: <pct>%`), rather than translating by a delta from a frozen
+ * anchor. That matters now the background is updated live during the drag: a
+ * delta-from-touchstart paint double-counts as soon as the background re-anchors
+ * mid-gesture, whereas writing the absolute position means both threads converge
+ * on the same declaration and the last writer simply wins. It also removes the
+ * need to unwind anything on touchend — the centring `transform` is left alone.
  */
 function _paintActiveThumb(value: number) {
   'main thread'
@@ -207,29 +253,10 @@ function _paintActiveThumb(value: number) {
   const range = max - min
   if (range <= 0) return
 
-  const startValue = startValuesRef.current[idx] ?? value
-  const startPct = (startValue - min) / range
-  const curPct = (value - min) / range
-  const dPct = curPct - startPct
-
-  const edge = startEdgeRef.current
-  if (axisRef.current === 0) {
-    // Horizontal — startEdge is left (0) or right (1). Right-anchored
-    // (RTL / inverted) needs an inverted sign because increasing `right`
-    // moves the element left on screen.
-    const signX = edge === 0 ? 1 : -1
-    const dPx = signX * dPct * rectWRef.current
-    el.setStyleProperty('transform', `translateX(${dPx}px) translateX(-50%)`)
-  }
-  else {
-    // Vertical — startEdge is top (2) or bottom (3). Bottom-anchored
-    // (natural) needs an inverted sign for the same reason, plus a flipped
-    // centering offset.
-    const signY = edge === 2 ? 1 : -1
-    const dPy = signY * dPct * rectHRef.current
-    const center = edge === 3 ? '50%' : '-50%'
-    el.setStyleProperty('transform', `translateY(${dPy}px) translateY(${center})`)
-  }
+  let pct = ((value - min) / range) * 100
+  if (pct < 0) pct = 0
+  if (pct > 100) pct = 100
+  el.setStyleProperty(_edgeName(startEdgeRef.current), `${pct}%`)
 }
 
 /**
@@ -264,38 +291,15 @@ function _paintRange(vals: number[]) {
   }
   if (vals.length <= 1) lo = 0
 
-  // startEdge codes: 0 left, 1 right, 2 top, 3 bottom — the range's end edge is
-  // always the opposite side.
+  // The range's end edge is always the opposite side of its start edge.
   const edge = startEdgeRef.current
-  const startName = edge === 0 ? 'left' : edge === 1 ? 'right' : edge === 2 ? 'top' : 'bottom'
-  const endName = edge === 0 ? 'right' : edge === 1 ? 'left' : edge === 2 ? 'bottom' : 'top'
+  const startName = _edgeName(edge)
+  const endName = _edgeName(edge === 0 ? 1 : edge === 1 ? 0 : edge === 2 ? 3 : 2)
   el.setStyleProperty(startName, `${lo}%`)
   el.setStyleProperty(endName, `${100 - hi}%`)
 }
 
-/**
- * Reset the active thumb's transform to its BG-side centering. Called on
- * touchend so the next BG render (with the new committed value re-anchoring
- * the thumb) lands at the right pixel without any leftover MT delta.
- */
-function _resetActiveThumbTransform() {
-  'main thread'
-  const idx = activeIndexRef.current
-  if (idx < 0) return
-  const els = thumbElsRef.current
-  if (idx >= els.length) return
-  const el = els[idx] as { setStyleProperty?: (k: string, v: string) => void } | null
-  if (!el?.setStyleProperty) return
-  const edge = startEdgeRef.current
-  if (axisRef.current === 0) {
-    el.setStyleProperty('transform', 'translateX(-50%)')
-  }
-  else {
-    el.setStyleProperty('transform', edge === 3 ? 'translateY(50%)' : 'translateY(-50%)')
-  }
-}
-
-function _onTouchStart(e: { touches: Array<{ pageX: number, pageY: number }> }) {
+function _onTouchStart(e: { touches: Array<{ x: number, y: number }> }) {
   'main thread'
   if (root.disabledMT.current) return
   // Unmeasured track — bail instead of starting a gesture. `_valueFromTouch`
@@ -307,55 +311,68 @@ function _onTouchStart(e: { touches: Array<{ pageX: number, pageY: number }> }) 
   if (thumbElsRef.current.length === 0) _resolveEls()
   if (thumbElsRef.current.length === 0) return
   const t = e.touches[0]
-  const value = _valueFromTouch(t.pageX, t.pageY)
+  const value = _valueFromTouch(t.x, t.y)
   const idx = _pickClosestIndex(value)
   activeIndexRef.current = idx
-  // Snapshot all start values so multi-thumb paint can compute per-thumb
-  // deltas from a stable anchor. `.slice()` because the array is shared with
-  // BG via `valuesMT` and could be replaced under our feet.
-  const snapshot: number[] = []
+  draggingRef.current = true
   const src = root.valuesMT.current
-  for (let i = 0; i < src.length; i++) snapshot.push(src[i])
-  startValuesRef.current = snapshot
-  // Optimistically update the MT-side value array so a follow-up paint reads
-  // the new value if BG hasn't yet committed.
-  const next: number[] = []
-  for (let i = 0; i < src.length; i++) next.push(i === idx ? value : src[i])
+  const next = _applyValue(src, idx, value)
+  if (!_hasMinGap(next, root.minGapMT.current)) return
+  // Re-track after the sort: the grabbed thumb may have moved position in the
+  // array. `indexOf` matches the old BG path, ties included.
+  activeIndexRef.current = next.indexOf(value)
   root.valuesMT.current = next
   _paintActiveThumb(value)
   _paintRange(next)
+  runOnBackground(_emitLive as any)(next)
 }
 
-function _onTouchMove(e: { touches: Array<{ pageX: number, pageY: number }> }) {
+function _onTouchMove(e: { touches: Array<{ x: number, y: number }> }) {
   'main thread'
   if (activeIndexRef.current === -1) return
   const t = e.touches[0]
-  const value = _valueFromTouch(t.pageX, t.pageY)
+  const value = _valueFromTouch(t.x, t.y)
   const idx = activeIndexRef.current
   const src = root.valuesMT.current
-  const next: number[] = []
-  for (let i = 0; i < src.length; i++) next.push(i === idx ? value : src[i])
+  const next = _applyValue(src, idx, value)
+  // Dropping the frame leaves the thumb parked at the last legal position.
+  if (!_hasMinGap(next, root.minGapMT.current)) return
+  activeIndexRef.current = next.indexOf(value)
   root.valuesMT.current = next
   _paintActiveThumb(value)
   _paintRange(next)
+  runOnBackground(_emitLive as any)(next)
 }
 
 function _onTouchEnd() {
   'main thread'
   if (activeIndexRef.current === -1) return
-  // Sort to match the BG path's `getNextSortedValues` invariant — multi-thumb
-  // sliders keep values monotonically increasing so range fill renders right.
+  // Already sorted and gap-checked by `_applyValue` on every frame, so this is
+  // exactly what the commit will write — and therefore what the fill should be
+  // left painted at.
   const src = root.valuesMT.current
   const finalVals: number[] = []
   for (let i = 0; i < src.length; i++) finalVals.push(src[i])
-  finalVals.sort((a, b) => a - b)
-  _resetActiveThumbTransform()
+  _paintRange(finalVals)
   activeIndexRef.current = -1
+  draggingRef.current = false
   runOnBackground(_commit as any)(finalVals)
 }
 
-// BG callback — invoked from the touchend worklet with the final snapped
-// values. Cannot be aliased; see the worklet-transform notes in Draggable.
+// BG callbacks — invoked from the touch worklets. Cannot be aliased; see the
+// worklet-transform notes in Draggable.
+
+/**
+ * Per-frame `update:modelValue`. The paint stays on the main thread, so this
+ * costs one background hop per touchmove and nothing else waits on it — but a
+ * consumer rendering the number next to the slider needs it, and freezing that
+ * readout until release looks broken.
+ */
+function _emitLive(values: number[]) {
+  root.updateFromMT(values)
+}
+
+/** Final value of the gesture — the one that also emits `valueCommit`. */
 function _commit(values: number[]) {
   root.commitFromMT(values)
 }

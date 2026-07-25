@@ -73,11 +73,17 @@ const thumbInBoundsOffset = computed(() => {
 //
 // reka-ui pipes this thumb position through a `--vy-slider-thumb-transform`
 // CSS custom property. We resolve it directly here for the reason above.
-// For vertical, the sign flips depending on which edge anchors the thumb so
-// an inverted vertical slider (startEdge === 'top') centres correctly.
+//
+// The sign flips with the anchoring edge. `right: X%` puts the thumb's RIGHT
+// edge X% in from the right, so centring it on the value means pulling BACK
+// out by half a thumb — the opposite of the `left`-anchored case. Getting this
+// wrong is a half-thumb-width offset that only shows up when the slider is
+// inverted or RTL: `getThumbInBoundsOffset` would have cancelled it out, but it
+// returns 0 on Lynx native, where `useSize` (ResizeObserver / offsetWidth) never
+// reports a size.
 const thumbTransform = computed(() => {
   if (orientation!.size === 'width')
-    return 'translateX(-50%)'
+    return orientation!.startEdge.value === 'right' ? 'translateX(50%)' : 'translateX(-50%)'
   return orientation!.startEdge.value === 'bottom' ? 'translateY(50%)' : 'translateY(-50%)'
 })
 

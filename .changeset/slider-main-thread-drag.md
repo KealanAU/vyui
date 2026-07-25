@@ -15,12 +15,24 @@ landed as `next[0] ?? 0`.
 - `SliderImplMTS` resolves the thumb and range elements itself from the track via
   `querySelectorAll`, removing the BG→MT registration and its mount-time race.
   `SliderThumbImpl` no longer touches a `MainThreadRef` at all.
-- The filled range is painted from the drag worklets alongside the thumb.
-  Background only hears the value on `touchend`, so the fill previously sat
-  frozen for the whole gesture and snapped on release.
-- The track is measured on the background from `@layoutchange` and pushed across,
-  replacing a `getBoundingClientRect()` call that Lynx's main-thread `Element`
-  does not implement.
+- `update:modelValue` now fires per frame during the drag, so a value rendered
+  next to the slider tracks the gesture instead of jumping on release.
+  `valueCommit` stays once per gesture, compared against the value the gesture
+  started from.
+- The thumb and the filled range are painted from the worklets by writing the
+  same anchor offsets the background style computes, so neither thread's write
+  can double-count the other's.
+- Values are re-sorted and the active thumb re-tracked every frame, and
+  `minStepsBetweenThumbs` is enforced per frame rather than at commit time — a
+  thumb stops at the limit instead of springing back on release.
+- Touch offsets are read from `touches[0].x`/`.y`, which are already relative to
+  the bound element. Rebuilding them from `pageY - layoutchange.top` mixed
+  viewport and page coordinates and drifted by the scroll offset.
+- Fixes the thumb sitting half its own width off-centre on right-anchored
+  (inverted / RTL) sliders: the centring transform flips with the anchoring edge
+  on the vertical axis but did not on the horizontal one.
+- Fixes the `md` thumb rendering 0×0 — `size-4.5` is not a Tailwind v3 utility,
+  so it compiled to no CSS at all.
 
 **Removed:** the background drag implementation (`SliderImpl`), the
 `mainThreadDrag` prop, and keyboard stepping. The keyboard handlers never fired
