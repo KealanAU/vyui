@@ -32,6 +32,7 @@ const rangeStyle = computed<VyStyle>(() => ({
 
 <template>
   <Primitive
+    class="vyui-slider-range"
     :data-disabled="rootContext.disabled.value ? '' : undefined"
     :data-orientation="rootContext.orientation.value"
     :as-child="asChild"

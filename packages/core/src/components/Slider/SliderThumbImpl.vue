@@ -8,8 +8,8 @@ export interface SliderThumbImplProps extends PrimitiveProps {
 
 <script setup lang="ts">
 import { useMounted } from '@vueuse/core'
-import { computed, onMounted, onUnmounted, useAttrs } from 'vue'
-import { useMainThreadRef } from 'vue-lynx'
+import { computed, useAttrs } from 'vue'
+
 import { useCollection } from '@/components/Collection'
 import { Primitive } from '@/components/Primitive'
 import type { VyStyle } from '@/shared/types'
@@ -73,11 +73,17 @@ const thumbInBoundsOffset = computed(() => {
 //
 // reka-ui pipes this thumb position through a `--vy-slider-thumb-transform`
 // CSS custom property. We resolve it directly here for the reason above.
-// For vertical, the sign flips depending on which edge anchors the thumb so
-// an inverted vertical slider (startEdge === 'top') centres correctly.
+//
+// The sign flips with the anchoring edge. `right: X%` puts the thumb's RIGHT
+// edge X% in from the right, so centring it on the value means pulling BACK
+// out by half a thumb — the opposite of the `left`-anchored case. Getting this
+// wrong is a half-thumb-width offset that only shows up when the slider is
+// inverted or RTL: `getThumbInBoundsOffset` would have cancelled it out, but it
+// returns 0 on Lynx native, where `useSize` (ResizeObserver / offsetWidth) never
+// reports a size.
 const thumbTransform = computed(() => {
   if (orientation!.size === 'width')
-    return 'translateX(-50%)'
+    return orientation!.startEdge.value === 'right' ? 'translateX(50%)' : 'translateX(-50%)'
   return orientation!.startEdge.value === 'bottom' ? 'translateY(50%)' : 'translateY(-50%)'
 })
 
@@ -95,34 +101,6 @@ const thumbStyle = computed<VyStyle>(() => ({
   display: !isMounted.value && value.value === undefined ? 'none' : undefined,
 }))
 
-// MT-side ref the SliderImplMTS touch worklets paint translate transforms
-// onto. Only meaningful when `rootContext.mtsEnabled.value` is true; bound
-// unconditionally because `useMainThreadRef` is safe in any environment.
-const thumbMTRef = useMainThreadRef<any>(null)
-// Plain object that BG can read at mount time. `useMainThreadRef.current` is
-// populated during render, so we lift it into a regular ref the registry can
-// consume — same pattern Sortable uses (see `SortableItem` styleRef).
-const elementHandle: { current: any | null } = { current: null }
-
-onMounted(() => {
-  rootContext.thumbElements.value.push(thumbElement.value)
-  if (rootContext.mtsEnabled.value) {
-    elementHandle.current = (thumbMTRef as unknown as { current: any | null }).current
-    rootContext.thumbHandlesMT.current = [
-      ...rootContext.thumbHandlesMT.current,
-      { index: props.index, elementRef: elementHandle },
-    ]
-  }
-})
-
-onUnmounted(() => {
-  const i = rootContext.thumbElements.value.findIndex(i => i === thumbElement.value)
-  rootContext.thumbElements.value.splice(i, 1)
-  if (rootContext.mtsEnabled.value) {
-    rootContext.thumbHandlesMT.current = rootContext.thumbHandlesMT.current
-      .filter(h => h.elementRef !== elementHandle)
-  }
-})
 </script>
 
 <template>
@@ -130,7 +108,7 @@ onUnmounted(() => {
     <Primitive
       v-bind="{ ...$attrs, ...a11y }"
       :ref="forwardRef"
-      :main-thread-ref="rootContext.mtsEnabled.value ? thumbMTRef : undefined"
+      class="vyui-slider-thumb"
       :data-disabled="rootContext.disabled.value ? '' : undefined"
       :data-orientation="rootContext.orientation.value"
       :as-child="asChild"

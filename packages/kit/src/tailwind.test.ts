@@ -76,6 +76,17 @@ describe('createVyuiPreset', () => {
       expect(filtered).not.toContain('group-ui-active:text-white')
     })
 
+    // Regression: `slider`'s md thumb was `size-4.5`. Tailwind v3's spacing
+    // scale stops fractional steps at 3.5, so the class compiled to nothing and
+    // the default thumb rendered 0×0 — safelisted, no build error, no CSS.
+    it('emits no fractional spacing step outside Tailwind v3s scale', () => {
+      const VALID_HALF_STEPS = ['0.5', '1.5', '2.5', '3.5']
+      const offenders = stringEntries(createVyuiPreset())
+        .filter(s => /-\d+\.5(?:$|\/)/.test(s))
+        .filter(s => !VALID_HALF_STEPS.some(step => s.endsWith(`-${step}`)))
+      expect(offenders).toEqual([])
+    })
+
     it('warns about unknown component theme names', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
       createVyuiPreset({ components: ['button', 'nope'] })

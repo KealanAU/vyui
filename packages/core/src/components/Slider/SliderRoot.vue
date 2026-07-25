@@ -1,25 +1,12 @@
 <script lang="ts">
 import type { ComputedRef, Ref } from 'vue'
 import type { MainThreadRef } from 'vue-lynx'
-import type { DataOrientation, Direction, ElementHandle, FormFieldProps } from '@/shared/types'
+import type { DataOrientation, Direction, FormFieldProps } from '@/shared/types'
 import type { PrimitiveProps } from '@/components/Primitive'
 import { useCollection } from '@/components/Collection'
-import { clamp, createContext, useDirection, useForwardExpose } from '@/shared'
+import { createContext, useDirection, useForwardExpose } from '@/shared'
 
 type ThumbAlignment = 'contain' | 'overflow'
-
-/**
- * Per-thumb registry entry the MTS impl uses to paint translate transforms
- * directly on the main thread. The element handle is captured on mount by the
- * thumb component (BG side, but `useMainThreadRef.current` is populated
- * during render so BG can read it once). `value` mirrors the current logical
- * value for that thumb, so the MT side can compute per-thumb pixel offsets
- * without crossing back to BG.
- */
-export interface SliderThumbHandle {
-  index: number
-  elementRef: { current: any | null }
-}
 
 export interface SliderRootProps extends PrimitiveProps, FormFieldProps {
   /**
@@ -55,17 +42,6 @@ export interface SliderRootProps extends PrimitiveProps, FormFieldProps {
    * @defaultValue 'contain'
    */
   thumbAlignment?: ThumbAlignment
-  /**
-   * Drives the drag on the main thread. Defaults to on — the MT path paints
-   * the active thumb directly from `touchmove` worklets so the gesture stays
-   * at 60fps, and BG only sees one round-trip per gesture (a `valueCommit`
-   * on `touchend`). Per-frame `update:modelValue` is suppressed during the
-   * drag; consumers that need continuous updates should set this to `false`.
-   *
-   * Auto-disabled under vitest's dual-thread harness because the SWC worklet
-   * transform isn't wired there and `:main-thread-bindtouch*` attrs crash.
-   */
-  mainThreadDrag?: boolean
 }
 
 export type SliderRootEmits = {
@@ -93,15 +69,7 @@ export interface SliderRootContext {
   modelValue?: Readonly<Ref<number | number[] | null | undefined>>
   currentModelValue: ComputedRef<number[]>
   valueIndexToChangeRef: Ref<number>
-  thumbElements: Ref<ElementHandle[]>
   thumbAlignment: Ref<ThumbAlignment>
-  /** True when the MT touch pipeline owns drag paint. Set per-mount. */
-  mtsEnabled: ComputedRef<boolean>
-  /**
-   * Per-thumb element registry the MT touch worklets read from. Populated by
-   * SliderThumbImpl on mount when `mtsEnabled` is true.
-   */
-  thumbHandlesMT: MainThreadRef<SliderThumbHandle[]>
   /** MT mirror of `currentModelValue` so worklets can compute per-thumb px. */
   valuesMT: MainThreadRef<number[]>
   /** MT mirror of `min` / `max` / `step` so worklets stay sync-only. */
@@ -109,7 +77,12 @@ export interface SliderRootContext {
   maxMT: MainThreadRef<number>
   stepMT: MainThreadRef<number>
   disabledMT: MainThreadRef<boolean>
+  /** `minStepsBetweenThumbs * step` — the raw gap the worklets compare against. */
+  minGapMT: MainThreadRef<number>
+  /** Set by the drag worklets; gates the background's own value push. */
+  draggingMT: MainThreadRef<boolean>
   /** BG callback the MTS impl invokes from a touchend worklet. */
+  updateFromMT: (nextValues: number[]) => void
   commitFromMT: (nextValues: number[]) => void
 }
 
@@ -118,12 +91,12 @@ export const [injectSliderRootContext, provideSliderRootContext]
 </script>
 
 <script setup lang="ts">
-import { computed, ref, toRaw, toRefs, watch } from 'vue'
-import { useMainThreadRef } from 'vue-lynx'
+import { computed, ref, toRefs, watch } from 'vue'
+import { runOnMainThread, useMainThreadRef } from 'vue-lynx'
 import { useStandardVModel } from '@/shared/composables'
 import SliderHorizontal from './SliderHorizontal.vue'
 import SliderVertical from './SliderVertical.vue'
-import { getClosestValueIndex, getDecimalCount, getNextSortedValues, hasMinStepsBetweenValues, roundValue } from './utils'
+import { hasMinStepsBetweenValues } from './utils'
 
 defineOptions({
   inheritAttrs: false,
@@ -185,121 +158,147 @@ function commitShape(next: number[]): number | number[] {
 }
 
 const valueIndexToChangeRef = ref(0)
-const valuesBeforeSlideStartRef = ref(currentModelValue.value)
-
-function handleSlideStart(value: number) {
-  // Snapshot the values before the gesture so `handleSlideEnd` can tell
-  // whether to emit `valueCommit`. (reka-ui did this from a `@pointerdown`
-  // listener on the track; Lynx fires `touchstart`, but binding it here
-  // instead of on the orientation component avoids a merged array handler.)
-  if (!disabled.value)
-    valuesBeforeSlideStartRef.value = currentModelValue.value
-  const closestIndex = getClosestValueIndex(currentModelValue.value, value)
-  updateValues(value, closestIndex)
-}
-
-function handleSlideMove(value: number) {
-  updateValues(value, valueIndexToChangeRef.value)
-}
-
-function handleSlideEnd() {
-  const prevValue = valuesBeforeSlideStartRef.value[valueIndexToChangeRef.value]
-  const nextValue = currentModelValue.value[valueIndexToChangeRef.value]
-  const hasChanged = nextValue !== prevValue
-  if (hasChanged)
-    emits('valueCommit', commitShape(toRaw(currentModelValue.value)))
-}
-
-function updateValues(value: number, atIndex: number, { commit } = { commit: false }) {
-  const decimalCount = getDecimalCount(step.value)
-  const snapToStep = roundValue(Math.round((value - min.value) / step.value) * step.value + min.value, decimalCount)
-  const nextValue = clamp(snapToStep, min.value, max.value)
-
-  const nextValues = getNextSortedValues(currentModelValue.value, nextValue, atIndex)
-
-  if (hasMinStepsBetweenValues(nextValues, minStepsBetweenThumbs.value * step.value)) {
-    valueIndexToChangeRef.value = nextValues.indexOf(nextValue)
-    const hasChanged = String(nextValues) !== String(currentModelValue.value)
-    if (hasChanged && commit)
-      emits('valueCommit', commitShape(nextValues))
-
-    if (hasChanged) {
-      // `.focus()` is a web-only a11y nicety — Lynx native thumbs are
-      // LynxElement objects with no `focus` method, and calling it would
-      // throw "focus is not a function" past the optional chain.
-      const thumbEl = thumbElements.value[valueIndexToChangeRef.value] as any
-      if (typeof thumbEl?.focus === 'function')
-        thumbEl.focus()
-      writeModelValue(nextValues)
-    }
-  }
-}
-
-const thumbElements = ref<any[]>([])
 
 // ---------------------------------------------------------------------------
-// MTS bridge — only meaningful when `mtsEnabled` is true, but the refs are
-// always provided so SliderHorizontal / SliderVertical / SliderThumbImpl can
-// inject the context unconditionally.
+// MT bridge — the drag lives entirely in SliderImplMTS's worklets, and these
+// refs are the only channel it has back to reactive state.
 // ---------------------------------------------------------------------------
 
-// Vitest's vue-lynx harness doesn't run the SWC worklet transform, so MT
-// touch bindings would crash on render — keep MTS off there regardless of
-// what the consumer asks for.
-const inVitestHarness = !!(globalThis as any).lynxTestingEnv
-const mtsEnabled = computed(() => {
-  if (inVitestHarness) return false
-  return props.mainThreadDrag !== false
-})
-
-const thumbHandlesMT = useMainThreadRef<SliderThumbHandle[]>([])
 const valuesMT = useMainThreadRef<number[]>([...currentModelValue.value])
 const minMT = useMainThreadRef<number>(props.min)
 const maxMT = useMainThreadRef<number>(props.max)
 const stepMT = useMainThreadRef<number>(props.step)
 const disabledMT = useMainThreadRef<boolean>(props.disabled)
+// Owned by SliderImplMTS's worklets for the length of a gesture.
+const draggingMT = useMainThreadRef<boolean>(false)
+// Pre-multiplied because `minStepsBetweenThumbs` is expressed in steps but the
+// worklets compare raw values.
+const minGap = computed(() => minStepsBetweenThumbs.value * step.value)
+const minGapMT = useMainThreadRef<number>(minGap.value)
 
-watch(() => props.min, (v) => { minMT.current = v })
-watch(() => props.max, (v) => { maxMT.current = v })
-watch(() => props.step, (v) => { stepMT.current = v })
-watch(() => props.disabled, (v) => { disabledMT.current = v })
-watch(currentModelValue, (v) => { valuesMT.current = [...v] }, { deep: true })
+// Only the constructor's `INIT_MT_REF` carries a value BG -> MT; plain BG
+// writes to `.current` are a silent no-op (dev-warn only). Every later sync
+// therefore hops through a setter worklet — same shape as Sheet's panel
+// extent. These fire from `watch` callbacks, i.e. post-mount, so they can't hit
+// the setup-time dispatch race against MT-ref registration.
+
+function _setMin(v: number) {
+  'main thread'
+  minMT.current = v
+}
+
+function _setMax(v: number) {
+  'main thread'
+  maxMT.current = v
+}
+
+function _setStep(v: number) {
+  'main thread'
+  stepMT.current = v
+}
+
+function _setDisabled(v: boolean) {
+  'main thread'
+  disabledMT.current = v
+}
+
+function _setValues(v: number[]) {
+  'main thread'
+  // Mid-gesture the main thread is the source of truth; this push is the echo
+  // of its own live `update:modelValue` and must not stomp a newer value.
+  if (draggingMT.current) return
+  valuesMT.current = v
+}
+
+function _setMinGap(v: number) {
+  'main thread'
+  minGapMT.current = v
+}
+
+watch(() => props.min, (v) => { void runOnMainThread(_setMin as any)(v) })
+watch(() => props.max, (v) => { void runOnMainThread(_setMax as any)(v) })
+watch(() => props.step, (v) => { void runOnMainThread(_setStep as any)(v) })
+watch(() => props.disabled, (v) => { void runOnMainThread(_setDisabled as any)(v) })
+watch(currentModelValue, (v) => { void runOnMainThread(_setValues as any)([...v]) }, { deep: true })
+watch(minGap, (v) => { void runOnMainThread(_setMinGap as any)(v) })
+
+/**
+ * Shared validation for values arriving from the drag worklets. They already
+ * snapped to `step`, clamped to the range, kept the array sorted and honoured
+ * `minStepsBetweenThumbs`, so a failure here means a stale MT mirror rather
+ * than routine filtering.
+ */
+function isValidFromMT(nextValues: number[]): boolean {
+  if (props.disabled) return false
+  const prev = currentModelValue.value
+  // A payload that doesn't line up with the live thumbs would clobber the
+  // consumer's value with `next[0] ?? 0`.
+  if (nextValues.length !== prev.length || nextValues.some(v => !Number.isFinite(v)))
+    return false
+  return hasMinStepsBetweenValues(nextValues, minGap.value)
+}
+
+// Value as it stood when the current gesture began. `valueCommit` compares
+// against this rather than against the previous frame — the live updates below
+// have already written the new value by the time the commit lands, so a
+// frame-to-frame check would find nothing changed and never fire.
+let valuesBeforeGesture: number[] | null = null
+
+/**
+ * Per-frame value while a drag is in flight. Emits `update:modelValue` only —
+ * `valueCommit` stays a once-per-gesture signal, so consumers can still use it
+ * to fire off a save.
+ */
+function updateFromMT(nextValues: number[]) {
+  if (!isValidFromMT(nextValues)) return
+  const prev = currentModelValue.value
+  if (valuesBeforeGesture === null) valuesBeforeGesture = prev
+  if (nextValues.some((v, i) => v !== prev[i]))
+    writeModelValue(nextValues)
+}
 
 /**
  * Called from the MTS touchend worklet (via `runOnBackground`) with the final
- * snapped values. Pushes them through the same `valueCommit` channel the BG
- * path uses on `slideEnd`, so consumers see one commit per gesture regardless
- * of which thread drove the drag.
+ * snapped values — the one background round-trip per gesture.
+ *
+ * The worklets already snapped to `step`, clamped to the range, kept the array
+ * sorted and honoured `minStepsBetweenThumbs`, so the checks below are a
+ * backstop against a stale MT mirror rather than routine filtering. They must
+ * stay cheap and total: a rejection here strands the MT-painted fill, which has
+ * no way to learn the commit didn't land.
  */
 function commitFromMT(nextValues: number[]) {
-  if (props.disabled) return
+  const before = valuesBeforeGesture ?? currentModelValue.value
+  valuesBeforeGesture = null
+  if (!isValidFromMT(nextValues)) return
+  // Two different comparisons: the write is against the CURRENT value (the live
+  // updates usually got there first, so this is normally a no-op), the commit
+  // against the value the gesture started from.
   const prev = currentModelValue.value
-  const changed = nextValues.length !== prev.length
-    || nextValues.some((v, i) => v !== prev[i])
-  if (changed) {
+  if (nextValues.some((v, i) => v !== prev[i]))
     writeModelValue(nextValues)
+  if (nextValues.some((v, i) => v !== before[i]))
     emits('valueCommit', commitShape(nextValues))
-  }
 }
 
 provideSliderRootContext({
   modelValue,
   currentModelValue,
   valueIndexToChangeRef,
-  thumbElements,
   orientation,
   min,
   max,
   step,
   disabled,
   thumbAlignment,
-  mtsEnabled,
-  thumbHandlesMT,
   valuesMT,
   minMT,
   maxMT,
   stepMT,
   disabledMT,
+  minGapMT,
+  draggingMT,
+  updateFromMT,
   commitFromMT,
 })
 </script>
@@ -317,9 +316,6 @@ provideSliderRootContext({
       :dir="dir"
       :inverted="inverted"
       :data-disabled="disabled ? '' : undefined"
-      @slide-start="!disabled && handleSlideStart($event)"
-      @slide-move="!disabled && handleSlideMove($event)"
-      @slide-end="!disabled && handleSlideEnd()"
     >
       <slot :model-value="modelValue" />
     </component>

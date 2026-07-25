@@ -1,37 +1,49 @@
 // Adapted from reka-ui (MIT) — https://github.com/unovue/reka-ui
 //
-// Clean-room rewrite against the Lynx Slider rebuild. The implementation now
-// drives drag via `touchstart` / `touchmove` / `touchend` plus a one-shot
-// `useElementRect` measurement at slide-start (see SliderHorizontal.vue). The
-// rect is mocked to a fixed 0,0,200,20 so touch clientX maps linearly to a
-// model value: linearScale([0,200], [0,100])(clientX) === clientX/2.
+// Rewritten against the Lynx Slider rebuild. The drag lives entirely
+// in SliderImplMTS's main-thread worklets, which cannot run under vitest (the
+// SWC worklet transform isn't wired here), so there is no way to drive a
+// gesture from a test. What IS reachable is the contract either side of it:
+// what the component renders, and `commitFromMT` — the single background
+// round-trip the touchend worklet makes per gesture, exposed on the root
+// context. The worklets' own invariants are asserted against the SFC source at
+// the bottom of this file, the same shape FeedList's PTR tests use.
 //
-// Assertions are on the emitted `update:modelValue` / `valueCommit` contract
-// (and a couple of static a11y traits), not on rendered thumb geometry — the
-// component renders absolute-positioned thumbs but jsdom does not paint, and
-// the contract is the value emitted to consumers.
-import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
-import { ref } from 'vue'
-import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from '.'
+// Assertions are on the emitted `update:modelValue` / `valueCommit` contract,
+// not on rendered thumb geometry — the component renders absolute-positioned
+// thumbs but jsdom does not paint.
+import { describe, expect, it } from 'vitest'
+import { render, waitForUpdate } from '@vyui/testing-utils'
+import { defineComponent, ref } from 'vue'
+import { injectSliderRootContext, SliderRange, SliderRoot, SliderThumb, SliderTrack } from '.'
 
-vi.mock('@/shared/composables', async () => {
-  const actual = await vi.importActual<typeof import('@/shared/composables')>('@/shared/composables')
-  return {
-    ...actual,
-    // 200px horizontal track at origin — touch clientX directly maps to a
-    // 0..100 model value (default min/max) for `step:1` math.
-    useElementRect: () => Promise.resolve({ width: 200, height: 20, top: 0, left: 0, right: 200, bottom: 20 }),
-  }
-})
+/** Captures the root context from inside the slider so tests can drive the
+ *  same entry point the touchend worklet calls through `runOnBackground`. */
+function makeProbe() {
+  const seen: {
+    commitFromMT?: (values: number[]) => void
+    updateFromMT?: (values: number[]) => void
+  } = {}
+  const Probe = defineComponent({
+    name: 'ContextProbe',
+    setup() {
+      const ctx = injectSliderRootContext()
+      seen.commitFromMT = ctx.commitFromMT
+      seen.updateFromMT = ctx.updateFromMT
+      return () => null
+    },
+  })
+  return { seen, Probe }
+}
 
 function mountSlider(props: Record<string, unknown> = {}) {
   const updates: number[][] = []
   const commits: number[][] = []
+  const { seen, Probe } = makeProbe()
   const result = render({
-    components: { SliderRoot, SliderTrack, SliderRange, SliderThumb },
+    components: { SliderRoot, SliderTrack, SliderRange, SliderThumb, Probe },
     setup() {
-      const model = ref<number[]>((props.defaultValue as number[]) ?? [0])
+      const model = ref<number[]>((props.modelValue as number[]) ?? (props.defaultValue as number[]) ?? [0])
       return {
         model,
         props,
@@ -46,15 +58,25 @@ function mountSlider(props: Record<string, unknown> = {}) {
       <SliderRoot
         :model-value="model"
         :disabled="props.disabled"
+        :inverted="props.inverted"
+        :orientation="props.orientation"
+        :min-steps-between-thumbs="props.minStepsBetweenThumbs"
         @update:model-value="onUpdate"
         @value-commit="onCommit"
       >
         <SliderTrack><SliderRange /></SliderTrack>
-        <SliderThumb />
+        <SliderThumb v-for="(_, i) in model" :key="i" />
+        <Probe />
       </SliderRoot>
     `,
   })
-  return { ...result, updates, commits }
+  return {
+    ...result,
+    updates,
+    commits,
+    live: (v: number[]) => seen.updateFromMT!(v),
+    commit: (v: number[]) => seen.commitFromMT!(v),
+  }
 }
 
 describe('SliderRoot rendering & a11y traits', () => {
@@ -73,52 +95,223 @@ describe('SliderRoot rendering & a11y traits', () => {
   })
 })
 
-describe('SliderRoot touch drag → value', () => {
-  it('emits update:modelValue on touchstart at the touched position', async () => {
-    const { container, updates } = mountSlider()
-    const slider = container.querySelector('[data-vyui-slider-impl]')!
+// The thumb is centred on its value by translating back half its own size. The
+// direction of that pull depends on which edge anchors it — `right: X%` pins the
+// thumb's right edge, so it has to move the opposite way from a `left`-anchored
+// one. Horizontal missed the flip, leaving inverted/RTL sliders' thumbs sitting
+// half a thumb-width left of the fill. `getThumbInBoundsOffset` would have
+// absorbed it, but it is always 0 on Lynx native — `useSize` leans on
+// ResizeObserver / offsetWidth, neither of which exists there.
+describe('SliderThumb centring follows the anchoring edge', () => {
+  const transformOf = (container: Element) =>
+    container.querySelector('.vyui-slider-thumb')?.getAttribute('style') ?? ''
 
-    fireEvent.touchstart(slider, { touches: [{ clientX: 50, clientY: 10 }] })
-    await waitForUpdate()
-    // 50/200 of [0,100] = 25
-    expect(updates[updates.length - 1]).toEqual([25])
+  it('pulls left when anchored left, right when anchored right', () => {
+    expect(transformOf(mountSlider().container)).toContain('translateX(-50%)')
+    expect(transformOf(mountSlider({ inverted: true }).container)).toContain('translateX(50%)')
   })
 
-  it('emits another update on touchmove', async () => {
-    const { container, updates } = mountSlider()
-    const slider = container.querySelector('[data-vyui-slider-impl]')!
+  it('does the same on the vertical axis', () => {
+    expect(transformOf(mountSlider({ orientation: 'vertical' }).container)).toContain('translateY(50%)')
+    expect(transformOf(mountSlider({ orientation: 'vertical', inverted: true }).container)).toContain('translateY(-50%)')
+  })
+})
 
-    fireEvent.touchstart(slider, { touches: [{ clientX: 0, clientY: 10 }] })
-    await waitForUpdate()
-    fireEvent.touchmove(slider, { touches: [{ clientX: 150, clientY: 10 }] })
+describe('commitFromMT — the one BG round-trip per gesture', () => {
+  it('writes the dragged values through and fires a single valueCommit', async () => {
+    const { commit, updates, commits } = mountSlider({ modelValue: [25] })
+
+    commit([75])
     await waitForUpdate()
 
-    // last emitted value reflects the move position (150/200 → 75)
     expect(updates[updates.length - 1]).toEqual([75])
+    expect(commits).toEqual([[75]])
   })
 
-  it('emits valueCommit on touchend when the value changed', async () => {
-    const { container, commits } = mountSlider()
-    const slider = container.querySelector('[data-vyui-slider-impl]')!
+  it('stays silent when the gesture did not actually change anything', async () => {
+    const { commit, updates, commits } = mountSlider({ modelValue: [40] })
 
-    fireEvent.touchstart(slider, { touches: [{ clientX: 100, clientY: 10 }] })
-    await waitForUpdate()
-    fireEvent.touchend(slider)
-    await waitForUpdate()
-    expect(commits.length).toBe(1)
-    expect(commits[0]).toEqual([50])
-  })
-
-  it('does not emit updates while disabled', async () => {
-    const { container, updates, commits } = mountSlider({ disabled: true })
-    const slider = container.querySelector('[data-vyui-slider-impl]')!
-
-    fireEvent.touchstart(slider, { touches: [{ clientX: 100, clientY: 10 }] })
-    await waitForUpdate()
-    fireEvent.touchend(slider)
+    commit([40])
     await waitForUpdate()
 
     expect(updates).toEqual([])
     expect(commits).toEqual([])
+  })
+
+  // The live updates have already written the value by the time touchend
+  // lands, so `valueCommit` has to compare against the start of the GESTURE.
+  // Comparing frame-to-frame would find nothing changed and never fire.
+  it('still emits valueCommit after live updates have written the value', async () => {
+    const { live, commit, updates, commits } = mountSlider({ modelValue: [40] })
+
+    live([55])
+    live([70])
+    await waitForUpdate()
+    expect(updates).toEqual([[55], [70]])
+    expect(commits).toEqual([])
+
+    commit([70])
+    await waitForUpdate()
+    expect(commits).toEqual([[70]])
+  })
+
+  // Regression: a stale MT mirror used to arrive here as a short array, and
+  // `writeModelValue`'s `next[0] ?? 0` turned that into a hard 0 — the slider
+  // snapped to the minimum on first touch and never recovered.
+  it('rejects a payload that does not line up with the live thumbs', async () => {
+    const { commit, updates, commits } = mountSlider({ modelValue: [40] })
+
+    commit([])
+    commit([10, 90])
+    commit([Number.NaN])
+    await waitForUpdate()
+
+    expect(updates).toEqual([])
+    expect(commits).toEqual([])
+  })
+
+  // Backstop only — the worklets drop violating frames so the thumb stops at
+  // the gap. If this ever fires in a real gesture the fill is already painted
+  // past the limit with no way to learn the commit was refused.
+  it('refuses a payload that violates minStepsBetweenThumbs', async () => {
+    const { commit, updates, commits } = mountSlider({ modelValue: [10, 90], minStepsBetweenThumbs: 20 })
+
+    commit([10, 20])
+    await waitForUpdate()
+    expect(updates).toEqual([])
+
+    commit([10, 40])
+    await waitForUpdate()
+    expect(updates[updates.length - 1]).toEqual([10, 40])
+    expect(commits).toEqual([[10, 40]])
+  })
+
+  it('does not commit while disabled', async () => {
+    const { commit, updates, commits } = mountSlider({ modelValue: [40], disabled: true })
+
+    commit([70])
+    await waitForUpdate()
+
+    expect(updates).toEqual([])
+    expect(commits).toEqual([])
+  })
+})
+
+// Regression — "thumb starts at the right place, jumps to 0 on first touch and
+// never moves again". The MT drag path filled its thumb registry and every
+// `*MT` mirror with BACKGROUND-thread writes to `MainThreadRef.current`, which
+// vue-lynx silently no-ops. The main thread saw an empty handle list
+// (`_paintActiveThumb` bailed on every frame) and a stale value array, whose
+// commit landed as `next[0] ?? 0`.
+//
+// SliderImplMTS can't render under vitest — the SWC worklet transform doesn't
+// run, so `:main-thread-bindtouch*` crashes `applySetWorkletEvent` — so the
+// thread-boundary rules are asserted against the SFC source, same shape as
+// FeedList's PTR tests.
+describe('Slider — nothing crosses BG -> MT by assignment', () => {
+  async function readSfc(name: string): Promise<string> {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    return fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), name), 'utf8')
+  }
+
+  function body(sfc: string, fn: string): string {
+    return sfc.match(new RegExp(`function ${fn}[\\s\\S]*?\\n}`))?.[0] ?? ''
+  }
+
+  it('routes every SliderRoot mirror through a runOnMainThread setter', async () => {
+    const sfc = await readSfc('SliderRoot.vue')
+    // A watch that assigns `.current` straight from BG is the dead pattern.
+    expect(sfc).not.toMatch(/watch\([\s\S]{0,80}?\{\s*\w+MT\.current\s*=/)
+    for (const setter of ['_setMin', '_setMax', '_setStep', '_setDisabled', '_setValues'])
+      expect(sfc).toMatch(new RegExp(`runOnMainThread\\(${setter} as any\\)`))
+  })
+
+  it('keeps SliderThumbImpl off the main-thread boundary entirely', async () => {
+    // The thumb used to push its element handle into `thumbHandlesMT` on mount.
+    const sfc = await readSfc('SliderThumbImpl.vue')
+    expect(sfc).not.toMatch(/MainThreadRef|thumbHandlesMT|main-thread-ref/)
+  })
+
+  it('resolves thumb and range elements on the main thread from the track subtree', async () => {
+    const sfc = await readSfc('SliderImplMTS.vue')
+    const fn = sfc.match(/function _resolveEls[\s\S]*?\n}/)?.[0] ?? ''
+    expect(fn).toMatch(/'main thread'/)
+    expect(fn).toMatch(/querySelectorAll\('\.vyui-slider-thumb'\)/)
+    expect(fn).toMatch(/querySelector\('\.vyui-slider-range'\)/)
+    // Unresolvable thumbs must abort the gesture, not drag an empty registry.
+    expect(sfc).toMatch(/if \(thumbElsRef\.current\.length === 0\) return/)
+  })
+
+  it('stamps the marker classes MT resolution selects on, alongside user classes', async () => {
+    const { container } = mountSlider()
+    // Both carry a consumer class from mountSlider's template too — the static
+    // marker has to survive the `v-bind` / $attrs merge, not replace it.
+    expect(container.querySelector('.vyui-slider-thumb')).not.toBeNull()
+    expect(container.querySelector('.vyui-slider-range')).not.toBeNull()
+  })
+
+  // The BG only hears about the value on touchend, so the fill has to be
+  // painted from the worklets too — otherwise it sits frozen for the whole
+  // gesture and snaps on release while the thumb glides.
+  // `layoutchange` reports top/left relative to the PAGE while a touch reports
+  // pageX/pageY relative to the VIEWPORT, so an offset rebuilt as
+  // `pageY - rect.top` is only correct until something scrolls — measured on
+  // device at top 2805 against pageY 448. `touches[0].x`/`.y` come measured
+  // from the bound element's origin, so keep the mapping on those.
+  it('maps from element-relative touch offsets, never a reconstructed origin', async () => {
+    const sfc = await readSfc('SliderImplMTS.vue')
+    for (const fn of ['_onTouchStart', '_onTouchMove']) {
+      expect(body(sfc, fn)).toMatch(/_valueFromTouch\(t\.x, t\.y\)/)
+      expect(body(sfc, fn)).not.toMatch(/pageX|pageY|clientX|clientY/)
+    }
+    expect(body(sfc, '_valueFromTouch')).not.toMatch(/rectXRef|rectYRef/)
+    // Only the SIZE crosses the thread boundary; a stored origin is the bug.
+    expect(sfc).toMatch(/runOnMainThread\(_setSize as any\)\(r\.width, r\.height\)/)
+  })
+
+  it('keeps values sorted and re-tracks the active thumb every frame', async () => {
+    const sfc = await readSfc('SliderImplMTS.vue')
+    // Thumbs may cross mid-drag; the old BG path re-derived the active index
+    // from the re-sorted array on every frame and this has to match, or the
+    // commit lands on the wrong thumb.
+    expect(body(sfc, '_applyValue')).toMatch(/next\.sort\(\(a, b\) => a - b\)/)
+    for (const handler of ['_onTouchStart', '_onTouchMove']) {
+      const fn = body(sfc, handler)
+      expect(fn).toMatch(/_applyValue\(src, idx, value\)/)
+      expect(fn).toMatch(/activeIndexRef\.current = next\.indexOf\(value\)/)
+      // Gap violations drop the frame, so the thumb parks at the limit rather
+      // than painting past it and snapping back at commit time.
+      expect(fn).toMatch(/if \(!_hasMinGap\(next, root\.minGapMT\.current\)\) return/)
+    }
+  })
+
+  it('leaves the range painted at the values it is about to commit', async () => {
+    // `_resetActiveThumbTransform` hands the thumb back to its BG anchor, but
+    // the range has no anchor to fall back to — its inline offsets persist, so
+    // touchend has to leave them on the committed values.
+    const fn = body(await readSfc('SliderImplMTS.vue'), '_onTouchEnd')
+    expect(fn).toMatch(/_paintRange\(finalVals\)/)
+  })
+
+  it('repaints the range from the drag worklets, not just on commit', async () => {
+    const sfc = await readSfc('SliderImplMTS.vue')
+    for (const handler of ['_onTouchStart', '_onTouchMove']) {
+      const fn = sfc.match(new RegExp(`function ${handler}[\\s\\S]*?\\n}`))?.[0] ?? ''
+      expect(fn).toMatch(/_paintRange\(next\)/)
+    }
+    const paint = sfc.match(/function _paintRange[\s\S]*?\n}/)?.[0] ?? ''
+    expect(paint).toMatch(/'main thread'/)
+    // Same two edge offsets SliderRange's BG style writes, so the commit's
+    // re-render lands on identical values and needs no reset.
+    expect(paint).toMatch(/setStyleProperty\(startName, `\$\{lo\}%`\)/)
+    expect(paint).toMatch(/setStyleProperty\(endName, `\$\{100 - hi\}%`\)/)
+  })
+
+  it('ignores an MT payload that does not match the live thumbs', async () => {
+    // Shared by the live per-frame updates and the final commit, so a stale MT
+    // mirror can't reach `writeModelValue` down either route.
+    const fn = body(await readSfc('SliderRoot.vue'), 'isValidFromMT')
+    expect(fn).toMatch(/nextValues\.length !== prev\.length[\s\S]*?return false/)
   })
 })
