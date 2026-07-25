@@ -220,6 +220,26 @@ describe('Presence — state machine via inject', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
+  it('a close that races the enter animation waits for it instead of cutting to Leaving', async () => {
+    const probe = mountWithProbe({ initialShow: true })
+    await waitForUpdate()
+    // Pin an enter animation in flight so the entering fallback can't advance.
+    probe.ctx.animationHandlers.handleKFStart()
+    await frames(12)
+    await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Entering)
+
+    probe.setOpen(false)
+    await waitForUpdate()
+    // Swapping to the leave keyframe here would snap the element to its
+    // fully-open underlying position first — the flash.
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Entering)
+
+    probe.ctx.animationHandlers.handleKFEnd()
+    await waitForUpdate()
+    expect(probe.ctx.controllers.state.value).toBe(PresenceState.Leaving)
+  })
+
   it('falls back to Left after MAX_WAIT_FRAMES if no leaving animation fires', async () => {
     const probe = mountWithProbe({ initialShow: true })
     await waitForUpdate()

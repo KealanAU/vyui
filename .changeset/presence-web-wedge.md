@@ -20,3 +20,9 @@ reopen-during-close path.
   `show=true` with nothing mounted and the trigger went permanently dead.
 - `onOpen`/`onClose` are deduped through `hasNotifiedOpen`, so a
   reopen-during-close that routes back through `Entered` doesn't double-fire.
+- A close that races the enter animation no longer cuts straight to `Leaving`.
+  The exit keyframe starts from the element's underlying (fully-open) value, so
+  swapping mid-enter snapped the element open and played the exit from there —
+  the action sheet flashing up before sliding back out. The dismiss is deferred
+  until the enter resolves, which the existing `handleAnimationEnd` safeguard
+  and entering watchdog already route to `Leaving`.
