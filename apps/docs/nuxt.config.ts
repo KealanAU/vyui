@@ -25,6 +25,12 @@ export default defineNuxtConfig({
     },
   },
 
+  // Every route is prerendered, so OG images are baked at build time. Drops the
+  // runtime renderer (and its NUXT_OG_IMAGE_SECRET requirement) entirely.
+  ogImage: {
+    zeroRuntime: true,
+  },
+
   // Adds <lastmod> (last git commit per doc) to auto-discovered routes; see
   // server/api/__sitemap__/urls.ts.
   sitemap: {
@@ -115,7 +121,15 @@ export default defineNuxtConfig({
         { rel: 'alternate', type: 'application/rss+xml', title: 'Vy UI — Changelog', href: '/changelog.xml' },
         { rel: 'preconnect', href: 'https://api.fontshare.com' },
         { rel: 'preconnect', href: 'https://cdn.fontshare.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://api.fontshare.com/v2/css?f[]=haskoy@300,400,500,600,700,800&display=swap' },
+        // Loaded non-render-blocking: a third-party stylesheet in <head> holds
+        // first paint for a whole cross-origin round trip. `display=swap`
+        // already means text paints in the fallback first, so nothing is lost.
+        {
+          rel: 'stylesheet',
+          href: 'https://api.fontshare.com/v2/css?f[]=haskoy@300,400,500,600,700,800&display=swap',
+          media: 'print',
+          onload: 'this.media=\'all\'',
+        },
       ],
     },
   },

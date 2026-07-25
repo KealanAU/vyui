@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useClipboard } from '@vueuse/core'
-import { examples } from '~/generated/examples'
 
-// `name` is the example id (kebab basename) in the generated source manifest.
+// `name` is the example id (kebab basename) of a generated example chunk.
 const props = withDefaults(defineProps<{
   name: string
   height?: string
@@ -11,8 +10,10 @@ const props = withDefaults(defineProps<{
 })
 
 const tab = ref<'preview' | 'code'>('preview')
-const source = computed(() => examples[props.name]?.source ?? '')
-const highlighted = computed(() => examples[props.name]?.highlighted ?? '')
+// Fetched on the first switch to Code, so the preview-only default costs nothing.
+const example = useExample(() => props.name, () => tab.value === 'code')
+const source = computed(() => example.value?.source ?? '')
+const highlighted = computed(() => example.value?.highlighted ?? '')
 const { copy, copied } = useClipboard({ source })
 </script>
 
@@ -39,6 +40,7 @@ const { copy, copied } = useClipboard({ source })
       </div>
       <UButton
         v-if="tab === 'code'"
+        :disabled="!source"
         :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
         color="neutral"
         variant="ghost"
@@ -68,10 +70,14 @@ const { copy, copied } = useClipboard({ source })
     <template v-else>
       <!-- eslint-disable-next-line vue/no-v-html -- trusted build-time Shiki output -->
       <div
+        v-if="highlighted"
         class="component-code-shiki max-h-[480px] overflow-auto text-[13px] leading-relaxed"
         v-html="highlighted"
       />
-      <pre v-if="!highlighted" class="p-4 m-0 text-[13px]"><code>{{ source }}</code></pre>
+      <!-- Code lines, faked, while the example chunk loads. -->
+      <div v-else class="flex flex-col gap-2.5 p-4" aria-hidden="true">
+        <div v-for="w in ['w-2/5', 'w-4/5', 'w-3/5', 'w-3/4', 'w-1/3', 'w-2/3']" :key="w" class="preview-skeleton h-3 rounded" :class="w" />
+      </div>
     </template>
   </div>
 </template>
