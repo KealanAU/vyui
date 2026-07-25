@@ -43,14 +43,19 @@
      setter is a dev-warn no-op), and the watch dispatches fire post-mount
      so they don't hit the setup-time registration race above.
 
-     Inline `animation: 'none'` overrides Presence's keyframes wherever
-     the panel isn't at the keyframes' assumed position: the dismiss-after-
-     drag path (slide off from the dragged position, not translateY(0)),
-     and any settle BELOW fully open (so a later non-drag close can't start
-     `.ui-leaving` from translateY(0) — `_slideOffFromCurrent` drives those
-     closes instead). Settling back at fully open clears the inline
-     `animation` so the normal keyframe paths apply again. In all inline
-     cases `@transitionend` advances Presence to `Left`. -->
+     Inline `animation: 'none'` is painted wherever the panel isn't at the
+     keyframes' assumed position: the dismiss-after-drag path (slide off from
+     the dragged position, not translateY(0)), and any settle BELOW fully open
+     (so a later non-drag close can't start `.ui-leaving` from translateY(0) —
+     `_slideOffFromCurrent` drives those closes instead). Settling back at
+     fully open clears it so the normal keyframe paths apply again. In all
+     inline cases `@transitionend` advances Presence to `Left`.
+
+     That inline `animation: 'none'` is NOT load-bearing against a class-driven
+     keyframe — those win over it on the Lynx style path, which is why a
+     drag-dismiss used to close twice (inline transition, then `.ui-leaving`
+     replaying the exit from fully open). `ctx.dragClosing` removes the
+     `ui-leaving` class outright for that path; see `presenceClass` below. -->
 <script lang="ts">
 export interface SheetContentImplProps {
   /** Disable dragging. */
@@ -101,11 +106,19 @@ const presenceState = computed<PresenceState>(() =>
   presence?.controllers.state.value ?? PresenceState.Entered,
 )
 
+// `transition: false` emits only `ui-open` / `ui-closed`, so no `ui-leaving`
+// and therefore no slide-out keyframe. That's what we want once a drag has
+// dismissed the sheet: the MT release transition is already sliding the panel
+// off from where the finger left it, and the keyframe would drive the same
+// close a SECOND time from the fully-open underlying value — the panel snaps
+// back up and replays the exit. The inline `animation: 'none'` the worklets
+// paint was meant to suppress it, but a class-driven animation beats inline on
+// the Lynx style path, so remove the class instead of fighting it.
 const presenceClass = computed(() =>
   presenceClassVariants({
     state: presenceState.value,
     enableDelay: false,
-    transition: true,
+    transition: !ctx.dragClosing.value,
   }),
 )
 
@@ -688,6 +701,9 @@ function _slideOffFromCurrent() {
 }
 
 function _emitClose() {
+  // Before `setOpen`, so the class computed sees it in the same tick and the
+  // `.ui-leaving` keyframes never get a frame to replay this close.
+  ctx.dragClosing.value = true
   ctx.setOpen(false)
 }
 

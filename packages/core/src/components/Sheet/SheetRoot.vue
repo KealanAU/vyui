@@ -80,7 +80,7 @@ export type SheetRootEmits = {
 </script>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { useMainThreadRef } from 'vue-lynx'
 
@@ -153,8 +153,15 @@ function setSnap(idx: number) {
   snapIndex.value = clamp(idx, 0, last)
 }
 
+// True only between a drag-dismiss release and the next open — see
+// `dragClosing` in sheetContext. Cleared here rather than in SheetContent
+// because the panel unmounts on close and the backdrop reads it too.
+const dragClosing = ref(false)
+
 watch(open, (isOpen) => {
-  if (isOpen && (snapIndex.value < 0 || snapIndex.value > snapPoints.value.length - 1)) {
+  if (!isOpen) return
+  dragClosing.value = false
+  if (snapIndex.value < 0 || snapIndex.value > snapPoints.value.length - 1) {
     snapIndex.value = 0
   }
 })
@@ -174,6 +181,7 @@ provideSheetRootContext({
   setSnap,
   progressMTRef,
   backdropElRef,
+  dragClosing,
 })
 
 defineExpose({ setOpen, setSnap })

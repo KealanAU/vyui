@@ -156,40 +156,53 @@ function frames(n: number) {
   return wait(n * 16 + 32)
 }
 
-describe('SheetBackdrop — Presence wiring', () => {
-  async function mountBackdrop(initialOpen: boolean) {
-    const { render } = await import('@vyui/testing-utils')
-    const { default: SheetRoot } = await import('./SheetRoot.vue')
-    const { default: SheetBackdrop } = await import('./SheetBackdrop.vue')
-    const { OverlayRoot, overlayEntries } = await import('@/components/OverlayRoot')
-    overlayEntries.value = []
+async function mountBackdrop(initialOpen: boolean) {
+  const { render } = await import('@vyui/testing-utils')
+  const { default: SheetRoot } = await import('./SheetRoot.vue')
+  const { default: SheetBackdrop } = await import('./SheetBackdrop.vue')
+  const { OverlayRoot, overlayEntries } = await import('@/components/OverlayRoot')
+  const { injectSheetRootContext } = await import('./sheetContext')
+  overlayEntries.value = []
 
-    const open = ref(initialOpen)
-    // `OverlayRoot` is where the backdrop actually paints — SheetBackdrop only
-    // registers a portal entry (#12). Mirrors the app-root shell every consumer
-    // mounts (`<VyApp>` / the demo `App.vue`s).
-    const Wrapper = defineComponent({
-      setup() {
-        return { open }
-      },
-      template: `
-        <SheetRoot v-model:open="open" :viewport-height="800">
-          <SheetBackdrop data-testid="backdrop" />
-        </SheetRoot>
-        <OverlayRoot />
-      `,
-      components: { SheetRoot, SheetBackdrop, OverlayRoot },
-    })
+  let ctx: any = null
+  const Probe = defineComponent({
+    setup() {
+      ctx = injectSheetRootContext()
+      return () => null
+    },
+  })
 
-    const { container } = render(Wrapper)
-    return {
-      container,
-      open,
-      findBackdrop: () =>
-        container.querySelector('[data-vyui-sheet-backdrop]') as HTMLElement | null,
-    }
+  const open = ref(initialOpen)
+  // `OverlayRoot` is where the backdrop actually paints — SheetBackdrop only
+  // registers a portal entry (#12). Mirrors the app-root shell every consumer
+  // mounts (`<VyApp>` / the demo `App.vue`s).
+  const Wrapper = defineComponent({
+    setup() {
+      return { open }
+    },
+    template: `
+      <SheetRoot v-model:open="open" :viewport-height="800">
+        <Probe />
+        <SheetBackdrop data-testid="backdrop" />
+      </SheetRoot>
+      <OverlayRoot />
+    `,
+    components: { SheetRoot, SheetBackdrop, OverlayRoot, Probe },
+  })
+
+  const { container } = render(Wrapper)
+  return {
+    container,
+    open,
+    get ctx() {
+      return ctx
+    },
+    findBackdrop: () =>
+      container.querySelector('[data-vyui-sheet-backdrop]') as HTMLElement | null,
   }
+}
 
+describe('SheetBackdrop — Presence wiring', () => {
   it('does not render the backdrop while closed', async () => {
     const { findBackdrop } = await mountBackdrop(false)
     const { waitForUpdate } = await import('@vyui/testing-utils')
@@ -356,5 +369,101 @@ describe('Sheet — OverlayRoot portal', () => {
     await mountSheet(false)
     await waitForUpdate()
     expect(overlayEntries.value.length).toBe(0)
+  })
+})
+
+// A drag that dismisses the sheet is painted entirely by the release worklet's
+// inline transition. If Presence ALSO puts `ui-leaving` on the panel/backdrop,
+// the keyframe drives the same close a second time — and because it starts
+// from the fully-open underlying value, the sheet snaps back up and replays
+// its exit. Inline `animation: 'none'` does not suppress a class-driven
+// keyframe on the Lynx style path, so the class itself has to go.
+describe('Sheet — drag-dismiss does not double-drive the close', () => {
+  it('drops ui-leaving from the backdrop while a drag release owns the close', async () => {
+    const { findBackdrop, open, ctx } = await mountBackdrop(true)
+    const { waitForUpdate } = await import('@vyui/testing-utils')
+    await waitForUpdate()
+    await frames(40)
+    await waitForUpdate()
+    const backdrop = findBackdrop()!
+
+    // What `_emitClose` does on the background side, in order.
+    ctx.dragClosing.value = true
+    open.value = false
+    await waitForUpdate()
+
+    const cls = backdrop.getAttribute('class') ?? ''
+    expect(cls).not.toContain('ui-leaving')
+    expect(cls).not.toContain('ui-animating')
+    // Still leaving as far as the state machine is concerned — only the
+    // keyframe class is suppressed, so the element stays mounted until the
+    // inline transition ends.
+    expect(cls).toContain('ui-closed')
+    expect(backdrop.getAttribute('data-state')).toBe('closed')
+    expect(findBackdrop()).not.toBeNull()
+  })
+
+  it('restores the keyframe classes on reopen', async () => {
+    const { findBackdrop, open, ctx } = await mountBackdrop(true)
+    const { waitForUpdate } = await import('@vyui/testing-utils')
+    await waitForUpdate()
+    await frames(40)
+    await waitForUpdate()
+
+    ctx.dragClosing.value = true
+    open.value = false
+    await waitForUpdate()
+    // Reopen while still leaving — the flag must clear or the next close
+    // (a plain tap, with no worklet painting it) would never animate out.
+    open.value = true
+    await waitForUpdate()
+    expect(ctx.dragClosing.value).toBe(false)
+
+    await frames(40)
+    await waitForUpdate()
+    open.value = false
+    await waitForUpdate()
+    expect(findBackdrop()!.getAttribute('class') ?? '').toContain('ui-leaving')
+  })
+
+  it('leaves a non-drag close on the keyframe path', async () => {
+    // Guards the inverse regression: suppressing the class unconditionally
+    // would kill the exit animation for backdrop taps and programmatic closes.
+    const { findBackdrop, open, ctx } = await mountBackdrop(true)
+    const { waitForUpdate } = await import('@vyui/testing-utils')
+    await waitForUpdate()
+    await frames(40)
+    await waitForUpdate()
+    expect(ctx.dragClosing.value).toBe(false)
+    open.value = false
+    await waitForUpdate()
+    expect(findBackdrop()!.getAttribute('class') ?? '').toContain('ui-leaving')
+  })
+})
+
+// SheetContentImpl can't mount here — its `:main-thread-bind*` attrs crash the
+// vitest renderer (see the header). Its half of the same contract is asserted
+// against the source, the way Slider's worklet invariants are.
+describe('Sheet — drag-close contract in the SFC sources', () => {
+  async function readSfc(name: string): Promise<string> {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    return fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), name), 'utf8')
+  }
+
+  it('sets dragClosing before setOpen so the class computed sees it in the same tick', async () => {
+    const sfc = await readSfc('SheetContentImpl.vue')
+    const fn = sfc.match(/function _emitClose[\s\S]*?\n}/)?.[0] ?? ''
+    expect(fn).toMatch(/ctx\.dragClosing\.value = true[\s\S]*ctx\.setOpen\(false\)/)
+  })
+
+  it('gates the panel and backdrop keyframe classes on dragClosing', async () => {
+    for (const file of ['SheetContentImpl.vue', 'SheetBackdropImpl.vue'])
+      expect(await readSfc(file), file).toMatch(/transition: !ctx\.dragClosing\.value/)
+  })
+
+  it('clears dragClosing on reopen from the root', async () => {
+    const sfc = await readSfc('SheetRoot.vue')
+    expect(sfc).toMatch(/watch\(open, \(isOpen\) => \{[\s\S]*?dragClosing\.value = false/)
   })
 })

@@ -36,11 +36,17 @@ const presenceState = computed<PresenceState>(() =>
   presence?.controllers.state.value ?? PresenceState.Entered,
 )
 
+// Same reason as the panel (see SheetContentImpl): after a drag-dismiss the
+// scrim's inline `opacity` is already being faded out by the release
+// transition, and `vyui-fade-out` — which, unlike the slide-out keyframes,
+// keeps an explicit `from { opacity: 1 }` — would yank the dim back to full
+// before fading it again. Dropping `ui-leaving` leaves the base
+// `opacity: 0` rule underneath the inline fade.
 const presenceClass = computed(() =>
   presenceClassVariants({
     state: presenceState.value,
     enableDelay: false,
-    transition: true,
+    transition: !ctx.dragClosing.value,
   }),
 )
 
