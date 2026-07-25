@@ -1,8 +1,10 @@
 <script setup lang="ts">
 useSeoMeta({
   titleTemplate: '',
-  title: 'Vy UI — Styled & headless components for Vue-Lynx',
-  ogTitle: 'Vy UI — Styled & headless components for Vue-Lynx',
+  // Leads with the head noun people actually search ("Vue Lynx UI component
+  // library"), unhyphenated. The <h1> keeps the brand phrasing.
+  title: 'Vy UI — The Vue Lynx UI component library',
+  ogTitle: 'Vy UI — The Vue Lynx UI component library',
   description: 'The component library for Vue-Lynx. A styled kit on headless, accessible primitives, with native rendering across iOS, Android, and web — all from one Vue codebase.',
   ogDescription: 'The component library for Vue-Lynx. A styled kit on headless, accessible primitives, with native rendering across iOS, Android, and web — all from one Vue codebase.',
 })

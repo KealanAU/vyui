@@ -26,6 +26,10 @@ export function useHeader() {
     to: '/theming',
     active: route.path === '/theming' || route.path.startsWith('/theming/'),
   }, {
+    label: 'Guides',
+    to: '/guides',
+    active: route.path === '/guides' || route.path.startsWith('/guides/'),
+  }, {
     label: 'Roadmap',
     to: '/getting-started/roadmap',
     active: route.path === '/getting-started/roadmap',
@@ -55,6 +59,11 @@ export function useHeader() {
     icon: 'i-lucide-palette',
     to: '/theming',
     active: route.path === '/theming' || route.path.startsWith('/theming/'),
+  }, {
+    label: 'Guides',
+    icon: 'i-lucide-book-open',
+    to: '/guides',
+    active: route.path === '/guides' || route.path.startsWith('/guides/'),
   }, {
     label: 'Roadmap',
     icon: 'i-lucide-map',
