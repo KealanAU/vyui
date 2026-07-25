@@ -4,9 +4,6 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { ToastProvider, ToastViewport } from '@vyui/core'
 import { VyAvatar, VyAvatarGroup, VyBadge, VyButton, VyCard, VySlider, VySwitch, VyToast, VyToggleGroup, VyTray, VyTrayView } from '@vyui/kit'
 
-// The docs page owns the swatches and the rotation; it pushes each pick over
-// `lynx-view.sendGlobalEvent`, which web-core forwards to this card's
-// GlobalEventEmitter. Nothing here drives the palette on its own.
 const COLORS = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 
 const theme = ref<(typeof COLORS)[number]>('primary')
@@ -31,16 +28,9 @@ const scope = ref('All')
 const tray = ref(false)
 
 // Disabled rather than `v-if`: vue-lynx realizes a false v-if as a zero-size
-// anchor node, and the card's `gap-4` counts it — hiding the row would leave a
-// phantom gap behind. Greyed-out until notifications are on says the same thing.
+// anchor node that the card's `gap-4` still counts, leaving a phantom gap.
 const SCOPES = ['All', 'Mentions', 'None']
 
-// Five members, three shown — `max` collapses the rest into a `+2` chip, which
-// is the whole point of AvatarGroup. Deliberately inert: the frame already has
-// enough moving parts, this block is here to fill the space and hold still.
-//
-// Images ship with the docs rather than hotlinked: the hero frame must not make
-// a third-party request. `text` is the initials fallback if one ever 404s.
 const MEMBERS = [
   { src: '/avatars/12.jpg', text: 'AK' },
   { src: '/avatars/32.jpg', text: 'JR' },
@@ -49,9 +39,6 @@ const MEMBERS = [
   { src: '/avatars/68.jpg', text: 'SC' },
 ]
 
-// Sonner-style stack: every push adds a toast rather than replacing one, so
-// tapping the button repeatedly piles them up (and tapping the pile fans it
-// out). Ids only — each toast carries the same message.
 const toasts = ref<number[]>([])
 let nextToast = 0
 
@@ -63,18 +50,12 @@ function dismissToast(id: number) {
   toasts.value = toasts.value.filter(toast => toast !== id)
 }
 
-// Autoplay timeline for the landing hero — [wait ms, then run]. Loops forever
-// so the frame is never idle. Every step drives a component's real public API
-// (v-model / open), so what the page shows is the library actually running.
-// Paced to be readable rather than efficient: each step has to land, be seen,
-// and settle before the next one moves.
+// Autoplay timeline — [wait ms, then run], looping.
 const SCENE: [number, () => void][] = [
   [4200, () => tweenThreshold(82)],
   [4400, () => { notify.value = true }],
   [2400, () => { scope.value = 'Mentions' }],
   [2800, () => pushToast()],
-  // Close behind the first, while it's still alive — the stack only reads as a
-  // stack if two of them overlap on screen.
   [2200, () => pushToast()],
   [7200, () => { tray.value = true }],
   [9600, () => { tray.value = false }],
@@ -88,8 +69,7 @@ const SCENE: [number, () => void][] = [
 let step: ReturnType<typeof setTimeout> | undefined
 let tween: ReturnType<typeof setInterval> | undefined
 
-// The slider has no transition of its own, so walk the model value instead of
-// assigning it — the thumb travels like a drag rather than teleporting.
+// Walked, not assigned: the slider has no transition, so the thumb would teleport.
 function tweenThreshold(to: number) {
   if (tween) clearInterval(tween)
   tween = setInterval(() => {
@@ -102,10 +82,8 @@ function tweenThreshold(to: number) {
   }, 44)
 }
 
-// The demo is a demo, not a cage: the first real interaction hands the frame
-// over for good. Same rule as the swatch row upstairs — autoplay that keeps
-// overwriting what you just did reads as broken, not alive. Only user-driven
-// emits land here; the scene mutates the refs directly, which emits nothing.
+// Only user-driven emits land here — the scene mutates refs directly, which
+// emits nothing, so autoplay can't cancel itself.
 function takeOver() {
   if (step) clearTimeout(step)
   if (tween) clearInterval(tween)

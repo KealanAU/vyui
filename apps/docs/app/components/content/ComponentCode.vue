@@ -83,8 +83,7 @@ const { copy, copied } = useClipboard({ source })
 </template>
 
 <style scoped>
-/* Grid + glow surface (carried over from the previous playground) so the live
-   preview is visually distinct from the page and the component stands out. */
+/* Grid + glow surface, so the live preview reads as distinct from the page. */
 .preview-canvas {
   position: relative;
   overflow: hidden;

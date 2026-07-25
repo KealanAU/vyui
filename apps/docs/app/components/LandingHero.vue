@@ -4,9 +4,7 @@ import { useClipboard } from '@vueuse/core'
 const install = 'npm i @vyui/kit'
 const { copy, copied } = useClipboard({ source: install })
 
-// The kit's semantic accents, paired with the raw palette each one maps to in
-// `@vyui/kit`'s style.css — the dot out here has to be the same hue as the
-// components inside the phone.
+// Dots mirror what each accent maps to in `@vyui/kit`'s style.css.
 const COLORS = [
   { name: 'primary', dot: 'bg-green-500' },
   { name: 'secondary', dot: 'bg-blue-500' },
@@ -14,18 +12,12 @@ const COLORS = [
   { name: 'info', dot: 'bg-sky-500' },
   { name: 'warning', dot: 'bg-amber-500' },
   { name: 'error', dot: 'bg-red-500' },
-  // shadcn's near-black: `neutral` solid is the inverted pair, so the dot has
-  // to flip with the theme the same way the components inside do.
   { name: 'neutral', dot: 'bg-slate-900 dark:bg-white' },
 ]
 
 const active = ref(0)
 const preview = useTemplateRef<{ send: (event: string, ...params: string[]) => void }>('preview')
 
-// Cycles the palette so the control explains itself, then hands over for good
-// the moment someone picks — autoplay that keeps overriding a choice reads as
-// broken, not alive. Green gets a short first hold: long enough to register as
-// the starting state, short enough that the row is visibly moving on arrival.
 const FIRST_MS = 1400
 const ROTATE_MS = 3200
 let rotate: ReturnType<typeof setTimeout> | undefined
@@ -96,8 +88,6 @@ onBeforeUnmount(() => {
             />
           </div>
 
-          <!-- Install line, lynx-ui style: the first thing a reader can act on
-               without leaving the page. -->
           <div class="mt-6 inline-flex items-center gap-3 rounded-full border border-default bg-default/70 py-1.5 pl-4 pr-1.5 backdrop-blur-sm">
             <code class="font-mono text-sm text-toned">
               <span class="text-dimmed select-none">$ </span>{{ install }}
@@ -113,11 +103,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <!-- The product shot is the product: a real Lynx runtime rendering real
-             Vy UI components, not a screenshot. -->
         <div class="justify-self-center lg:justify-self-end">
-          <!-- Live theming, driven from outside the frame: each pick crosses
-               into the Lynx runtime and recolors the real components. -->
           <div class="mb-5 flex items-center justify-center gap-2.5" role="group" aria-label="Accent color">
             <button
               v-for="(item, index) in COLORS"
@@ -165,9 +151,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Perspective grid floor receding under the hero — the "this renders to a
-   device" cue, in Vue green rather than the aurora blobs it replaces.
-   One element, no JS, no canvas. */
 .hero-beams::before {
   content: '';
   position: absolute;
@@ -191,12 +174,10 @@ onBeforeUnmount(() => {
     );
   -webkit-mask-image: linear-gradient(to top, #000, transparent 82%);
   mask-image: linear-gradient(to top, #000, transparent 82%);
-  /* One 88px cell per cycle — the pitch, so the loop is seamless. Slow enough
-     to read as drift rather than scrolling. */
+  /* One 88px cell per cycle — matches the pitch, so the loop is seamless. */
   animation: hero-warp 90s linear infinite;
 }
 
-/* Soft green wash behind the device so the frame sits on something. */
 .hero-beams::after {
   content: '';
   position: absolute;
@@ -229,9 +210,8 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Phone shell around the live preview — same iOS shell as the targets section.
-   The screen stays a fixed 360px so the Lynx page inside lays out at a real
-   handset width — the runtime takes its width from the host. */
+/* .device-screen stays a fixed 360px: the Lynx runtime sizes off its host, so
+   the page inside lays out at a real handset width. */
 .device-frame {
   position: relative;
   width: 376px;
@@ -244,7 +224,6 @@ onBeforeUnmount(() => {
     0 24px 48px -24px rgba(4, 23, 43, 0.25);
 }
 
-/* Side buttons — silent switch + volume pair left, wake right. */
 .device-frame::before,
 .device-frame::after {
   content: '';
@@ -312,8 +291,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Outline rather than a border so the dot's own size never shifts between
-   states — the row can't reflow as the rotation moves through it. */
+/* Outline, not a border, so the row can't reflow as the rotation moves through it. */
 .swatch {
   width: 18px;
   height: 18px;

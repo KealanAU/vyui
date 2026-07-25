@@ -1,11 +1,7 @@
 <script setup lang="ts">
-// One example id drives all three phones AND the code panel, so the source
-// shown can never drift from the source running.
 const EXAMPLE = 'landing-profile'
 
-// `at` is the phone's centre as a percentage of the cluster box. Deliberately
-// off-balance rather than an even triangle — an exact triangle reads as a
-// diagram, a scatter reads as a constellation.
+// `at` is the phone's centre as a % of the cluster box.
 const TARGETS = [
   {
     id: 'android',
@@ -31,16 +27,11 @@ const showCode = ref(false)
 const revealed = ref(false)
 const root = ref<HTMLElement>()
 
-// ~36KB of Shiki HTML behind a closed panel — fetched on the first open, not
-// shipped in the landing chunk.
 const example = useExample(EXAMPLE, showCode)
 const highlighted = computed(() => example.value?.highlighted ?? '')
 
 let observer: IntersectionObserver | undefined
 
-// The reveal also starts the rings. Gating them on one class that lands on all
-// three phones in the same style recalc is what keeps them breathing in phase —
-// a JS timer would restart each phone's animation at a different moment.
 onMounted(() => {
   if (!root.value) return
 
@@ -72,14 +63,8 @@ onBeforeUnmount(() => {
         </p>
       </div>
 
-      <!-- Cluster and code occupy the same grid cell, so toggling crossfades in
-           place instead of collapsing the section's height. Both stay mounted
-           and hide via visibility, never v-if or v-show: each phone owns a Lynx
-           runtime, and unmounting would tear down and re-boot three Web Workers
-           on every toggle. `visibility: hidden` also drops them from tab order. -->
-      <!-- mt-24, not mt-10: Android sits high enough in the box that the phone
-           overhangs the top edge — and its ping ring reaches ~34px past that
-           again at full expansion. The gap has to absorb both. -->
+      <!-- Hidden via `visibility`, never v-if: each phone owns a Lynx runtime,
+           so unmounting re-boots three Web Workers per toggle. -->
       <div class="reveal reveal-1 stage mx-auto mt-24">
         <div class="cell cluster" :data-hidden="showCode">
           <span class="cluster-dots" aria-hidden="true" />
@@ -108,9 +93,6 @@ onBeforeUnmount(() => {
 
               <div class="screen">
                 <ClientOnly>
-                  <!-- pixel-ratio 1: the shell is CSS-scaled to at most half
-                       size, so rasterizing at 2 would burn 4x the pixels that
-                       ever reach the screen — times three runtimes. -->
                   <LynxPreview :name="EXAMPLE" height="540px" :pixel-ratio="1" />
                   <template #fallback>
                     <div class="screen-fallback" aria-hidden="true">
@@ -132,11 +114,9 @@ onBeforeUnmount(() => {
               <UIcon :name="item.icon" class="badge-glyph" />
             </span>
 
-            <!-- The badge carries this visually; keep the name for AT. -->
             <span class="sr-only">{{ item.label }}</span>
           </div>
 
-          <!-- The one source, sitting in the middle of what it produces. -->
           <button
             type="button"
             class="node-source"
@@ -181,12 +161,9 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Strong ease-out — the built-in CSS curves are too weak to read as
-   deliberate at these durations. */
 section {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 
-  /* Real handset metrics, kept in the DOM and scaled visually — see .shell. */
   --phone-w: 376px;
   --phone-h: 608px;
   --phone-scale: 0.22;
@@ -194,7 +171,6 @@ section {
   --node-size: calc(var(--phone-w) * var(--phone-scale) * 0.28);
 }
 
-/* Scroll reveal, once, staggered. Transform + opacity only. */
 .reveal {
   opacity: 0;
   transform: translateY(12px);
@@ -210,8 +186,6 @@ section {
 
 .reveal-1 { transition-delay: 60ms; }
 
-/* --- Stage --------------------------------------------------------------
-   Both views share one grid cell so the swap is a crossfade in place. */
 .stage {
   display: grid;
   width: 100%;
@@ -230,17 +204,10 @@ section {
   opacity: 0;
   transform: scale(0.98);
   visibility: hidden;
-  /* Hold visibility until the fade finishes, so the outgoing view doesn't
-     vanish on frame one. */
+  /* Delayed so the outgoing view doesn't vanish on frame one. */
   transition-delay: 0s, 0s, 220ms;
 }
 
-/* The box derives from the phone, not the other way round. Every position in
-   here is a percentage while the phones are a fixed pixel size, so an
-   `aspect-ratio` box meant the composition changed shape at every breakpoint
-   and each one needed its own hand-tuned percentages. Sizing the box in phone
-   units instead makes the whole constellation proportional at any scale — one
-   number (`--phone-scale`) resizes it and nothing else moves. */
 .cluster {
   position: relative;
   width: 100%;
@@ -249,7 +216,6 @@ section {
   margin-inline: auto;
 }
 
-/* Dotted texture pooling behind the middle, faded out at the edges. */
 .cluster-dots {
   position: absolute;
   left: 50%;
@@ -264,11 +230,9 @@ section {
   opacity: 0.45;
 }
 
-/* --- Phones -------------------------------------------------------------
-   The screen stays a true 360px in the DOM — the Lynx runtime takes its width
-   from that host, so shrinking the host would reflow the live page instead of
-   just making it smaller. The wrapper reserves the scaled footprint and the
-   shell is transform-scaled inside it. */
+/* .screen stays a true 360px: the Lynx runtime sizes off its host, so shrinking
+   it reflows the live page instead of scaling it. The wrapper reserves the
+   scaled footprint and .shell is transform-scaled inside it. */
 .phone {
   position: absolute;
   width: calc(var(--phone-w) * var(--phone-scale));
@@ -277,9 +241,8 @@ section {
 }
 
 .shell {
-  /* Above the rings explicitly. `will-change` promotes each ring to its own
-     layer, which would otherwise let a full-phone-sized (mostly transparent)
-     layer sit over the live screen. */
+  /* Above the rings explicitly: `will-change` promotes each one to its own
+     phone-sized layer, which would otherwise sit over the live screen. */
   position: relative;
   z-index: 1;
   width: var(--phone-w);
@@ -387,14 +350,9 @@ section {
   background: #000;
 }
 
-/* Platform mark, pinned to the phone it belongs to. */
 .badge {
   position: absolute;
-  /* Above the shell, which carries z-index 1 to stay clear of the ring layers. */
   z-index: 2;
-  /* Phone-relative like everything else in the cluster — a fixed 34px badge
-     was the one piece that didn't shrink, so its overhang clipped the box at
-     the smallest scale. */
   right: calc(var(--badge-size) * -0.29);
   top: calc(var(--badge-size) * -0.29);
   display: flex;
@@ -414,12 +372,6 @@ section {
   height: 50%;
 }
 
-/* Brand colours per target, flipped where the mark would vanish into the
-   surface behind it (Apple's black on a dark canvas). The source node uses the
-   project's own Vue-green ramp rather than a one-off hex. */
-/* Only the pulse rings read --node here — the circle and glyph are set on
-   .halo. vue-400, not the 500 step: 500 is the one hand-set Vue brand hex in an
-   otherwise emerald ramp, and read greyer than the page's other greens. */
 .node-source { --node: var(--color-vue-400); }
 .phone-ios { --node: #17191c; --node-glyph: #fff; }
 .phone-android { --node: #3ddc84; --node-glyph: #fff; }
@@ -428,10 +380,6 @@ section {
 .dark .phone-ios { --node: #f4f4f5; --node-glyph: #17191c; }
 .dark .node-source { --node: var(--color-vue-300); }
 
-/* Rings echo the phone's silhouette rather than circling it — a circle around
-   a tall rounded rectangle reads as a halo, not as a signal leaving the device.
-   The tint is knocked most of the way out: at this size the colour is carried
-   by the badge, and the ring only has to suggest a direction. */
 .ring {
   position: absolute;
   inset: -10px;
@@ -439,56 +387,32 @@ section {
   border: 1px solid color-mix(in srgb, var(--node) 20%, transparent);
   opacity: 0;
   pointer-events: none;
-  /* Promote to its own layer. Without it the browser re-rasterizes this 1px
-     border every frame and snaps it to whole pixels — over a travel this small
-     and this slow, that reads as stepping rather than motion. Promoted, the GPU
-     scales one cached texture and the animation also stops caring that three
-     Lynx runtimes are busy on the main thread. */
   will-change: transform, opacity;
   backface-visibility: hidden;
 }
 
-/* All three breathe together. The animation is applied by the reveal class, so
-   every ring on the page starts its cycle in the same style recalc and stays in
-   phase for good — nothing restarts them individually. The offset between a
-   phone's own two rings is identical everywhere, so it reads as one ripple
-   rather than three phones doing their own thing. */
+/* On the reveal class, not .ring: every ring then starts in the same style
+   recalc and stays in phase for good. */
 .is-revealed .ring {
-  /* linear, not a bezier. A ripple leaving a device travels at one speed; any
-     ease makes it crawl at one end of its life and dart at the other, and the
-     eye reads the crawl as hitching. The previous curve was worse than that —
-     `cubic-bezier(0.37, 0, 0.28, 1)` has an ease-IN front half, so the ring
-     barely moved during the stretch where it was brightest. */
   animation: phone-ping 4200ms linear infinite;
 }
 
-/* Half a cycle apart, so the two rings are evenly spaced forever instead of
-   arriving in a clump and leaving a gap. Delay only — giving ring 2 a different
-   rest size as well made the travel ranges overlap, so the trailing ring
-   launched from where the leading one already was and the two crossed instead
-   of chasing. */
 .is-revealed .ring-2 {
   animation-delay: 2100ms;
 }
 
-/* The old version snapped opacity 0 -> 0.28 in a single frame at every loop
-   boundary, then held invisible for the last third. That pop was most of the
-   "stutter" — a ripple has to fade in as well as out. */
 @keyframes phone-ping {
   0% { opacity: 0; transform: scale(0.98); }
   12% { opacity: 0.3; }
   100% { opacity: 0; transform: scale(1.16); }
 }
 
-/* --- Source node -------------------------------------------------------- */
 .node-source {
   position: absolute;
   left: 50%;
-  /* Centre of the triangle the three phones leave. */
   top: 50%;
   z-index: 1;
   display: flex;
-  /* Phone-relative, like the box — so it holds its place at every scale. */
   width: var(--node-size);
   flex-direction: column;
   align-items: center;
@@ -504,8 +428,6 @@ section {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  /* One circle, in what used to be the outer disc's green. A tinted disc with a
-     second, deeper green dot inside it read as two nested nodes. */
   background: var(--color-vue-200);
   color: var(--color-vue-950);
   box-shadow: 0 8px 20px -12px rgba(4, 23, 43, 0.35);
@@ -516,15 +438,12 @@ section {
   background: var(--color-vue-300);
 }
 
-/* ~2x the circle at rest, in circle units rather than pixels — a fixed inset
-   made the ring a different proportion at every breakpoint. */
 .node-ring {
   inset: calc(var(--node-size) * -0.475);
   border-radius: 999px;
 }
 
 .mark {
-  /* Above the rings. */
   position: relative;
   z-index: 1;
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -543,7 +462,6 @@ section {
   }
 }
 
-/* --- Code view ---------------------------------------------------------- */
 .code-view {
   display: flex;
   align-items: center;
@@ -578,8 +496,8 @@ section {
   background: color-mix(in srgb, var(--ui-bg-elevated) 70%, var(--ui-bg));
 }
 
-/* Chosen so `--phone-w * scale * 4.6` still fits the container at each step —
-   past that the box hits its 100% cap and the constellation squashes sideways. */
+/* Capped so `--phone-w * scale * 4.6` still fits the container — past that the
+   box hits its 100% cap and the constellation squashes sideways. */
 @media (min-width: 640px) {
   section { --phone-scale: 0.34; }
 }

@@ -5,8 +5,11 @@
 
 @theme static {
   --container-7xl: 80rem;
-  --font-sans: 'Haskoy', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: 'Haskoy', ui-sans-serif, system-ui, sans-serif;
+  /* Haskoy led both stacks but isn't in Fontshare's catalogue — its CDN link
+     served an empty body, so this has always been system-ui. To bring it back,
+     self-host under public/fonts/; @nuxt/fonts takes it from there. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: ui-sans-serif, system-ui, sans-serif;
 
   /* Vue/Nuxt-aligned canvas tokens */
   --color-canvas: #ffffff;
@@ -58,14 +61,8 @@ body {
   background-color: var(--ui-bg);
 }
 
-/*
-  Landing-page canvas. Near-white with one soft green wash at the top —
-  the hero owns its own treatment (perspective grid + glow in
-  LandingHero.vue), so this only has to keep the page off pure white.
-  Replaces the earlier green/indigo/fuchsia blob trio, which read as
-  generic "AI app" chrome and fought the live device preview.
-  The .landing-page class is added only on the home route (index.vue).
-*/
+/* Only has to keep the page off pure white — the hero owns its own treatment.
+   `.landing-page` is set on the home route only (index.vue). */
 body.landing-page {
   background-color: var(--ui-bg);
   background-image:

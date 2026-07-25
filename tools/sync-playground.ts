@@ -58,12 +58,10 @@ function subpathFor(name: string): string | undefined {
 }
 
 // Rewrite the DISPLAYED barrel import to the per-component deep entry
-// (`@vyui/kit/button`) so the code a consumer copies ships only what it uses —
-// see the installation guide's "Bundle size & deep imports". The example SFCs
-// keep the barrel import on disk: they run in the source-aliased playground
-// where deep-vs-barrel resolves identically, so only the shown code changes.
-// `Vy*` names map to their entry (grouped, so shared entries collapse to one
-// line); any non-component name is left on the barrel.
+// (`@vyui/kit/button`) so copied code ships only what it uses — see the
+// installation guide's "Bundle size & deep imports". The SFCs keep the barrel
+// import on disk; the source-aliased playground resolves both identically.
+// Non-component names are left on the barrel.
 function toDeepImports(source: string): string {
   return source.replace(/import \{([^}]+)\} from '@vyui\/kit'/g, (_whole, names: string) => {
     const bySubpath = new Map<string, string[]>()
@@ -85,12 +83,8 @@ function walk(dir: string): string[] {
     .map(e => join(e.parentPath, e.name))
 }
 
-// Highlight with the same theme @nuxt/content uses (material-theme-palenight)
-// so the Code panel matches the prose ```vue fenced blocks.
-//
-// One file per example, not one manifest: Shiki HTML for 80 examples is ~500KB,
-// and a single module means every page importing it parses all 80 to show one.
-// Split, they're `import.meta.glob`-loaded on demand (see app/utils/example.ts).
+// One file per example, glob-loaded on demand (see app/utils/example.ts) — all
+// 80 in one module is ~500KB every importing page parses to show one.
 const genDir = resolve(root, 'apps/docs/app/generated/examples')
 rmSync(genDir, { recursive: true, force: true })
 mkdirSync(genDir, { recursive: true })

@@ -3,8 +3,7 @@ export interface Example {
   highlighted: string
 }
 
-// Each generated example is its own chunk, fetched only when a Code panel is
-// actually opened — the Shiki HTML for all 80 is ~500KB of main-thread parse.
+// One chunk per example: all 80 in one module is ~500KB of main-thread parse.
 const loaders = import.meta.glob<Example>('../generated/examples/*.json', { import: 'default' })
 
 /** Ref that fills in once `enabled` first turns true. Undefined while it hasn't loaded. */

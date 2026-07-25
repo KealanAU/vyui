@@ -26,10 +26,8 @@ export function useHeader() {
     to: '/guides',
     active: route.path === '/guides' || route.path.startsWith('/guides/'),
   }])
-  // Three entries by design; the rest have homes elsewhere. Theming owns the
-  // Styling tab in <AppDocsNav>, Roadmap sits in the Getting Started sidebar,
-  // and Changelog is an icon button beside GitHub (header.links in
-  // app.config.ts). All three stay in mobileLinks, which is the only nav below lg.
+  // Theming, Roadmap and Changelog live in the Styling tab, the Getting Started
+  // sidebar, and header.links — all three stay in mobileLinks, the only nav below lg.
 
   const mobileLinks = computed<NavigationMenuItem[]>(() => [{
     label: 'Get Started',

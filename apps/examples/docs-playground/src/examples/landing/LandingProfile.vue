@@ -8,11 +8,7 @@ const tab = ref<string | number | null>('home')
 const gridTab = ref<'posts' | 'liked'>('posts')
 const following = ref(false)
 
-// Deliberately no autoplay. The landing page mounts this scene in three
-// side-by-side devices, each on its own Lynx runtime — separate workers with
-// separate clocks, so any timed state change would visibly drift between them
-// and read as three broken phones rather than one screen on three targets.
-// The loaded-then-loading grid below is a static composition, not a cycle.
+// No autoplay on purpose: three runtimes, three clocks — timed state visibly drifts.
 </script>
 
 <template>
@@ -76,20 +72,14 @@ const following = ref(false)
       </view>
     </view>
 
-    <!-- Two fixed rows rather than a wrapping grid: Lynx flex-wrap plus
-         percentage min-widths is fiddly, and three flex-1 tiles per row is
-         the same picture with none of the guesswork. Row one is loaded, row
-         two is still coming in — the ordinary shape of an infinite feed. -->
     <view class="flex flex-col gap-1">
       <view class="flex flex-row gap-1">
         <view v-for="col in 3" :key="col" class="flex-1 h-20 rounded-lg bg-elevated items-center justify-center">
           <VyIcon name="i-lucide-play" :size="18" :color="CHROME" />
         </view>
       </view>
-      <!-- Deliberately NOT VySkeleton: its `animate-pulse` never stops, and an
-           animation inside the Lynx runtime keeps that runtime painting
-           forever. Three of these on the landing page meant three workers that
-           never went idle. Same picture, static. -->
+      <!-- Not VySkeleton: `animate-pulse` never stops, and an animation inside a
+           Lynx runtime keeps that runtime painting forever. -->
       <view class="flex flex-row gap-1">
         <view v-for="col in 3" :key="col" class="flex-1 h-20 rounded-lg bg-accented" />
       </view>

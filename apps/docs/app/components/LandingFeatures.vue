@@ -28,8 +28,6 @@ const features = [
 </template>
 
 <style scoped>
-/* Carries the hero's green wash down over the seam so the two sections read as
-   one surface. Same recipe as .hero-beams::after, pulled to the top edge. */
 .features-wash {
   position: relative;
   isolation: isolate;

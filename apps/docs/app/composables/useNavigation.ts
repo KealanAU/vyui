@@ -92,13 +92,9 @@ const CATEGORY_ORDER = [
   'Other',
 ]
 
-// The second header bar is a curated set of top categories (not the raw
-// top-level content sections). Each owns one or more content paths — a path can
-// be a whole section (`/getting-started`, `/packages`) or a single nested page.
-// The package overviews (@vyui/core, @vyui/kit) sit under Components so the tab
-// matches the header dropdown that links to them; the kit/core split is also a
-// sub-filter there. Categories that resolve to no content are dropped
-// automatically.
+// Curated top categories for the second header bar, not the raw content
+// sections. Each owns one or more paths — a whole section (`/getting-started`)
+// or a single nested page. Categories resolving to no content are dropped.
 interface CategoryConfig {
   id: string
   title: string
@@ -107,9 +103,8 @@ interface CategoryConfig {
 }
 
 const CATEGORY_CONFIG: CategoryConfig[] = [
-  // /guides rides along with Getting Started rather than owning a tab: without
-  // it here, guide pages fall through to categories[0] and render the Getting
-  // Started sidebar anyway — this makes that explicit and puts the guides in it.
+  // /guides rides along rather than owning a tab: it falls through to
+  // categories[0] anyway, and this puts the guides in that sidebar.
   { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started', '/guides'] },
   // '/components' must stay first — the sidebar groups items[0]'s children.
   { id: 'components', title: 'Components', icon: 'i-lucide-boxes', paths: ['/components', '/packages'] },

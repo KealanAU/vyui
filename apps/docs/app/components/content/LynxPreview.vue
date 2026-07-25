@@ -10,10 +10,9 @@ const props = withDefaults(defineProps<{
   name: string
   height?: string
   /**
-   * Device pixel ratio the runtime rasterizes at. `2` matches a retina docs
-   * page at 1:1. Drop to `1` when the caller CSS-scales the preview down — a
-   * frame shown at 50% is already oversampled, and the runtime would otherwise
-   * rasterize 4x the pixels that reach the screen.
+   * Device pixel ratio the runtime rasterizes at. `2` matches a retina docs page
+   * at 1:1; drop to `1` when the caller CSS-scales the preview down, or the
+   * runtime rasterizes far more pixels than ever reach the screen.
    */
   pixelRatio?: number
 }>(), {
@@ -40,14 +39,9 @@ defineExpose({
 // bundle), reveal it anyway so the skeleton can't linger forever.
 let revealTimer: ReturnType<typeof setTimeout> | undefined
 
-// Each <lynx-view> boots its own Web Worker + WASM runtime, so mounting every
-// preview on page load is expensive (a page can embed 6+). Defer the boot until
-// the preview scrolls near the viewport; `rootMargin` warms it just before it's
-// visible so it's ready by the time the reader reaches it.
-//
-// An above-the-fold preview intersects immediately, which would put the runtime
-// import + worker + WASM boot straight onto the hydration critical path. Idle
-// callback pushes it behind first paint; the skeleton covers the gap.
+// Each <lynx-view> boots its own Web Worker + WASM runtime, and a page can embed
+// 6+. `rootMargin` warms each one just before it scrolls into view; the idle
+// callback keeps an above-the-fold preview off the hydration critical path.
 onMounted(() => {
   if (!host.value) return
   observer = new IntersectionObserver((entries) => {
