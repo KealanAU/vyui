@@ -482,9 +482,10 @@ function _cancelActivation() {
       // lift the dragged row slides UNDER every row after it (dragging down),
       // and those rows then swallow the pointer so its own move/up worklets
       // never fire. Set from the background, not a worklet — the re-render
-      // that `isDragging` triggers wipes MT-set inline styles. `position`
-      // is what makes `zIndex` bite on Lynx web.
-      position: 'relative',
+      // that `isDragging` triggers wipes MT-set inline styles. No `position`
+      // to go with it: a z-index on a FLEX ITEM opens a stacking context on
+      // its own, and positioning the row detaches it on Lynx native (the
+      // drag jumped to a screen-absolute Y).
       zIndex: isDragging ? 1 : 0,
     }"
   >
