@@ -239,8 +239,15 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     expect(fn).toMatch(/'main thread'/)
     expect(fn).toMatch(/querySelectorAll\('\.vyui-slider-thumb'\)/)
     expect(fn).toMatch(/querySelector\('\.vyui-slider-range'\)/)
-    // Unresolvable thumbs must abort the gesture, not drag an empty registry.
-    expect(sfc).toMatch(/if \(thumbElsRef\.current\.length === 0\) return/)
+    // The query must be guarded: Lynx web exposes `invoke` to the main-thread
+    // realm but NOT `__QuerySelectorAll`, so the wrapper method passes a
+    // `typeof` check and then throws `ReferenceError` when called.
+    expect(fn).toMatch(/try \{/)
+    expect(fn).toMatch(/catch/)
+    // And it must never gate the gesture. Bailing on an empty registry stranded
+    // the whole control on web: every press aborted before emitting a value.
+    expect(body(sfc, '_dragStart')).not.toMatch(/thumbElsRef\.current\.length === 0\) return/)
+    expect(body(sfc, '_dragStart')).toMatch(/runOnBackground\(_emitLive as any\)\(next\)/)
   })
 
   it('stamps the marker classes MT resolution selects on, alongside user classes', async () => {
@@ -278,8 +285,13 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     for (const core of ['_dragStart', '_dragMove'])
       expect(body(sfc, core)).toMatch(/_valueFromTouch\(localX, localY\)/)
     expect(body(sfc, '_valueFromTouch')).not.toMatch(/rectLeftRef|rectTopRef/)
-    // Only the SIZE crosses the thread boundary; a stored origin is the bug.
-    expect(sfc).toMatch(/runOnMainThread\(_setSize as any\)\(r\.width, r\.height\)/)
+    // Origin AND extent come from that one response. Sourcing the extent from
+    // a BG `layoutchange` -> `runOnMainThread` hop instead stranded the whole
+    // drag on Lynx web: the hop never delivered, so the zero-extent guard in
+    // `_dragStart` swallowed every press and the value never moved.
+    expect(body(sfc, '_beginAt')).toMatch(/rectWRef\.current = r\.width/)
+    expect(body(sfc, '_beginAt')).toMatch(/rectHRef\.current = r\.height/)
+    expect(sfc).not.toMatch(/@layoutchange=|useResizeObserver\(/)
   })
 
   it('keeps values sorted and re-tracks the active thumb every frame', async () => {
@@ -325,5 +337,118 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     // mirror can't reach `writeModelValue` down either route.
     const fn = body(await readSfc('SliderRoot.vue'), 'isValidFromMT')
     expect(fn).toMatch(/nextValues\.length !== prev\.length[\s\S]*?return false/)
+  })
+})
+
+// Regression — "the slider is permanently stuck on its initial value in the
+// browser, but drags fine on device".
+//
+// The gesture reached `_dragStart` with everything it needed (mousedown fired,
+// `invoke('boundingClientRect')` resolved a correct 1234x9 rect) and then
+// aborted, because resolving the thumb elements to paint had thrown:
+//
+//   _dragStart 493.5 6.5  disabled false  w/h 1234 9  thumbs 0
+//   ReferenceError: __QuerySelectorAll is not defined
+//
+// Two separate mistakes stacked, and each is worth pinning on its own:
+//
+//   1. A capability check that checks the wrong layer. `typeof
+//      track.querySelectorAll === 'function'` is true on every platform — the
+//      wrapper method always exists. What varies is whether the realm exposes
+//      the `__QuerySelectorAll` PAPI it calls into, and Lynx web does not
+//      (while still exposing `__InvokeUIMethod`, which is why the rect worked).
+//      Only a try/catch can see that.
+//   2. An optimisation allowed to gate correctness. Those elements exist only
+//      to paint from the main thread, ahead of the background's own render.
+//      Bailing when they're missing traded a smoothness win for the entire
+//      control.
+//
+// The worklets can't execute under vitest, so these are asserted against the
+// SFC source, same shape as the block above.
+describe('Slider — a missing MT paint target must not strand the drag', () => {
+  async function readSfc(name: string): Promise<string> {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    return fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), name), 'utf8')
+  }
+  function body(sfc: string, fn: string): string {
+    return sfc.match(new RegExp(`function ${fn}[\\s\\S]*?\\n}`))?.[0] ?? ''
+  }
+
+  it('emits the value even when no thumb element could be resolved', async () => {
+    const fn = body(await readSfc('SliderImplMTS.vue'), '_dragStart')
+    // The lookup may still be attempted...
+    expect(fn).toMatch(/if \(thumbElsRef\.current\.length === 0\) _resolveEls\(\)/)
+    // ...but an empty result must not short-circuit the gesture.
+    expect(fn).not.toMatch(/thumbElsRef\.current\.length === 0\) return/)
+    // The background round-trip is what makes the control work at all.
+    expect(fn).toMatch(/runOnBackground\(_emitLive as any\)\(next\)/)
+  })
+
+  it('keeps both paints safe on an empty registry', async () => {
+    // With the gate gone these run every frame on web, so they carry the
+    // burden of bailing instead.
+    const sfc = await readSfc('SliderImplMTS.vue')
+    expect(body(sfc, '_paintActiveThumb')).toMatch(/idx >= els\.length\) return/)
+    expect(body(sfc, '_paintRange')).toMatch(/!el\?\.setStyleProperty\) return/)
+  })
+
+  it('measures the track from the gesture rect, never a layoutchange hop', async () => {
+    // The extent used to arrive via `@layoutchange` -> `runOnMainThread`, a
+    // second web-fragile dependency in the same bail chain.
+    const sfc = await readSfc('SliderImplMTS.vue')
+    expect(body(sfc, '_beginAt')).toMatch(/rectWRef\.current = r\.width/)
+    expect(body(sfc, '_beginAt')).toMatch(/rectHRef\.current = r\.height/)
+    expect(sfc).not.toMatch(/@layoutchange=|useResizeObserver\(/)
+  })
+
+  it('arms the root gate against echoing a live update back into MT values', async () => {
+    // `SliderImplMTS` set a private `draggingRef` of its own, so `_setValues`
+    // in the root — which reads `draggingMT` — was never actually gated.
+    const sfc = await readSfc('SliderImplMTS.vue')
+    expect(body(sfc, '_dragStart')).toMatch(/root\.draggingMT\.current = true/)
+    expect(body(sfc, '_dragEnd')).toMatch(/root\.draggingMT\.current = false/)
+    expect(sfc).not.toMatch(/draggingRef/)
+    expect(body(await readSfc('SliderRoot.vue'), '_setValues')).toMatch(/draggingMT\.current\) return/)
+  })
+})
+
+// Canary for the class of bug above, not just the one instance of it.
+//
+// Lynx web hands the main-thread realm a PARTIAL element PAPI surface:
+// `__InvokeUIMethod` resolves, `__QuerySelectorAll` does not. The wrapper
+// methods exist regardless, so nothing about the call site looks unsafe and
+// nothing fails until a real gesture runs in a real browser. Any worklet that
+// reaches for the DOM-shaped element API has to assume the call can throw.
+//
+// Ceiling: this only covers the ELEMENT wrapper (`someEl.querySelector*`).
+// The global `lynx.querySelector` used by List is the same hazard through a
+// different API and is not checked here.
+describe('core — MT worklets must guard element querySelector', () => {
+  it('wraps every worklet-side element query in a try/catch', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..')
+
+    const files: string[] = []
+    for (const entry of fs.readdirSync(root, { recursive: true, encoding: 'utf8' })) {
+      if (entry.endsWith('.vue')) files.push(path.join(root, entry))
+    }
+    expect(files.length).toBeGreaterThan(0)
+
+    const offenders: string[] = []
+    for (const file of files) {
+      const src = fs.readFileSync(file, 'utf8')
+      if (!src.includes('\'main thread\'')) continue
+      for (const fn of src.match(/function \w+[\s\S]*?\n}/g) ?? []) {
+        if (!fn.includes('\'main thread\'')) continue
+        // Element-wrapper queries only — skip the `lynx.` global (see ceiling).
+        if (!/(?<!lynx)\.querySelector(All)?\(/.test(fn)) continue
+        if (!fn.includes('try {')) {
+          offenders.push(`${path.relative(root, file)} :: ${fn.match(/function (\w+)/)?.[1]}`)
+        }
+      }
+    }
+    expect(offenders).toEqual([])
   })
 })
