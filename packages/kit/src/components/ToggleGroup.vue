@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme, { iconFg } from '../theme/toggleGroup'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.toggleGroup`.
- */
-export const buildToggleGroup = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).toggleGroup as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type ToggleGroupVariants = VariantProps<ReturnType<typeof buildToggleGroup>>
+type ToggleGroupTV = ThemeTV<typeof theme>
+type ToggleGroupVariants = VariantProps<ToggleGroupTV>
 
 export type ToggleGroupValue = string | number
 
@@ -43,7 +32,7 @@ export interface ToggleGroupProps {
   size?: ToggleGroupVariants['size']
   orientation?: ToggleGroupVariants['orientation']
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildToggleGroup>['slots'], any>>
+  ui?: Partial<Record<keyof ToggleGroupTV['slots'], any>>
 }
 
 export interface ToggleGroupEmits {
@@ -60,6 +49,7 @@ export interface ToggleGroupSlots {
 import { computed } from 'vue'
 import { ToggleGroupItem, ToggleGroupRoot, Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { useColorMode } from '../composables/useColorMode'
 import { resolveColorHex } from '../utils/resolveColor'
 
@@ -73,7 +63,7 @@ defineSlots<ToggleGroupSlots>()
 
 const appConfig = useAppConfig()
 
-const ui = computed(() => buildToggleGroup(appConfig)({
+const { ui } = useStyledComponent('toggleGroup', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,

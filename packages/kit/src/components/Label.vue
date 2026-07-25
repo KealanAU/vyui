@@ -1,19 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/label'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.label`.
- */
-export const buildLabel = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as any).label as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
-
-type LabelVariants = VariantProps<ReturnType<typeof buildLabel>>
+type LabelTV = ThemeTV<typeof theme>
+type LabelVariants = VariantProps<LabelTV>
 
 export interface LabelProps {
   /** The id of the form control this label is associated with. */
@@ -21,7 +11,7 @@ export interface LabelProps {
   size?: LabelVariants['size']
   required?: boolean
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildLabel>['slots'], any>>
+  ui?: Partial<Record<keyof LabelTV['slots'], any>>
 }
 
 export interface LabelSlots {
@@ -30,15 +20,13 @@ export interface LabelSlots {
 </script>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Label as CoreLabel } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<LabelProps>(), {})
 defineSlots<LabelSlots>()
 
-const appConfig = useAppConfig()
-const ui = computed(() => buildLabel(appConfig)({
+const { ui } = useStyledComponent('label', theme, () => ({
   size: props.size,
   required: props.required,
 }))

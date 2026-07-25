@@ -1,17 +1,5 @@
 <script lang="ts">
-import { tv } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/placeholder'
-import type { AppConfig } from '../types'
-
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.placeholder`.
- */
-export const buildPlaceholder = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).placeholder as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
 
 export interface PlaceholderProps {
   class?: any
@@ -19,13 +7,11 @@ export interface PlaceholderProps {
 </script>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = defineProps<PlaceholderProps>()
 
-const appConfig = useAppConfig()
-const ui = computed(() => buildPlaceholder(appConfig))
+const { ui } = useStyledComponent('placeholder', theme, () => ({ class: props.class }))
 
 // Diagonal hatch via repeating-linear-gradient — scales with the element at
 // any size and needs no SVG sizing tricks. On Lynx an `<svg>` rasterizes at
@@ -44,5 +30,5 @@ const hatchStyle = {
 </script>
 
 <template>
-  <view :class="ui({ class: props.class })" :style="hatchStyle" />
+  <view :class="ui" :style="hatchStyle" />
 </template>

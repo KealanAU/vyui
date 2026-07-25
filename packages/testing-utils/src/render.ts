@@ -27,7 +27,6 @@ let currentApp: VueLynxApp | null = null
 export interface RenderResult {
   container: Element
   unmount: () => void
-  rerender: (component: Component, props?: Record<string, unknown>) => RenderResult
   [key: string]: any
 }
 
@@ -78,8 +77,6 @@ export function render(
   return {
     container,
     unmount: () => cleanup(),
-    rerender: (component: Component, props?: Record<string, unknown>) =>
-      render(component, props),
     ...getQueriesForElement(container),
   }
 }

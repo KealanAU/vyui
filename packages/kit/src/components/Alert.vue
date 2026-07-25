@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme, { iconFg } from '../theme/alert'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.alert`.
- */
-export const buildAlert = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).alert as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type AlertVariants = VariantProps<ReturnType<typeof buildAlert>>
+type AlertTV = ThemeTV<typeof theme>
+type AlertVariants = VariantProps<AlertTV>
 
 export interface AlertProps {
   /** Title text. Overridden by the `title` slot if provided. */
@@ -32,7 +21,7 @@ export interface AlertProps {
   /** Iconify name for the close button. Defaults to `appConfig.ui.icons.close`. */
   closeIcon?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildAlert>['slots'], any>>
+  ui?: Partial<Record<keyof AlertTV['slots'], any>>
 }
 
 export interface AlertSlots {
@@ -50,6 +39,7 @@ export interface AlertSlots {
 import { computed, useSlots } from 'vue'
 import { Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { resolveColorHex } from '../utils/resolveColor'
 
 const props = withDefaults(defineProps<AlertProps>(), {
@@ -67,7 +57,7 @@ const resolvedCloseIcon = computed(() => props.closeIcon || appConfig.ui.icons?.
 
 const hasTitle = computed(() => !!props.title || !!_slots.title)
 
-const ui = computed(() => buildAlert(appConfig)({
+const { ui } = useStyledComponent('alert', theme, () => ({
   color: props.color,
   variant: props.variant,
   orientation: props.orientation,

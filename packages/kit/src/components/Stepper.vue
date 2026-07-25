@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/stepper'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.stepper`.
- */
-export const buildStepper = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).stepper as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type StepperVariants = VariantProps<ReturnType<typeof buildStepper>>
+type StepperTV = ThemeTV<typeof theme>
+type StepperVariants = VariantProps<StepperTV>
 
 export interface StepperItem {
   /** Step heading text. Overridden by the `title` slot when provided. */
@@ -43,7 +32,7 @@ export interface StepperProps {
   /** Disable every step at once. */
   disabled?: boolean
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildStepper>['slots'], any>>
+  ui?: Partial<Record<keyof StepperTV['slots'], any>>
 }
 
 export interface StepperEmits {
@@ -61,7 +50,6 @@ export interface StepperSlots {
 </script>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import {
   StepperRoot,
   StepperItem,
@@ -72,7 +60,7 @@ import {
   StepperDescription,
   Icon as VyIcon,
 } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<StepperProps>(), {
   orientation: 'horizontal',
@@ -82,9 +70,7 @@ const props = withDefaults(defineProps<StepperProps>(), {
 const emit = defineEmits<StepperEmits>()
 defineSlots<StepperSlots>()
 
-const appConfig = useAppConfig()
-
-const ui = computed(() => buildStepper(appConfig)({
+const { ui } = useStyledComponent('stepper', theme, () => ({
   color: props.color,
   size: props.size,
   orientation: props.orientation,

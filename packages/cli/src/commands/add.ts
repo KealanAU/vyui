@@ -63,11 +63,8 @@ export async function add(opts: AddOptions): Promise<void> {
   const available = index.components.map(component => component.name)
   const unknown = names.filter(name => !available.includes(name))
   if (unknown.length) {
-    const hints = unknown.map(name => {
-      const suggestion = closest(name, available)
-      return suggestion ? `"${name}" (did you mean "${suggestion}"?)` : `"${name}"`
-    })
-    throw new Error(`Unknown component${unknown.length > 1 ? 's' : ''}: ${hints.join(', ')}. Available: ${available.join(', ')}`)
+    const quoted = unknown.map(name => `"${name}"`)
+    throw new Error(`Unknown component${unknown.length > 1 ? 's' : ''}: ${quoted.join(', ')}. Available: ${available.join(', ')}`)
   }
 
   log.info(`Resolving ${names.join(', ')}…`)
@@ -106,30 +103,6 @@ export async function add(opts: AddOptions): Promise<void> {
   log.ok(opts.dryRun
     ? `Dry run complete for ${c.bold(resolvedNames.join(', '))}: ${planned} file${planned === 1 ? '' : 's'} would be written, ${skipped} preserved.`
     : `Added ${c.bold(resolvedNames.join(', '))}: ${written} file${written === 1 ? '' : 's'} written, ${skipped} preserved.`)
-}
-
-function closest(input: string, choices: string[]): string | undefined {
-  let best: { name: string, distance: number } | undefined
-  for (const name of choices) {
-    const distance = levenshtein(input, name)
-    if (!best || distance < best.distance) best = { name, distance }
-  }
-  return best && best.distance <= Math.max(2, Math.floor(input.length / 3)) ? best.name : undefined
-}
-
-function levenshtein(a: string, b: string): number {
-  const rows = Array.from({ length: a.length + 1 }, (_, i) => [i])
-  for (let j = 1; j <= b.length; j++) rows[0][j] = j
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      rows[i][j] = Math.min(
-        rows[i - 1][j] + 1,
-        rows[i][j - 1] + 1,
-        rows[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
-      )
-    }
-  }
-  return rows[a.length][b.length]
 }
 
 /**

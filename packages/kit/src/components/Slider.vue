@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/slider'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.slider`.
- */
-export const buildSlider = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).slider as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type SliderVariants = VariantProps<ReturnType<typeof buildSlider>>
+type SliderTV = ThemeTV<typeof theme>
+type SliderVariants = VariantProps<SliderTV>
 
 export interface SliderProps {
   /**
@@ -39,7 +28,7 @@ export interface SliderProps {
   /** Forwarded to the underlying core control. */
   name?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildSlider>['slots'], any>>
+  ui?: Partial<Record<keyof SliderTV['slots'], any>>
 }
 
 export interface SliderEmits {
@@ -52,7 +41,7 @@ export interface SliderSlots {}
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SliderRoot, SliderTrack, SliderRange, SliderThumb } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<SliderProps>(), {
   min: 0,
@@ -64,8 +53,6 @@ const props = withDefaults(defineProps<SliderProps>(), {
 const emit = defineEmits<SliderEmits>()
 defineSlots<SliderSlots>()
 
-const appConfig = useAppConfig()
-
 // `SliderRoot` accepts both shapes natively and emits in whichever shape the
 // consumer binds with, so forward through without normalizing.
 const thumbsCount = computed(() => {
@@ -74,7 +61,7 @@ const thumbsCount = computed(() => {
   return src?.length ?? 1
 })
 
-const ui = computed(() => buildSlider(appConfig)({
+const { ui } = useStyledComponent('slider', theme, () => ({
   color: props.color,
   size: props.size,
   orientation: props.orientation,

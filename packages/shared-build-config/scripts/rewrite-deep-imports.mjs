@@ -106,12 +106,10 @@ export function rewriteModule(code, pkgName, barrelMap, err = (m) => new Error(m
   return out
 }
 
-function* walkJs(dir) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name)
-    if (entry.isDirectory()) yield* walkJs(path)
-    else if (entry.name.endsWith('.js')) yield path
-  }
+function walkJs(dir) {
+  return readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter(e => e.isFile() && e.name.endsWith('.js'))
+    .map(e => join(e.parentPath, e.name))
 }
 
 const isMain = process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url

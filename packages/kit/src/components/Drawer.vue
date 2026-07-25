@@ -1,19 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/drawer'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.drawer`.
- */
-export const buildDrawer = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).drawer as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
-
-type DrawerVariants = VariantProps<ReturnType<typeof buildDrawer>>
+type DrawerTV = ThemeTV<typeof theme>
+type DrawerVariants = VariantProps<DrawerTV>
 
 export interface DrawerProps {
   /** Controlled open state. */
@@ -70,7 +60,7 @@ export interface DrawerProps {
    */
   keyboardAwareForceAttach?: boolean
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildDrawer>['slots'], any>>
+  ui?: Partial<Record<keyof DrawerTV['slots'], any>>
 }
 
 export interface DrawerEmits {
@@ -116,7 +106,7 @@ import {
   SheetContent,
   SheetHandle,
 } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<DrawerProps>(), {
   defaultOpen: false,
@@ -138,8 +128,6 @@ const props = withDefaults(defineProps<DrawerProps>(), {
 const emit = defineEmits<DrawerEmits>()
 const slots = defineSlots<DrawerSlots>()
 
-const appConfig = useAppConfig()
-
 const hasContentSlot = computed(() => !!slots.content)
 
 const resolvedSide = computed(() => props.direction || props.side || 'bottom')
@@ -155,7 +143,7 @@ function onOpenChange(value: boolean) {
 // parity (`<template #footer="{ close }">…@click="close"…`).
 const close = () => onOpenChange(false)
 
-const ui = computed(() => buildDrawer(appConfig)({
+const { ui } = useStyledComponent('drawer', theme, () => ({
   side: resolvedSide.value,
   transition: props.transition,
 }))

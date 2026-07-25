@@ -22,11 +22,9 @@ const toKebab = (name: string) =>
   name.replace(/\.vue$/, '').replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 
 function walk(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) return walk(full)
-    return entry.name.endsWith('.vue') ? [full] : []
-  })
+  return readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter(e => e.isFile() && e.name.endsWith('.vue'))
+    .map(e => join(e.parentPath, e.name))
 }
 
 // Sorted for stable diffs. Identifier = PascalCase basename (file names already

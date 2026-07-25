@@ -1,21 +1,10 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/textarea'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
 import type { AvatarProps } from './Avatar.vue'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.textarea`.
- */
-export const buildTextarea = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).textarea as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type TextareaVariants = VariantProps<ReturnType<typeof buildTextarea>>
+type TextareaTV = ThemeTV<typeof theme>
+type TextareaVariants = VariantProps<TextareaTV>
 
 export interface TextareaProps {
   modelValue?: string | number
@@ -67,7 +56,7 @@ export interface TextareaProps {
   /** Extra clearance in px above the keyboard when `avoidKeyboard` is set. */
   avoidKeyboardSpacing?: number
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildTextarea>['slots'], any>>
+  ui?: Partial<Record<keyof TextareaTV['slots'], any>>
 }
 
 export interface TextareaSlots {
@@ -83,6 +72,7 @@ export interface TextareaSlots {
 import { computed, onMounted, ref, useSlots } from 'vue'
 import { KeyboardAwareTrigger, Textarea as CoreTextarea } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { Icon as VyIcon } from '@vyui/core'
 import { resolveColorHex } from '../utils/resolveColor'
 import VyAvatar from './Avatar.vue'
@@ -118,7 +108,7 @@ const resolvedTrailingIcon = computed(() => {
 const hasLeading = computed(() => !!slots.leading || !!resolvedLeadingIcon.value || !!props.avatar || !!props.loading)
 const hasTrailing = computed(() => !!slots.trailing || !!resolvedTrailingIcon.value)
 
-const ui = computed(() => buildTextarea(appConfig)({
+const { ui } = useStyledComponent('textarea', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,

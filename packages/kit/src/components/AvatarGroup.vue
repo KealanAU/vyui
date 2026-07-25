@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/avatarGroup'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.avatarGroup`.
- */
-export const buildAvatarGroup = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).avatarGroup as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type AvatarGroupVariants = VariantProps<ReturnType<typeof buildAvatarGroup>>
+type AvatarGroupTV = ThemeTV<typeof theme>
+type AvatarGroupVariants = VariantProps<AvatarGroupTV>
 
 export interface AvatarGroupProps {
   size?: AvatarGroupVariants['size']
@@ -22,7 +11,7 @@ export interface AvatarGroupProps {
   /** Maximum visible avatars before collapsing into a `+N` overflow chip. */
   max?: number | string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildAvatarGroup>['slots'], any>>
+  ui?: Partial<Record<keyof AvatarGroupTV['slots'], any>>
 }
 
 export interface AvatarGroupSlots {
@@ -32,16 +21,15 @@ export interface AvatarGroupSlots {
 
 <script setup lang="ts">
 import { computed, provide, useSlots, type VNode } from 'vue'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import VyAvatar, { AVATAR_GROUP_KEY } from './Avatar.vue'
 
 const props = withDefaults(defineProps<AvatarGroupProps>(), {})
 defineSlots<AvatarGroupSlots>()
 
 const slots = useSlots()
-const appConfig = useAppConfig()
 
-const ui = computed(() => buildAvatarGroup(appConfig)({
+const { ui } = useStyledComponent('avatarGroup', theme, () => ({
   size: props.size,
   color: props.color,
 }))

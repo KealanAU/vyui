@@ -80,11 +80,9 @@ function toDeepImports(source: string): string {
 }
 
 function walk(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) return walk(full)
-    return entry.name.endsWith('.vue') ? [full] : []
-  })
+  return readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter(e => e.isFile() && e.name.endsWith('.vue'))
+    .map(e => join(e.parentPath, e.name))
 }
 
 // Highlight with the same theme @nuxt/content uses (material-theme-palenight)

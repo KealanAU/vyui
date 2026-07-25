@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/numberField'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.numberField`.
- */
-export const buildNumberField = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).numberField as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type NumberFieldVariants = VariantProps<ReturnType<typeof buildNumberField>>
+type NumberFieldTV = ThemeTV<typeof theme>
+type NumberFieldVariants = VariantProps<NumberFieldTV>
 
 export interface NumberFieldProps {
   /** Controlled numeric value. `null` (or `undefined`) means empty. */
@@ -38,7 +27,7 @@ export interface NumberFieldProps {
   /** Forwarded to the underlying input. */
   id?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildNumberField>['slots'], any>>
+  ui?: Partial<Record<keyof NumberFieldTV['slots'], any>>
 }
 
 export interface NumberFieldEmits {
@@ -63,6 +52,7 @@ import {
   Icon as VyIcon,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { resolveColorHex } from '../utils/resolveColor'
 
 const props = withDefaults(defineProps<NumberFieldProps>(), {
@@ -80,7 +70,7 @@ const resolvedDecrementIcon = computed(() => props.decrementIcon || appConfig.ui
 // neutral (dimmed); override via the `increment` / `decrement` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
-const ui = computed(() => buildNumberField(appConfig)({
+const { ui } = useStyledComponent('numberField', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,
