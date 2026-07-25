@@ -18,7 +18,7 @@ export interface SortableRootProps<T = unknown> {
   disabled?: boolean
   /**
    * Long-press activation delay in ms. Set to 0 to drag immediately.
-   * @defaultValue 250
+   * @defaultValue 150
    */
   longPressMs?: number
   /**
@@ -57,7 +57,7 @@ import { provideSortableRootContext } from './sortableContext'
 
 const props = withDefaults(defineProps<SortableRootProps<T>>(), {
   disabled: false,
-  longPressMs: 250,
+  longPressMs: 150,
   autoScrollEdge: 48,
   autoScrollSpeed: 12,
 })

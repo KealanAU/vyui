@@ -14,7 +14,7 @@ export interface SortableProps<T = unknown> {
    * How long (ms) a press must be held before a row lifts for dragging. The
    * hold guards against a tap or a scroll being mistaken for a drag. Set `0`
    * for immediate drag (e.g. when the list is not inside a scroller).
-   * @defaultValue `250`
+   * @defaultValue `150`
    */
   longPressMs?: number
   size?: SortableVariants['size']
