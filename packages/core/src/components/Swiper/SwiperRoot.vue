@@ -129,7 +129,16 @@ const trackStyle = computed(() => {
 // All drag plumbing (MT refs, velocity, snap animation, axis lock, autoplay,
 // MT↔BG hops, seam rebasing) lives in the shared controller; this component
 // just wires its config + the track.
-const { containerRef, onTouchStart, onTouchMove, onTouchEnd, setIndex } = useDragGesture({
+const {
+  containerRef,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp,
+  setIndex,
+} = useDragGesture({
   currentIndex,
   itemWidth: () => props.itemWidth,
   itemCount: () => props.itemCount,
@@ -180,6 +189,9 @@ provideSwiperRootContext({
       :main-thread-bindtouchmove="onTouchMove"
       :main-thread-bindtouchend="onTouchEnd"
       :main-thread-bindtouchcancel="onTouchEnd"
+      :main-thread-bindmousedown="onMouseDown"
+      :main-thread-bindmousemove="onMouseMove"
+      :main-thread-bindmouseup="onMouseUp"
       :style="trackStyle"
     >
       <!-- Loop: leading clone copy (the slides BEFORE the seam). -->

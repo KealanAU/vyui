@@ -13,8 +13,10 @@ import { VyButton } from '@vyui/kit'
 // move one aggregate offset, not a per-item ref map). Porting `mode="custom"`
 // properly is a SwiperRoot/SwiperItem change, more surface than a spike
 // needs. This hand-rolls the SAME technique for a single top card instead:
-// one inline `'main thread'` touch handler computes translate+rotate+opacity
-// together, mirroring SwipeAction.vue/ToastSwipe.vue's shape.
+// one inline `'main thread'` handler computes translate+rotate+opacity
+// together, mirroring SwipeAction.vue/ToastSwipe.vue's shape — including
+// their coord-based core with touch AND mouse wrappers, since Lynx web never
+// synthesizes touch and a touch-only deck is inert in a desktop browser.
 //
 // NEITHER `runOnMainThread` NOR `runOnBackground` may be aliased — SWC's
 // worklet transform only wraps the literal identifier at the call site.
@@ -93,6 +95,16 @@ const isDraggingRef = useMainThreadRef<boolean>(false)
 const positionQueueRef = useMainThreadRef<number[]>([])
 const timeQueueRef = useMainThreadRef<number[]>([])
 
+// Handle of the in-flight settle. A fill-forwards animation outranks inline
+// style in the cascade, so it has to be cancelled before the next drag's
+// `setStyleProperty` writes — otherwise the card freezes at the flung pose.
+const cardAnimRef = useMainThreadRef<any>(null)
+
+// Timestamp of the last real touch. Touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair after touchend; the mouse handlers
+// ignore events inside this window so a tap doesn't run the gesture twice.
+const lastTouchTsRef = useMainThreadRef<number>(0)
+
 // --- MT worklets. Helpers are defined ABOVE their callers — worklet fns
 // become `const`, so a forward reference throws "lexical variable is not
 // initialized" at registration (mirrors SwipeAction.vue/ToastSwipe.vue).
@@ -118,6 +130,12 @@ function _setCardTransform(x: number, y: number) {
   }
 }
 
+function _setCardOpacity(value: number) {
+  'main thread'
+  const el = cardRef as unknown as { current?: { setStyleProperty?(k: string, v: string): void } }
+  if (el.current?.setStyleProperty) el.current.setStyleProperty('opacity', `${value}`)
+}
+
 function _setBadgeOpacity(dx: number) {
   'main thread'
   const keep = keepRef as unknown as { current?: { setStyleProperty?(k: string, v: string): void } }
@@ -133,9 +151,15 @@ function _setBadgeOpacity(dx: number) {
 // remounted, across the v-if branch).
 function _resetPosition() {
   'main thread'
+  // Cancel first — a filled settle sits above inline style, so the writes
+  // below would land on a card still pinned offscreen at opacity 0.
+  const anim = cardAnimRef.current
+  if (anim && typeof anim.cancel === 'function') anim.cancel()
+  cardAnimRef.current = null
   currentXRef.current = 0
   currentYRef.current = 0
   _setCardTransform(0, 0)
+  _setCardOpacity(1)
   _setBadgeOpacity(0)
 }
 
@@ -149,16 +173,30 @@ function _animateTo(targetX: number, targetY: number, targetOpacity: number) {
   currentXRef.current = targetX
   currentYRef.current = targetY
   if (typeof el.current?.animate === 'function') {
-    el.current.animate(
+    // Write the end state inline BEFORE animating: Lynx web's animation PAPI
+    // reads Lynx-style timing keys (fillMode/timingFunction) and silently
+    // drops WAAPI fill/easing, so a web settle would otherwise finish
+    // fill-less and snap back to the stale drag transform. Both spellings are
+    // passed; the inline value is what the card rests on either way.
+    _setCardTransform(targetX, targetY)
+    _setCardOpacity(targetOpacity)
+    cardAnimRef.current = el.current.animate(
       [
         { transform: `translate(${fromX}px, ${fromY}px) rotate(${_tiltFor(fromX)}deg)`, opacity: '1' },
         { transform: `translate(${targetX}px, ${targetY}px) rotate(${_tiltFor(targetX)}deg)`, opacity: `${targetOpacity}` },
       ],
-      { duration: DURATION, fill: 'forwards', easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+      {
+        duration: DURATION,
+        fill: 'forwards',
+        fillMode: 'forwards',
+        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        timingFunction: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      },
     )
   }
   else {
     _setCardTransform(targetX, targetY)
+    _setCardOpacity(targetOpacity)
   }
   _setBadgeOpacity(0)
 }
@@ -192,22 +230,33 @@ function _getVelocity() {
   return (p[length - 1] - p[0]) / dt
 }
 
-function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+// Coordinate-based gesture core. Touch and mouse wrappers below feed the same
+// logic; a gesture is all-touch or all-mouse, so the coordinate spaces never
+// mix — only deltas from the recorded start matter.
+
+function _dragStart(x: number, y: number) {
   'main thread'
+  // Kill an in-flight settle before it can mask this drag's transform writes.
+  // Inline `animation: none` does NOT cancel a programmatic `.animate()` —
+  // only the handle can. Re-assert the live pose so the card doesn't jump
+  // back to where the animation started.
+  const anim = cardAnimRef.current
+  if (anim && typeof anim.cancel === 'function') {
+    anim.cancel()
+    cardAnimRef.current = null
+    _setCardTransform(currentXRef.current, currentYRef.current)
+    _setCardOpacity(1)
+  }
   isDraggingRef.current = true
-  const x = e.touches[0].clientX
-  const y = e.touches[0].clientY
   touchStartXRef.current = x
   touchStartYRef.current = y
   timeQueueRef.current = [Date.now()]
   positionQueueRef.current = [x]
 }
 
-function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+function _dragMove(x: number, y: number) {
   'main thread'
   if (!isDraggingRef.current) return
-  const x = e.touches[0].clientX
-  const y = e.touches[0].clientY
   const nextX = x - touchStartXRef.current
   const nextY = y - touchStartYRef.current
   currentXRef.current = nextX
@@ -219,7 +268,7 @@ function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> 
   _pruneQueue(50, 2)
 }
 
-function _onTouchEnd() {
+function _dragEnd() {
   'main thread'
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
@@ -239,6 +288,59 @@ function _onTouchEnd() {
   else {
     _animateTo(0, 0, 1)
   }
+}
+
+function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+  'main thread'
+  const t0 = e.touches[0]
+  if (!t0) return
+  _dragStart(t0.clientX, t0.clientY)
+}
+
+function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+  'main thread'
+  const t0 = e.touches[0]
+  if (!t0) return
+  _dragMove(t0.clientX, t0.clientY)
+}
+
+function _onTouchEnd() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _dragEnd()
+}
+
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+// touch from them, so the same core is bound to mouse too — without this the
+// deck is completely inert under a cursor. Coordinates arrive top-level (mouse
+// `detail` is the DOM click-count number, not `{x, y}`). No mouseleave
+// binding — it doesn't bubble, so per-element delivery is unreliable here.
+function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Swallow the compatibility mousedown a touch browser replays after a tap.
+  if (Date.now() - lastTouchTsRef.current < 500) return
+  // Primary button only: a right/middle press would start a phantom drag that
+  // the next hover move then "releases", flinging the card off unprompted.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  _dragStart(e.clientX, e.clientY)
+}
+
+function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Only an EXPLICIT buttons value with the primary bit clear counts as
+  // released (recovers the mouseup lost outside the <lynx-view>). A missing
+  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
+  // it, and ending on those lets go mid-drag.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+    _dragEnd()
+    return
+  }
+  _dragMove(e.clientX, e.clientY)
+}
+
+function _onMouseUp() {
+  'main thread'
+  _dragEnd()
 }
 
 // --- BG callbacks ----------------------------------------------------------
@@ -288,7 +390,7 @@ onMounted(() => {
 
     <view :style="{ position: 'relative', width: '260px', height: '300px' }" class="self-center">
       <template v-for="(card, index) in deck.slice(0, 3)" :key="card.id">
-        <!-- Top card: touch target and transform target are the same element. -->
+        <!-- Top card: gesture target and transform target are the same element. -->
         <view
           v-if="index === 0"
           :main-thread-ref="cardRef"
@@ -296,6 +398,9 @@ onMounted(() => {
           :main-thread-bindtouchmove="_onTouchMove"
           :main-thread-bindtouchend="_onTouchEnd"
           :main-thread-bindtouchcancel="_onTouchEnd"
+          :main-thread-bindmousedown="_onMouseDown"
+          :main-thread-bindmousemove="_onMouseMove"
+          :main-thread-bindmouseup="_onMouseUp"
           class="rounded-2xl flex flex-col items-center justify-center gap-2"
           :class="card.color"
           :style="topCardStyle"

@@ -95,9 +95,10 @@ const CATEGORY_ORDER = [
 // The second header bar is a curated set of top categories (not the raw
 // top-level content sections). Each owns one or more content paths — a path can
 // be a whole section (`/getting-started`, `/packages`) or a single nested page.
-// The two package layers (@vyui/core, @vyui/kit) live together under Getting
-// Started; the kit/core split is surfaced as a sub-filter under Components
-// instead. Categories that resolve to no content are dropped automatically.
+// The package overviews (@vyui/core, @vyui/kit) sit under Components so the tab
+// matches the header dropdown that links to them; the kit/core split is also a
+// sub-filter there. Categories that resolve to no content are dropped
+// automatically.
 interface CategoryConfig {
   id: string
   title: string
@@ -106,8 +107,9 @@ interface CategoryConfig {
 }
 
 const CATEGORY_CONFIG: CategoryConfig[] = [
-  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started', '/packages'] },
-  { id: 'components', title: 'Components', icon: 'i-lucide-boxes', paths: ['/components'] },
+  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started'] },
+  // '/components' must stay first — the sidebar groups items[0]'s children.
+  { id: 'components', title: 'Components', icon: 'i-lucide-boxes', paths: ['/components', '/packages'] },
   { id: 'composables', title: 'Composables', icon: 'i-lucide-square-function', paths: ['/composables'] },
   { id: 'styling', title: 'Styling', icon: 'i-lucide-palette', paths: ['/theming', '/accessibility', '/i18n'] },
 ]
@@ -214,12 +216,15 @@ export function useNavigation(navigation: Ref<ContentNavigationItem[] | null | u
     if (!cat)
       return []
     if (cat.id === 'components') {
-      const children = (cat.items[0]?.children ?? []).filter((child) => {
+      const [componentsNode, ...extras] = cat.items
+      const children = (componentsNode?.children ?? []).filter((child) => {
         if (layer.value === 'all')
           return true
         return (child as LayeredNavItem).package === layer.value
       })
-      return groupByCategory(children)
+      // `extras` = the Packages section, rendered as its own group above the
+      // grouped component list (it isn't part of the Core/Kit filter).
+      return [...extras, ...groupByCategory(children)]
     }
     return cat.items
   })

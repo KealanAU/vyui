@@ -214,10 +214,13 @@ const enableBounceEventInFlingRef = useMainThreadRef<boolean>(props.enableBounce
 const startBounceTriggerDistanceRef = useMainThreadRef<number>(props.startBounceTriggerDistance)
 const endBounceTriggerDistanceRef = useMainThreadRef<number>(props.endBounceTriggerDistance)
 
-// Selectors resolved on the MT side at run time.
-const containerIdRef = useMainThreadRef<string>(containerId.value)
-const upperWrapperIdRef = useMainThreadRef<string>(upperWrapperId.value)
-const lowerWrapperIdRef = useMainThreadRef<string>(lowerWrapperId.value)
+// Element handles for the nodes the bounce moves. These are `main-thread-ref`s
+// rather than lynx-ui's `lynx.querySelector('#id')`: that API exists only on
+// the native main thread — web-core's MT `lynx` object has no `querySelector`,
+// so every selector call threw and took the whole bounce worklet with it.
+const containerElRef = useMainThreadRef<any>(null)
+const upperElRef = useMainThreadRef<any>(null)
+const lowerElRef = useMainThreadRef<any>(null)
 
 const startTouch = useMainThreadRef<any>(null)
 const prevTouch = useMainThreadRef<any>(null)
@@ -249,6 +252,11 @@ const widthRef = useMainThreadRef<number>(props.estimatedWidth ?? readEstimatedW
 // Edge flags. Both true ⇒ content shorter than viewport.
 const toUpper = useMainThreadRef<boolean>(false)
 const toLower = useMainThreadRef<boolean>(false)
+
+// Timestamp of the last real touch. Touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair after touchend; the mouse handlers
+// ignore events inside this window so a tap doesn't run the bounce twice.
+const lastTouchTsRef = useMainThreadRef<number>(0)
 
 // Animation-loop guards.
 const touchEndFrameEnableFlag = useMainThreadRef<boolean>(false)
@@ -292,18 +300,19 @@ function _mtIsEmpty(obj: any) {
   return !obj || (typeof obj === 'object' && Object.keys(obj).length === 0)
 }
 
-function _mtSelect(id: string) {
+/** Paint one transform onto the container and both bounce wrappers. */
+function _mtApplyTransform(transform: string) {
   'main thread'
-  // `lynx.querySelector` is MT-only and not on the public Lynx type.
-  // @ts-expect-error MT-only runtime API.
-  return lynx.querySelector('#' + id)
+  containerElRef.current?.setStyleProperty?.('transform', transform)
+  upperElRef.current?.setStyleProperty?.('transform', transform)
+  lowerElRef.current?.setStyleProperty?.('transform', transform)
 }
 
 function _mtEnableScroll(enable: boolean) {
   'main thread'
   // Android keeps firing native scroll during a bounce — disable it there.
   if (_mtIsAndroid()) {
-    _mtSelect(containerIdRef.current)?.setAttribute('enable-scroll', enable)
+    containerElRef.current?.setAttribute?.('enable-scroll', enable)
   }
 }
 
@@ -398,16 +407,10 @@ function _mtBouncingSetStyle(offset: number) {
   }
 
   if (_mtIsVertical()) {
-    const t = 'translateY(' + offset + 'px)'
-    _mtSelect(containerIdRef.current)?.setStyleProperty('transform', t)
-    _mtSelect(upperWrapperIdRef.current)?.setStyleProperty('transform', t)
-    _mtSelect(lowerWrapperIdRef.current)?.setStyleProperty('transform', t)
+    _mtApplyTransform('translateY(' + offset + 'px)')
   } else {
     const visualOffset = enableRTLRef.current ? -offset : offset
-    const t = 'translateX(' + visualOffset + 'px)'
-    _mtSelect(containerIdRef.current)?.setStyleProperty('transform', t)
-    _mtSelect(upperWrapperIdRef.current)?.setStyleProperty('transform', t)
-    _mtSelect(lowerWrapperIdRef.current)?.setStyleProperty('transform', t)
+    _mtApplyTransform('translateX(' + visualOffset + 'px)')
   }
 }
 
@@ -585,6 +588,43 @@ function _mtTouchEnd() {
   }
 }
 
+/** touchend / touchcancel. Stamps the tap guard; mouseup binds the core. */
+function _mtTouchRelease() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _mtTouchEnd()
+}
+
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+// touch from them, so a touch-only bounce is inert under a cursor. Rather than
+// refactor the bounce maths off `event.touches` (it stores and re-reads whole
+// touch arrays in five places), the mouse wrappers hand the touch worklets the
+// one shape they consume. Coordinates arrive top-level on a mouse event
+// (`detail` is the DOM click-count number). No mouseleave binding — it doesn't
+// bubble, so per-element delivery is unreliable on the Lynx dispatch path.
+function _mtMouseDown(e: { pageX: number, pageY: number, buttons?: number }) {
+  'main thread'
+  // Swallow the compatibility mousedown a touch browser replays after a tap.
+  if (Date.now() - lastTouchTsRef.current < 500) return
+  // Primary button only: a right/middle press would start a phantom drag that
+  // the next hover move then "releases".
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  _mtTouchStart({ touches: [{ pageX: e.pageX, pageY: e.pageY }] })
+}
+
+function _mtMouseMove(e: { pageX: number, pageY: number, buttons?: number }) {
+  'main thread'
+  // Only an EXPLICIT buttons value with the primary bit clear counts as
+  // released (recovers the mouseup lost outside the <lynx-view>). A missing
+  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
+  // it, and ending on those lets go mid-drag.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+    _mtTouchEnd()
+    return
+  }
+  _mtTouchMove({ touches: [{ pageX: e.pageX, pageY: e.pageY }] })
+}
+
 function _mtHandleScroll(event: any) {
   'main thread'
   if (prevScroll.current && !_mtIsEmpty(prevScroll.current)) {
@@ -727,10 +767,14 @@ defineExpose({ id: containerId })
       :upper-threshold="upperThreshold"
       :lower-threshold="lowerThreshold"
       :ios-enable-simultaneous-touch="true"
+      :main-thread-ref="containerElRef"
       :main-thread-bindtouchstart="_mtTouchStart"
       :main-thread-bindtouchmove="_mtTouchMove"
-      :main-thread-bindtouchend="_mtTouchEnd"
-      :main-thread-bindtouchcancel="_mtTouchEnd"
+      :main-thread-bindtouchend="_mtTouchRelease"
+      :main-thread-bindtouchcancel="_mtTouchRelease"
+      :main-thread-bindmousedown="_mtMouseDown"
+      :main-thread-bindmousemove="_mtMouseMove"
+      :main-thread-bindmouseup="_mtTouchEnd"
       :main-thread-bindscroll="_mtHandleScroll"
       :main-thread-bindlayoutchange="_mtLayoutChange"
       @scrolltolower="onScrollToLower"
@@ -763,6 +807,7 @@ defineExpose({ id: containerId })
     <view
       v-if="hasUpperItem"
       :id="upperWrapperId"
+      :main-thread-ref="upperElRef"
       :style="upperWrapperStyle"
     >
       <slot name="upperBounceItem" />
@@ -770,6 +815,7 @@ defineExpose({ id: containerId })
     <view
       v-if="hasLowerItem"
       :id="lowerWrapperId"
+      :main-thread-ref="lowerElRef"
       :style="lowerWrapperStyle"
     >
       <slot name="lowerBounceItem" />

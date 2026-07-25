@@ -12,6 +12,10 @@
 //   useEffect([state])     → watch(state, ...)
 //   useEffect([show, ...]) → watch([show, enableDelay], ..., { immediate: false })
 //   useEffect([])          → onMounted (initial-render flag only)
+//   showRef/stateRef       → (dropped) upstream mirrors these into refs because
+//                            a `useState` value is frozen into the closure of
+//                            the render that scheduled a callback. `show` and
+//                            `state` are Refs here, so `.value` is always live.
 //
 // The composable is invoked once per Presence instance in `setup()`. Reactive
 // inputs (`show`, `state`, `enableDelay`) are passed as Vue `Ref`s so the
@@ -52,6 +56,20 @@ export interface UsePresenceRefOptions {
 export const MAX_WAIT_FRAMES = 24
 
 /**
+ * Absolute wall-clock ceiling on how long Entering/Leaving may stay
+ * unresolved while an animation is (or claims to be) in flight. On web,
+ * end/cancel events can be lost outright — a child unmounted mid-transition
+ * never delivers its end, and DOM bubbling feeds child animation events into
+ * these handlers in the first place — which would otherwise wedge the machine
+ * forever (a stuck Leaving keeps the invisible backdrop mounted, eating every
+ * tap under it). Wall-clock, not frames: rAF cadence varies wildly across
+ * environments (jsdom chains near-instantly; 120Hz devices double-tick). 3s
+ * is far above any real enter/leave animation, so it only fires on genuinely
+ * lost events. Not in upstream lynx-ui as of 2026-07.
+ */
+export const MAX_STUCK_MS = 3000
+
+/**
  * The core animation state machine for `<Presence>`.
  *
  * Listens to `bindanimationstart` / `bindanimationend` / `bindanimationcancel`
@@ -86,10 +104,9 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   const getEnteringStateWithDelay = () =>
     getEnableDelay() ? PresenceState.DelayedEntering : PresenceState.Entering
 
-  log(
-    debugLog,
-    `[vyui-presence][usePresence] init, show: ${show.value}, state: ${state.value}, enableDelay: ${getEnableDelay()}`,
-  )
+  const trace = (msg: string) => log(debugLog, `[vyui-presence][usePresence] ${msg}`)
+
+  trace(`init, show: ${show.value}, state: ${state.value}, enableDelay: ${getEnableDelay()}`)
 
   // Mutable, non-reactive refs — `useRef` analogue. We deliberately do NOT
   // use Vue `ref()` for these because they're write-during-event-handler
@@ -99,12 +116,9 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   // Tracks the very first render so onClose doesn't fire when the component
   // first mounts in the terminal Left state.
   const isInitialRender = { current: true }
-  // Always-fresh mirror of `show.value` so event handlers can branch on the
-  // most recent intent without re-running the composable body.
-  const showRef = { current: show.value }
-  watch(show, (next) => {
-    showRef.current = next
-  }, { flush: 'sync' })
+  // Dedupes open/close notifications across re-entries — a reopen-during-close
+  // routes back through Entered without ever reaching Left (upstream parity).
+  const hasNotifiedOpen = { current: false }
 
   // The reactive output: whether the child should render.
   const mount = ref<boolean>(false)
@@ -115,8 +129,6 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   const enteringLoopIdRef = { current: 0 }
   const leavingLoopIdRef = { current: 0 }
   const showScheduleIdRef = { current: 0 }
-  const enteringWaitFramesRef = { current: 0 }
-  const leavingWaitFramesRef = { current: 0 }
 
   // ----- helpers ------------------------------------------------------------
 
@@ -124,10 +136,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
     isKFAnimating.current === false && isTransitionAnimating.current === false
 
   const handleAnimationStart = () => {
-    log(
-      debugLog,
-      `[vyui-presence][usePresence] handleAnimationStart state:${state.value}, show:${showRef.current}, isTransition:${isTransitionAnimating.current}, isKFAnimating:${isKFAnimating.current}`,
-    )
+    trace(`handleAnimationStart state:${state.value}, show:${show.value}, isTransition:${isTransitionAnimating.current}, isKFAnimating:${isKFAnimating.current}`)
   }
 
   const handleAnimationEnd = () => {
@@ -137,7 +146,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       (s === PresenceState.Entering || s === PresenceState.DelayedEntering)
       && notAnimating()
     ) {
-      if (showRef.current) {
+      if (show.value) {
         setPresenceState(PresenceState.Entered)
       }
       else {
@@ -148,7 +157,14 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       }
     }
     if (s === PresenceState.Leaving && notAnimating()) {
-      setPresenceState(PresenceState.Left)
+      if (show.value) {
+        // show flipped back on while leaving — remount instead of tearing
+        // down (upstream parity; see handleStateLeft).
+        restartShow()
+      }
+      else {
+        setPresenceState(PresenceState.Left)
+      }
     }
   }
 
@@ -156,165 +172,187 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   // Plain callables — Lynx binds these as the `bindanimation*` /
   // `bindtransition*` listeners on the consumer's root `<view>`.
 
+  // These deliberately do NOT bump the entering/leaving loop ids (upstream
+  // lynx-ui does). Bumping killed the frame watchdog the moment any animation
+  // started, leaving the machine trusting an end/cancel event that web can
+  // lose — see {@link MAX_STUCK_MS}. The watchdogs poll through animations
+  // instead.
   const handleKFStart = () => {
     isKFAnimating.current = true
-    enteringLoopIdRef.current += 1
-    leavingLoopIdRef.current += 1
-    log(
-      debugLog,
-      `[vyui-presence][usePresence] KF start, loopId: ${leavingLoopIdRef.current}`,
-    )
+    trace(`KF start, loopId: ${leavingLoopIdRef.current}`)
     handleAnimationStart()
   }
 
   const handleTransitionStart = () => {
     isTransitionAnimating.current = true
-    enteringLoopIdRef.current += 1
-    leavingLoopIdRef.current += 1
-    log(
-      debugLog,
-      `[vyui-presence][usePresence] Transition start, loopId: ${leavingLoopIdRef.current}`,
-    )
+    trace(`Transition start, loopId: ${leavingLoopIdRef.current}`)
     handleAnimationStart()
   }
 
   const handleKFEnd = () => {
     isKFAnimating.current = false
-    log(
-      debugLog,
-      `[vyui-presence][usePresence] KF end, loopId: ${leavingLoopIdRef.current}`,
-    )
+    trace(`KF end, loopId: ${leavingLoopIdRef.current}`)
     handleAnimationEnd()
   }
 
   const handleKFCancel = () => {
     isKFAnimating.current = false
-    log(
-      debugLog,
-      `[vyui-presence][usePresence] KF cancel, loopId: ${leavingLoopIdRef.current}`,
-    )
+    trace(`KF cancel, loopId: ${leavingLoopIdRef.current}`)
     handleAnimationEnd()
   }
 
   const handleTransitionCancel = () => {
     isTransitionAnimating.current = false
-    log(
-      debugLog,
-      `[vyui-presence][usePresence] Transition cancel, loopId: ${leavingLoopIdRef.current}`,
-    )
+    trace(`Transition cancel, loopId: ${leavingLoopIdRef.current}`)
     handleAnimationEnd()
   }
 
   const handleTransitionEnd = () => {
     isTransitionAnimating.current = false
-    log(
-      debugLog,
-      `[vyui-presence][usePresence] Transition end, loopId: ${leavingLoopIdRef.current}`,
-    )
+    trace(`Transition end, loopId: ${leavingLoopIdRef.current}`)
     handleAnimationEnd()
   }
 
   // ----- state-side effects -------------------------------------------------
 
   const handleStateEntered = () => {
+    if (hasNotifiedOpen.current) return
+    hasNotifiedOpen.current = true
     onOpen?.()
   }
 
   const handleStateLeft = () => {
-    if (!isInitialRender.current) {
+    if (show.value) {
+      // show flipped back on while we were leaving — remount instead of
+      // tearing down. Without this (upstream lynx-ui parity, drifted after
+      // the original port), a reopen that races Leaving → Left strands
+      // show=true with nothing mounted and the show watcher never re-fires:
+      // the trigger goes permanently dead.
+      trace('skip mount=false because show=true (Left)')
+      restartShow()
+      return
+    }
+    if (!isInitialRender.current && hasNotifiedOpen.current) {
+      hasNotifiedOpen.current = false
       onClose?.()
     }
-    log(debugLog, '[vyui-presence][usePresence] set mount=false (Left)')
+    trace('set mount=false (Left)')
     mount.value = false
   }
 
-  const handleStateLeaving = () => {
-    leavingWaitFramesRef.current = 0
-    leavingLoopIdRef.current += 1
-    const loopId = leavingLoopIdRef.current
-    log(
-      debugLog,
-      `[vyui-presence][usePresence] leaving loop scheduled, loopId: ${loopId}`,
-    )
-    const tryLeft = () => {
-      // loopId mismatch ⇒ an animation started during the delay; abandon.
-      if (loopId !== leavingLoopIdRef.current) return
-      if (!notAnimating()) return
-      if (leavingWaitFramesRef.current >= MAX_WAIT_FRAMES) {
-        log(
-          debugLog,
-          `[vyui-presence][usePresence] leaving timeout reached, loopId: ${loopId}, frames: ${leavingWaitFramesRef.current}`,
-        )
-        setPresenceState(PresenceState.Left)
-        return
+  /**
+   * Polls once per frame until `state` leaves `isCurrentState()`, then stops.
+   * Two ways out other than the normal end event:
+   *   - no animation ever starts → resolve after {@link MAX_WAIT_FRAMES}
+   *   - one starts but its end/cancel is lost → resolve after
+   *     {@link MAX_STUCK_MS}, clearing the wedged flags first
+   * Stale ticks self-terminate on the loop id, so nothing needs cancelling.
+   */
+  const watchdog = (
+    name: string,
+    loopIdRef: { current: number },
+    isCurrentState: () => boolean,
+    resolve: () => void,
+  ) => {
+    loopIdRef.current += 1
+    const loopId = loopIdRef.current
+    const startedAt = Date.now()
+    let idleFrames = 0
+    trace(`${name} loop scheduled, loopId: ${loopId}`)
+    const tick = () => {
+      if (loopId !== loopIdRef.current) return // a newer cycle superseded this
+      if (!isCurrentState()) return // resolved through the end-event path
+      if (notAnimating()) {
+        if (++idleFrames >= MAX_WAIT_FRAMES) {
+          trace(`${name} timeout reached, loopId: ${loopId}, frames: ${idleFrames}`)
+          return resolve()
+        }
       }
-      leavingWaitFramesRef.current += 1
-      delayFrames(1, tryLeft)
+      else {
+        idleFrames = 0
+        if (Date.now() - startedAt >= MAX_STUCK_MS) {
+          trace(`${name} STUCK cap reached, loopId: ${loopId} — forcing resolution`)
+          isKFAnimating.current = false
+          isTransitionAnimating.current = false
+          return resolve()
+        }
+      }
+      delayFrames(1, tick)
     }
-    delayFrames(1, tryLeft)
+    delayFrames(1, tick)
+  }
+
+  const handleStateLeaving = () => {
+    enteringLoopIdRef.current += 1 // cancel any pending entering wait
+    watchdog(
+      'leaving',
+      leavingLoopIdRef,
+      () => state.value === PresenceState.Leaving,
+      () => show.value ? restartShow() : setPresenceState(PresenceState.Left),
+    )
   }
 
   const handleStateEnteringWithDelay = () => {
-    enteringWaitFramesRef.current = 0
-    enteringLoopIdRef.current += 1
-    const loopId = enteringLoopIdRef.current
-    log(
-      debugLog,
-      `[vyui-presence][usePresence] entering loop scheduled, loopId: ${loopId}`,
+    leavingLoopIdRef.current += 1 // cancel any pending leaving wait
+    watchdog(
+      'entering',
+      enteringLoopIdRef,
+      () => state.value === getEnteringStateWithDelay(),
+      () => setPresenceState(
+        show.value ? PresenceState.Entered : PresenceState.Leaving,
+      ),
     )
-    const tryEntered = () => {
-      if (loopId !== enteringLoopIdRef.current) return
-      if (!notAnimating()) return
-      if (enteringWaitFramesRef.current >= MAX_WAIT_FRAMES) {
-        log(
-          debugLog,
-          `[vyui-presence][usePresence] entering timeout reached, loopId: ${loopId}, frames: ${enteringWaitFramesRef.current}`,
-        )
-        setPresenceState(PresenceState.Entered)
-        return
-      }
-      enteringWaitFramesRef.current += 1
-      delayFrames(1, tryEntered)
-    }
-    delayFrames(1, tryEntered)
   }
 
   // ----- show/dismiss -------------------------------------------------------
 
   const handleShow = (scheduleId: number) => {
-    log(debugLog, '[vyui-presence][usePresence] set mount=true')
+    trace('set mount=true')
     mount.value = true
-    log(
-      debugLog,
-      '[vyui-presence][usePresence] schedule set Entering in 8 frames',
-    )
+    trace('schedule set Entering in 8 frames')
     delayFrames(8, () => {
-      if (scheduleId !== showScheduleIdRef.current) return
+      if (scheduleId !== showScheduleIdRef.current || !show.value) return
       setPresenceState(PresenceState.Entering)
     })
     if (getEnableDelay()) {
-      log(
-        debugLog,
-        '[vyui-presence][usePresence] schedule set DelayedEntering in 16 frames',
-      )
+      trace('schedule set DelayedEntering in 16 frames')
       delayFrames(16, () => {
-        if (scheduleId !== showScheduleIdRef.current) return
+        if (scheduleId !== showScheduleIdRef.current || !show.value) return
         setPresenceState(PresenceState.DelayedEntering)
       })
     }
   }
 
+  // Invalidate any pending show schedule and start a fresh one — the
+  // re-entry path for "show flipped back on while leaving" (upstream parity).
+  function restartShow() {
+    showScheduleIdRef.current += 1
+    handleShow(showScheduleIdRef.current)
+  }
+
   const handleDismiss = () => {
     const s = state.value
+    if (s === getEnteringStateWithDelay()) {
+      // Mid-enter. Do NOT cut straight to Leaving: a leave keyframe starts
+      // from the element's UNDERLYING value (the fully-open rule), not from
+      // wherever the enter animation currently has it, so swapping the two
+      // mid-flight snaps the element to fully open and plays the exit from
+      // there — the "flashes up, then plays back" on a close that races the
+      // open (Sheet/ActionSheet is where it reads worst). Let the enter
+      // finish; `handleAnimationEnd` routes Entering → Leaving on its own
+      // because `show` is already false, and the entering watchdog (still
+      // live — we deliberately don't bump its loop id here) does the same
+      // when no animation fires or its end event is lost.
+      trace('show=false mid-enter -> defer Leaving until the enter resolves')
+      return
+    }
     if (
       s === PresenceState.Entered
       || s === PresenceState.Entering
       || s === PresenceState.DelayedEntering
     ) {
-      log(
-        debugLog,
-        '[vyui-presence][usePresence] show=false -> set PresenceState.Leaving',
-      )
+      trace('show=false -> set PresenceState.Leaving')
+      enteringLoopIdRef.current += 1 // cancel any pending entering wait
       setPresenceState(PresenceState.Leaving)
     }
     else if (
@@ -325,10 +363,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       // there's nothing to animate out of, so unmount synchronously.
       // (The bumped showScheduleIdRef in the show watcher invalidates the
       // pending entering schedule so we don't race ourselves into a re-mount.)
-      log(
-        debugLog,
-        `[vyui-presence][usePresence] show=false in ${s === PresenceState.Initial ? 'Initial' : 'Left'} -> set mount=false`,
-      )
+      trace(`show=false in ${s === PresenceState.Initial ? 'Initial' : 'Left'} -> set mount=false`)
       mount.value = false
     }
   }
@@ -339,10 +374,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   watch(
     state,
     (s) => {
-      log(
-        debugLog,
-        `[vyui-presence][usePresence] state effect, state: ${s}, show: ${showRef.current}, enableDelay: ${getEnableDelay()}, isTransitionAnimating: ${isTransitionAnimating.current}, isKFAnimating: ${isKFAnimating.current}`,
-      )
+      trace(`state effect, state: ${s}, show: ${show.value}, enableDelay: ${getEnableDelay()}, isTransitionAnimating: ${isTransitionAnimating.current}, isKFAnimating: ${isKFAnimating.current}`)
       if (s === PresenceState.Entered) handleStateEntered()
       if (s === PresenceState.Left) handleStateLeft()
       if (s === PresenceState.Leaving) handleStateLeaving()
@@ -357,10 +389,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   watch(
     enableDelay ? [show, enableDelay] : [show],
     () => {
-      log(
-        debugLog,
-        `[vyui-presence][usePresence] show effect show:${show.value}, enableDelay:${getEnableDelay()}, state:${state.value}, mount:${mount.value}`,
-      )
+      trace(`show effect show:${show.value}, enableDelay:${getEnableDelay()}, state:${state.value}, mount:${mount.value}`)
       showScheduleIdRef.current += 1
       const scheduleId = showScheduleIdRef.current
       if (show.value) handleShow(scheduleId)

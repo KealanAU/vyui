@@ -15,6 +15,13 @@ links:
 
 `Draggable` is a headless `@vyui/core` primitive that turns its child into a draggable element via a main-thread pan gesture. It is the building block behind [`Sortable`](/components/sortable) and other drag-driven interactions, and tracks the finger natively for smooth motion.
 
+::component-code
+---
+name: draggable-example
+height: 320px
+---
+::
+
 ::callout{icon="i-lucide-box"}
 This is a vyui-original `@vyui/core` primitive — a 2D pan gesture over Lynx main-thread touch events. Behavior only, no styles.
 ::
@@ -70,7 +77,8 @@ The `drag-move` payload adds `dx` / `dy` (delta from touchstart); `drag-end` add
 
 ## Platform notes
 
-- The gesture is implemented with main-thread (MTS) touch worklets, so tracking stays smooth independent of the background thread.
+- The gesture is implemented with main-thread (MTS) worklets, so tracking stays smooth independent of the background thread.
+- Touch and mouse are both wired: on-device drags use touch events, while desktop browsers (Lynx web) drive the same worklets from mouse events — the live preview above works with a mouse.
 
 ## Related components
 

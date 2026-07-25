@@ -56,20 +56,38 @@ export interface SheetRootContext {
    * and Presence unmounts it on close — so painters must null-check.
    */
   backdropElRef: MainThreadRef<any>
+  /**
+   * Set by SheetContent's release worklet when a drag DISMISSES the sheet:
+   * from that point the MT inline transition is already painting the panel
+   * and backdrop off-screen, so the panel/backdrop drop their `ui-leaving`
+   * class and the `.ui-leaving` keyframes never apply.
+   *
+   * Without this the close is driven TWICE — the inline transition from the
+   * release position, and Presence's keyframe, which starts from the
+   * fully-open underlying value and so yanks the panel back up and replays
+   * the exit. Inline `animation: 'none'` was supposed to suppress the
+   * keyframe, but a class-driven animation wins over it on the Lynx style
+   * path. Reset by SheetRoot whenever `open` flips back to `true`.
+   */
+  dragClosing: Ref<boolean>
 }
 
 export const [injectSheetRootContext, provideSheetRootContext] =
   createContext<SheetRootContext>('SheetRoot')
 
 /**
- * Touch handler bag shared between SheetContent and SheetHandle so the
- * handle can drive the same MT drag pipeline as the content surface.
- * Provided by SheetContent, injected by SheetHandle.
+ * Gesture handler bag (touch + desktop-mouse twins) shared between
+ * SheetContent and SheetHandle so the handle can drive the same MT drag
+ * pipeline as the content surface. Provided by SheetContent, injected by
+ * SheetHandle.
  */
 export interface SheetDragContext {
   handleTouchStartMT: any
   handleTouchMoveMT: any
   handleTouchEndMT: any
+  handleMouseDownMT: any
+  handleMouseMoveMT: any
+  handleMouseUpMT: any
 }
 
 export const [injectSheetDragContext, provideSheetDragContext] =

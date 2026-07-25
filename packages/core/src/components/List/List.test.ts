@@ -121,3 +121,82 @@ describe('List — invoke() web fallback', () => {
     }
   })
 })
+
+// Regression — `scrollIntoId` threw on Lynx web and scrolled nowhere.
+//
+// The worklet reached for `lynx.querySelector('#id')` three times. That global
+// selector API exists only on the NATIVE main thread; web-core's MT `lynx`
+// object has no `querySelector`, so the first call raised a TypeError and took
+// the whole worklet with it — the same class of failure that stranded the
+// Slider on `__QuerySelectorAll`, and the one ScrollView already documents
+// above its own element refs.
+//
+// Two of the three lookups were for the `<list>` itself, which the component
+// owns and can hold a `main-thread-ref` to. The third targets an arbitrary
+// consumer-owned child, so the global selector is the only route and it has to
+// be feature-checked instead.
+describe('List — scrollIntoId must survive a selector-less main thread', () => {
+  async function readSfc(name: string): Promise<string> {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    return fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), name), 'utf8')
+  }
+  function body(sfc: string, fn: string): string {
+    return sfc.match(new RegExp(`function ${fn}[\\s\\S]*?\\n}`))?.[0] ?? ''
+  }
+
+  it('drives the list through a main-thread ref, not a selector', async () => {
+    const sfc = await readSfc('List.vue')
+    const fn = body(sfc, 'scrollIntoIdMT')
+    expect(fn).toMatch(/'main thread'/)
+    // Steps 1 and 3 both go through the ref'd element.
+    expect(fn.match(/listEl\.invoke\('scrollToPosition'/g)?.length).toBeGreaterThanOrEqual(2)
+    // And the element is actually bound in the template.
+    expect(sfc).toMatch(/:main-thread-ref="listElMT"/)
+  })
+
+  it('feature-checks the global selector before the child measurement', async () => {
+    const fn = body(await readSfc('List.vue'), 'scrollIntoIdMT')
+    // The check must be on the METHOD, not merely on `lynx` existing — the
+    // object is present on web, only the selector is missing.
+    expect(fn).toMatch(/typeof g\?\.lynx\?\.querySelector !== 'function'/)
+    // Bare `lynx.querySelector(...)` would throw before any guard could run.
+    expect(fn).not.toMatch(/(?<![.\w])lynx\.querySelector/)
+  })
+
+  it('still lands on the row when the measurement is unavailable', async () => {
+    // Degrading to the step-1 landing is the whole point — a guard that just
+    // returned would leave `scrollIntoId` silently doing nothing on web.
+    const fn = body(await readSfc('List.vue'), 'scrollIntoIdMT')
+    // `offset: extraOffset` is unique to the fallback scroll — step 3 applies
+    // the measured correction as `-offset + extraOffset`.
+    expect(fn).toMatch(/offset: extraOffset,/)
+    expect(fn).toMatch(/offset: -offset \+ extraOffset,/)
+  })
+})
+
+// Canary for a silently-dead binding form, found alongside the above.
+//
+// `:main-thread:bindlayoutchange` (colon) parses as an ordinary prop —
+// vue-lynx only recognises the `main-thread-` prefix, so the worklet was never
+// attached and `listHeightMT` / `listWidthMT` stayed 0 on EVERY platform,
+// quietly breaking `alignTo: 'bottom'` and `'middle'`. Nothing warns; the
+// build is green and the maths is just wrong.
+describe('core — main-thread bindings must use the hyphen form', () => {
+  it('has no `main-thread:` template bindings anywhere', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..')
+
+    const offenders: string[] = []
+    for (const entry of fs.readdirSync(root, { recursive: true, encoding: 'utf8' })) {
+      if (!entry.endsWith('.vue')) continue
+      const src = fs.readFileSync(path.join(root, entry), 'utf8')
+      for (const line of src.split('\n')) {
+        // Template bindings only — prose in comments may name the bad form.
+        if (/^\s*:?main-thread:/.test(line)) offenders.push(`${entry}: ${line.trim()}`)
+      }
+    }
+    expect(offenders).toEqual([])
+  })
+})

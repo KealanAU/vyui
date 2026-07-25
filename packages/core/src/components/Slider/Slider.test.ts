@@ -239,8 +239,15 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     expect(fn).toMatch(/'main thread'/)
     expect(fn).toMatch(/querySelectorAll\('\.vyui-slider-thumb'\)/)
     expect(fn).toMatch(/querySelector\('\.vyui-slider-range'\)/)
-    // Unresolvable thumbs must abort the gesture, not drag an empty registry.
-    expect(sfc).toMatch(/if \(thumbElsRef\.current\.length === 0\) return/)
+    // The query must be guarded: Lynx web exposes `invoke` to the main-thread
+    // realm but NOT `__QuerySelectorAll`, so the wrapper method passes a
+    // `typeof` check and then throws `ReferenceError` when called.
+    expect(fn).toMatch(/try \{/)
+    expect(fn).toMatch(/catch/)
+    // And it must never gate the gesture. Bailing on an empty registry stranded
+    // the whole control on web: every press aborted before emitting a value.
+    expect(body(sfc, '_dragStart')).not.toMatch(/thumbElsRef\.current\.length === 0\) return/)
+    expect(body(sfc, '_dragStart')).toMatch(/runOnBackground\(_emitLive as any\)\(next\)/)
   })
 
   it('stamps the marker classes MT resolution selects on, alongside user classes', async () => {
@@ -254,20 +261,37 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
   // The BG only hears about the value on touchend, so the fill has to be
   // painted from the worklets too — otherwise it sits frozen for the whole
   // gesture and snaps on release while the thumb glides.
-  // `layoutchange` reports top/left relative to the PAGE while a touch reports
-  // pageX/pageY relative to the VIEWPORT, so an offset rebuilt as
+  // `layoutchange` reports top/left relative to the PAGE while a pointer
+  // reports its position relative to the VIEWPORT, so an offset rebuilt as
   // `pageY - rect.top` is only correct until something scrolls — measured on
-  // device at top 2805 against pageY 448. `touches[0].x`/`.y` come measured
-  // from the bound element's origin, so keep the mapping on those.
-  it('maps from element-relative touch offsets, never a reconstructed origin', async () => {
+  // device at top 2805 against pageY 448. The origin has to come from
+  // `boundingClientRect`, which is in the pointer's own frame.
+  //
+  // Both input types map the same way, off `clientX`/`clientY`: it is the only
+  // pointer field Lynx reports on native AND web. `touches[0].x`/`.y` is
+  // native-only — web touches are built from raw DOM `Touch`, which has no
+  // `x`/`y`, so reading them stranded every touchscreen browser on `NaN`.
+  it('maps every pointer through one viewport frame and a per-gesture origin', async () => {
     const sfc = await readSfc('SliderImplMTS.vue')
-    for (const fn of ['_onTouchStart', '_onTouchMove']) {
-      expect(body(sfc, fn)).toMatch(/_valueFromTouch\(t\.x, t\.y\)/)
-      expect(body(sfc, fn)).not.toMatch(/pageX|pageY|clientX|clientY/)
-    }
-    expect(body(sfc, '_valueFromTouch')).not.toMatch(/rectXRef|rectYRef/)
-    // Only the SIZE crosses the thread boundary; a stored origin is the bug.
-    expect(sfc).toMatch(/runOnMainThread\(_setSize as any\)\(r\.width, r\.height\)/)
+    // Element-local offsets are always `client* - rect origin`, never a raw
+    // native-only field.
+    expect(body(sfc, '_beginAt')).toMatch(/invoke\('boundingClientRect'\)/)
+    expect(body(sfc, '_beginAt')).toMatch(/_dragStart\(clientX - r\.left, clientY - r\.top\)/)
+    for (const fn of ['_onTouchStart', '_onTouchMove', '_onMouseDown', '_onMouseMove'])
+      expect(body(sfc, fn)).not.toMatch(/\bt\.x\b|\bt\.y\b|pageX|pageY/)
+    expect(body(sfc, '_onTouchStart')).toMatch(/_beginAt\(t\.clientX, t\.clientY\)/)
+    expect(body(sfc, '_onTouchMove')).toMatch(/_dragMove\(t\.clientX - rectLeftRef\.current, t\.clientY - rectTopRef\.current\)/)
+    expect(body(sfc, '_onMouseDown')).toMatch(/_beginAt\(e\.clientX, e\.clientY\)/)
+    for (const core of ['_dragStart', '_dragMove'])
+      expect(body(sfc, core)).toMatch(/_valueFromTouch\(localX, localY\)/)
+    expect(body(sfc, '_valueFromTouch')).not.toMatch(/rectLeftRef|rectTopRef/)
+    // Origin AND extent come from that one response. Sourcing the extent from
+    // a BG `layoutchange` -> `runOnMainThread` hop instead stranded the whole
+    // drag on Lynx web: the hop never delivered, so the zero-extent guard in
+    // `_dragStart` swallowed every press and the value never moved.
+    expect(body(sfc, '_beginAt')).toMatch(/rectWRef\.current = r\.width/)
+    expect(body(sfc, '_beginAt')).toMatch(/rectHRef\.current = r\.height/)
+    expect(sfc).not.toMatch(/@layoutchange=|useResizeObserver\(/)
   })
 
   it('keeps values sorted and re-tracks the active thumb every frame', async () => {
@@ -276,7 +300,7 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     // from the re-sorted array on every frame and this has to match, or the
     // commit lands on the wrong thumb.
     expect(body(sfc, '_applyValue')).toMatch(/next\.sort\(\(a, b\) => a - b\)/)
-    for (const handler of ['_onTouchStart', '_onTouchMove']) {
+    for (const handler of ['_dragStart', '_dragMove']) {
       const fn = body(sfc, handler)
       expect(fn).toMatch(/_applyValue\(src, idx, value\)/)
       expect(fn).toMatch(/activeIndexRef\.current = next\.indexOf\(value\)/)
@@ -290,13 +314,13 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     // `_resetActiveThumbTransform` hands the thumb back to its BG anchor, but
     // the range has no anchor to fall back to — its inline offsets persist, so
     // touchend has to leave them on the committed values.
-    const fn = body(await readSfc('SliderImplMTS.vue'), '_onTouchEnd')
+    const fn = body(await readSfc('SliderImplMTS.vue'), '_dragEnd')
     expect(fn).toMatch(/_paintRange\(finalVals\)/)
   })
 
   it('repaints the range from the drag worklets, not just on commit', async () => {
     const sfc = await readSfc('SliderImplMTS.vue')
-    for (const handler of ['_onTouchStart', '_onTouchMove']) {
+    for (const handler of ['_dragStart', '_dragMove']) {
       const fn = sfc.match(new RegExp(`function ${handler}[\\s\\S]*?\\n}`))?.[0] ?? ''
       expect(fn).toMatch(/_paintRange\(next\)/)
     }
@@ -313,5 +337,118 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     // mirror can't reach `writeModelValue` down either route.
     const fn = body(await readSfc('SliderRoot.vue'), 'isValidFromMT')
     expect(fn).toMatch(/nextValues\.length !== prev\.length[\s\S]*?return false/)
+  })
+})
+
+// Regression — "the slider is permanently stuck on its initial value in the
+// browser, but drags fine on device".
+//
+// The gesture reached `_dragStart` with everything it needed (mousedown fired,
+// `invoke('boundingClientRect')` resolved a correct 1234x9 rect) and then
+// aborted, because resolving the thumb elements to paint had thrown:
+//
+//   _dragStart 493.5 6.5  disabled false  w/h 1234 9  thumbs 0
+//   ReferenceError: __QuerySelectorAll is not defined
+//
+// Two separate mistakes stacked, and each is worth pinning on its own:
+//
+//   1. A capability check that checks the wrong layer. `typeof
+//      track.querySelectorAll === 'function'` is true on every platform — the
+//      wrapper method always exists. What varies is whether the realm exposes
+//      the `__QuerySelectorAll` PAPI it calls into, and Lynx web does not
+//      (while still exposing `__InvokeUIMethod`, which is why the rect worked).
+//      Only a try/catch can see that.
+//   2. An optimisation allowed to gate correctness. Those elements exist only
+//      to paint from the main thread, ahead of the background's own render.
+//      Bailing when they're missing traded a smoothness win for the entire
+//      control.
+//
+// The worklets can't execute under vitest, so these are asserted against the
+// SFC source, same shape as the block above.
+describe('Slider — a missing MT paint target must not strand the drag', () => {
+  async function readSfc(name: string): Promise<string> {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    return fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), name), 'utf8')
+  }
+  function body(sfc: string, fn: string): string {
+    return sfc.match(new RegExp(`function ${fn}[\\s\\S]*?\\n}`))?.[0] ?? ''
+  }
+
+  it('emits the value even when no thumb element could be resolved', async () => {
+    const fn = body(await readSfc('SliderImplMTS.vue'), '_dragStart')
+    // The lookup may still be attempted...
+    expect(fn).toMatch(/if \(thumbElsRef\.current\.length === 0\) _resolveEls\(\)/)
+    // ...but an empty result must not short-circuit the gesture.
+    expect(fn).not.toMatch(/thumbElsRef\.current\.length === 0\) return/)
+    // The background round-trip is what makes the control work at all.
+    expect(fn).toMatch(/runOnBackground\(_emitLive as any\)\(next\)/)
+  })
+
+  it('keeps both paints safe on an empty registry', async () => {
+    // With the gate gone these run every frame on web, so they carry the
+    // burden of bailing instead.
+    const sfc = await readSfc('SliderImplMTS.vue')
+    expect(body(sfc, '_paintActiveThumb')).toMatch(/idx >= els\.length\) return/)
+    expect(body(sfc, '_paintRange')).toMatch(/!el\?\.setStyleProperty\) return/)
+  })
+
+  it('measures the track from the gesture rect, never a layoutchange hop', async () => {
+    // The extent used to arrive via `@layoutchange` -> `runOnMainThread`, a
+    // second web-fragile dependency in the same bail chain.
+    const sfc = await readSfc('SliderImplMTS.vue')
+    expect(body(sfc, '_beginAt')).toMatch(/rectWRef\.current = r\.width/)
+    expect(body(sfc, '_beginAt')).toMatch(/rectHRef\.current = r\.height/)
+    expect(sfc).not.toMatch(/@layoutchange=|useResizeObserver\(/)
+  })
+
+  it('arms the root gate against echoing a live update back into MT values', async () => {
+    // `SliderImplMTS` set a private `draggingRef` of its own, so `_setValues`
+    // in the root — which reads `draggingMT` — was never actually gated.
+    const sfc = await readSfc('SliderImplMTS.vue')
+    expect(body(sfc, '_dragStart')).toMatch(/root\.draggingMT\.current = true/)
+    expect(body(sfc, '_dragEnd')).toMatch(/root\.draggingMT\.current = false/)
+    expect(sfc).not.toMatch(/draggingRef/)
+    expect(body(await readSfc('SliderRoot.vue'), '_setValues')).toMatch(/draggingMT\.current\) return/)
+  })
+})
+
+// Canary for the class of bug above, not just the one instance of it.
+//
+// Lynx web hands the main-thread realm a PARTIAL element PAPI surface:
+// `__InvokeUIMethod` resolves, `__QuerySelectorAll` does not. The wrapper
+// methods exist regardless, so nothing about the call site looks unsafe and
+// nothing fails until a real gesture runs in a real browser. Any worklet that
+// reaches for the DOM-shaped element API has to assume the call can throw.
+//
+// Ceiling: this only covers the ELEMENT wrapper (`someEl.querySelector*`).
+// The global `lynx.querySelector` used by List is the same hazard through a
+// different API and is not checked here.
+describe('core — MT worklets must guard element querySelector', () => {
+  it('wraps every worklet-side element query in a try/catch', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..')
+
+    const files: string[] = []
+    for (const entry of fs.readdirSync(root, { recursive: true, encoding: 'utf8' })) {
+      if (entry.endsWith('.vue')) files.push(path.join(root, entry))
+    }
+    expect(files.length).toBeGreaterThan(0)
+
+    const offenders: string[] = []
+    for (const file of files) {
+      const src = fs.readFileSync(file, 'utf8')
+      if (!src.includes('\'main thread\'')) continue
+      for (const fn of src.match(/function \w+[\s\S]*?\n}/g) ?? []) {
+        if (!fn.includes('\'main thread\'')) continue
+        // Element-wrapper queries only — skip the `lynx.` global (see ceiling).
+        if (!/(?<!lynx)\.querySelector(All)?\(/.test(fn)) continue
+        if (!fn.includes('try {')) {
+          offenders.push(`${path.relative(root, file)} :: ${fn.match(/function (\w+)/)?.[1]}`)
+        }
+      }
+    }
+    expect(offenders).toEqual([])
   })
 })

@@ -270,3 +270,78 @@ describe('useDragGesture — setIndex (programmatic)', () => {
     expect(currentIndex.value).toBe(0)
   })
 })
+
+// Lynx web dispatches raw mouse events and never synthesizes touch from them,
+// so on desktop the mouse wrappers are the ONLY drag path. They feed the same
+// coordinate cores as touch — what these lock is the wrapper rules, which is
+// where every desktop-only regression has landed so far.
+describe('useDragGesture — desktop mouse twins', () => {
+  it('exposes the mouse handlers alongside the touch ones', () => {
+    const { gesture } = mountGesture()
+    expect(gesture.onMouseDown).toBeTypeOf('function')
+    expect(gesture.onMouseMove).toBeTypeOf('function')
+    expect(gesture.onMouseUp).toBeTypeOf('function')
+  })
+
+  it('a mouse drag past the snap threshold advances the index, same as touch', () => {
+    const { gesture, currentIndex, onSwipeEnd, setStyleProperty } = mountGesture()
+    // Same distances and clock as the touch twin above, so a divergence in the
+    // shared core shows up as a difference between the two tests.
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1000)
+    gesture.onMouseDown({ clientX: 100, clientY: 0, buttons: 1 })
+    now.mockReturnValue(1300)
+    gesture.onMouseMove({ clientX: 30, clientY: 0, buttons: 1 }) // 70% of itemWidth
+    now.mockReturnValue(1310)
+    gesture.onMouseUp()
+    expect(currentIndex.value).toBe(1)
+    expect(onSwipeEnd).toHaveBeenCalledWith(1)
+    expect(setStyleProperty).toHaveBeenCalledWith('transform', 'translateX(-100px)')
+    now.mockRestore()
+  })
+
+  it('swallows the compatibility mousedown a touch browser replays after a tap', () => {
+    const { gesture, onSwipeStart } = mountGesture()
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1000)
+    gesture.onTouchStart({ detail: { x: 100, y: 0 } })
+    gesture.onTouchEnd() // stamps the touch timestamp
+    onSwipeStart.mockClear()
+
+    now.mockReturnValue(1400) // 400ms later — inside the replay window
+    gesture.onMouseDown({ clientX: 100, clientY: 0, buttons: 1 })
+    expect(onSwipeStart).not.toHaveBeenCalled()
+
+    now.mockReturnValue(1600) // past it — a real mouse press must get through
+    gesture.onMouseDown({ clientX: 100, clientY: 0, buttons: 1 })
+    expect(onSwipeStart).toHaveBeenCalledTimes(1)
+    now.mockRestore()
+  })
+
+  it('ignores a non-primary press instead of arming a phantom drag', () => {
+    // A right/middle press that armed the gesture would be "released" by the
+    // next hover move, teleporting the track.
+    const { gesture, onSwipeStart } = mountGesture()
+    gesture.onMouseDown({ clientX: 100, clientY: 0, buttons: 2 })
+    expect(onSwipeStart).not.toHaveBeenCalled()
+    gesture.onMouseDown({ clientX: 100, clientY: 0, buttons: 1 })
+    expect(onSwipeStart).toHaveBeenCalledTimes(1)
+  })
+
+  it('ends the drag on a move whose buttons report the primary released', () => {
+    // Recovers the mouseup lost when the pointer leaves the <lynx-view>.
+    const { gesture, onSwipeEnd } = mountGesture()
+    gesture.onMouseDown({ clientX: 100, clientY: 0, buttons: 1 })
+    gesture.onMouseMove({ clientX: 60, clientY: 0, buttons: 0 })
+    expect(onSwipeEnd).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps dragging when a move omits buttons entirely', () => {
+    // Trackpad and synthetic moves can drop the field; treating a MISSING
+    // `buttons` as a release lets go of the track mid-gesture.
+    const { gesture, onSwipeEnd, setStyleProperty } = mountGesture()
+    gesture.onMouseDown({ clientX: 100, clientY: 0, buttons: 1 })
+    setStyleProperty.mockClear()
+    gesture.onMouseMove({ clientX: 60, clientY: 0 })
+    expect(onSwipeEnd).not.toHaveBeenCalled()
+    expect(setStyleProperty).toHaveBeenCalled()
+  })
+})

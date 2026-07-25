@@ -80,3 +80,55 @@ describe('Sortable — velocity-aware drop', () => {
     expect(drop(0, 0, -400, 6)).toBe(0)
   })
 })
+
+describe('Sortable — drop settle contract in the SFC source', () => {
+  async function readSfc(name: string): Promise<string> {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    return fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), name), 'utf8')
+  }
+
+  function body(sfc: string, fn: string): string {
+    return sfc.match(new RegExp(`function ${fn}[\\s\\S]*?\\n}`))?.[0] ?? ''
+  }
+
+  it('settles the lifted row into its target slot instead of clearing on release', async () => {
+    // Clearing on the main thread at release repaints the PRE-DRAG order for
+    // however many frames the background commit takes to round-trip — the list
+    // snapping back and then reordering.
+    const fn = body(await readSfc('SortableItem.vue'), '_gestureEnd')
+    expect(fn).toMatch(/_shiftOthers\(startIdx, target\)/)
+    expect(fn).toMatch(/_setTransform\(/)
+    expect(fn).not.toMatch(/_clearAll\(/)
+  })
+
+  it('clears the settle transforms only after the reorder has rendered', async () => {
+    const fn = body(await readSfc('SortableItem.vue'), '_emitDragEnd')
+    expect(fn).toMatch(/nextTick\([\s\S]*_clearAll/)
+    expect(fn).toMatch(/nextTick\([\s\S]*notifyDragEnd/)
+  })
+
+  it('defaults longPressMs to 150', async () => {
+    // 250 felt like the row refused to lift; the value is mirrored to MT and
+    // read by the activation poller, so it is easy to change in one place only.
+    expect(await readSfc('SortableRoot.vue')).toMatch(/longPressMs: 150/)
+  })
+
+  // Lynx web re-targets pointer events by paint position, so a row dragged
+  // downward slid UNDER the rows it passed; those rows then swallowed its
+  // mousemove/mouseup and the gesture stranded mid-drag.
+  it('raises the lifted row from the background render, never from a worklet', async () => {
+    // A worklet-set zIndex does not survive the style patch that follows
+    // dragStart, so the raise has to ride the re-render `isDragging` triggers.
+    const sfc = await readSfc('SortableItem.vue')
+    const style = sfc.match(/const rowStyle = computed\([\s\S]*?\n\}\)/)?.[0] ?? ''
+    expect(style).toMatch(/style\.zIndex = isDragging\.value \? 1 : 0/)
+    expect(sfc).not.toMatch(/setStyleProperty\(\s*'z-?index'/i)
+  })
+
+  it('keeps the raise off native, where z-index jumps the row out of layout', async () => {
+    const style = (await readSfc('SortableItem.vue'))
+      .match(/const rowStyle = computed\([\s\S]*?\n\}\)/)?.[0] ?? ''
+    expect(style).toMatch(/SystemInfo\)?\??\.?\w*\?\.platform === 'web'/)
+  })
+})

@@ -15,7 +15,7 @@ export interface SortableItemProps {
 </script>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import type { SortableItemHandle } from './sortableContext'
@@ -36,6 +36,32 @@ const ctx = injectSortableRootContext()
 // element and would otherwise travel with the drag transform).
 const isDragging = computed(() => ctx.draggingIndex.value === props.index)
 
+/**
+ * Row style. The lifted row is raised in the paint order on WEB ONLY.
+ *
+ * Lynx web re-targets pointer events by position, so a row dragged downward
+ * slides under the rows it passes, they swallow the mousemove/mouseup, and the
+ * gesture strands mid-drag. A `zIndex` fixes it there — flex items open a
+ * stacking context without needing `position`.
+ *
+ * Lynx native must not get it: z-indexing promotes the view out of its layout
+ * position and the dragged row jumps to a screen-absolute Y. It has no use for
+ * it either — native delivers the whole gesture to the element the touch
+ * started on regardless of what is painted above.
+ *
+ * Read at render, not setup: `SystemInfo` can resolve late, and this only
+ * re-evaluates when `isDragging` flips — long after boot.
+ */
+const rowStyle = computed(() => {
+  const style: Record<string, unknown> = {
+    height: `${ctx.itemHeight.value}px`,
+    flexShrink: 0,
+  }
+  if ((globalThis as any).SystemInfo?.platform === 'web')
+    style.zIndex = isDragging.value ? 1 : 0
+  return style
+})
+
 const containerRef = useMainThreadRef<any>(null)
 const touchStartYRef = useMainThreadRef<number>(0)
 const touchStartTimeRef = useMainThreadRef<number>(0)
@@ -45,6 +71,10 @@ const indexRef = useMainThreadRef<number>(props.index)
 const itemDisabledRef = useMainThreadRef<boolean>(props.disabled)
 const lastTargetRef = useMainThreadRef<number>(-1)
 const liftedDyRef = useMainThreadRef<number>(0)
+// Timestamp of the last real touch. Touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
+// events inside this window so a tap doesn't re-arm a phantom gesture.
+const lastTouchTsRef = useMainThreadRef<number>(0)
 // Long-press activation is timed on the main thread by polling
 // `requestAnimationFrame`, NOT `setTimeout`. The MT worklet runtime does not
 // expose `setTimeout`/`clearTimeout` — they're commented out as internal in
@@ -146,7 +176,11 @@ function _shiftOthers(startIdx: number, targetIdx: number) {
   }
 }
 
-/** Clear every handle's transform. Called on cancel and after commit. */
+/**
+ * Clear every handle's transform. Called from the background once a commit has
+ * rendered — never on the main thread at release, which would repaint the
+ * pre-drag order until the reorder lands.
+ */
 function _clearAll() {
   'main thread'
   const handles = ctx.itemHandlesMT.current
@@ -243,17 +277,17 @@ function _activationTick() {
   else (lynx as any).requestAnimationFrame(_activationTick)
 }
 
-function _onTouchStart(e: { touches: Array<{ clientY: number }> }) {
+function _gestureStart(clientY: number) {
   'main thread'
   if (ctx.disabledMT.current || itemDisabledRef.current) return
   if (ctx.draggingIndexMT.current !== -1) return
   armedRef.current = true
   draggingRef.current = false
-  touchStartYRef.current = e.touches[0].clientY
+  touchStartYRef.current = clientY
   touchStartTimeRef.current = Date.now()
   liftedDyRef.current = 0
   lastTargetRef.current = indexRef.current
-  posQueueRef.current = [e.touches[0].clientY]
+  posQueueRef.current = [clientY]
   timeQueueRef.current = [Date.now()]
   // Defer activation by `longPressMs` so a tap or vertical scroll doesn't lift.
   // Timed entirely on the main thread via an rAF poller — `_onTouchMove` disarms
@@ -271,10 +305,10 @@ function _onTouchStart(e: { touches: Array<{ clientY: number }> }) {
   }
 }
 
-function _onTouchMove(e: { touches: Array<{ clientY: number }> }) {
+function _gestureMove(clientY: number) {
   'main thread'
   if (!armedRef.current) return
-  const y = e.touches[0].clientY
+  const y = clientY
   const dy = y - touchStartYRef.current
 
   // Pre-activation: a meaningful pre-timer move means the user was scrolling.
@@ -320,7 +354,7 @@ function _onTouchMove(e: { touches: Array<{ clientY: number }> }) {
   _autoScroll(y)
 }
 
-function _onTouchEnd() {
+function _gestureEnd() {
   'main thread'
   if (!armedRef.current && !draggingRef.current) return
   armedRef.current = false
@@ -359,12 +393,73 @@ function _onTouchEnd() {
   if (target < 0) target = 0
   if (target > count - 1) target = count - 1
 
-  _clearAll()
+  // Settle into the target slot rather than clearing here. Clearing on release
+  // repaints the ORIGINAL order for however many frames the background commit
+  // takes to round-trip and re-render — the flash of the list snapping back and
+  // then reordering. Snapping the lifted row to `target` and re-running the
+  // sibling shift for the final (velocity-adjusted) target makes the painted
+  // arrangement identical to the committed one, so the handoff is invisible.
+  // `_emitDragEnd` clears the transforms once that commit has rendered.
+  _shiftOthers(startIdx, target)
+  _setTransform(
+    (containerRef as unknown as { current: any }).current,
+    (target - startIdx) * ctx.itemHeightMT.current,
+  )
   liftedDyRef.current = 0
   posQueueRef.current = []
   timeQueueRef.current = []
   ctx.draggingIndexMT.current = -1
   runOnBackground(_emitDragEnd as any)(startIdx, target)
+}
+
+function _onTouchStart(e: { touches: Array<{ clientY: number }> }) {
+  'main thread'
+  _gestureStart(e.touches[0].clientY)
+}
+
+function _onTouchMove(e: { touches: Array<{ clientY: number }> }) {
+  'main thread'
+  _gestureMove(e.touches[0].clientY)
+}
+
+function _onTouchEnd() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _gestureEnd()
+}
+
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+// touch from them, so the same gesture core is bound to mouse. Coordinates
+// arrive top-level (mouse `detail` is the DOM click-count number, not
+// `{x, y}`). No mouseleave binding — it doesn't bubble, so per-element
+// delivery is unreliable on the Lynx dispatch path. The long-press lift is
+// timed inside `_gestureStart`'s rAF poller, so mouse gets it for free.
+function _onMouseDown(e: { clientY: number, buttons?: number }) {
+  'main thread'
+  // Swallow the compatibility mousedown a touch browser replays after a tap.
+  if (Date.now() - lastTouchTsRef.current < 500) return
+  // Primary button only: a right/middle press would arm a phantom gesture that
+  // the next hover move then works against.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  _gestureStart(e.clientY)
+}
+
+function _onMouseMove(e: { clientY: number, buttons?: number }) {
+  'main thread'
+  // Only an EXPLICIT buttons value with the primary bit clear counts as
+  // released (recovers the mouseup lost outside the <lynx-view>). A missing
+  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
+  // it, and ending on those lets the drag go mid-gesture.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+    _gestureEnd()
+    return
+  }
+  _gestureMove(e.clientY)
+}
+
+function _onMouseUp() {
+  'main thread'
+  _gestureEnd()
 }
 
 function _emitDragStart(idx: number) {
@@ -373,7 +468,13 @@ function _emitDragStart(idx: number) {
 
 function _emitDragEnd(from: number, to: number) {
   ctx.commitReorder(from, to)
-  ctx.notifyDragEnd()
+  // Drop the settle transforms only once the reordered rows have rendered —
+  // they and the transforms describe the same arrangement, so the swap is
+  // invisible. Clearing any earlier shows the pre-drag order in between.
+  void nextTick(() => {
+    void runOnMainThread(_clearAll as any)()
+    ctx.notifyDragEnd()
+  })
 }
 
 // MT teardown — disarm a pending long-press when the row unmounts. BG writes to
@@ -397,10 +498,10 @@ function _cancelActivation() {
     :main-thread-bindtouchmove="_onTouchMove"
     :main-thread-bindtouchend="_onTouchEnd"
     :main-thread-bindtouchcancel="_onTouchEnd"
-    :style="{
-      height: `${ctx.itemHeight.value}px`,
-      flexShrink: 0,
-    }"
+    :main-thread-bindmousedown="_onMouseDown"
+    :main-thread-bindmousemove="_onMouseMove"
+    :main-thread-bindmouseup="_onMouseUp"
+    :style="rowStyle"
   >
     <slot :dragging="isDragging" :index="props.index" />
   </view>

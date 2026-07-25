@@ -222,6 +222,10 @@ const refreshingRef = useMainThreadRef<boolean>(refreshing.value)
 const disabledRef = useMainThreadRef<boolean>(props.disabled)
 const refreshEnabledRef = useMainThreadRef<boolean>(props.enableRefresh)
 const bounceEnabledRef = useMainThreadRef<boolean>(props.enableBounce)
+// Timestamp of the last real touch. Touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair after touchend; the mouse handlers
+// ignore events inside this window so a tap doesn't run the pull twice.
+const lastTouchTsRef = useMainThreadRef<number>(0)
 
 function _mtIsAndroid() {
   'main thread'
@@ -346,19 +350,22 @@ function _onLayoutMT(event: any) {
   if (d && typeof d.height === 'number') viewportRef.current = d.height
 }
 
-function _onTouchStart(event: any) {
+// Coordinate-based gesture core. The touch and mouse wrappers below feed the
+// same logic; a gesture is all-touch or all-mouse, so the coordinate spaces
+// never mix — only deltas from the recorded start matter.
+
+function _dragStart(y: number) {
   'main thread'
   if (disabledRef.current || refreshingRef.current) return
   draggingRef.current = true
   owningRef.current = false
-  startYRef.current = event.touches[0].pageY
+  startYRef.current = y
   startOffsetRef.current = offsetRef.current
 }
 
-function _onTouchMove(event: any) {
+function _dragMove(y: number) {
   'main thread'
   if (!draggingRef.current || refreshingRef.current) return
-  const y = event.touches[0].pageY
   const delta = y - startYRef.current
 
   // Own the pull at an edge we can react to: the top (refresh or bounce), or
@@ -402,7 +409,7 @@ function _onTouchMove(event: any) {
   }
 }
 
-function _onTouchEnd() {
+function _dragEnd() {
   'main thread'
   if (!draggingRef.current) return
   draggingRef.current = false
@@ -420,6 +427,52 @@ function _onTouchEnd() {
     _animateTo(0, 240)
     runOnBackground(_onRelease as any)()
   }
+}
+
+function _onTouchStart(event: any) {
+  'main thread'
+  _dragStart(event.touches[0].pageY)
+}
+
+function _onTouchMove(event: any) {
+  'main thread'
+  _dragMove(event.touches[0].pageY)
+}
+
+function _onTouchEnd() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _dragEnd()
+}
+
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+// touch from them, so a touch-only pull is inert under a cursor. The pull only
+// engages at an edge (`atTopRef` / bottom), so binding mouse here doesn't
+// interfere with ordinary wheel scrolling in the middle of the list.
+// Coordinates arrive top-level (mouse `detail` is the DOM click-count number).
+// No mouseleave binding — it doesn't bubble, so per-element delivery is
+// unreliable on the Lynx dispatch path.
+function _onMouseDown(e: { pageY: number, buttons?: number }) {
+  'main thread'
+  // Swallow the compatibility mousedown a touch browser replays after a tap.
+  if (Date.now() - lastTouchTsRef.current < 500) return
+  // Primary button only: a right/middle press would start a phantom pull that
+  // the next hover move then "releases".
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  _dragStart(e.pageY)
+}
+
+function _onMouseMove(e: { pageY: number, buttons?: number }) {
+  'main thread'
+  // Only an EXPLICIT buttons value with the primary bit clear counts as
+  // released (recovers the mouseup lost outside the <lynx-view>). A missing
+  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
+  // it, and ending on those lets go mid-pull.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+    _dragEnd()
+    return
+  }
+  _dragMove(e.pageY)
 }
 
 function _onPull(progress: number, releaseReady: boolean) {
@@ -564,6 +617,9 @@ defineExpose({ scrollToIndex, refreshState })
         :main-thread-bindtouchmove="_onTouchMove"
         :main-thread-bindtouchend="_onTouchEnd"
         :main-thread-bindtouchcancel="_onTouchEnd"
+        :main-thread-bindmousedown="_onMouseDown"
+        :main-thread-bindmousemove="_onMouseMove"
+        :main-thread-bindmouseup="_dragEnd"
         :main-thread-bindscroll="_onScrollMT"
         :main-thread-bindscrolltoupper="_onReachTop"
         :main-thread-bindlayoutchange="_onLayoutMT"

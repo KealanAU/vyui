@@ -2,9 +2,9 @@
      Licensed under the Apache License Version 2.0.
 
      The Slider's only drag implementation. Everything runs on the main
-     thread: the track rect is cached in MT refs (measured on the BG from
-     `@layoutchange`), each `touchmove` worklet computes the next value, snaps
-     to `step`, and paints the active thumb's transform and the filled range
+     thread: the track rect is measured once per gesture from the pointer-down
+     worklet, each `touchmove` worklet computes the next value, snaps to
+     `step`, and paints the active thumb's transform and the filled range
      directly via `setStyleProperty`. BG only sees one round-trip per gesture —
      on `touchend` — which the root commits as a `valueCommit`.
 
@@ -34,10 +34,9 @@ function encodeStartEdge(edge: 'left' | 'right' | 'top' | 'bottom'): StartEdgeCo
 
 <script setup lang="ts">
 import { watch } from 'vue'
-import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
+import { runOnBackground, useMainThreadRef } from 'vue-lynx'
 
 import { Primitive } from '@/components/Primitive'
-import { useResizeObserver } from '@/shared/composables'
 import { injectSliderRootContext } from './SliderRoot.vue'
 import { injectSliderOrientationContext } from './utils'
 
@@ -56,19 +55,33 @@ const mtBound = !(globalThis as any).lynxTestingEnv
 
 const trackRef = useMainThreadRef<any>(null)
 
-// Track SIZE only, refreshed on `layoutchange`. Stored as individual scalar
-// refs because `useMainThreadRef<object>` is less reliable across the worklet
-// boundary than primitives — see comment in Sheet.
+// Track geometry, in the pointer's own frame. All four come from ONE
+// `invoke('boundingClientRect')` at the start of every gesture (see
+// `_beginAt`) — never from `layoutchange`, for two reasons:
 //
-// Deliberately not its position. `layoutchange` reports top/left relative to
-// the PAGE; a touch reports pageX/pageY relative to the VIEWPORT. Inside a
-// scroll-view the two drift apart by the scroll offset, so an offset rebuilt as
-// `pageY - top` is only correct while nothing has scrolled — measured on device
-// at top 2805 against pageY 448. `touches[0].x`/`.y` are already measured from
-// the bound element's origin, so the mapping needs no origin of its own and
-// nothing to re-sync on scroll.
+//   - Position: `layoutchange` reports top/left relative to the PAGE, a
+//     pointer relative to the VIEWPORT. Inside a scroll-view the two drift by
+//     the scroll offset, so an offset rebuilt as `pageY - top` is only correct
+//     while nothing has scrolled — measured on device at top 2805 against
+//     pageY 448.
+//   - Size: it arrives in the same response, so making the gesture wait on a
+//     BG `layoutchange` -> `runOnMainThread` hop buys nothing and adds a way
+//     to fail. It stranded the whole drag on Lynx web, where that hop never
+//     delivered and the zero-extent guard in `_dragStart` swallowed every
+//     press. Reading it per gesture is also correct for a track that resized
+//     while its tab was hidden.
+//
+// Individual scalar refs because `useMainThreadRef<object>` is less reliable
+// across the worklet boundary than primitives — see comment in Sheet.
 const rectWRef = useMainThreadRef<number>(0)
 const rectHRef = useMainThreadRef<number>(0)
+const rectLeftRef = useMainThreadRef<number>(0)
+const rectTopRef = useMainThreadRef<number>(0)
+
+// Timestamp of the last real touch. Touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
+// events inside this window so a tap doesn't double-commit.
+const lastTouchTsRef = useMainThreadRef<number>(0)
 
 // 0 = horizontal (read the touch x offset, paint the left/right anchor), 1 = vertical.
 const axisRef = useMainThreadRef<0 | 1>(orientation.size === 'width' ? 0 : 1)
@@ -79,29 +92,6 @@ watch(() => orientation.startEdge.value, (v) => {
 })
 
 const activeIndexRef = useMainThreadRef<number>(-1)
-// True for the length of a gesture. The main thread owns the values while it is
-// set, so the background's own `valuesMT` push is ignored — otherwise a live
-// `update:modelValue` echoes straight back and can stomp a newer MT value.
-const draggingRef = useMainThreadRef<boolean>(false)
-
-// Lynx's main-thread `Element` has no `getBoundingClientRect` (see
-// `@lynx-js/types` main-thread/element.d.ts — the MT surface is
-// get/setAttribute, setStyleProperty, querySelector, invoke, animate), so the
-// track has to be measured on the BG and pushed across. Same shape Sheet uses
-// for its panel extent: BG `@layoutchange` -> `runOnMainThread` setter, since
-// plain BG writes to `MainThreadRef.current` are silently dropped. The
-// dispatch is post-mount, so it can't hit the setup-time MT-ref registration
-// race.
-//
-function _setSize(w: number, h: number) {
-  'main thread'
-  rectWRef.current = w
-  rectHRef.current = h
-}
-
-const { onLayoutChange } = useResizeObserver((r) => {
-  void runOnMainThread(_setSize as any)(r.width, r.height)
-})
 
 // Thumb + range elements, resolved ON the main thread from the track's own
 // subtree.
@@ -124,10 +114,23 @@ function _resolveEls() {
   'main thread'
   const track = trackRef.current
   if (!track || typeof track.querySelectorAll !== 'function') return
-  const els = track.querySelectorAll('.vyui-slider-thumb')
-  if (els && els.length > 0) thumbElsRef.current = els
-  if (typeof track.querySelector === 'function')
-    rangeElRef.current = track.querySelector('.vyui-slider-range')
+  // The wrapper method exists on every platform, but it calls through to a
+  // `__QuerySelectorAll` PAPI that Lynx web does NOT expose to the main-thread
+  // realm — `invoke` resolves there, this throws `ReferenceError`. A `typeof`
+  // check on the method can't see that, so the call has to be guarded.
+  //
+  // Swallowing is correct rather than lazy: the elements resolved here only
+  // drive the MT paint, which is a latency optimisation over the background's
+  // own render. Losing them costs smoothness, never correctness.
+  try {
+    const els = track.querySelectorAll('.vyui-slider-thumb')
+    if (els && els.length > 0) thumbElsRef.current = els
+    if (typeof track.querySelector === 'function')
+      rangeElRef.current = track.querySelector('.vyui-slider-range')
+  }
+  catch (_err) {
+    // No MT paint targets on this platform; the drag still runs BG-painted.
+  }
 }
 
 /** Snap `v` to `step` and clamp to `[min, max]`. */
@@ -143,9 +146,9 @@ function _snapClamp(v: number, min: number, max: number, step: number): number {
 }
 
 /**
- * Convert an ELEMENT-RELATIVE touch offset into a logical value, snapped and
- * clamped. `touches[0].x`/`.y` are already measured from the bound element's
- * own origin, which is why no rect position is involved.
+ * Convert an ELEMENT-RELATIVE pointer offset into a logical value, snapped and
+ * clamped. The wrappers have already subtracted the track origin, so only the
+ * track's SIZE is involved here — never a stored position.
  */
 function _valueFromTouch(localX: number, localY: number): number {
   'main thread'
@@ -299,22 +302,36 @@ function _paintRange(vals: number[]) {
   el.setStyleProperty(endName, `${100 - hi}%`)
 }
 
-function _onTouchStart(e: { touches: Array<{ x: number, y: number }> }) {
+// Coordinate-based gesture cores — take ELEMENT-LOCAL offsets. Every wrapper
+// below converts to them the same way: viewport coordinate minus the track
+// origin `_beginAt` captured for this gesture.
+
+function _dragStart(localX: number, localY: number) {
   'main thread'
   if (root.disabledMT.current) return
-  // Unmeasured track — bail instead of starting a gesture. `_valueFromTouch`
+  // Zero-extent track — bail instead of starting a gesture. `_valueFromTouch`
   // would map every coordinate to `min`, silently clobbering the consumer's
-  // value with 0 and then refusing to move.
+  // value with 0 and then refusing to move. `_beginAt` has already measured,
+  // so reaching this means the element really has no extent.
   if ((axisRef.current === 0 ? rectWRef.current : rectHRef.current) <= 0) return
   // Thumb/range elements are resolved lazily: the first touch is guaranteed to
   // land after the subtree is painted, whereas mount time is not.
+  //
+  // Deliberately NOT a gate. This used to bail when the lookup came back
+  // empty, which stranded the entire control on Lynx web — the platform can't
+  // run the query at all (see `_resolveEls`), so every press aborted here and
+  // the value never left its initial number. The paints below no-op safely on
+  // an empty registry, and the background still receives the value and renders
+  // the thumb from its own style, so an unresolvable subtree costs the MT
+  // paint and nothing else.
   if (thumbElsRef.current.length === 0) _resolveEls()
-  if (thumbElsRef.current.length === 0) return
-  const t = e.touches[0]
-  const value = _valueFromTouch(t.x, t.y)
+  const value = _valueFromTouch(localX, localY)
   const idx = _pickClosestIndex(value)
   activeIndexRef.current = idx
-  draggingRef.current = true
+  // The main thread owns the values for the length of the gesture, so the
+  // root's `_setValues` push is gated off this — otherwise the live
+  // `update:modelValue` echoes straight back and stomps a newer MT value.
+  root.draggingMT.current = true
   const src = root.valuesMT.current
   const next = _applyValue(src, idx, value)
   if (!_hasMinGap(next, root.minGapMT.current)) return
@@ -327,11 +344,10 @@ function _onTouchStart(e: { touches: Array<{ x: number, y: number }> }) {
   runOnBackground(_emitLive as any)(next)
 }
 
-function _onTouchMove(e: { touches: Array<{ x: number, y: number }> }) {
+function _dragMove(localX: number, localY: number) {
   'main thread'
   if (activeIndexRef.current === -1) return
-  const t = e.touches[0]
-  const value = _valueFromTouch(t.x, t.y)
+  const value = _valueFromTouch(localX, localY)
   const idx = activeIndexRef.current
   const src = root.valuesMT.current
   const next = _applyValue(src, idx, value)
@@ -344,7 +360,7 @@ function _onTouchMove(e: { touches: Array<{ x: number, y: number }> }) {
   runOnBackground(_emitLive as any)(next)
 }
 
-function _onTouchEnd() {
+function _dragEnd() {
   'main thread'
   if (activeIndexRef.current === -1) return
   // Already sorted and gap-checked by `_applyValue` on every frame, so this is
@@ -355,8 +371,102 @@ function _onTouchEnd() {
   for (let i = 0; i < src.length; i++) finalVals.push(src[i])
   _paintRange(finalVals)
   activeIndexRef.current = -1
-  draggingRef.current = false
+  root.draggingMT.current = false
   runOnBackground(_commit as any)(finalVals)
+}
+
+/**
+ * Open a gesture at a VIEWPORT coordinate: measure the track, then hand the
+ * cores the element-local offset.
+ *
+ * One entry point for touch and mouse because `clientX`/`clientY` is the only
+ * pointer field Lynx reports on both platforms. `touches[0].x`/`.y` — which
+ * this used to read on the touch path — arrive element-relative on native but
+ * do not exist on web at all: `createCrossThreadEvent` builds web touches from
+ * raw DOM `Touch` objects, which have no `x`/`y`, so the offsets came through
+ * as `NaN` on any touchscreen browser.
+ *
+ * `boundingClientRect` is the single source for BOTH the origin and the extent
+ * — Lynx's main-thread `Element` has no synchronous rect API (see
+ * `@lynx-js/types` main-thread/element.d.ts: get/setAttribute,
+ * setStyleProperty, querySelector, invoke, animate), and this response already
+ * carries width/height. Fetched per gesture rather than at mount so scrolling
+ * or a resize in between can't skew it.
+ *
+ * `invoke` resolves on the microtask queue, ahead of the next move event; if
+ * one does land first, `_dragMove` drops it on the `activeIndexRef === -1`
+ * guard rather than mapping against a stale origin.
+ */
+function _beginAt(clientX: number, clientY: number) {
+  'main thread'
+  const track = trackRef.current
+  if (!track || typeof track.invoke !== 'function') return
+  track
+    .invoke('boundingClientRect')
+    .then((r: { left: number, top: number, width: number, height: number }) => {
+      rectLeftRef.current = r.left
+      rectTopRef.current = r.top
+      rectWRef.current = r.width
+      rectHRef.current = r.height
+      _dragStart(clientX - r.left, clientY - r.top)
+    })
+    // A missing UI method drops the gesture rather than raising an unhandled
+    // rejection.
+    .catch(() => {})
+}
+
+function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+  'main thread'
+  const t = e.touches[0]
+  if (!t) return
+  _beginAt(t.clientX, t.clientY)
+}
+
+function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+  'main thread'
+  const t = e.touches[0]
+  if (!t) return
+  _dragMove(t.clientX - rectLeftRef.current, t.clientY - rectTopRef.current)
+}
+
+function _onTouchEnd() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _dragEnd()
+}
+
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+// touch from them, so the same gesture core is bound to mouse. Coordinates
+// arrive top-level (mouse `detail` is the DOM click-count number, not
+// `{x, y}`) in the same viewport frame the touch path uses, so both go through
+// `_beginAt`. No mouseleave binding — it doesn't bubble, so per-element
+// delivery is unreliable on the Lynx dispatch path.
+function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Swallow the compatibility mousedown a touch browser replays after a tap.
+  if (Date.now() - lastTouchTsRef.current < 500) return
+  // Primary button only: a right/middle press would start a phantom drag that
+  // the next hover move then "releases", teleporting the thumb.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  _beginAt(e.clientX, e.clientY)
+}
+
+function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Only an EXPLICIT buttons value with the primary bit clear counts as
+  // released (recovers the mouseup lost outside the <lynx-view>). A missing
+  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
+  // it, and ending on those lets the drag go mid-gesture.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+    _dragEnd()
+    return
+  }
+  _dragMove(e.clientX - rectLeftRef.current, e.clientY - rectTopRef.current)
+}
+
+function _onMouseUp() {
+  'main thread'
+  _dragEnd()
 }
 
 // BG callbacks — invoked from the touch worklets. Cannot be aliased; see the
@@ -376,9 +486,6 @@ function _emitLive(values: number[]) {
 function _commit(values: number[]) {
   root.commitFromMT(values)
 }
-
-// Initial rect comes from the BG `@layoutchange` below, which fires once after
-// mount — before any touch can reach a painted element.
 </script>
 
 <template>
@@ -390,7 +497,9 @@ function _commit(values: number[]) {
     :main-thread-bindtouchmove="mtBound ? _onTouchMove : undefined"
     :main-thread-bindtouchend="mtBound ? _onTouchEnd : undefined"
     :main-thread-bindtouchcancel="mtBound ? _onTouchEnd : undefined"
-    @layoutchange="onLayoutChange"
+    :main-thread-bindmousedown="mtBound ? _onMouseDown : undefined"
+    :main-thread-bindmousemove="mtBound ? _onMouseMove : undefined"
+    :main-thread-bindmouseup="mtBound ? _onMouseUp : undefined"
   >
     <slot />
   </Primitive>

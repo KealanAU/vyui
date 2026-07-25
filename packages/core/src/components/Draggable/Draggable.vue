@@ -125,7 +125,13 @@ function encodeAxis(a: DraggableAxis): 0 | 1 | 2 {
   return 0
 }
 
-const containerRef = useMainThreadRef<any>(null)
+// Structural element type — never DOM lib types (they don't exist on Lynx).
+interface DragElement {
+  setStyleProperty?: (key: string, value: string) => void
+  animate?: (keyframes: any[], options: any) => any
+}
+
+const containerRef = useMainThreadRef<DragElement | null>(null)
 
 // Position relative to origin. `(0, 0)` = element at its laid-out position.
 // Persists across drags so released elements stay where they were dropped.
@@ -158,6 +164,11 @@ const tQueueRef = useMainThreadRef<number[]>([])
 // Handle of the in-flight `resetOnEnd` animation. Written only inside MT
 // worklets (BG writes to MainThreadRef.current are silently dropped).
 const resetAnimRef = useMainThreadRef<any>(null)
+
+// Timestamp of the last real touch. Touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
+// events inside this window so a tap doesn't double-emit dragStart/dragEnd.
+const lastTouchTsRef = useMainThreadRef<number>(0)
 
 // BG-side mirror so the slot's `dragging` prop is reactive.
 const draggingState = ref(false)
@@ -225,37 +236,42 @@ watch(
 
 function _setTransform(x: number, y: number) {
   'main thread'
-  const el = containerRef as unknown as {
-    current?: { setStyleProperty?(k: string, v: string): void }
-  }
-  if (el.current?.setStyleProperty) {
-    el.current.setStyleProperty('transform', `translate3d(${x}px, ${y}px, 0)`)
+  const el = containerRef.current
+  if (el?.setStyleProperty) {
+    el.setStyleProperty('transform', `translate3d(${x}px, ${y}px, 0)`)
   }
 }
 
 function _animateTo(fromX: number, fromY: number, toX: number, toY: number) {
   'main thread'
-  const el = containerRef as unknown as {
-    current?: {
-      animate?(keyframes: any[], options: any): any
-      setStyleProperty?(k: string, v: string): void
-    }
-  }
+  const el = containerRef.current
   currentXRef.current = toX
   currentYRef.current = toY
-  if (typeof el.current?.animate === 'function') {
+  if (typeof el?.animate === 'function') {
+    // Write the end state inline BEFORE animating: Lynx web's animation PAPI
+    // reads Lynx-style timing keys (fillMode/timingFunction) and silently
+    // drops WAAPI fill/easing, so a web settle would otherwise finish
+    // fill-less and snap back to the stale drag transform. Both spellings are
+    // passed; the inline value is what the element rests on either way.
+    _setTransform(toX, toY)
     // Keep the handle: a fill-forwards animation outranks inline style in the
     // cascade, so it must be cancelled before the next drag's transform writes.
-    resetAnimRef.current = el.current.animate(
+    resetAnimRef.current = el.animate(
       [
         { transform: `translate3d(${fromX}px, ${fromY}px, 0)` },
         { transform: `translate3d(${toX}px, ${toY}px, 0)` },
       ],
-      { duration: durationRef.current, fill: 'forwards', easing: 'ease-out' },
+      {
+        duration: durationRef.current,
+        fill: 'forwards',
+        fillMode: 'forwards',
+        easing: 'ease-out',
+        timingFunction: 'ease-out',
+      },
     )
   }
-  else if (el.current?.setStyleProperty) {
-    el.current.setStyleProperty('transform', `translate3d(${toX}px, ${toY}px, 0)`)
+  else if (el?.setStyleProperty) {
+    el.setStyleProperty('transform', `translate3d(${toX}px, ${toY}px, 0)`)
   }
 }
 
@@ -295,11 +311,9 @@ function _getVelocity(): { vx: number, vy: number } {
   }
 }
 
-function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+function _dragStart(clientX: number, clientY: number) {
   'main thread'
   if (disabledRef.current) return
-  const t0 = e.touches[0]
-  if (!t0) return
 
   // Cancel any in-flight resetOnEnd animation: active animations beat inline
   // style in the cascade, so leaving it running would mask this drag's
@@ -315,26 +329,24 @@ function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }>
   }
 
   isDraggingRef.current = true
-  touchStartXRef.current = t0.clientX
-  touchStartYRef.current = t0.clientY
+  touchStartXRef.current = clientX
+  touchStartYRef.current = clientY
   startXRef.current = currentXRef.current
   startYRef.current = currentYRef.current
 
   tQueueRef.current = [Date.now()]
-  xQueueRef.current = [t0.clientX]
-  yQueueRef.current = [t0.clientY]
+  xQueueRef.current = [clientX]
+  yQueueRef.current = [clientY]
 
   runOnBackground(_emitStart as any)(currentXRef.current, currentYRef.current)
 }
 
-function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+function _dragMove(clientX: number, clientY: number) {
   'main thread'
   if (!isDraggingRef.current) return
-  const t0 = e.touches[0]
-  if (!t0) return
 
-  const dx = t0.clientX - touchStartXRef.current
-  const dy = t0.clientY - touchStartYRef.current
+  const dx = clientX - touchStartXRef.current
+  const dy = clientY - touchStartYRef.current
   const axis = axisRef.current
 
   let nextX = startXRef.current
@@ -346,8 +358,8 @@ function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> 
   currentYRef.current = nextY
   _setTransform(nextX, nextY)
 
-  xQueueRef.current.push(t0.clientX)
-  yQueueRef.current.push(t0.clientY)
+  xQueueRef.current.push(clientX)
+  yQueueRef.current.push(clientY)
   tQueueRef.current.push(Date.now())
   _pruneQueue(50, 2)
 
@@ -356,7 +368,7 @@ function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> 
   }
 }
 
-function _onTouchEnd() {
+function _dragEnd() {
   'main thread'
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
@@ -391,6 +403,59 @@ function _onTouchEnd() {
     }
   }
   runOnBackground(_emitEnd as any)(endX, endY, dx, dy, vx, vy)
+}
+
+function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+  'main thread'
+  const t0 = e.touches[0]
+  if (!t0) return
+  _dragStart(t0.clientX, t0.clientY)
+}
+
+function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+  'main thread'
+  const t0 = e.touches[0]
+  if (!t0) return
+  _dragMove(t0.clientX, t0.clientY)
+}
+
+function _onTouchEnd() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _dragEnd()
+}
+
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+// touch from them, so the same gesture core is bound to mouse. Coordinates
+// arrive top-level (mouse `detail` is the DOM click-count number, not
+// `{x, y}`). No mouseleave binding — it doesn't bubble, so per-element
+// delivery is unreliable on the Lynx dispatch path.
+function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Swallow the compatibility mousedown a touch browser replays after a tap.
+  if (Date.now() - lastTouchTsRef.current < 500) return
+  // Primary button only: a right/middle press would start a phantom drag that
+  // the next hover move then "releases", teleporting the element.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  _dragStart(e.clientX, e.clientY)
+}
+
+function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Only an EXPLICIT buttons value with the primary bit clear counts as
+  // released (recovers the mouseup lost outside the <lynx-view>). A missing
+  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
+  // it, and ending on those lets the drag go mid-gesture.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+    _dragEnd()
+    return
+  }
+  _dragMove(e.clientX, e.clientY)
+}
+
+function _onMouseUp() {
+  'main thread'
+  _dragEnd()
 }
 
 function _emitStart(x: number, y: number) {
@@ -431,6 +496,9 @@ defineExpose({ reset })
     :main-thread-bindtouchmove="_onTouchMove"
     :main-thread-bindtouchend="_onTouchEnd"
     :main-thread-bindtouchcancel="_onTouchEnd"
+    :main-thread-bindmousedown="_onMouseDown"
+    :main-thread-bindmousemove="_onMouseMove"
+    :main-thread-bindmouseup="_onMouseUp"
   >
     <slot :dragging="draggingState" />
   </view>

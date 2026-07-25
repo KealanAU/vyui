@@ -7,7 +7,7 @@
       "name": "accordion",
       "type": "registry:ui",
       "dependencies": [
-        "@vyui/core@^0.2.5"
+        "@vyui/core@^0.2.6"
       ],
       "registryDependencies": []
     },
@@ -15,7 +15,7 @@
       "name": "avatar",
       "type": "registry:ui",
       "dependencies": [
-        "@vyui/core@^0.2.5"
+        "@vyui/core@^0.2.6"
       ],
       "registryDependencies": [
         "chip"
@@ -25,7 +25,7 @@
       "name": "button",
       "type": "registry:ui",
       "dependencies": [
-        "@vyui/core@^0.2.5"
+        "@vyui/core@^0.2.6"
       ],
       "registryDependencies": [
         "avatar"
@@ -41,7 +41,7 @@
       "name": "toast",
       "type": "registry:ui",
       "dependencies": [
-        "@vyui/core@^0.2.5"
+        "@vyui/core@^0.2.6"
       ],
       "registryDependencies": [
         "avatar",
