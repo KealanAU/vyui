@@ -22,22 +22,17 @@ export function useHeader() {
       to: '/packages/kit',
     }],
   }, {
-    label: 'Theming',
-    to: '/theming',
-    active: route.path === '/theming' || route.path.startsWith('/theming/'),
-  }, {
     label: 'Guides',
     to: '/guides',
     active: route.path === '/guides' || route.path.startsWith('/guides/'),
-  }, {
-    label: 'Roadmap',
-    to: '/getting-started/roadmap',
-    active: route.path === '/getting-started/roadmap',
   }, {
     label: 'Changelog',
     to: '/changelog',
     active: route.path === '/changelog',
   }])
+  // Theming and Roadmap are deliberately absent: Theming owns the Styling tab
+  // in <AppDocsNav>, and Roadmap sits in the Getting Started sidebar. Both stay
+  // in mobileLinks, which is the only nav on small screens.
 
   const mobileLinks = computed<NavigationMenuItem[]>(() => [{
     label: 'Get Started',
