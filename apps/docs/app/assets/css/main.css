@@ -5,8 +5,11 @@
 
 @theme static {
   --container-7xl: 80rem;
-  --font-sans: 'Haskoy', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: 'Haskoy', ui-sans-serif, system-ui, sans-serif;
+  /* Haskoy led both stacks but isn't in Fontshare's catalogue — its CDN link
+     served an empty body, so this has always been system-ui. To bring it back,
+     self-host under public/fonts/; @nuxt/fonts takes it from there. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: ui-sans-serif, system-ui, sans-serif;
 
   /* Vue/Nuxt-aligned canvas tokens */
   --color-canvas: #ffffff;
@@ -58,116 +61,23 @@ body {
   background-color: var(--ui-bg);
 }
 
-/*
-  Landing-page ambient background.
-  Three blobs — green (upper-left), indigo (right), fuchsia (lower) —
-  spread across the first viewport over a barely-there green base, the
-  "Vue green behind everything."
-  background-attachment: scroll anchors them to the top of the page so
-  the aurora lives on the first (hero) panel and scrolls away with it.
-  The .landing-page class is added only on the home route (index.vue).
-*/
+/* Only has to keep the page off pure white — the hero owns its own treatment.
+   `.landing-page` is set on the home route only (index.vue). */
 body.landing-page {
-  background-color: #f0fdf9;
-  background-image:
-    radial-gradient(ellipse 55vw 65vh at 15vw 14vh,
-      color-mix(in srgb, #bbf7d0 55%, transparent),
-      transparent 70%),
-    radial-gradient(ellipse 50vw 55vh at 80vw 47vh,
-      color-mix(in srgb, #c7d2fe 50%, transparent),
-      transparent 70%),
-    radial-gradient(ellipse 55vw 55vh at 47vw 84vh,
-      color-mix(in srgb, #f5d0fe 48%, transparent),
-      transparent 70%);
-  background-repeat: no-repeat;
-  background-attachment: scroll;
-}
-
-/* Dark: same trio and positions, nudged just one tone up (300-step) and
-   kept at low opacity so they stay soft against the dark canvas rather
-   than reading as bright saturated blobs. */
-.dark body.landing-page {
   background-color: var(--ui-bg);
   background-image:
-    radial-gradient(ellipse 55vw 65vh at 15vw 14vh,
-      color-mix(in srgb, #6ee7b7 20%, transparent),
-      transparent 70%),
-    radial-gradient(ellipse 50vw 55vh at 80vw 47vh,
-      color-mix(in srgb, #a5b4fc 18%, transparent),
-      transparent 70%),
-    radial-gradient(ellipse 55vw 55vh at 47vw 84vh,
-      color-mix(in srgb, #f0abfc 16%, transparent),
-      transparent 70%);
+    linear-gradient(to bottom,
+      color-mix(in srgb, var(--color-vue-50) 90%, transparent) 0,
+      transparent 60vh);
   background-repeat: no-repeat;
   background-attachment: scroll;
 }
 
-/*
-  Hero blob gradient variations — switch between A, B, C in index.md.
-  Each mimics the steep.app multi-radial soft-blob technique:
-  overlapping elliptical gradients that melt into the white canvas.
-
-  A: Vue Green  — mint + emerald + warm cream  (active)
-  B: Sage Drift — jade + sage + soft yellow
-  C: Vivid Haze — violet + rose + amber  (more saturated, punchier)
-*/
-
-/* A: Vue Green — soft mint + emerald + warm cream */
-.hero-gradient-a {
+.dark body.landing-page {
   background-image:
-    radial-gradient(ellipse 55% 45% at 38% 32%,
-      color-mix(in srgb, #bbf7d0 60%, transparent) 0%,
-      transparent 70%),
-    radial-gradient(ellipse 65% 52% at 63% 36%,
-      color-mix(in srgb, #6ee7b7 50%, transparent) 0%,
-      transparent 70%),
-    radial-gradient(ellipse 48% 42% at 54% 70%,
-      color-mix(in srgb, #fefce8 45%, transparent) 0%,
-      transparent 70%);
-  background-repeat: no-repeat;
-  background-attachment: scroll;
-}
-
-.hero-full-height {
-  min-height: calc(100svh - var(--ui-header-height, 56px));
-}
-
-/* B: Sage Drift */
-.hero-gradient-b {
-  background-image:
-    radial-gradient(ellipse 52% 48% at 36% 30%,
-      color-mix(in srgb, #6ee7b7 55%, transparent) 0%,
-      transparent 70%),
-    radial-gradient(ellipse 68% 54% at 64% 38%,
-      color-mix(in srgb, #bbf7d0 50%, transparent) 0%,
-      transparent 70%),
-    radial-gradient(ellipse 44% 40% at 52% 72%,
-      color-mix(in srgb, #fefce8 40%, transparent) 0%,
-      transparent 70%);
-  background-repeat: no-repeat;
-  background-attachment: scroll;
-}
-
-/* C: Vivid Haze */
-.hero-gradient-c {
-  background-image:
-    radial-gradient(ellipse 58% 50% at 35% 28%,
-      color-mix(in srgb, #ddd6fe 65%, transparent) 0%,
-      transparent 70%),
-    radial-gradient(ellipse 70% 55% at 65% 35%,
-      color-mix(in srgb, #fecaca 55%, transparent) 0%,
-      transparent 70%),
-    radial-gradient(ellipse 50% 44% at 55% 72%,
-      color-mix(in srgb, #fde68a 45%, transparent) 0%,
-      transparent 70%);
-  background-repeat: no-repeat;
-  background-attachment: scroll;
-}
-
-.dark .hero-gradient-a,
-.dark .hero-gradient-b,
-.dark .hero-gradient-c {
-  background-image: none;
+    linear-gradient(to bottom,
+      color-mix(in srgb, var(--color-vue-950) 55%, transparent) 0,
+      transparent 60vh);
 }
 
 :root {

@@ -9,9 +9,18 @@ import { loadLynxWebRuntime } from '~/utils/loadLynxWebRuntime'
 const props = withDefaults(defineProps<{
   name: string
   height?: string
+  /**
+   * Device pixel ratio the runtime rasterizes at. `2` matches a retina docs page
+   * at 1:1; drop to `1` when the caller CSS-scales the preview down, or the
+   * runtime rasterizes far more pixels than ever reach the screen.
+   */
+  pixelRatio?: number
 }>(), {
   height: '320px',
+  pixelRatio: 2,
 })
+
+const emit = defineEmits<{ ready: [] }>()
 
 const host = ref<HTMLElement>()
 const loading = ref(true)
@@ -19,24 +28,36 @@ const failed = ref(false)
 const errorMessage = ref('')
 let lynxView: LynxViewElement | undefined
 let observer: IntersectionObserver | undefined
+
+// Host → card channel: web-core forwards this to the card's GlobalEventEmitter
+// (`lynx.getJSModule('GlobalEventEmitter')`). Events sent before boot are lost,
+// so callers should (re)send their state on `ready`.
+defineExpose({
+  send: (event: string, ...params: string[]) => lynxView?.sendGlobalEvent(event, params),
+})
 // Safety net: if the card neither fires `load` nor `error` (e.g. an older
 // bundle), reveal it anyway so the skeleton can't linger forever.
 let revealTimer: ReturnType<typeof setTimeout> | undefined
 
-// Each <lynx-view> boots its own Web Worker + WASM runtime, so mounting every
-// preview on page load is expensive (a page can embed 6+). Defer the boot until
-// the preview scrolls near the viewport; `rootMargin` warms it just before it's
-// visible so it's ready by the time the reader reaches it.
+// Each <lynx-view> boots its own Web Worker + WASM runtime, and a page can embed
+// 6+. `rootMargin` warms each one just before it scrolls into view; the idle
+// callback keeps an above-the-fold preview off the hydration critical path.
 onMounted(() => {
   if (!host.value) return
   observer = new IntersectionObserver((entries) => {
     if (!entries.some(entry => entry.isIntersecting)) return
     observer?.disconnect()
     observer = undefined
-    void mountPreview()
+    whenIdle(() => void mountPreview())
   }, { rootMargin: '200px' })
   observer.observe(host.value)
 })
+
+// ponytail: setTimeout fallback for Safari, which still lacks requestIdleCallback.
+function whenIdle(run: () => void) {
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 2000 })
+  else setTimeout(run, 200)
+}
 
 async function mountPreview() {
   try {
@@ -50,7 +71,7 @@ async function mountPreview() {
     el.setAttribute('transform-vh', '')
     el.globalProps = { example: props.name }
     el.browserConfig = {
-      pixelRatio: 2,
+      pixelRatio: props.pixelRatio,
       pixelWidth: 390,
       pixelHeight: 640,
     }
@@ -60,6 +81,7 @@ async function mountPreview() {
     // the cue to drop the skeleton and reveal the live preview.
     el.addEventListener('load', () => {
       loading.value = false
+      emit('ready')
     })
     el.addEventListener('error', (event) => {
       failed.value = true

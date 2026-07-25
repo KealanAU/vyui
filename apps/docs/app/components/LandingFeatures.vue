@@ -11,11 +11,6 @@ const features = [
     description: '47 styled components on top of @vyui/core — VyButton, VyDrawer, VyModal, VyToast, VyIsland, and more. Themeable via Tailwind Variants and an app-config object.',
   },
   {
-    icon: 'i-lucide-blocks',
-    title: 'Mix them freely',
-    description: 'Import styled Vy* components from kit and reach for raw @vyui/core primitives in the same file wherever you need bespoke styling.',
-  },
-  {
     icon: 'i-lucide-terminal',
     title: '@vyui/cli — Own the code',
     description: 'shadcn-style CLI. vyui add button copies the styled component source into your project — you own and edit it, while headless @vyui/core stays an npm dependency.',
@@ -25,9 +20,37 @@ const features = [
 
 <template>
   <UPageSection
-    class="border-t border-default"
+    class="features-wash border-t border-default"
     title="Two layers, one ecosystem"
-    description="Pick the level of opinion you want. Drop down to primitives whenever you need to."
+    description="Pick the level of opinion you want, and mix them freely — import styled Vy* components from the kit and reach for raw @vyui/core primitives in the same file wherever you need bespoke styling."
     :features="features"
   />
 </template>
+
+<style scoped>
+.features-wash {
+  position: relative;
+  isolation: isolate;
+}
+
+.features-wash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 0%,
+    color-mix(in srgb, var(--color-vue-200) 32%, transparent),
+    transparent 70%
+  );
+}
+
+.dark .features-wash::before {
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 0%,
+    color-mix(in srgb, var(--color-vue-300) 9%, transparent),
+    transparent 70%
+  );
+}
+</style>
