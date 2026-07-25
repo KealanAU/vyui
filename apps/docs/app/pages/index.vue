@@ -26,7 +26,7 @@ useSchemaOrg([
   }),
 ])
 
-defineOgImageComponent('Default', {
+defineOgImage('Default', {
   title: 'Vy UI',
   description: 'Styled & headless components for Vue-Lynx — native iOS, Android & web from one codebase.',
 })
