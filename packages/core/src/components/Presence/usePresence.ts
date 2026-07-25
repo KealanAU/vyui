@@ -12,6 +12,10 @@
 //   useEffect([state])     → watch(state, ...)
 //   useEffect([show, ...]) → watch([show, enableDelay], ..., { immediate: false })
 //   useEffect([])          → onMounted (initial-render flag only)
+//   showRef/stateRef       → (dropped) upstream mirrors these into refs because
+//                            a `useState` value is frozen into the closure of
+//                            the render that scheduled a callback. `show` and
+//                            `state` are Refs here, so `.value` is always live.
 //
 // The composable is invoked once per Presence instance in `setup()`. Reactive
 // inputs (`show`, `state`, `enableDelay`) are passed as Vue `Ref`s so the
@@ -116,12 +120,6 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   // Dedupes open/close notifications across re-entries — a reopen-during-close
   // routes back through Entered without ever reaching Left (upstream parity).
   const hasNotifiedOpen = { current: false }
-  // Always-fresh mirror of `show.value` so event handlers can branch on the
-  // most recent intent without re-running the composable body.
-  const showRef = { current: show.value }
-  watch(show, (next) => {
-    showRef.current = next
-  }, { flush: 'sync' })
 
   // The reactive output: whether the child should render.
   const mount = ref<boolean>(false)
@@ -143,7 +141,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   const handleAnimationStart = () => {
     log(
       debugLog,
-      `[vyui-presence][usePresence] handleAnimationStart state:${state.value}, show:${showRef.current}, isTransition:${isTransitionAnimating.current}, isKFAnimating:${isKFAnimating.current}`,
+      `[vyui-presence][usePresence] handleAnimationStart state:${state.value}, show:${show.value}, isTransition:${isTransitionAnimating.current}, isKFAnimating:${isKFAnimating.current}`,
     )
   }
 
@@ -154,7 +152,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       (s === PresenceState.Entering || s === PresenceState.DelayedEntering)
       && notAnimating()
     ) {
-      if (showRef.current) {
+      if (show.value) {
         setPresenceState(PresenceState.Entered)
       }
       else {
@@ -165,7 +163,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       }
     }
     if (s === PresenceState.Leaving && notAnimating()) {
-      if (showRef.current) {
+      if (show.value) {
         // show flipped back on while leaving — remount instead of tearing
         // down (upstream parity; see handleStateLeft).
         restartShow()
@@ -248,7 +246,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   }
 
   const handleStateLeft = () => {
-    if (showRef.current) {
+    if (show.value) {
       // show flipped back on while we were leaving — remount instead of
       // tearing down. Without this (upstream lynx-ui parity, drifted after
       // the original port), a reopen that races Leaving → Left strands
@@ -291,7 +289,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
             debugLog,
             `[vyui-presence][usePresence] leaving timeout reached, loopId: ${loopId}, frames: ${leavingWaitFramesRef.current}`,
           )
-          if (showRef.current) restartShow()
+          if (show.value) restartShow()
           else setPresenceState(PresenceState.Left)
           return
         }
@@ -307,7 +305,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
           )
           isKFAnimating.current = false
           isTransitionAnimating.current = false
-          if (showRef.current) restartShow()
+          if (show.value) restartShow()
           else setPresenceState(PresenceState.Left)
           return
         }
@@ -337,7 +335,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
             debugLog,
             `[vyui-presence][usePresence] entering timeout reached, loopId: ${loopId}, frames: ${enteringWaitFramesRef.current}`,
           )
-          if (showRef.current) setPresenceState(PresenceState.Entered)
+          if (show.value) setPresenceState(PresenceState.Entered)
           else setPresenceState(PresenceState.Leaving)
           return
         }
@@ -351,7 +349,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
           )
           isKFAnimating.current = false
           isTransitionAnimating.current = false
-          if (showRef.current) setPresenceState(PresenceState.Entered)
+          if (show.value) setPresenceState(PresenceState.Entered)
           else setPresenceState(PresenceState.Leaving)
           return
         }
@@ -371,7 +369,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       '[vyui-presence][usePresence] schedule set Entering in 8 frames',
     )
     delayFrames(8, () => {
-      if (scheduleId !== showScheduleIdRef.current || !showRef.current) return
+      if (scheduleId !== showScheduleIdRef.current || !show.value) return
       setPresenceState(PresenceState.Entering)
     })
     if (getEnableDelay()) {
@@ -380,7 +378,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
         '[vyui-presence][usePresence] schedule set DelayedEntering in 16 frames',
       )
       delayFrames(16, () => {
-        if (scheduleId !== showScheduleIdRef.current || !showRef.current) return
+        if (scheduleId !== showScheduleIdRef.current || !show.value) return
         setPresenceState(PresenceState.DelayedEntering)
       })
     }
@@ -431,7 +429,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
     (s) => {
       log(
         debugLog,
-        `[vyui-presence][usePresence] state effect, state: ${s}, show: ${showRef.current}, enableDelay: ${getEnableDelay()}, isTransitionAnimating: ${isTransitionAnimating.current}, isKFAnimating: ${isKFAnimating.current}`,
+        `[vyui-presence][usePresence] state effect, state: ${s}, show: ${show.value}, enableDelay: ${getEnableDelay()}, isTransitionAnimating: ${isTransitionAnimating.current}, isKFAnimating: ${isKFAnimating.current}`,
       )
       if (s === PresenceState.Entered) handleStateEntered()
       if (s === PresenceState.Left) handleStateLeft()
