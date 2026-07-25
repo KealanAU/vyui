@@ -29,11 +29,10 @@ export function useHeader() {
     label: 'Roadmap',
     to: '/getting-started/roadmap',
     active: route.path === '/getting-started/roadmap',
-  }, {
-    label: 'Changelog',
-    to: '/changelog',
-    active: route.path === '/changelog',
   }])
+  // Changelog is an icon button beside GitHub instead of a nav item — see
+  // header.links in app.config.ts. It stays in mobileLinks, which is the only
+  // nav on small screens.
 
   const mobileLinks = computed<NavigationMenuItem[]>(() => [{
     label: 'Get Started',
