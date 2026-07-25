@@ -61,12 +61,26 @@ export function useAnimate() {
 
   // -- Main-thread worklets ------------------------------------------------
 
+  // Write the animation's end state inline before animating: Lynx web's
+  // animation PAPI reads Lynx-style timing keys (fillMode/timingFunction) and
+  // silently drops WAAPI fill/easing, so a fill-forwards preset would finish
+  // fill-less on web and snap back. The inline value is what the element
+  // rests on either way; both key spellings are passed below.
+  function _restAt(opacity: string | null, transform: string | null) {
+    'main thread'
+    const el = elRef.current
+    if (!el?.setStyleProperty) return
+    if (opacity !== null) el.setStyleProperty('opacity', opacity)
+    if (transform !== null) el.setStyleProperty('transform', transform)
+  }
+
   function _fadeIn(duration: number) {
     'main thread'
     if (typeof elRef.current?.animate === 'function') {
+      _restAt('1', null)
       return elRef.current.animate(
         [{ opacity: 0 }, { opacity: 1 }],
-        { duration, fill: 'forwards', easing: 'ease-out' },
+        { duration, fill: 'forwards', fillMode: 'forwards', easing: 'ease-out', timingFunction: 'ease-out' },
       )
     }
   }
@@ -74,9 +88,10 @@ export function useAnimate() {
   function _fadeOut(duration: number) {
     'main thread'
     if (typeof elRef.current?.animate === 'function') {
+      _restAt('0', null)
       return elRef.current.animate(
         [{ opacity: 1 }, { opacity: 0 }],
-        { duration, fill: 'forwards', easing: 'ease-in' },
+        { duration, fill: 'forwards', fillMode: 'forwards', easing: 'ease-in', timingFunction: 'ease-in' },
       )
     }
   }
@@ -85,12 +100,13 @@ export function useAnimate() {
     'main thread'
     if (typeof elRef.current?.animate === 'function') {
       const prop = axis === 0 ? 'translateX' : 'translateY'
+      _restAt(null, `${prop}(0%)`)
       return elRef.current.animate(
         [
           { transform: `${prop}(${startPct}%)` },
           { transform: `${prop}(0%)` },
         ],
-        { duration, fill: 'forwards', easing: 'ease-out' },
+        { duration, fill: 'forwards', fillMode: 'forwards', easing: 'ease-out', timingFunction: 'ease-out' },
       )
     }
   }
@@ -99,12 +115,13 @@ export function useAnimate() {
     'main thread'
     if (typeof elRef.current?.animate === 'function') {
       const prop = axis === 0 ? 'translateX' : 'translateY'
+      _restAt(null, `${prop}(${endPct}%)`)
       return elRef.current.animate(
         [
           { transform: `${prop}(0%)` },
           { transform: `${prop}(${endPct}%)` },
         ],
-        { duration, fill: 'forwards', easing: 'ease-in' },
+        { duration, fill: 'forwards', fillMode: 'forwards', easing: 'ease-in', timingFunction: 'ease-in' },
       )
     }
   }
@@ -113,12 +130,13 @@ export function useAnimate() {
     'main thread'
     if (typeof elRef.current?.animate === 'function') {
       const prefix = baseTransform === 1 ? 'translate(-50%, -50%) ' : ''
+      _restAt('1', `${prefix}scale(1)`)
       return elRef.current.animate(
         [
           { opacity: 0, transform: `${prefix}scale(0.9)` },
           { opacity: 1, transform: `${prefix}scale(1)` },
         ],
-        { duration, fill: 'forwards', easing: 'ease-out' },
+        { duration, fill: 'forwards', fillMode: 'forwards', easing: 'ease-out', timingFunction: 'ease-out' },
       )
     }
   }
@@ -127,12 +145,13 @@ export function useAnimate() {
     'main thread'
     if (typeof elRef.current?.animate === 'function') {
       const prefix = baseTransform === 1 ? 'translate(-50%, -50%) ' : ''
+      _restAt('0', `${prefix}scale(0.9)`)
       return elRef.current.animate(
         [
           { opacity: 1, transform: `${prefix}scale(1)` },
           { opacity: 0, transform: `${prefix}scale(0.9)` },
         ],
-        { duration, fill: 'forwards', easing: 'ease-in' },
+        { duration, fill: 'forwards', fillMode: 'forwards', easing: 'ease-in', timingFunction: 'ease-in' },
       )
     }
   }
@@ -140,6 +159,7 @@ export function useAnimate() {
   function _bounceIn(duration: number) {
     'main thread'
     if (typeof elRef.current?.animate === 'function') {
+      _restAt('1', 'scale(1)')
       return elRef.current.animate(
         [
           { transform: 'scale(0)', opacity: 0 },
@@ -147,7 +167,7 @@ export function useAnimate() {
           { transform: 'scale(0.95)', opacity: 1, offset: 0.8 },
           { transform: 'scale(1)', opacity: 1 },
         ],
-        { duration, fill: 'forwards', easing: 'ease-out' },
+        { duration, fill: 'forwards', fillMode: 'forwards', easing: 'ease-out', timingFunction: 'ease-out' },
       )
     }
   }

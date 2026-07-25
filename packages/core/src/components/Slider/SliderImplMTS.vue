@@ -70,6 +70,18 @@ const trackRef = useMainThreadRef<any>(null)
 const rectWRef = useMainThreadRef<number>(0)
 const rectHRef = useMainThreadRef<number>(0)
 
+// Track VIEWPORT origin — mouse path only, refreshed at every mousedown via
+// `invoke('boundingClientRect')` (see `_onMouseDown`). The touch path never
+// reads these: `touches[0].x/y` are already element-relative, whereas mouse
+// coords arrive viewport-relative and need the origin subtracted.
+const rectLeftRef = useMainThreadRef<number>(0)
+const rectTopRef = useMainThreadRef<number>(0)
+
+// Timestamp of the last real touch. Touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
+// events inside this window so a tap doesn't double-commit.
+const lastTouchTsRef = useMainThreadRef<number>(0)
+
 // 0 = horizontal (read the touch x offset, paint the left/right anchor), 1 = vertical.
 const axisRef = useMainThreadRef<0 | 1>(orientation.size === 'width' ? 0 : 1)
 const startEdgeRef = useMainThreadRef<StartEdgeCode>(encodeStartEdge(orientation.startEdge.value))
@@ -299,7 +311,11 @@ function _paintRange(vals: number[]) {
   el.setStyleProperty(endName, `${100 - hi}%`)
 }
 
-function _onTouchStart(e: { touches: Array<{ x: number, y: number }> }) {
+// Coordinate-based gesture cores — take ELEMENT-LOCAL offsets. The touch
+// wrappers below feed them `touches[0].x/y` (already element-relative on
+// native); the mouse wrappers convert from viewport coords first.
+
+function _dragStart(localX: number, localY: number) {
   'main thread'
   if (root.disabledMT.current) return
   // Unmeasured track — bail instead of starting a gesture. `_valueFromTouch`
@@ -310,8 +326,7 @@ function _onTouchStart(e: { touches: Array<{ x: number, y: number }> }) {
   // land after the subtree is painted, whereas mount time is not.
   if (thumbElsRef.current.length === 0) _resolveEls()
   if (thumbElsRef.current.length === 0) return
-  const t = e.touches[0]
-  const value = _valueFromTouch(t.x, t.y)
+  const value = _valueFromTouch(localX, localY)
   const idx = _pickClosestIndex(value)
   activeIndexRef.current = idx
   draggingRef.current = true
@@ -327,11 +342,10 @@ function _onTouchStart(e: { touches: Array<{ x: number, y: number }> }) {
   runOnBackground(_emitLive as any)(next)
 }
 
-function _onTouchMove(e: { touches: Array<{ x: number, y: number }> }) {
+function _dragMove(localX: number, localY: number) {
   'main thread'
   if (activeIndexRef.current === -1) return
-  const t = e.touches[0]
-  const value = _valueFromTouch(t.x, t.y)
+  const value = _valueFromTouch(localX, localY)
   const idx = activeIndexRef.current
   const src = root.valuesMT.current
   const next = _applyValue(src, idx, value)
@@ -344,7 +358,7 @@ function _onTouchMove(e: { touches: Array<{ x: number, y: number }> }) {
   runOnBackground(_emitLive as any)(next)
 }
 
-function _onTouchEnd() {
+function _dragEnd() {
   'main thread'
   if (activeIndexRef.current === -1) return
   // Already sorted and gap-checked by `_applyValue` on every frame, so this is
@@ -357,6 +371,78 @@ function _onTouchEnd() {
   activeIndexRef.current = -1
   draggingRef.current = false
   runOnBackground(_commit as any)(finalVals)
+}
+
+function _onTouchStart(e: { touches: Array<{ x: number, y: number }> }) {
+  'main thread'
+  const t = e.touches[0]
+  if (!t) return
+  _dragStart(t.x, t.y)
+}
+
+function _onTouchMove(e: { touches: Array<{ x: number, y: number }> }) {
+  'main thread'
+  const t = e.touches[0]
+  if (!t) return
+  _dragMove(t.x, t.y)
+}
+
+function _onTouchEnd() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _dragEnd()
+}
+
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+// touch from them, so the same gesture core is bound to mouse. Coordinates
+// arrive top-level (mouse `detail` is the DOM click-count number, not
+// `{x, y}`) and are VIEWPORT-relative on the web dispatch path — mouse events
+// have no element-local field like `touches[0].x/y`. So mousedown fetches the
+// track's viewport origin via `invoke('boundingClientRect')` (the MT element
+// has no sync rect API; the promise resolves on the microtask queue, before
+// the next mousemove can dispatch) and each move subtracts it. Fetched per
+// gesture, not at mount, so scrolling between gestures can't skew it. No
+// mouseleave binding — it doesn't bubble, so per-element delivery is
+// unreliable on the Lynx dispatch path.
+function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Swallow the compatibility mousedown a touch browser replays after a tap.
+  if (Date.now() - lastTouchTsRef.current < 500) return
+  // Primary button only: a right/middle press would start a phantom drag that
+  // the next hover move then "releases", teleporting the thumb.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  const track = trackRef.current
+  if (!track || typeof track.invoke !== 'function') return
+  const cx = e.clientX
+  const cy = e.clientY
+  track
+    .invoke('boundingClientRect')
+    .then((r: { left: number, top: number }) => {
+      rectLeftRef.current = r.left
+      rectTopRef.current = r.top
+      _dragStart(cx - r.left, cy - r.top)
+    })
+    // Native never dispatches mouse for our targets; if it ever does and the
+    // UI method is missing, dropping the gesture beats an unhandled rejection.
+    .catch(() => {})
+}
+
+function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Only an EXPLICIT buttons value with the primary bit clear counts as
+  // released (recovers the mouseup lost outside the <lynx-view>). A missing
+  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
+  // it, and ending on those lets the drag go mid-gesture.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+    _dragEnd()
+    return
+  }
+  _dragMove(e.clientX - rectLeftRef.current, e.clientY - rectTopRef.current)
+}
+
+function _onMouseUp() {
+  'main thread'
+  _dragEnd()
 }
 
 // BG callbacks — invoked from the touch worklets. Cannot be aliased; see the
@@ -390,6 +476,9 @@ function _commit(values: number[]) {
     :main-thread-bindtouchmove="mtBound ? _onTouchMove : undefined"
     :main-thread-bindtouchend="mtBound ? _onTouchEnd : undefined"
     :main-thread-bindtouchcancel="mtBound ? _onTouchEnd : undefined"
+    :main-thread-bindmousedown="mtBound ? _onMouseDown : undefined"
+    :main-thread-bindmousemove="mtBound ? _onMouseMove : undefined"
+    :main-thread-bindmouseup="mtBound ? _onMouseUp : undefined"
     @layoutchange="onLayoutChange"
   >
     <slot />

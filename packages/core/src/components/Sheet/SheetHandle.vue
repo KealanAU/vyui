@@ -74,6 +74,9 @@ const restAttrs = computed(() => {
     :main-thread-bindtouchmove="drag?.handleTouchMoveMT"
     :main-thread-bindtouchend="drag?.handleTouchEndMT"
     :main-thread-bindtouchcancel="drag?.handleTouchEndMT"
+    :main-thread-bindmousedown="drag?.handleMouseDownMT"
+    :main-thread-bindmousemove="drag?.handleMouseMoveMT"
+    :main-thread-bindmouseup="drag?.handleMouseUpMT"
     :style="mergedStyle"
   >
     <slot />

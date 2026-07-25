@@ -115,6 +115,11 @@ const disabledRef = useMainThreadRef<boolean>(props.disabled)
 const positionQueueRef = useMainThreadRef<number[]>([])
 const timeQueueRef = useMainThreadRef<number[]>([])
 
+// Timestamp of the last real touch. Touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
+// events inside this window so a tap doesn't double-run the gesture.
+const lastTouchTsRef = useMainThreadRef<number>(0)
+
 watch(() => props.actionWidth, (v) => { actionWidthRef.current = v })
 watch(() => props.rowWidth, (v) => { rowWidthRef.current = v })
 watch(() => props.snapThreshold, (v) => { snapThresholdRef.current = v })
@@ -152,6 +157,12 @@ function _animateTo(targetX: number) {
   }
   currentXRef.current = targetX
   if (typeof el.current?.animate === 'function') {
+    // Write the end state inline BEFORE animating: Lynx web's animation PAPI
+    // reads Lynx-style timing keys (fillMode/timingFunction) and silently
+    // drops WAAPI fill/easing, so a web settle would otherwise finish
+    // fill-less and snap back to the stale drag transform. Both spellings are
+    // passed; the inline value is what the element rests on either way.
+    _applyTransform(targetX)
     // Keep the handle: a fill-forwards animation outranks inline style in the
     // cascade, so it must be cancelled before the next drag's transform writes.
     snapAnimRef.current = el.current.animate(
@@ -159,7 +170,13 @@ function _animateTo(targetX: number) {
         { transform: `translateX(${from}px)` },
         { transform: `translateX(${targetX}px)` },
       ],
-      { duration: durationRef.current, fill: 'forwards', easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+      {
+        duration: durationRef.current,
+        fill: 'forwards',
+        fillMode: 'forwards',
+        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        timingFunction: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      },
     )
   }
   else if (el.current?.setStyleProperty) {
@@ -190,7 +207,7 @@ function _getVelocity() {
   return (p[length - 1] - p[0]) / dt
 }
 
-function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+function _dragStart(clientX: number, clientY: number) {
   'main thread'
   if (disabledRef.current) return
   // Cancel any in-flight snap animation: a `fill: 'forwards'` animation beats
@@ -205,20 +222,18 @@ function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }>
   }
   isDraggingRef.current = true
   axisLockRef.current = 0
-  const x = e.touches[0].clientX
-  const y = e.touches[0].clientY
-  touchStartXRef.current = x
-  touchStartYRef.current = y
+  touchStartXRef.current = clientX
+  touchStartYRef.current = clientY
   startXRef.current = currentXRef.current
   timeQueueRef.current = [Date.now()]
-  positionQueueRef.current = [x]
+  positionQueueRef.current = [clientX]
 }
 
-function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+function _dragMove(clientX: number, clientY: number) {
   'main thread'
   if (!isDraggingRef.current) return
-  const x = e.touches[0].clientX
-  const y = e.touches[0].clientY
+  const x = clientX
+  const y = clientY
   const dx = x - touchStartXRef.current
   const dy = y - touchStartYRef.current
 
@@ -247,7 +262,7 @@ function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> 
   _pruneQueue(50, 2)
 }
 
-function _onTouchEnd() {
+function _dragEnd() {
   'main thread'
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
@@ -291,6 +306,59 @@ function _onTouchEnd() {
 
   _animateTo(0)
   runOnBackground(_emitOpen as any)(false)
+}
+
+function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+  'main thread'
+  const t0 = e.touches[0]
+  if (!t0) return
+  _dragStart(t0.clientX, t0.clientY)
+}
+
+function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+  'main thread'
+  const t0 = e.touches[0]
+  if (!t0) return
+  _dragMove(t0.clientX, t0.clientY)
+}
+
+function _onTouchEnd() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _dragEnd()
+}
+
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+// touch from them, so the same gesture core is bound to mouse. Coordinates
+// arrive top-level (mouse `detail` is the DOM click-count number, not
+// `{x, y}`). No mouseleave binding — it doesn't bubble, so per-element
+// delivery is unreliable on the Lynx dispatch path.
+function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Swallow the compatibility mousedown a touch browser replays after a tap.
+  if (Date.now() - lastTouchTsRef.current < 500) return
+  // Primary button only: a right/middle press would start a phantom drag that
+  // the next hover move then "releases", teleporting the row.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  _dragStart(e.clientX, e.clientY)
+}
+
+function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Only an EXPLICIT buttons value with the primary bit clear counts as
+  // released (recovers the mouseup lost outside the <lynx-view>). A missing
+  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
+  // it, and ending on those lets the drag go mid-gesture.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+    _dragEnd()
+    return
+  }
+  _dragMove(e.clientX, e.clientY)
+}
+
+function _onMouseUp() {
+  'main thread'
+  _dragEnd()
 }
 
 function _emitOpen(next: boolean) {
@@ -356,6 +424,9 @@ const slotProps = computed(() => ({ open: open.value, close }))
       :main-thread-bindtouchmove="_onTouchMove"
       :main-thread-bindtouchend="_onTouchEnd"
       :main-thread-bindtouchcancel="_onTouchEnd"
+      :main-thread-bindmousedown="_onMouseDown"
+      :main-thread-bindmousemove="_onMouseMove"
+      :main-thread-bindmouseup="_onMouseUp"
       :style="{
         position: 'relative',
         width: '100%',

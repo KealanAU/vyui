@@ -98,6 +98,10 @@ export interface DragGesture {
   onTouchStart: (e: { detail: { x: number, y: number } }) => void
   onTouchMove: (e: { detail: { x: number, y: number } }) => void
   onTouchEnd: () => void
+  /** Desktop-web mouse twins — same gesture core, top-level coords. */
+  onMouseDown: (e: { clientX: number, clientY: number, buttons?: number }) => void
+  onMouseMove: (e: { clientX: number, clientY: number, buttons?: number }) => void
+  onMouseUp: () => void
   /** Clamp/wrap + commit an index programmatically (BG side). */
   setIndex: (index: number) => void
 }
@@ -198,6 +202,11 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
 
   const posQueueRef = useMainThreadRef<number[]>([])
   const timeQueueRef = useMainThreadRef<number[]>([])
+
+  // Timestamp of the last real touch. Touch browsers replay a tap as a
+  // compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
+  // events inside this window so a tap doesn't double-run the gesture.
+  const lastTouchTsRef = useMainThreadRef<number>(0)
 
   // Animation generation counter — a worklet checks its starting generation
   // against the current one each frame and bails if a newer animation began.
@@ -533,7 +542,12 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     }
   }
 
-  function _onTouchStart(e: { detail: { x: number, y: number } }) {
+  // Coordinate-based gesture cores. Touch and mouse wrappers below feed the
+  // same logic; a gesture is all-touch or all-mouse, so the coordinate space
+  // (element/page for touch detail, viewport for mouse) never mixes — only
+  // deltas from the recorded start matter.
+
+  function _dragStart(x: number, y: number) {
     'main thread'
     if (disabledRef.current) return
     // Pause autoplay for the duration of the drag.
@@ -543,8 +557,6 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     isDraggingRef.current = true
     gestureLockedRef.current = false
     axisLockedRef.current = false
-    const x = e.detail.x
-    const y = e.detail.y
     touchStartXRef.current = x
     touchStartYRef.current = y
     touchStartOffsetRef.current = offsetRef.current
@@ -553,11 +565,9 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     runOnBackground(_emitSwipeStart as any)()
   }
 
-  function _onTouchMove(e: { detail: { x: number, y: number } }) {
+  function _dragMove(x: number, y: number) {
     'main thread'
     if (!isDraggingRef.current) return
-    const x = e.detail.x
-    const y = e.detail.y
 
     // Axis lock: once the gesture crosses the slop radius, classify it. If it
     // is more vertical than horizontal, lock to the cross axis and stop
@@ -601,7 +611,7 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     _pruneQueue(50, 2)
   }
 
-  function _onTouchEnd() {
+  function _dragEnd() {
     'main thread'
     if (!isDraggingRef.current) return
     isDraggingRef.current = false
@@ -656,6 +666,58 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
 
     // Resume autoplay after the drag settled.
     if (autoplayRef.current) _autoplayStart()
+  }
+
+  function _onTouchStart(e: { detail: { x: number, y: number } }) {
+    'main thread'
+    _dragStart(e.detail.x, e.detail.y)
+  }
+
+  function _onTouchMove(e: { detail: { x: number, y: number } }) {
+    'main thread'
+    _dragMove(e.detail.x, e.detail.y)
+  }
+
+  function _onTouchEnd() {
+    'main thread'
+    // Stamp AFTER the end core: the same tick either way, but stamping first
+    // would consume the Date.now() sample the velocity prune expects under
+    // the mocked clocks in useDragGesture.test.ts.
+    _dragEnd()
+    lastTouchTsRef.current = Date.now()
+  }
+
+  // Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+  // touch from them, so the same gesture core is bound to mouse. Coordinates
+  // arrive top-level (mouse `detail` is the DOM click-count number, not
+  // `{x, y}`). No mouseleave binding — it doesn't bubble, so per-element
+  // delivery is unreliable on the Lynx dispatch path.
+  function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
+    'main thread'
+    // Swallow the compatibility mousedown a touch browser replays after a tap.
+    if (Date.now() - lastTouchTsRef.current < 500) return
+    // Primary button only: a right/middle press would start a phantom drag
+    // that the next hover move then "releases", teleporting the track.
+    if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+    _dragStart(e.clientX, e.clientY)
+  }
+
+  function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
+    'main thread'
+    // Only an EXPLICIT buttons value with the primary bit clear counts as
+    // released (recovers the mouseup lost outside the <lynx-view>). A missing
+    // `buttons` is treated as still-pressed — trackpad/synthetic moves can
+    // omit it, and ending on those lets the drag go mid-gesture.
+    if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+      _dragEnd()
+      return
+    }
+    _dragMove(e.clientX, e.clientY)
+  }
+
+  function _onMouseUp() {
+    'main thread'
+    _dragEnd()
   }
 
   function _teardown() {
@@ -740,6 +802,9 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     onTouchStart: _onTouchStart,
     onTouchMove: _onTouchMove,
     onTouchEnd: _onTouchEnd,
+    onMouseDown: _onMouseDown,
+    onMouseMove: _onMouseMove,
+    onMouseUp: _onMouseUp,
     setIndex,
   }
 }

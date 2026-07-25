@@ -261,10 +261,14 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
   // from the bound element's origin, so keep the mapping on those.
   it('maps from element-relative touch offsets, never a reconstructed origin', async () => {
     const sfc = await readSfc('SliderImplMTS.vue')
-    for (const fn of ['_onTouchStart', '_onTouchMove']) {
-      expect(body(sfc, fn)).toMatch(/_valueFromTouch\(t\.x, t\.y\)/)
+    // Touch wrappers feed the element-relative offsets straight to the cores —
+    // never viewport coords (those are the mouse path's problem to convert).
+    for (const [fn, core] of [['_onTouchStart', '_dragStart'], ['_onTouchMove', '_dragMove']]) {
+      expect(body(sfc, fn)).toMatch(new RegExp(`${core}\\(t\\.x, t\\.y\\)`))
       expect(body(sfc, fn)).not.toMatch(/pageX|pageY|clientX|clientY/)
     }
+    for (const core of ['_dragStart', '_dragMove'])
+      expect(body(sfc, core)).toMatch(/_valueFromTouch\(localX, localY\)/)
     expect(body(sfc, '_valueFromTouch')).not.toMatch(/rectXRef|rectYRef/)
     // Only the SIZE crosses the thread boundary; a stored origin is the bug.
     expect(sfc).toMatch(/runOnMainThread\(_setSize as any\)\(r\.width, r\.height\)/)
@@ -276,7 +280,7 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     // from the re-sorted array on every frame and this has to match, or the
     // commit lands on the wrong thumb.
     expect(body(sfc, '_applyValue')).toMatch(/next\.sort\(\(a, b\) => a - b\)/)
-    for (const handler of ['_onTouchStart', '_onTouchMove']) {
+    for (const handler of ['_dragStart', '_dragMove']) {
       const fn = body(sfc, handler)
       expect(fn).toMatch(/_applyValue\(src, idx, value\)/)
       expect(fn).toMatch(/activeIndexRef\.current = next\.indexOf\(value\)/)
@@ -290,13 +294,13 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     // `_resetActiveThumbTransform` hands the thumb back to its BG anchor, but
     // the range has no anchor to fall back to — its inline offsets persist, so
     // touchend has to leave them on the committed values.
-    const fn = body(await readSfc('SliderImplMTS.vue'), '_onTouchEnd')
+    const fn = body(await readSfc('SliderImplMTS.vue'), '_dragEnd')
     expect(fn).toMatch(/_paintRange\(finalVals\)/)
   })
 
   it('repaints the range from the drag worklets, not just on commit', async () => {
     const sfc = await readSfc('SliderImplMTS.vue')
-    for (const handler of ['_onTouchStart', '_onTouchMove']) {
+    for (const handler of ['_dragStart', '_dragMove']) {
       const fn = sfc.match(new RegExp(`function ${handler}[\\s\\S]*?\\n}`))?.[0] ?? ''
       expect(fn).toMatch(/_paintRange\(next\)/)
     }

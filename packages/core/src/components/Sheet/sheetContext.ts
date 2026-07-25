@@ -62,14 +62,18 @@ export const [injectSheetRootContext, provideSheetRootContext] =
   createContext<SheetRootContext>('SheetRoot')
 
 /**
- * Touch handler bag shared between SheetContent and SheetHandle so the
- * handle can drive the same MT drag pipeline as the content surface.
- * Provided by SheetContent, injected by SheetHandle.
+ * Gesture handler bag (touch + desktop-mouse twins) shared between
+ * SheetContent and SheetHandle so the handle can drive the same MT drag
+ * pipeline as the content surface. Provided by SheetContent, injected by
+ * SheetHandle.
  */
 export interface SheetDragContext {
   handleTouchStartMT: any
   handleTouchMoveMT: any
   handleTouchEndMT: any
+  handleMouseDownMT: any
+  handleMouseMoveMT: any
+  handleMouseUpMT: any
 }
 
 export const [injectSheetDragContext, provideSheetDragContext] =

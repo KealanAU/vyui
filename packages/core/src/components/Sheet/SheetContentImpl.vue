@@ -6,11 +6,12 @@
      - Open / close are driven by `@keyframes vyui-sheet-slide-in/out` on
        the `ui-entering` / `ui-leaving` class, applied by the Presence state
        machine. `@animationend` advances Presence to `Entered` / `Left`.
-     - Drag is driven by MT touch worklets that paint inline `transform`
-       via `setStyleProperty`. On release we settle at the nearest snap
-       point (inline transition), or dismiss (inline transition +
-       `setOpen(false)`). The release decision mirrors `pickRelease` in
-       `useSheetBehavior.ts` — see `_onTouchEnd` for the divergences.
+     - Drag is driven by MT worklets (touch + desktop-mouse twins) that
+       paint inline `transform` via `setStyleProperty`. On release we settle
+       at the nearest snap point (inline transition), or dismiss (inline
+       transition + `setOpen(false)`). The release decision mirrors
+       `pickRelease` in `useSheetBehavior.ts` — see `_dragEnd` for the
+       divergences.
      - Multi-snap: positions are px-from-open along the panel's travel
        (`0` = fully open = largest snap; the panel is sized to it). The
        authoritative current position lives in an MT ref (`posRef`) —
@@ -262,6 +263,11 @@ const posRef = useMainThreadRef<number>(0)
 // Position the active drag started from (drags can begin at any snap).
 const touchStartPosRef = useMainThreadRef<number>(0)
 
+// Timestamp of the last real touch. Touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
+// events inside this window so a tap can't double-run the release decision.
+const lastTouchTsRef = useMainThreadRef<number>(0)
+
 // vue-lynx@0.4.0 silently drops BG-thread writes to `MainThreadRef.current`
 // (only the constructor's INIT_MT_REF transfers a value BG → MT), so these
 // syncs have to hop through `runOnMainThread`. That's safe here: watch
@@ -348,9 +354,9 @@ function _setBackdropStyle(decl: Record<string, string>) {
   }
 }
 
-function _axisCoord(e: { detail: { x?: number, y?: number } }) {
+function _axisCoord(x: number, y: number) {
   'main thread'
-  return axisRef.current === 'x' ? e.detail.x ?? 0 : e.detail.y ?? 0
+  return axisRef.current === 'x' ? x : y
 }
 
 function _translate(position: number) {
@@ -416,13 +422,21 @@ function _settleTo(
       opacity: String(progress),
     })
   }
-  requestAnimationFrame(apply)
+  // Double rAF: on the web runtime a single rAF fires BEFORE the frame's
+  // style commit, so the pin above never becomes the transition baseline and
+  // a flick-dismiss flashes back to translateY(0) before sliding off
+  // (browser-verified). The second hop lands after the pin has painted;
+  // native just holds the pin one extra frame at the release position.
+  function hop() {
+    requestAnimationFrame(apply)
+  }
+  requestAnimationFrame(hop)
 }
 
-function _onTouchStart(e: { detail: { x?: number, y?: number } }) {
+function _dragStart(x: number, y: number) {
   'main thread'
   isDraggingRef.current = true
-  const coord = _axisCoord(e)
+  const coord = _axisCoord(x, y)
   touchStartAxisRef.current = coord
   sampleRingRef.current = [[coord, Date.now()]]
   touchStartPosRef.current = posRef.current
@@ -440,10 +454,10 @@ function _onTouchStart(e: { detail: { x?: number, y?: number } }) {
   _setBackdropStyle({ transition: 'none' })
 }
 
-function _onTouchMove(e: { detail: { x?: number, y?: number } }) {
+function _dragMove(x: number, y: number) {
   'main thread'
   if (!isDraggingRef.current) return
-  const coord = _axisCoord(e)
+  const coord = _axisCoord(x, y)
   // Position = drag origin + finger delta, clamped to the travel range:
   // 0 (fully open — no snap above it) … panel extent (fully off-screen).
   const extentPx = panelExtentPxRef.current
@@ -464,7 +478,7 @@ function _onTouchMove(e: { detail: { x?: number, y?: number } }) {
   _pruneRing(now)
 }
 
-function _onTouchEnd() {
+function _dragEnd() {
   'main thread'
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
@@ -546,7 +560,7 @@ function _onTouchEnd() {
   }
 }
 
-function _onTouchCancel() {
+function _dragCancel() {
   'main thread'
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
@@ -558,6 +572,66 @@ function _onTouchCancel() {
   const target = touchStartPosRef.current
   const cancelMs = Math.round(durationMsRef.current * 0.7)
   _settleTo(target, _translate(target), cancelMs, 'ease-out', target === 0)
+}
+
+// Thin per-modality wrappers over the gesture cores above (worklets can only
+// reference previously-defined worklets, so these must follow them). Touch
+// keeps the Lynx `detail` coords the drag has always read; a gesture is
+// single-modality and only within-gesture deltas matter, so the touch/mouse
+// coordinate spaces never mix.
+function _onTouchStart(e: { detail: { x?: number, y?: number } }) {
+  'main thread'
+  _dragStart(e.detail.x ?? 0, e.detail.y ?? 0)
+}
+
+function _onTouchMove(e: { detail: { x?: number, y?: number } }) {
+  'main thread'
+  _dragMove(e.detail.x ?? 0, e.detail.y ?? 0)
+}
+
+function _onTouchEnd() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _dragEnd()
+}
+
+function _onTouchCancel() {
+  'main thread'
+  lastTouchTsRef.current = Date.now()
+  _dragCancel()
+}
+
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
+// touch from them, so the same gesture cores are bound to mouse. Coordinates
+// arrive top-level (mouse `detail` is the DOM click-count number, not
+// `{x, y}`). No mouseleave binding — it doesn't bubble, so per-element
+// delivery is unreliable on the Lynx dispatch path.
+function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Swallow the compatibility mousedown a touch browser replays after a tap.
+  if (Date.now() - lastTouchTsRef.current < 500) return
+  // Primary button only: a right/middle press would start a phantom drag that
+  // the next hover move then "releases".
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  _dragStart(e.clientX, e.clientY)
+}
+
+function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
+  'main thread'
+  // Only an EXPLICIT buttons value with the primary bit clear counts as
+  // released (recovers the mouseup lost outside the <lynx-view>). A missing
+  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
+  // it, and ending on those lets the drag go mid-gesture.
+  if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
+    _dragEnd()
+    return
+  }
+  _dragMove(e.clientX, e.clientY)
+}
+
+function _onMouseUp() {
+  'main thread'
+  _dragEnd()
 }
 
 // Programmatic move (BG `snapIndex` watch / post-enter sync). Skips while
@@ -655,11 +729,14 @@ watch(() => ctx.open.value, (isOpen) => {
   if (!isOpen) void runOnMainThread(_slideOffFromCurrent as any)()
 })
 
-// SheetHandle uses the same MT touch handlers when handleOnly is true.
+// SheetHandle uses the same MT gesture handlers when handleOnly is true.
 provideSheetDragContext({
   handleTouchStartMT: _onTouchStart,
   handleTouchMoveMT: _onTouchMove,
   handleTouchEndMT: _onTouchEnd,
+  handleMouseDownMT: _onMouseDown,
+  handleMouseMoveMT: _onMouseMove,
+  handleMouseUpMT: _onMouseUp,
 })
 
 const handlers = presence?.animationHandlers
@@ -685,6 +762,9 @@ const a11y = useA11y(() => ({
     :main-thread-bindtouchmove="isDragEnabled ? _onTouchMove : undefined"
     :main-thread-bindtouchend="isDragEnabled ? _onTouchEnd : undefined"
     :main-thread-bindtouchcancel="isDragEnabled ? _onTouchCancel : undefined"
+    :main-thread-bindmousedown="isDragEnabled ? _onMouseDown : undefined"
+    :main-thread-bindmousemove="isDragEnabled ? _onMouseMove : undefined"
+    :main-thread-bindmouseup="isDragEnabled ? _onMouseUp : undefined"
     :event-through="false"
     :style="panelStyle"
     @layoutchange="onPanelLayout"
