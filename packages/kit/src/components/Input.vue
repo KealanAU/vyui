@@ -1,22 +1,11 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import type { InputConfirmType, InputType } from '@vyui/core'
 import theme from '../theme/input'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { AvatarProps } from './Avatar.vue'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.input`.
- */
-export const buildInput = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).input as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type InputVariants = VariantProps<ReturnType<typeof buildInput>>
+type InputTV = ThemeTV<typeof theme>
+type InputVariants = VariantProps<InputTV>
 
 export interface InputProps {
   modelValue?: string | number
@@ -87,7 +76,7 @@ export interface InputProps {
   /** Delay before applying `autofocus`, in milliseconds. */
   autofocusDelay?: number
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildInput>['slots'], any>>
+  ui?: Partial<Record<keyof InputTV['slots'], any>>
 }
 
 export interface InputSlots {
@@ -103,6 +92,7 @@ export interface InputSlots {
 import { computed, onMounted, ref, useSlots } from 'vue'
 import { Input as CoreInput, KeyboardAwareTrigger } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { Icon as VyIcon } from '@vyui/core'
 import { resolveColorHex } from '../utils/resolveColor'
 import VyAvatar from './Avatar.vue'
@@ -152,7 +142,7 @@ function onBlur(event: unknown) {
   emit('blur', event)
 }
 
-const ui = computed(() => buildInput(appConfig)({
+const { ui } = useStyledComponent('input', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,

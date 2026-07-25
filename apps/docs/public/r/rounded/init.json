@@ -2,7 +2,7 @@
   "name": "init",
   "type": "registry:lib",
   "dependencies": [
-    "@vyui/core@^0.2.4",
+    "@vyui/core@^0.2.5",
     "defu@^6.1.5",
     "tailwind-variants@^0.3.1"
   ],
@@ -35,7 +35,7 @@
       "path": "utils/tv.ts",
       "target": "utils/tv.ts",
       "type": "registry:lib",
-      "content": "import { createTV as createTVOriginal } from 'tailwind-variants'\nimport type { AppConfig } from '@@vyui:lib/types'\n\n/**\n * Public alias for the `createTV` config arg. `tailwind-variants` 0.3.x declares\n * `TVConfig` internally but doesn't re-export it from the package entry, so we\n * derive it from the function signature here and re-export.\n */\nexport type TVConfig = Parameters<typeof createTVOriginal>[0]\n\n/**\n * Wrapper around `tailwind-variants`' `createTV` factory. Accepts an optional\n * config so callers (storybook, tests, ad-hoc usage outside a `VyUI` app) can\n * call it with no args. The real per-app `tv` factory is built inside\n * `VyUI.install()` and stored on the injected `AppConfig`.\n */\nexport const createTv = (config: TVConfig = {}) => createTVOriginal(config)\n\n/**\n * Default singleton used when components are rendered outside an app context\n * (storybook, tests). Mirrors `tailwind-variants`' own default `tv` export.\n */\nexport const tv = createTv()\n\n/**\n * Memoize a component's `buildX(appConfig)` theme factory on `appConfig`\n * identity. Building a factory (`tv({ extend: tv(theme(colors)) })`) is pure\n * for a given config but was being re-run per component INSTANCE — on Lynx's\n * interpreter that cost is visible whenever a screenful of components mounts\n * (e.g. a tab switch). The config object is stable per app (`VyUI.install()`\n * provides it once; the test fallback is a module constant), so one build per\n * app per component type is the correct cardinality.\n */\nexport function defineThemeBuilder<T>(build: (appConfig: AppConfig) => T): (appConfig: AppConfig) => T {\n  const cache = new WeakMap<AppConfig, T>()\n  return (appConfig: AppConfig) => {\n    let factory = cache.get(appConfig)\n    if (factory === undefined) {\n      factory = build(appConfig)\n      cache.set(appConfig, factory)\n    }\n    return factory\n  }\n}\n"
+      "content": "import { createTV as createTVOriginal } from 'tailwind-variants'\n\n/**\n * Public alias for the `createTV` config arg. `tailwind-variants` 0.3.x declares\n * `TVConfig` internally but doesn't re-export it from the package entry, so we\n * derive it from the function signature here and re-export.\n */\nexport type TVConfig = Parameters<typeof createTVOriginal>[0]\n\n/**\n * Wrapper around `tailwind-variants`' `createTV` factory. Accepts an optional\n * config so callers (storybook, tests, ad-hoc usage outside a `VyUI` app) can\n * call it with no args. The real per-app `tv` factory is built inside\n * `VyUI.install()` and stored on the injected `AppConfig`.\n */\nexport const createTv = (config: TVConfig = {}) => createTVOriginal(config)\n\n/**\n * Default singleton used when components are rendered outside an app context\n * (storybook, tests). Mirrors `tailwind-variants`' own default `tv` export.\n */\nexport const tv = createTv()\n"
     },
     {
       "path": "theme/colors.ts",

@@ -1,16 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/calendar'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-export const buildCalendar = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).calendar as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type CalendarVariants = VariantProps<ReturnType<typeof buildCalendar>>
+type CalendarTV = ThemeTV<typeof theme>
+type CalendarVariants = VariantProps<CalendarTV>
 
 export interface CalendarDay {
   iso: string
@@ -47,7 +40,7 @@ export interface CalendarProps {
   color?: CalendarVariants['color']
   size?: CalendarVariants['size']
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildCalendar>['slots'], any>>
+  ui?: Partial<Record<keyof CalendarTV['slots'], any>>
 }
 
 export interface CalendarSlots {
@@ -59,7 +52,7 @@ export interface CalendarSlots {
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { Icon as VyIcon } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { addMonths, buildMonthGrid, type IsoDayCell, normalizeMonth, pad, parseMonth, toIso } from '../utils/date-iso'
 import VyAlert from './Alert.vue'
 
@@ -77,14 +70,13 @@ const emit = defineEmits<{
 }>()
 defineSlots<CalendarSlots>()
 
-const appConfig = useAppConfig()
 const localValue = ref(props.modelValue ?? props.defaultValue)
 const localMonth = ref(resolveInitialMonth())
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-const ui = computed(() => buildCalendar(appConfig)({
+const { ui } = useStyledComponent('calendar', theme, () => ({
   color: props.color,
   size: props.size,
 }))

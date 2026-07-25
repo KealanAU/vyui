@@ -146,27 +146,18 @@ function assertPackageSpecs(specs: string[]): void {
 export async function resolveItems(registry: string, names: string[]): Promise<RegistryItem[]> {
   const seen = new Map<string, RegistryItem>()
   const order: string[] = []
-  const state = new Map<string, 'visiting' | 'done'>()
+  const started = new Set<string>()
 
   const visit = async (name: string): Promise<void> => {
-    // A visiting node is an ancestor or a concurrently discovered dependency.
-    // Returning immediately breaks cycles; the first visit remains responsible
-    // for completing that node's dependency walk.
-    if (state.has(name)) return
-
-    state.set(name, 'visiting')
+    // First visit owns the walk; a repeat (ancestor or concurrently discovered
+    // dependency) returns immediately, which also breaks cycles.
+    if (started.has(name)) return
+    started.add(name)
     order.push(name)
 
-    try {
-      const item = await fetchItem(registry, name)
-      seen.set(name, item)
-      await Promise.all(item.registryDependencies.map(visit))
-      state.set(name, 'done')
-    }
-    catch (error) {
-      state.delete(name)
-      throw error
-    }
+    const item = await fetchItem(registry, name)
+    seen.set(name, item)
+    await Promise.all(item.registryDependencies.map(visit))
   }
 
   await Promise.all(names.map(visit))

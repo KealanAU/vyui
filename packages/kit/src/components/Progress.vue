@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/progress'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.progress`.
- */
-export const buildProgress = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).progress as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type ProgressVariants = VariantProps<ReturnType<typeof buildProgress>>
+type ProgressTV = ThemeTV<typeof theme>
+type ProgressVariants = VariantProps<ProgressTV>
 
 export interface ProgressProps {
   /** Current value. `null` (or omitted) renders the indeterminate animation. */
@@ -32,7 +21,7 @@ export interface ProgressProps {
   /** @defaultValue 'carousel' */
   animation?: ProgressVariants['animation']
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildProgress>['slots'], any>>
+  ui?: Partial<Record<keyof ProgressTV['slots'], any>>
 }
 
 export interface ProgressEmits {
@@ -49,7 +38,7 @@ export type ProgressSlots = {
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
 import { ProgressRoot, ProgressIndicator } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<ProgressProps>(), {
   inverted: false,
@@ -59,8 +48,6 @@ const props = withDefaults(defineProps<ProgressProps>(), {
 const emit = defineEmits<ProgressEmits>()
 defineSlots<ProgressSlots>()
 const slots = useSlots()
-
-const appConfig = useAppConfig()
 
 const isIndeterminate = computed(() => props.modelValue === null || props.modelValue === undefined)
 const hasSteps = computed(() => Array.isArray(props.max))
@@ -107,7 +94,7 @@ function stepVariant(index: number): 'active' | 'first' | 'other' | 'last' {
   return 'other'
 }
 
-const ui = computed(() => buildProgress(appConfig)({
+const { ui } = useStyledComponent('progress', theme, () => ({
   animation: props.animation,
   size: props.size,
   color: props.color,

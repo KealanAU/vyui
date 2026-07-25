@@ -1,24 +1,14 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/card'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.card`.
- */
-export const buildCard = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).card as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
-
-type CardVariants = VariantProps<ReturnType<typeof buildCard>>
+type CardTV = ThemeTV<typeof theme>
+type CardVariants = VariantProps<CardTV>
 
 export interface CardProps {
   variant?: CardVariants['variant']
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildCard>['slots'], any>>
+  ui?: Partial<Record<keyof CardTV['slots'], any>>
 }
 
 export interface CardSlots {
@@ -29,16 +19,14 @@ export interface CardSlots {
 </script>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useSlots } from 'vue'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<CardProps>(), {})
 defineSlots<CardSlots>()
 const slots = useSlots()
 
-const appConfig = useAppConfig()
-
-const ui = computed(() => buildCard(appConfig)({
+const { ui } = useStyledComponent('card', theme, () => ({
   variant: props.variant,
 }))
 </script>

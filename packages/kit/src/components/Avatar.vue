@@ -1,21 +1,10 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/avatar'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { ChipProps } from './Chip.vue'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.avatar`.
- */
-export const buildAvatar = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).avatar as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type AvatarVariants = VariantProps<ReturnType<typeof buildAvatar>>
+type AvatarTV = ThemeTV<typeof theme>
+type AvatarVariants = VariantProps<AvatarTV>
 
 export interface AvatarProps {
   /** Image source URL. Renders an `<image>`; on load failure it falls back to initials/icon. */
@@ -36,7 +25,7 @@ export interface AvatarProps {
    */
   chip?: boolean | ChipProps
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildAvatar>['slots'], any>>
+  ui?: Partial<Record<keyof AvatarTV['slots'], any>>
 }
 
 export interface AvatarSlots {
@@ -58,7 +47,7 @@ export const AVATAR_GROUP_KEY: InjectionKey<AvatarGroupContext> = Symbol('vyui:a
 
 <script setup lang="ts">
 import { computed, inject } from 'vue'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import {
   AvatarFallback as CoreAvatarFallback,
   AvatarImage as CoreAvatarImage,
@@ -79,8 +68,6 @@ const resolvedChipProps = computed<ChipProps | undefined>(() => {
   return { inset: true, ...props.chip }
 })
 
-const appConfig = useAppConfig()
-
 // AvatarGroup pushes `size`/`color` via provide() so nested avatars inherit
 // the group's scale. Component-level props win when explicitly set.
 const groupCtx = inject(AVATAR_GROUP_KEY, null)
@@ -98,7 +85,7 @@ const fallbackText = computed(() => {
   return ''
 })
 
-const ui = computed(() => buildAvatar(appConfig)({
+const { ui } = useStyledComponent('avatar', theme, () => ({
   size: resolvedSize.value,
   color: resolvedColor.value,
 }))

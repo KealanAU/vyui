@@ -19,13 +19,9 @@ const distDir = resolve(process.argv[2] ?? 'dist')
 
 /** Recursively collect every `.d.ts` under `dir`. */
 function collect(dir) {
-  const out = []
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) out.push(...collect(full))
-    else if (entry.name.endsWith('.d.ts')) out.push(full)
-  }
-  return out
+  return readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter(e => e.isFile() && e.name.endsWith('.d.ts'))
+    .map(e => join(e.parentPath, e.name))
 }
 
 // Matches the specifier of `from '…'`, `import('…')`, and bare `import '…'`.

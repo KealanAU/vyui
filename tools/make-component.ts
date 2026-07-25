@@ -161,21 +161,8 @@ if (!noBarrel) {
   if (barrel.includes(`./components/${name}`)) {
     console.log(`barrel already references ${name}, skipping`)
   } else {
-    // Insert in alphabetical position within the "Disclosure + universal" block
-    // if a sibling alphabetical neighbor exists; otherwise append.
-    const lines = barrel.split('\n')
-    const exportRegex = /^export \* from '\.\/components\/([A-Za-z0-9]+)'$/
-    let inserted = false
-    for (let i = 0; i < lines.length; i++) {
-      const m = exportRegex.exec(lines[i])
-      if (m && m[1].localeCompare(name) > 0) {
-        lines.splice(i, 0, barrelLine.trimEnd())
-        inserted = true
-        break
-      }
-    }
-    const next = inserted ? lines.join('\n') : barrel.replace(/\n*$/, `\n${barrelLine}`)
-    fs.writeFileSync(BARREL_FILE, next)
+    // Append; run `eslint --fix` to sort it into alphabetical position.
+    fs.writeFileSync(BARREL_FILE, barrel.replace(/\n*$/, `\n${barrelLine}`))
     console.log(`wired into ${path.relative(REPO_ROOT, BARREL_FILE)}`)
   }
 }

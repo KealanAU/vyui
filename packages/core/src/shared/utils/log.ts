@@ -10,11 +10,3 @@ export const log = (showLog: boolean, ...data: unknown[]): void => {
     console.info(...data)
   }
 }
-
-/** Main-thread variant of {@link log} — carries the `'main thread'` directive. */
-export const mtsLog = (showLog: boolean, ...data: unknown[]): void => {
-  'main thread'
-  if (showLog) {
-    console.info(...data)
-  }
-}

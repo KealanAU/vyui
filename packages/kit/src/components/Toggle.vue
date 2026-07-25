@@ -1,21 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/toggle'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme (a color
- * builder, invoked with the resolved color list) with user overrides pulled
- * from `appConfig.ui.toggle`.
- */
-export const buildToggle = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).toggle as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type ToggleVariants = VariantProps<ReturnType<typeof buildToggle>>
+type ToggleTV = ThemeTV<typeof theme>
+type ToggleVariants = VariantProps<ToggleTV>
 
 export interface ToggleProps {
   modelValue?: boolean
@@ -26,7 +14,7 @@ export interface ToggleProps {
   /** Iconify name rendered inside the toggle when no default slot is supplied. */
   icon?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildToggle>['slots'], any>>
+  ui?: Partial<Record<keyof ToggleTV['slots'], any>>
 }
 
 export interface ToggleEmits {
@@ -39,9 +27,8 @@ export interface ToggleSlots {
 </script>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Toggle as CoreToggle, Icon as VyIcon } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<ToggleProps>(), {
   modelValue: false,
@@ -50,8 +37,7 @@ const props = withDefaults(defineProps<ToggleProps>(), {
 const emit = defineEmits<ToggleEmits>()
 defineSlots<ToggleSlots>()
 
-const appConfig = useAppConfig()
-const ui = computed(() => buildToggle(appConfig)({
+const { ui } = useStyledComponent('toggle', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,

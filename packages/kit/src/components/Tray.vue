@@ -1,20 +1,10 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/tray'
 import type { SheetDirection } from '@vyui/core'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.tray`.
- */
-export const buildTray = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).tray as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
-
-type TrayVariants = VariantProps<ReturnType<typeof buildTray>>
+type TrayTV = ThemeTV<typeof theme>
+type TrayVariants = VariantProps<TrayTV>
 
 export interface TrayProps {
   /** Controlled open state — bind with `v-model:open`. */
@@ -76,7 +66,7 @@ export interface TrayProps {
    */
   keyboardAware?: boolean | 'lift' | 'scroll'
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildTray>['slots'], any>>
+  ui?: Partial<Record<keyof TrayTV['slots'], any>>
 }
 
 export interface TrayEmits {
@@ -127,7 +117,7 @@ import {
   SheetRoot,
   useId,
 } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { provideTrayContext } from './trayContext'
 
 const props = withDefaults(defineProps<TrayProps>(), {
@@ -142,8 +132,6 @@ const props = withDefaults(defineProps<TrayProps>(), {
 })
 const emit = defineEmits<TrayEmits>()
 defineSlots<TraySlots>()
-
-const appConfig = useAppConfig()
 
 // Hand-rolled controlled/uncontrolled split for `open` and `view` — vue-lynx
 // 0.4.0 lacks `defineModel`'s `mergeModels` runtime export (same reason
@@ -268,7 +256,7 @@ const slotProps = computed<TraySlotProps>(() => ({
   canGoBack: canGoBack.value,
 }))
 
-const ui = computed(() => buildTray(appConfig)({ variant: props.variant }))
+const { ui } = useStyledComponent('tray', theme, () => ({ variant: props.variant }))
 </script>
 
 <template>

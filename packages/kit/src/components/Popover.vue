@@ -1,18 +1,9 @@
 <script lang="ts">
-import { tv } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/popover'
+import type { ThemeTV } from '../composables/useStyledComponent'
 import type { SheetDirection } from '@vyui/core'
-import type { AppConfig } from '../types'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.popover`.
- */
-export const buildPopover = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).popover as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-})
+type PopoverTV = ThemeTV<typeof theme>
 
 /**
  * Sub-object mirroring Nuxt UI's `content` prop — a single bag for popper
@@ -103,7 +94,7 @@ export interface PopoverProps {
   openDelay?: number
   closeDelay?: number
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildPopover>['slots'], any>>
+  ui?: Partial<Record<keyof PopoverTV['slots'], any>>
 }
 
 export interface PopoverEmits {
@@ -143,7 +134,7 @@ import {
   SheetHandle,
   useElementRect,
 } from '@vyui/core'
-import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<PopoverProps>(), {
   presentation: 'sheet',
@@ -161,8 +152,6 @@ const props = withDefaults(defineProps<PopoverProps>(), {
 const emit = defineEmits<PopoverEmits>()
 defineSlots<PopoverSlots>()
 
-const appConfig = useAppConfig()
-
 const resolvedOpen = computed(() => props.open !== undefined ? props.open : props.modelValue)
 
 const onUpdateOpen = (value: boolean) => {
@@ -172,7 +161,7 @@ const onUpdateOpen = (value: boolean) => {
 
 const close = () => onUpdateOpen(false)
 
-const ui = computed(() => buildPopover(appConfig)())
+const { ui } = useStyledComponent('popover', theme, () => ({}))
 
 // --- Anchor-mode trigger measurement --------------------------------------
 // Sheet mode skips this entirely (the sheet docks to the viewport bottom and

@@ -5,8 +5,6 @@
  * consumers would otherwise re-implement per-component.
  */
 
-export { get, noop } from './common'
-
 export { delayFrames } from './delayFrames'
 
 export {
@@ -18,4 +16,4 @@ export {
 
 export { interpolateJS } from './interpolationJS'
 
-export { log, mtsLog } from './log'
+export { log } from './log'

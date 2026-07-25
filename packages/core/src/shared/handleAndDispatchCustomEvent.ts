@@ -20,25 +20,11 @@ export function handleAndDispatchCustomEvent<
     ? D
     : never),
 ) {
-  // Lynx has no CustomEvent / dispatchEvent — call handler directly
-  if (typeof CustomEvent === 'undefined') {
-    if (handler) {
-      let defaultPrevented = false
-      const syntheticEvent = {
-        detail,
-        bubbles: false,
-        cancelable: true,
-        get defaultPrevented() { return defaultPrevented },
-        preventDefault() { defaultPrevented = true },
-      } as unknown as E
-      handler(syntheticEvent)
-    }
-    return
-  }
-
-  const target = detail.originalEvent.target
-
-  // Lynx elements (even in web mode) don't implement addEventListener/dispatchEvent
+  // Lynx has no CustomEvent, and its elements (even in web mode) don't
+  // implement addEventListener/dispatchEvent — call the handler directly with
+  // a synthetic event. `target` is left undefined when CustomEvent is missing
+  // so `detail.originalEvent.target` is never read in that path.
+  const target = typeof CustomEvent === 'undefined' ? undefined : detail.originalEvent.target
   if (!target || typeof (target as any).addEventListener !== 'function') {
     if (handler) {
       let defaultPrevented = false

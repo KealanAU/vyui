@@ -1,21 +1,10 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/select'
-import { resolveColors } from '../theme/colors'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { SheetDirection } from '@vyui/core'
-import type { AppConfig } from '../types'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.select`.
- */
-export const buildSelect = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).select as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type SelectVariants = VariantProps<ReturnType<typeof buildSelect>>
+type SelectTV = ThemeTV<typeof theme>
+type SelectVariants = VariantProps<SelectTV>
 
 /**
  * Item shape — strings/numbers are accepted directly; objects pull their
@@ -81,7 +70,7 @@ export interface SelectProps {
   /** When `items` are objects, which field to use as the label. */
   labelKey?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildSelect>['slots'], any>>
+  ui?: Partial<Record<keyof SelectTV['slots'], any>>
 }
 
 export interface SelectEmits {
@@ -119,6 +108,7 @@ import {
   Icon as VyIcon,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { resolveColorHex } from '../utils/resolveColor'
 
 const props = withDefaults(defineProps<SelectProps>(), {
@@ -137,7 +127,7 @@ const appConfig = useAppConfig()
 const resolvedTrailingIcon = computed(() => props.trailingIcon || appConfig.ui.icons?.chevronDown || 'i-lucide-chevron-down')
 const resolvedSelectedIcon = computed(() => props.selectedIcon || appConfig.ui.icons?.check || 'i-lucide-check')
 
-const ui = computed(() => buildSelect(appConfig)({
+const { ui } = useStyledComponent('select', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,

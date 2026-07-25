@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme from '../theme/rating'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.rating`.
- */
-export const buildRating = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).rating as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type RatingVariants = VariantProps<ReturnType<typeof buildRating>>
+type RatingTV = ThemeTV<typeof theme>
+type RatingVariants = VariantProps<RatingTV>
 
 export interface RatingProps {
   /** Controlled rating value. Can be bound with `v-model`. */
@@ -28,7 +17,7 @@ export interface RatingProps {
   /** Iconify name for the star glyph. Defaults to `appConfig.ui.icons.star`. */
   icon?: string
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildRating>['slots'], any>>
+  ui?: Partial<Record<keyof RatingTV['slots'], any>>
 }
 
 export interface RatingEmits {
@@ -40,6 +29,7 @@ export interface RatingEmits {
 import { computed } from 'vue'
 import { RatingItem, RatingItemIndicator, RatingRoot, Icon as VyIcon } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 
 const props = withDefaults(defineProps<RatingProps>(), {
   modelValue: 0,
@@ -52,7 +42,7 @@ const appConfig = useAppConfig()
 
 const resolvedIcon = computed(() => props.icon || appConfig.ui.icons?.star || 'i-lucide-star')
 
-const ui = computed(() => buildRating(appConfig)({
+const { ui } = useStyledComponent('rating', theme, () => ({
   color: props.color,
   size: props.size,
   disabled: props.disabled,

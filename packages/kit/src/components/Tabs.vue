@@ -1,20 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
-import { defineThemeBuilder } from '../utils/tv'
 import theme, { iconFg } from '../theme/tabs'
-import { resolveColors } from '../theme/colors'
-import type { AppConfig } from '../types'
+import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.tabs`.
- */
-export const buildTabs = defineThemeBuilder((appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).tabs as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-})
-
-type TabsVariants = VariantProps<ReturnType<typeof buildTabs>>
+type TabsTV = ThemeTV<typeof theme>
+type TabsVariants = VariantProps<TabsTV>
 
 export interface TabsItem {
   label?: string
@@ -67,7 +56,7 @@ export interface TabsProps {
    */
   deferContent?: boolean
   class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildTabs>['slots'], any>>
+  ui?: Partial<Record<keyof TabsTV['slots'], any>>
 }
 
 export interface TabsEmits {
@@ -97,6 +86,7 @@ import {
   Icon as VyIcon,
 } from '@vyui/core'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useStyledComponent } from '../composables/useStyledComponent'
 import { resolveColorHex } from '../utils/resolveColor'
 import { useColorMode } from '../composables/useColorMode'
 
@@ -112,7 +102,7 @@ const slots = defineSlots<TabsSlots>()
 
 const appConfig = useAppConfig()
 
-const ui = computed(() => buildTabs(appConfig)({
+const { ui } = useStyledComponent('tabs', theme, () => ({
   color: props.color,
   variant: props.variant,
   size: props.size,
