@@ -40,6 +40,11 @@ const attrs = useAttrs()
 // `backdropStyle` or `style` — both spread after the defaults below.
 const mergedStyle = computed<VyStyle>(() => ({
   position: 'fixed',
+  // Lynx web gives every element `position: relative`, so `z-index: auto`
+  // overlays paint in DOM order — an `OverlayRoot` mounted as the first child
+  // of the app root (VyApp's default) lands *behind* the app content. Matches
+  // the Sheet backdrop's 1000; ToastViewport sits above at 1100.
+  zIndex: 1000,
   top: 0,
   left: 0,
   right: 0,

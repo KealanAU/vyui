@@ -73,6 +73,9 @@ function viewportStyle(): Record<string, any> {
   // themselves, so taps elsewhere fall through to the app behind it.
   return {
     position: 'fixed',
+    // Above the 1000 every overlay backdrop paints at, so a toast raised while
+    // a modal is open stays visible.
+    zIndex: 1100,
     left: '0px',
     right: '0px',
     [edge]: `${safeArea[edge]}px`,
