@@ -169,6 +169,16 @@ function getVisibleCells(): Promise<unknown> {
 const listHeightMT = useMainThreadRef<number>(0)
 const listWidthMT = useMainThreadRef<number>(0)
 
+// Handle for the `<list>` itself, rather than re-selecting it by id from the
+// worklet. `lynx.querySelector` exists only on the NATIVE main thread —
+// web-core's MT `lynx` object has no selector API, so every call threw and took
+// the whole worklet down with it (same gap ScrollView documents above its own
+// element refs). A `main-thread-ref` is resolved by the runtime on both
+// platforms, so steps 1 and 3 below work on web too: web-elements' `<x-list>`
+// implements `scrollToPosition` as a real DOM method, which is what
+// `__InvokeUIMethod` dispatches to.
+const listElMT = useMainThreadRef<any>(null)
+
 // `runOnMainThread` must be called with the LITERAL identifier at the call
 // site — SWC's worklet transform pattern-matches on `runOnMainThread(fn)`
 // before wrapping `fn` and rewriting to dispatch via the MT runtime. Aliasing
@@ -187,7 +197,6 @@ function onListLayoutChangeMT(e: any): void {
 }
 
 function scrollIntoIdMT(
-  listIdValue: string,
   listItemId: string,
   targetId: string,
   index: number,
@@ -197,9 +206,10 @@ function scrollIntoIdMT(
   isVertical: boolean,
 ): void {
   'main thread'
+  const listEl = listElMT.current
+  if (!listEl || typeof listEl.invoke !== 'function') return
   // Step 1 — bring the cell into existence by index.
-  // @ts-expect-error `lynx.querySelector` is MT-only and isn't on the public type.
-  const step1 = lynx.querySelector(`#${listIdValue}`)?.invoke('scrollToPosition', {
+  const step1 = listEl.invoke('scrollToPosition', {
     position: index,
     smooth: animated,
     alignTo: 'top',
@@ -208,8 +218,27 @@ function scrollIntoIdMT(
   if (!step1) return
   step1.then(() => {
     // Step 2 — measure the target relative to its cell, not the screen.
-    // @ts-expect-error
-    const step2 = lynx.querySelector(`#${targetId}`)?.invoke('boundingClientRect', {
+    //
+    // The target is an arbitrary consumer-owned child, so there is no ref for
+    // it and the global selector is the only way in. That API is native-only,
+    // and web's `boundingClientRect` ignores `relativeTo` regardless, so there
+    // is nothing meaningful to measure against there. Skipping leaves the
+    // step-1 landing — exactly what `alignTo: 'none'` already produces — and
+    // still honours `extraOffset` so a sticky-header nudge survives.
+    const g = globalThis as any
+    if (typeof g?.lynx?.querySelector !== 'function') {
+      if (extraOffset !== 0) {
+        void listEl.invoke('scrollToPosition', {
+          position: index,
+          offset: extraOffset,
+          smooth: animated,
+          useScroller: true,
+          alignTo: 'top',
+        })
+      }
+      return
+    }
+    const step2 = g.lynx.querySelector(`#${targetId}`)?.invoke('boundingClientRect', {
       relativeTo: listItemId,
     })
     if (!step2) return
@@ -239,16 +268,15 @@ function scrollIntoIdMT(
       // Step 3 — re-scroll with the corrective offset. Negative because Lynx's
       // `offset` is "how far past `position` to scroll" and we want to *expose*
       // the child, not move it further into the cell.
-      // @ts-expect-error
-      lynx.querySelector(`#${listIdValue}`)?.invoke('scrollToPosition', {
+      void listEl.invoke('scrollToPosition', {
         position: index,
         offset: -offset + extraOffset,
         smooth: animated,
         useScroller: true,
         alignTo: 'top',
       })
-    })
-  })
+    }).catch(() => {})
+  }).catch(() => {})
 }
 
 /**
@@ -274,7 +302,6 @@ function scrollIntoId(
   offset = 0,
 ): void {
   void runOnMainThread(scrollIntoIdMT as any)(
-    listId.value,
     listItemId,
     id,
     index,
@@ -318,7 +345,8 @@ defineExpose({ scrollTo, scrollIntoId, autoScroll, getVisibleCells, listEl })
     @scrolltoupper="(e: unknown) => emits('scrollToUpper', e)"
     @scrollstatechange="(e: unknown) => emits('scrollStateChange', e)"
     @layoutcomplete="(e: unknown) => emits('layoutComplete', e)"
-    :main-thread:bindlayoutchange="onListLayoutChangeMT"
+    :main-thread-ref="listElMT"
+    :main-thread-bindlayoutchange="onListLayoutChangeMT"
   >
     <slot />
   </list>
