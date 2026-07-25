@@ -47,6 +47,8 @@ import IslandGroupExample from './island-group/IslandGroupExample.vue'
 import IslandExample from './island/IslandExample.vue'
 import KeyboardAwareExample from './keyboard-aware/KeyboardAwareExample.vue'
 import LabelExample from './label/LabelExample.vue'
+import LandingProfile from './landing/LandingProfile.vue'
+import LandingShowcase from './landing/LandingShowcase.vue'
 import ModalExample from './modal/ModalExample.vue'
 import NumberFieldExample from './number-field/NumberFieldExample.vue'
 import PinInputExample from './pin-input/PinInputExample.vue'
@@ -127,6 +129,8 @@ export const examples: Record<string, Component> = {
   'island-example': IslandExample,
   'keyboard-aware-example': KeyboardAwareExample,
   'label-example': LabelExample,
+  'landing-profile': LandingProfile,
+  'landing-showcase': LandingShowcase,
   'modal-example': ModalExample,
   'number-field-example': NumberFieldExample,
   'pin-input-example': PinInputExample,

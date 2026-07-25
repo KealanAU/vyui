@@ -62,7 +62,12 @@ export default defineAppConfig({
       { label: 'Roadmap', to: '/getting-started/roadmap' },
       { label: 'Changelog', to: '/changelog' },
     ],
+    // Icon buttons on the right of the header, beside search and color mode.
     links: [{
+      'icon': 'i-lucide-history',
+      'to': '/changelog',
+      'aria-label': 'Changelog',
+    }, {
       'icon': 'i-simple-icons-github',
       'to': 'https://github.com/KealanAU/vyui',
       'target': '_blank',
