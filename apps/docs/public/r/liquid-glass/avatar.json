@@ -2,7 +2,7 @@
   "name": "avatar",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.6"
+    "@vyui/core@^0.2.7"
   ],
   "registryDependencies": [
     "chip"
