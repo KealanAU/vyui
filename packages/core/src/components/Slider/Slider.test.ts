@@ -254,22 +254,30 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
   // The BG only hears about the value on touchend, so the fill has to be
   // painted from the worklets too — otherwise it sits frozen for the whole
   // gesture and snaps on release while the thumb glides.
-  // `layoutchange` reports top/left relative to the PAGE while a touch reports
-  // pageX/pageY relative to the VIEWPORT, so an offset rebuilt as
+  // `layoutchange` reports top/left relative to the PAGE while a pointer
+  // reports its position relative to the VIEWPORT, so an offset rebuilt as
   // `pageY - rect.top` is only correct until something scrolls — measured on
-  // device at top 2805 against pageY 448. `touches[0].x`/`.y` come measured
-  // from the bound element's origin, so keep the mapping on those.
-  it('maps from element-relative touch offsets, never a reconstructed origin', async () => {
+  // device at top 2805 against pageY 448. The origin has to come from
+  // `boundingClientRect`, which is in the pointer's own frame.
+  //
+  // Both input types map the same way, off `clientX`/`clientY`: it is the only
+  // pointer field Lynx reports on native AND web. `touches[0].x`/`.y` is
+  // native-only — web touches are built from raw DOM `Touch`, which has no
+  // `x`/`y`, so reading them stranded every touchscreen browser on `NaN`.
+  it('maps every pointer through one viewport frame and a per-gesture origin', async () => {
     const sfc = await readSfc('SliderImplMTS.vue')
-    // Touch wrappers feed the element-relative offsets straight to the cores —
-    // never viewport coords (those are the mouse path's problem to convert).
-    for (const [fn, core] of [['_onTouchStart', '_dragStart'], ['_onTouchMove', '_dragMove']]) {
-      expect(body(sfc, fn)).toMatch(new RegExp(`${core}\\(t\\.x, t\\.y\\)`))
-      expect(body(sfc, fn)).not.toMatch(/pageX|pageY|clientX|clientY/)
-    }
+    // Element-local offsets are always `client* - rect origin`, never a raw
+    // native-only field.
+    expect(body(sfc, '_beginAt')).toMatch(/invoke\('boundingClientRect'\)/)
+    expect(body(sfc, '_beginAt')).toMatch(/_dragStart\(clientX - r\.left, clientY - r\.top\)/)
+    for (const fn of ['_onTouchStart', '_onTouchMove', '_onMouseDown', '_onMouseMove'])
+      expect(body(sfc, fn)).not.toMatch(/\bt\.x\b|\bt\.y\b|pageX|pageY/)
+    expect(body(sfc, '_onTouchStart')).toMatch(/_beginAt\(t\.clientX, t\.clientY\)/)
+    expect(body(sfc, '_onTouchMove')).toMatch(/_dragMove\(t\.clientX - rectLeftRef\.current, t\.clientY - rectTopRef\.current\)/)
+    expect(body(sfc, '_onMouseDown')).toMatch(/_beginAt\(e\.clientX, e\.clientY\)/)
     for (const core of ['_dragStart', '_dragMove'])
       expect(body(sfc, core)).toMatch(/_valueFromTouch\(localX, localY\)/)
-    expect(body(sfc, '_valueFromTouch')).not.toMatch(/rectXRef|rectYRef/)
+    expect(body(sfc, '_valueFromTouch')).not.toMatch(/rectLeftRef|rectTopRef/)
     // Only the SIZE crosses the thread boundary; a stored origin is the bug.
     expect(sfc).toMatch(/runOnMainThread\(_setSize as any\)\(r\.width, r\.height\)/)
   })

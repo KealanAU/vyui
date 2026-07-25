@@ -61,19 +61,18 @@ const trackRef = useMainThreadRef<any>(null)
 // boundary than primitives — see comment in Sheet.
 //
 // Deliberately not its position. `layoutchange` reports top/left relative to
-// the PAGE; a touch reports pageX/pageY relative to the VIEWPORT. Inside a
-// scroll-view the two drift apart by the scroll offset, so an offset rebuilt as
-// `pageY - top` is only correct while nothing has scrolled — measured on device
-// at top 2805 against pageY 448. `touches[0].x`/`.y` are already measured from
-// the bound element's origin, so the mapping needs no origin of its own and
-// nothing to re-sync on scroll.
+// the PAGE; a pointer reports its coordinates relative to the VIEWPORT. Inside
+// a scroll-view the two drift apart by the scroll offset, so an offset rebuilt
+// as `pageY - top` is only correct while nothing has scrolled — measured on
+// device at top 2805 against pageY 448. The origin comes from
+// `boundingClientRect` instead, which is in the pointer's own frame.
 const rectWRef = useMainThreadRef<number>(0)
 const rectHRef = useMainThreadRef<number>(0)
 
-// Track VIEWPORT origin — mouse path only, refreshed at every mousedown via
-// `invoke('boundingClientRect')` (see `_onMouseDown`). The touch path never
-// reads these: `touches[0].x/y` are already element-relative, whereas mouse
-// coords arrive viewport-relative and need the origin subtracted.
+// Track VIEWPORT origin, refreshed at the start of every gesture via
+// `invoke('boundingClientRect')` (see `_beginAt`) and subtracted from each
+// pointer coordinate. Per gesture, not at mount, so scrolling in between can't
+// skew it.
 const rectLeftRef = useMainThreadRef<number>(0)
 const rectTopRef = useMainThreadRef<number>(0)
 
@@ -155,9 +154,9 @@ function _snapClamp(v: number, min: number, max: number, step: number): number {
 }
 
 /**
- * Convert an ELEMENT-RELATIVE touch offset into a logical value, snapped and
- * clamped. `touches[0].x`/`.y` are already measured from the bound element's
- * own origin, which is why no rect position is involved.
+ * Convert an ELEMENT-RELATIVE pointer offset into a logical value, snapped and
+ * clamped. The wrappers have already subtracted the track origin, so only the
+ * track's SIZE is involved here — never a stored position.
  */
 function _valueFromTouch(localX: number, localY: number): number {
   'main thread'
@@ -311,9 +310,9 @@ function _paintRange(vals: number[]) {
   el.setStyleProperty(endName, `${100 - hi}%`)
 }
 
-// Coordinate-based gesture cores — take ELEMENT-LOCAL offsets. The touch
-// wrappers below feed them `touches[0].x/y` (already element-relative on
-// native); the mouse wrappers convert from viewport coords first.
+// Coordinate-based gesture cores — take ELEMENT-LOCAL offsets. Every wrapper
+// below converts to them the same way: viewport coordinate minus the track
+// origin `_beginAt` captured for this gesture.
 
 function _dragStart(localX: number, localY: number) {
   'main thread'
@@ -373,18 +372,50 @@ function _dragEnd() {
   runOnBackground(_commit as any)(finalVals)
 }
 
-function _onTouchStart(e: { touches: Array<{ x: number, y: number }> }) {
+/**
+ * Open a gesture at a VIEWPORT coordinate: capture the track's origin, then
+ * hand the cores the element-local offset.
+ *
+ * One entry point for touch and mouse because `clientX`/`clientY` is the only
+ * pointer field Lynx reports on both platforms. `touches[0].x`/`.y` — which
+ * this used to read on the touch path — arrive element-relative on native but
+ * do not exist on web at all: `createCrossThreadEvent` builds web touches from
+ * raw DOM `Touch` objects, which have no `x`/`y`, so the offsets came through
+ * as `NaN` on any touchscreen browser.
+ *
+ * The rect is fetched per gesture rather than at mount so scrolling in between
+ * can't skew it. `invoke` resolves on the microtask queue, ahead of the next
+ * move event; if one does land first, `_dragMove` drops it on the
+ * `activeIndexRef === -1` guard rather than mapping against a stale origin.
+ */
+function _beginAt(clientX: number, clientY: number) {
   'main thread'
-  const t = e.touches[0]
-  if (!t) return
-  _dragStart(t.x, t.y)
+  const track = trackRef.current
+  if (!track || typeof track.invoke !== 'function') return
+  track
+    .invoke('boundingClientRect')
+    .then((r: { left: number, top: number }) => {
+      rectLeftRef.current = r.left
+      rectTopRef.current = r.top
+      _dragStart(clientX - r.left, clientY - r.top)
+    })
+    // A missing UI method drops the gesture rather than raising an unhandled
+    // rejection.
+    .catch(() => {})
 }
 
-function _onTouchMove(e: { touches: Array<{ x: number, y: number }> }) {
+function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
   'main thread'
   const t = e.touches[0]
   if (!t) return
-  _dragMove(t.x, t.y)
+  _beginAt(t.clientX, t.clientY)
+}
+
+function _onTouchMove(e: { touches: Array<{ clientX: number, clientY: number }> }) {
+  'main thread'
+  const t = e.touches[0]
+  if (!t) return
+  _dragMove(t.clientX - rectLeftRef.current, t.clientY - rectTopRef.current)
 }
 
 function _onTouchEnd() {
@@ -396,14 +427,9 @@ function _onTouchEnd() {
 // Desktop web: Lynx web dispatches raw mouse events and never synthesizes
 // touch from them, so the same gesture core is bound to mouse. Coordinates
 // arrive top-level (mouse `detail` is the DOM click-count number, not
-// `{x, y}`) and are VIEWPORT-relative on the web dispatch path — mouse events
-// have no element-local field like `touches[0].x/y`. So mousedown fetches the
-// track's viewport origin via `invoke('boundingClientRect')` (the MT element
-// has no sync rect API; the promise resolves on the microtask queue, before
-// the next mousemove can dispatch) and each move subtracts it. Fetched per
-// gesture, not at mount, so scrolling between gestures can't skew it. No
-// mouseleave binding — it doesn't bubble, so per-element delivery is
-// unreliable on the Lynx dispatch path.
+// `{x, y}`) in the same viewport frame the touch path uses, so both go through
+// `_beginAt`. No mouseleave binding — it doesn't bubble, so per-element
+// delivery is unreliable on the Lynx dispatch path.
 function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
   'main thread'
   // Swallow the compatibility mousedown a touch browser replays after a tap.
@@ -411,20 +437,7 @@ function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number })
   // Primary button only: a right/middle press would start a phantom drag that
   // the next hover move then "releases", teleporting the thumb.
   if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
-  const track = trackRef.current
-  if (!track || typeof track.invoke !== 'function') return
-  const cx = e.clientX
-  const cy = e.clientY
-  track
-    .invoke('boundingClientRect')
-    .then((r: { left: number, top: number }) => {
-      rectLeftRef.current = r.left
-      rectTopRef.current = r.top
-      _dragStart(cx - r.left, cy - r.top)
-    })
-    // Native never dispatches mouse for our targets; if it ever does and the
-    // UI method is missing, dropping the gesture beats an unhandled rejection.
-    .catch(() => {})
+  _beginAt(e.clientX, e.clientY)
 }
 
 function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
