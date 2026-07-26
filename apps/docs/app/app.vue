@@ -9,10 +9,19 @@ const url = useRequestURL()
 // requested explicitly to appear on navigation nodes.
 const { data: navigation } = await useAsyncData('navigation', () => queryCollectionNavigation('docs', ['package']))
 
-// Full-text sections for the ⌘K command palette (<UContentSearch>). Client-only
-// + lazy so the search index isn't shipped in the prerendered HTML or blocking
-// first paint; it loads when the palette is first opened.
-const { data: searchSections } = useLazyAsyncData('search-sections', () => queryCollectionSearchSections('docs'), { server: false })
+// The ⌘K palette stays fully dormant until first opened: mounting it eagerly
+// pulls the fuse chunk on every page load, and the sections query drags in the
+// sqlite WASM chunks (~400 KB). `open` is the shared state the header button
+// writes to; the shortcut below covers ⌘K while the palette (which normally
+// owns it) isn't mounted yet.
+const { open: searchOpen } = useContentSearch()
+const searchActivated = ref(false)
+const { data: searchSections, execute: loadSearchSections } = useLazyAsyncData('search-sections', () => queryCollectionSearchSections('docs'), { server: false, immediate: false })
+watch(searchOpen, () => {
+  searchActivated.value = true
+  void loadSearchSections()
+}, { once: true })
+defineShortcuts(computed(() => searchActivated.value ? {} : { meta_k: () => { searchOpen.value = true } }))
 
 // On a phone the whole nav tree (~150 rows) buries the search input, so the
 // palette opens on header.quickLinks and only gets the tree once there's a term
@@ -71,6 +80,7 @@ provide('navigation', navigation)
 
     <ClientOnly>
       <LazyUContentSearch
+        v-if="searchActivated"
         v-model:search-term="searchTerm"
         :files="searchSections"
         :navigation="isPhone && !searchTerm ? undefined : navigation"

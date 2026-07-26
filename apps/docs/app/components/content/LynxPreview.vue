@@ -48,18 +48,24 @@ watch(() => colorMode.value, value => send('vyui:mode', value))
 let revealTimer: ReturnType<typeof setTimeout> | undefined
 
 // Each <lynx-view> boots its own Web Worker + WASM runtime, and a page can embed
-// 6+. `rootMargin` warms each one just before it scrolls into view; the idle
-// callback keeps an above-the-fold preview off the hydration critical path.
+// 6+. `rootMargin` warms each one just before it scrolls into view; the load +
+// idle gates keep the boot from contending with hydration and the initial
+// resource fetches, which is where the long main-thread tasks came from.
 onMounted(() => {
   if (!host.value) return
   observer = new IntersectionObserver((entries) => {
     if (!entries.some(entry => entry.isIntersecting)) return
     observer?.disconnect()
     observer = undefined
-    whenIdle(() => void mountPreview())
+    whenLoaded(() => whenIdle(() => void mountPreview()))
   }, { rootMargin: '200px' })
   observer.observe(host.value)
 })
+
+function whenLoaded(run: () => void) {
+  if (document.readyState === 'complete') run()
+  else window.addEventListener('load', () => run(), { once: true })
+}
 
 // ponytail: setTimeout fallback for Safari, which still lacks requestIdleCallback.
 function whenIdle(run: () => void) {
@@ -134,9 +140,9 @@ onBeforeUnmount(() => {
       class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6"
       aria-hidden="true"
     >
-      <div class="preview-skeleton h-9 w-40 rounded-full" />
-      <div class="preview-skeleton h-3 w-52 rounded-full" />
-      <div class="preview-skeleton h-3 w-36 rounded-full" />
+      <USkeleton class="h-9 w-40 rounded-full" />
+      <USkeleton class="h-3 w-52 rounded-full" />
+      <USkeleton class="h-3 w-36 rounded-full" />
     </div>
 
     <div
@@ -149,32 +155,3 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Shimmering skeleton bar: a muted surface swept by a soft highlight so the
-   deferred boot reads as "loading" rather than broken. */
-.preview-skeleton {
-  position: relative;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--ui-bg-elevated) 70%, var(--ui-bg));
-}
-.preview-skeleton::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--ui-bg-elevated) 40%, transparent),
-    transparent
-  );
-  animation: preview-shimmer 1.4s ease-in-out infinite;
-}
-@keyframes preview-shimmer {
-  100% { transform: translateX(100%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .preview-skeleton::after { animation: none; }
-}
-</style>

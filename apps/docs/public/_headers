@@ -1,0 +1,9 @@
+# Cloudflare Pages security headers. Script-src CSP is impossible here: the
+# prerendered HTML carries inline scripts with no nonce, so only frame-ancestors.
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: frame-ancestors 'none'
