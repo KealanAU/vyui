@@ -38,6 +38,20 @@ const runtimeDir = resolve(root, 'apps/docs/public/lynx-runtime')
 rmSync(runtimeDir, { recursive: true, force: true })
 cpSync(runtimeSrc, runtimeDir, { recursive: true, force: true })
 
+// Scrub two upstream nits from the served copy: lynx-core calls its own
+// profiling API, which web-core stubs with a console.error("NYI: …") that fires
+// on every card boot (fails Lighthouse's errors-in-console); and every chunk
+// points at a .map file the package doesn't ship (404s).
+for (const file of readdirSync(runtimeDir, { recursive: true, encoding: 'utf8' })) {
+  if (!/\.(js|css)$/.test(file)) continue
+  const path = resolve(runtimeDir, file)
+  const source = readFileSync(path, 'utf8')
+  const scrubbed = source
+    .replace(/console\.error\("NYI: \w+\. This is an issue of lynx-core\."\)/g, 'void 0')
+    .replace(/\/[/*]# sourceMappingURL=[^\s*]+\s*(\*\/)?/g, '')
+  if (scrubbed !== source) writeFileSync(path, scrubbed)
+}
+
 const examplesDir = resolve(playground, 'src/examples')
 
 const toKebab = (name: string) =>

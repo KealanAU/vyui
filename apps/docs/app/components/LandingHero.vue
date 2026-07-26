@@ -128,9 +128,9 @@ onBeforeUnmount(() => {
                 <LynxPreview ref="preview" name="landing-showcase" height="100%" @ready="push" />
                 <template #fallback>
                   <div class="flex h-full flex-col items-center justify-center gap-3" aria-hidden="true">
-                    <div class="hero-skeleton h-10 w-40 rounded-full" />
-                    <div class="hero-skeleton h-3 w-52 rounded-full" />
-                    <div class="hero-skeleton h-3 w-36 rounded-full" />
+                    <USkeleton class="h-10 w-40 rounded-full" />
+                    <USkeleton class="h-3 w-52 rounded-full" />
+                    <USkeleton class="h-3 w-36 rounded-full" />
                   </div>
                 </template>
               </ClientOnly>
@@ -318,9 +318,5 @@ onBeforeUnmount(() => {
   .swatch:hover {
     outline-color: color-mix(in srgb, var(--ui-text) 25%, transparent);
   }
-}
-
-.hero-skeleton {
-  background: color-mix(in srgb, var(--ui-bg-elevated) 70%, var(--ui-bg));
 }
 </style>

@@ -2,6 +2,7 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@nuxt/content', '@nuxt/image', 'nuxt-llms', '@nuxtjs/sitemap', 'nuxt-og-image', 'nuxt-schema-org'],
   css: ['~/assets/css/main.css'],
   devtools: { enabled: true },
+  sourcemap: { client: true },
 
   // Shared site config consumed by @nuxtjs/sitemap + nuxt-og-image
   // (canonical host, sitemap URLs, absolute og:image URLs).
