@@ -3,6 +3,7 @@ import type { GlobalEventEmitter } from '@lynx-js/types'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { ToastProvider, ToastViewport } from '@vyui/core'
 import { VyAvatar, VyAvatarGroup, VyBadge, VyButton, VyCard, VySlider, VySwitch, VyToast, VyToggleGroup, VyTray, VyTrayView } from '@vyui/kit'
+import { globalEmitter } from '../../globalEmitter'
 
 const COLORS = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 
@@ -14,14 +15,6 @@ function onColor(...args: unknown[]) {
   if (match) theme.value = match
 }
 
-// `lynx.getJSModule` is a no-op on web-core's background lynx, so fall back to
-// the emitter the web runtime actually emits on — the native app's own.
-function globalEmitter(): GlobalEventEmitter | undefined {
-  if (typeof lynx === 'undefined') return undefined
-  const nativeApp = (lynx as { getNativeApp?: () => { GlobalEventEmitter?: GlobalEventEmitter } }).getNativeApp?.()
-  return lynx.getJSModule('GlobalEventEmitter') ?? nativeApp?.GlobalEventEmitter
-}
-
 const threshold = ref(35)
 const notify = ref(false)
 const scope = ref('All')
@@ -30,10 +23,6 @@ const tray = ref(false)
 // Disabled rather than `v-if`: vue-lynx realizes a false v-if as a zero-size
 // anchor node that the card's `gap-4` still counts, leaving a phantom gap.
 const SCOPES = ['All', 'Mentions', 'None']
-
-// Set by the docs host when the page itself is on a phone — the device frame
-// goes fluid there, so the members row sheds avatars to keep its copy intact.
-const compact = typeof lynx !== 'undefined' && !!lynx.__globalProps?.compact
 
 const MEMBERS = [
   { src: '/avatars/12.jpg', text: 'AK' },
@@ -130,7 +119,7 @@ onUnmounted(() => {
 
       <VyCard variant="outline">
         <view class="flex flex-row items-center gap-3">
-          <VyAvatarGroup size="sm" :max="compact ? 1 : 3" :color="theme">
+          <VyAvatarGroup size="sm" :max="3" :color="theme">
             <VyAvatar v-for="member in MEMBERS" :key="member.src" :src="member.src" :text="member.text" />
           </VyAvatarGroup>
           <view class="flex flex-col flex-1">

@@ -54,8 +54,7 @@ export default defineAppConfig({
     to: '/',
     search: true,
     colorMode: true,
-    // Empty-state rows in the ⌘K palette — the full docs tree only appears once
-    // there's a search term.
+    // Empty-state rows for the phone ⌘K palette (wired up in app.vue).
     quickLinks: [
       { label: 'Get Started', icon: 'i-lucide-square-play', to: '/getting-started' },
       { label: '@vyui/core', icon: 'i-lucide-box', to: '/packages/core' },

@@ -15,8 +15,6 @@ const props = withDefaults(defineProps<{
    * runtime rasterizes far more pixels than ever reach the screen.
    */
   pixelRatio?: number
-  /** Forwarded as `lynx.__globalProps.compact`; read once at boot, so it can't follow a resize. */
-  compact?: boolean
 }>(), {
   height: '320px',
   pixelRatio: 2,
@@ -34,9 +32,17 @@ let observer: IntersectionObserver | undefined
 // Host → card channel: web-core forwards this to the card's GlobalEventEmitter
 // (`lynx.getJSModule('GlobalEventEmitter')`). Events sent before boot are lost,
 // so callers should (re)send their state on `ready`.
-defineExpose({
-  send: (event: string, ...params: string[]) => lynxView?.sendGlobalEvent(event, params),
-})
+function send(event: string, ...params: string[]) {
+  lynxView?.sendGlobalEvent(event, params)
+}
+
+defineExpose({ send })
+
+// The card runs in a Web Worker with no `matchMedia`, so it can't read the
+// page's color mode — push it, or its light-mode text lands on our dark
+// `--ui-bg` backdrop.
+const colorMode = useColorMode()
+watch(() => colorMode.value, value => send('vyui:mode', value))
 // Safety net: if the card neither fires `load` nor `error` (e.g. an older
 // bundle), reveal it anyway so the skeleton can't linger forever.
 let revealTimer: ReturnType<typeof setTimeout> | undefined
@@ -71,7 +77,7 @@ async function mountPreview() {
     el.setAttribute('url', '/playground/main.web.bundle')
     el.setAttribute('transform-vw', '')
     el.setAttribute('transform-vh', '')
-    el.globalProps = { example: props.name, compact: props.compact }
+    el.globalProps = { example: props.name }
     el.browserConfig = {
       pixelRatio: props.pixelRatio,
       pixelWidth: 390,
@@ -83,6 +89,7 @@ async function mountPreview() {
     // the cue to drop the skeleton and reveal the live preview.
     el.addEventListener('load', () => {
       loading.value = false
+      send('vyui:mode', colorMode.value)
       emit('ready')
     })
     el.addEventListener('error', (event) => {
@@ -111,8 +118,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <!-- Height sits on the wrapper too, so a `height="100%"` caller can size the
-       preview off its own box instead of a fixed pixel count. -->
+  <!-- The wrapper owns the height so a `height="100%"` caller can size the
+       preview off its own box. -->
   <div class="not-prose relative flex items-center justify-center w-full overflow-hidden" :style="{ height }">
     <div
       ref="host"

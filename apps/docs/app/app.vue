@@ -19,7 +19,6 @@ const { data: searchSections } = useLazyAsyncData('search-sections', () => query
 // to match. 639px = the `sm` stop where the palette stops being full-height.
 const isPhone = useMediaQuery('(max-width: 639px)')
 const searchTerm = ref('')
-const searchNavigation = computed(() => (isPhone.value && !searchTerm.value ? undefined : navigation.value))
 
 // Canonical = configured site origin + path only. Using siteUrl (not url.origin,
 // which is localhost during static prerender) keeps the production host; dropping
@@ -74,7 +73,7 @@ provide('navigation', navigation)
       <LazyUContentSearch
         v-model:search-term="searchTerm"
         :files="searchSections"
-        :navigation="searchNavigation"
+        :navigation="isPhone && !searchTerm ? undefined : navigation"
         :links="isPhone ? header?.quickLinks : undefined"
         :fuse="{ resultLimit: 42 }"
         :ui="{ modal: 'h-auto' }"
