@@ -29,12 +29,11 @@ const showCode = ref(false)
 const revealed = ref(false)
 const root = ref<HTMLElement>()
 
-// Mobile skips the phone cluster entirely (see the `display: none` below), so
-// the source is all there is to show there.
+// Mobile skips the phone cluster entirely (see the `display: none` below) and
+// swaps the badge row for the source panel on the same toggle.
 const isMobile = useMediaQuery('(max-width: 639px)')
-const codeVisible = computed(() => showCode.value || isMobile.value)
 
-const example = useExample(EXAMPLE, codeVisible)
+const example = useExample(EXAMPLE, showCode)
 const highlighted = computed(() => example.value?.highlighted ?? '')
 
 let observer: IntersectionObserver | undefined
@@ -70,18 +69,40 @@ onBeforeUnmount(() => {
         </p>
       </div>
 
-      <!-- Mobile gets the platform row instead of the cluster; the phones are
-           ~80px wide there and cost three Lynx runtimes to render. -->
-      <div class="reveal mt-8 flex justify-center gap-2 sm:hidden">
-        <span v-for="item in TARGETS" :key="item.id" class="inline-flex items-center gap-1.5 rounded-full border border-default px-3 py-1 text-xs text-toned">
-          <UIcon :name="item.icon" class="size-3.5" />
-          {{ item.label }}
-        </span>
-      </div>
-
       <!-- Hidden via `visibility`, never v-if: each phone owns a Lynx runtime,
            so unmounting re-boots three Web Workers per toggle. -->
       <div class="reveal reveal-1 stage mx-auto mt-10 sm:mt-24">
+        <!-- Mobile runs the same constellation with bare badges: the phones are
+             ~80px wide there and cost three Lynx runtimes to render. -->
+        <div class="cell dot-cluster sm:hidden" :data-hidden="showCode">
+          <span class="cluster-dots" aria-hidden="true" />
+
+          <span
+            v-for="item in TARGETS"
+            :key="item.id"
+            class="badge dot"
+            :class="`phone-${item.id}`"
+            :style="item.at"
+          >
+            <span class="ring dot-ring ring-1" aria-hidden="true" />
+            <span class="ring dot-ring ring-2" aria-hidden="true" />
+            <UIcon :name="item.icon" class="badge-glyph" />
+            <span class="sr-only">{{ item.label }}</span>
+          </span>
+
+          <button
+            type="button"
+            class="badge dot dot-source"
+            :aria-expanded="showCode"
+            aria-label="Show the shared source"
+            @click="showCode = true"
+          >
+            <span class="ring dot-ring ring-1" aria-hidden="true" />
+            <span class="ring dot-ring ring-2" aria-hidden="true" />
+            <span class="mark">&lt;/&gt;</span>
+          </button>
+        </div>
+
         <div class="cell cluster" :data-hidden="showCode">
           <span class="cluster-dots" aria-hidden="true" />
 
@@ -148,7 +169,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <div class="cell code-view" :data-hidden="!codeVisible">
+        <div class="cell code-view" :data-hidden="!showCode">
           <div class="code-panel">
             <div class="code-bar">
               <UIcon name="i-lucide-file-code-2" class="size-3.5 shrink-0 text-dimmed" />
@@ -159,7 +180,6 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 size="xs"
-                class="hidden sm:inline-flex"
                 aria-label="Back to the devices"
                 @click="showCode = false"
               />
@@ -389,13 +409,48 @@ section {
   height: 50%;
 }
 
+/* `.badge` is already absolute; `at` supplies left/top like it does for a phone. */
+.dot {
+  --badge-size: 2.75rem;
+  right: auto;
+  translate: -50% -50%;
+}
+
+.dot-source {
+  left: 50%;
+  top: 50%;
+  cursor: pointer;
+  transition: scale 200ms var(--ease-out);
+}
+
+.dot-source:active {
+  scale: 0.94;
+}
+
+/* `width` is load-bearing: every child is absolute, so without it the auto
+   margins shrink-to-fit the box to 0 and the % positions all collapse. */
+.dot-cluster {
+  position: relative;
+  width: 100%;
+  height: 15rem;
+  max-width: 20rem;
+  margin-inline: auto;
+}
+
+/* The 136% bleed the desktop cluster uses would overflow the viewport here. */
+.dot-cluster .cluster-dots {
+  width: 100%;
+}
+
 .node-source { --node: var(--color-vue-400); }
+.dot-source { --node: var(--color-vue-200); --node-glyph: var(--color-vue-950); }
 .phone-ios { --node: #17191c; --node-glyph: #fff; }
 .phone-android { --node: #3ddc84; --node-glyph: #fff; }
 .phone-web { --node: #3b82f6; --node-glyph: #fff; }
 
 .dark .phone-ios { --node: #f4f4f5; --node-glyph: #17191c; }
-.dark .node-source { --node: var(--color-vue-300); }
+.dark .node-source,
+.dark .dot-source { --node: var(--color-vue-300); }
 
 .ring {
   position: absolute;
@@ -422,6 +477,14 @@ section {
   0% { opacity: 0; transform: scale(0.98); }
   12% { opacity: 0.3; }
   100% { opacity: 0; transform: scale(1.16); }
+}
+
+/* Ripple finishes by 50% and sits invisible for the rest, so ring-2's 2100ms
+   delay makes the two alternate instead of overlapping. */
+@keyframes dot-ping {
+  0% { opacity: 0; transform: scale(0.98); }
+  6% { opacity: 0.3; }
+  50%, 100% { opacity: 0; transform: scale(1.3); }
 }
 
 .node-source {
@@ -458,6 +521,18 @@ section {
 .node-ring {
   inset: calc(var(--node-size) * -0.475);
   border-radius: 999px;
+}
+
+/* Must stay after `.ring` — same specificity, so declaration order decides. */
+.dot-ring {
+  inset: -0.75rem;
+  border-radius: 999px;
+  border-width: 2px;
+  border-color: var(--ui-text);
+}
+
+.is-revealed .dot-ring {
+  animation-name: dot-ping;
 }
 
 .mark {
@@ -503,7 +578,7 @@ section {
 }
 
 .code-body {
-  max-height: 30rem;
+  max-height: min(30rem, 55vh);
   overflow: auto;
   font-size: 13px;
   line-height: 1.6;
@@ -517,6 +592,9 @@ section {
    phone shells out of the layout at the same breakpoint. */
 @media (max-width: 639px) {
   .cluster { display: none; }
+  /* Neither mobile cell owns a Lynx runtime, so the hidden one can leave the
+     layout — otherwise it holds the stage open at its own height. */
+  .cell[data-hidden='true'] { display: none; }
 }
 
 /* Capped so `--phone-w * scale * 4.6` still fits the container — past that the
@@ -552,5 +630,14 @@ section {
 .code-body pre.shiki {
   margin: 0;
   padding: 1rem 1.25rem;
+}
+
+/* Wrap instead of scrolling sideways: a `pre` line here is ~85ch, so on a phone
+   the un-wrapped block is what widens the whole stage. */
+@media (max-width: 639px) {
+  .code-body pre.shiki {
+    white-space: pre-wrap;
+    padding: 0.875rem 1rem;
+  }
 }
 </style>

@@ -15,6 +15,8 @@ const props = withDefaults(defineProps<{
    * runtime rasterizes far more pixels than ever reach the screen.
    */
   pixelRatio?: number
+  /** Forwarded as `lynx.__globalProps.compact`; read once at boot, so it can't follow a resize. */
+  compact?: boolean
 }>(), {
   height: '320px',
   pixelRatio: 2,
@@ -69,14 +71,14 @@ async function mountPreview() {
     el.setAttribute('url', '/playground/main.web.bundle')
     el.setAttribute('transform-vw', '')
     el.setAttribute('transform-vh', '')
-    el.globalProps = { example: props.name }
+    el.globalProps = { example: props.name, compact: props.compact }
     el.browserConfig = {
       pixelRatio: props.pixelRatio,
       pixelWidth: 390,
       pixelHeight: 640,
     }
     el.style.width = '100%'
-    el.style.height = props.height
+    el.style.height = '100%'
     // web-core dispatches `load` once the card's first screen is painted — that's
     // the cue to drop the skeleton and reveal the live preview.
     el.addEventListener('load', () => {
@@ -109,12 +111,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="not-prose relative flex items-center justify-center w-full overflow-hidden">
+  <!-- Height sits on the wrapper too, so a `height="100%"` caller can size the
+       preview off its own box instead of a fixed pixel count. -->
+  <div class="not-prose relative flex items-center justify-center w-full overflow-hidden" :style="{ height }">
     <div
       ref="host"
-      class="w-full transition-opacity duration-300"
+      class="h-full w-full transition-opacity duration-300"
       :class="{ 'opacity-0': loading || failed }"
-      :style="{ height }"
     />
 
     <!-- Placeholder while the Web Worker + WASM runtime boot and the card paints

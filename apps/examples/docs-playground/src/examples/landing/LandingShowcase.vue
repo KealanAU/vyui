@@ -31,6 +31,10 @@ const tray = ref(false)
 // anchor node that the card's `gap-4` still counts, leaving a phantom gap.
 const SCOPES = ['All', 'Mentions', 'None']
 
+// Set by the docs host when the page itself is on a phone — the device frame
+// goes fluid there, so the members row sheds avatars to keep its copy intact.
+const compact = typeof lynx !== 'undefined' && !!lynx.__globalProps?.compact
+
 const MEMBERS = [
   { src: '/avatars/12.jpg', text: 'AK' },
   { src: '/avatars/32.jpg', text: 'JR' },
@@ -126,12 +130,12 @@ onUnmounted(() => {
 
       <VyCard variant="outline">
         <view class="flex flex-row items-center gap-3">
-          <VyAvatarGroup size="sm" :max="3" :color="theme">
+          <VyAvatarGroup size="sm" :max="compact ? 1 : 3" :color="theme">
             <VyAvatar v-for="member in MEMBERS" :key="member.src" :src="member.src" :text="member.text" />
           </VyAvatarGroup>
           <view class="flex flex-col flex-1">
             <text class="text-sm font-medium text-highlighted">Members</text>
-            <text class="text-xs text-muted">5 people · 2 invites pending</text>
+            <text class="text-xs text-muted">5 people · 2 pending</text>
           </view>
         </view>
       </VyCard>

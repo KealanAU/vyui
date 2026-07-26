@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { useClipboard } from '@vueuse/core'
+import { useClipboard, useMediaQuery } from '@vueuse/core'
 
 const install = 'npm i @vyui/kit'
+
+// Matches the breakpoint where `.device-frame` stops being a fixed 376px.
+const compact = useMediaQuery('(max-width: 420px)')
 const { copy, copied } = useClipboard({ source: install })
 
 // Dots mirror what each accent maps to in `@vyui/kit`'s style.css.
@@ -103,7 +106,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <div class="justify-self-center lg:justify-self-end">
+        <div class="device-col justify-self-center lg:justify-self-end">
           <div class="mb-5 flex items-center justify-center gap-2.5" role="group" aria-label="Accent color">
             <button
               v-for="(item, index) in COLORS"
@@ -125,7 +128,7 @@ onBeforeUnmount(() => {
 
             <div class="device-screen">
               <ClientOnly>
-                <LynxPreview ref="preview" name="landing-showcase" height="640px" @ready="push" />
+                <LynxPreview ref="preview" name="landing-showcase" :height="compact ? '100%' : '640px'" :compact="compact" @ready="push" />
                 <template #fallback>
                   <div class="flex h-[640px] flex-col items-center justify-center gap-3" aria-hidden="true">
                     <div class="hero-skeleton h-10 w-40 rounded-full" />
@@ -282,12 +285,22 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 420px) {
-  .device-frame {
-    width: 100%;
-    padding: 6px;
+  /* Most of the way out through UContainer's 1rem gutters, keeping a 6px inset
+     so the phone doesn't sit flush against the viewport edge. */
+  .device-col {
+    justify-self: stretch;
+    margin-inline: -0.375rem;
   }
+  .device-frame {
+    width: 92%;
+    margin-inline: auto;
+    padding: 4px;
+  }
+  /* Ratio, not a fixed 640px: on a fluid width that height stretches the phone
+     taller the narrower the viewport gets. */
   .device-screen {
     width: 100%;
+    aspect-ratio: 9 / 16;
   }
 }
 

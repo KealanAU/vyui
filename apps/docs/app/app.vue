@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const { seo } = useAppConfig()
+import { useMediaQuery } from '@vueuse/core'
+
+const { seo, header } = useAppConfig()
 const { public: { siteUrl } } = useRuntimeConfig()
 const url = useRequestURL()
 
@@ -11,6 +13,13 @@ const { data: navigation } = await useAsyncData('navigation', () => queryCollect
 // + lazy so the search index isn't shipped in the prerendered HTML or blocking
 // first paint; it loads when the palette is first opened.
 const { data: searchSections } = useLazyAsyncData('search-sections', () => queryCollectionSearchSections('docs'), { server: false })
+
+// On a phone the whole nav tree (~150 rows) buries the search input, so the
+// palette opens on header.quickLinks and only gets the tree once there's a term
+// to match. 639px = the `sm` stop where the palette stops being full-height.
+const isPhone = useMediaQuery('(max-width: 639px)')
+const searchTerm = ref('')
+const searchNavigation = computed(() => (isPhone.value && !searchTerm.value ? undefined : navigation.value))
 
 // Canonical = configured site origin + path only. Using siteUrl (not url.origin,
 // which is localhost during static prerender) keeps the production host; dropping
@@ -63,9 +72,12 @@ provide('navigation', navigation)
 
     <ClientOnly>
       <LazyUContentSearch
+        v-model:search-term="searchTerm"
         :files="searchSections"
-        :navigation="navigation"
+        :navigation="searchNavigation"
+        :links="isPhone ? header?.quickLinks : undefined"
         :fuse="{ resultLimit: 42 }"
+        :ui="{ modal: 'h-auto' }"
       />
     </ClientOnly>
 

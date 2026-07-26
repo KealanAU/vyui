@@ -32,6 +32,7 @@ const headerStyle = computed(() => {
     :style="headerStyle"
     :ui="{
       root: 'bg-transparent backdrop-blur-none backdrop-filter-none border-b-0 h-(--ui-header-height) sticky top-0 z-50',
+      left: 'lg:flex-none',
       center: 'hidden lg:flex items-center',
     }"
   >
@@ -52,6 +53,8 @@ const headerStyle = computed(() => {
       :ui="{
         link: linkClass,
         linkLabel: 'font-medium',
+        content: 'w-[28rem]',
+        viewport: 'shrink-0',
       }"
     />
 
