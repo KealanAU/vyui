@@ -50,6 +50,7 @@ const headerStyle = computed(() => {
     <UNavigationMenu
       :items="desktopLinks"
       variant="link"
+      content-orientation="vertical"
       :ui="{
         link: linkClass,
         linkLabel: 'font-medium',
