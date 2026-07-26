@@ -3,6 +3,7 @@ import type { GlobalEventEmitter } from '@lynx-js/types'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { ToastProvider, ToastViewport } from '@vyui/core'
 import { VyAvatar, VyAvatarGroup, VyBadge, VyButton, VyCard, VySlider, VySwitch, VyToast, VyToggleGroup, VyTray, VyTrayView } from '@vyui/kit'
+import { globalEmitter } from '../../globalEmitter'
 
 const COLORS = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 
@@ -12,14 +13,6 @@ let emitter: GlobalEventEmitter | undefined
 function onColor(...args: unknown[]) {
   const match = COLORS.find(name => name === args[0])
   if (match) theme.value = match
-}
-
-// `lynx.getJSModule` is a no-op on web-core's background lynx, so fall back to
-// the emitter the web runtime actually emits on — the native app's own.
-function globalEmitter(): GlobalEventEmitter | undefined {
-  if (typeof lynx === 'undefined') return undefined
-  const nativeApp = (lynx as { getNativeApp?: () => { GlobalEventEmitter?: GlobalEventEmitter } }).getNativeApp?.()
-  return lynx.getJSModule('GlobalEventEmitter') ?? nativeApp?.GlobalEventEmitter
 }
 
 const threshold = ref(35)
@@ -131,7 +124,7 @@ onUnmounted(() => {
           </VyAvatarGroup>
           <view class="flex flex-col flex-1">
             <text class="text-sm font-medium text-highlighted">Members</text>
-            <text class="text-xs text-muted">5 people · 2 invites pending</text>
+            <text class="text-xs text-muted">5 people · 2 pending</text>
           </view>
         </view>
       </VyCard>

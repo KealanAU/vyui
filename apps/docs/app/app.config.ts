@@ -54,13 +54,12 @@ export default defineAppConfig({
     to: '/',
     search: true,
     colorMode: true,
+    // Empty-state rows for the phone ⌘K palette (wired up in app.vue).
     quickLinks: [
-      { label: 'Docs', to: '/getting-started' },
-      { label: 'Components', to: '/components' },
-      { label: 'Packages', to: '/packages/core' },
-      { label: 'Theming', to: '/theming' },
-      { label: 'Roadmap', to: '/getting-started/roadmap' },
-      { label: 'Changelog', to: '/changelog' },
+      { label: 'Get Started', icon: 'i-lucide-square-play', to: '/getting-started' },
+      { label: '@vyui/core', icon: 'i-lucide-box', to: '/packages/core' },
+      { label: '@vyui/kit', icon: 'i-lucide-layers', to: '/packages/kit' },
+      { label: 'Theming', icon: 'i-lucide-palette', to: '/theming' },
     ],
     // Icon buttons on the right of the header, beside search and color mode.
     links: [{

@@ -29,12 +29,11 @@ const showCode = ref(false)
 const revealed = ref(false)
 const root = ref<HTMLElement>()
 
-// Mobile skips the phone cluster entirely (see the `display: none` below), so
-// the source is all there is to show there.
+// Mobile drops the phone shells for bare badges (see the media query below):
+// each phone owns a Lynx runtime and renders ~80px wide there.
 const isMobile = useMediaQuery('(max-width: 639px)')
-const codeVisible = computed(() => showCode.value || isMobile.value)
 
-const example = useExample(EXAMPLE, codeVisible)
+const example = useExample(EXAMPLE, showCode)
 const highlighted = computed(() => example.value?.highlighted ?? '')
 
 let observer: IntersectionObserver | undefined
@@ -68,15 +67,6 @@ onBeforeUnmount(() => {
         <p class="mt-4 text-lg text-toned">
           <NuxtLink to="/guides/vue-lynx" class="underline decoration-dotted underline-offset-4 hover:text-highlighted">Vue-Lynx</NuxtLink> is ByteDance's open-source native cross-platform framework — the same one powering parts of TikTok. You write Vue once; Lynx renders it natively.
         </p>
-      </div>
-
-      <!-- Mobile gets the platform row instead of the cluster; the phones are
-           ~80px wide there and cost three Lynx runtimes to render. -->
-      <div class="reveal mt-8 flex justify-center gap-2 sm:hidden">
-        <span v-for="item in TARGETS" :key="item.id" class="inline-flex items-center gap-1.5 rounded-full border border-default px-3 py-1 text-xs text-toned">
-          <UIcon :name="item.icon" class="size-3.5" />
-          {{ item.label }}
-        </span>
       </div>
 
       <!-- Hidden via `visibility`, never v-if: each phone owns a Lynx runtime,
@@ -148,7 +138,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <div class="cell code-view" :data-hidden="!codeVisible">
+        <div class="cell code-view" :data-hidden="!showCode">
           <div class="code-panel">
             <div class="code-bar">
               <UIcon name="i-lucide-file-code-2" class="size-3.5 shrink-0 text-dimmed" />
@@ -159,7 +149,6 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 size="xs"
-                class="hidden sm:inline-flex"
                 aria-label="Back to the devices"
                 @click="showCode = false"
               />
@@ -503,7 +492,7 @@ section {
 }
 
 .code-body {
-  max-height: 30rem;
+  max-height: min(30rem, 55vh);
   overflow: auto;
   font-size: 13px;
   line-height: 1.6;
@@ -513,10 +502,36 @@ section {
   background: color-mix(in srgb, var(--ui-bg-elevated) 70%, var(--ui-bg));
 }
 
-/* The runtimes are gated by `v-if="!isMobile"`; this just takes the empty
-   phone shells out of the layout at the same breakpoint. */
+/* Same constellation, no phones: the runtimes are already gated by
+   `v-if="!isMobile"`, so this drops the empty shells and shrinks each node down
+   to its badge. `.ring` must stay after `.node-ring` to win on equal specificity. */
 @media (max-width: 639px) {
-  .cluster { display: none; }
+  .cluster {
+    max-width: 20rem;
+    height: 15rem;
+  }
+  /* The 136% bleed would overflow the viewport here. */
+  .cluster-dots { width: 100%; }
+  .shell { display: none; }
+  .phone,
+  .node-source {
+    --node-size: 2.75rem;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .badge {
+    --badge-size: 2.75rem;
+    inset: 0;
+  }
+  .ring {
+    inset: -0.75rem;
+    border-radius: 999px;
+    border-width: 2px;
+    border-color: var(--ui-text);
+  }
+  /* No Lynx runtime on either cell, so the hidden one can leave the layout —
+     otherwise it holds the stage open at its own height. */
+  .cell[data-hidden='true'] { display: none; }
 }
 
 /* Capped so `--phone-w * scale * 4.6` still fits the container — past that the
@@ -552,5 +567,13 @@ section {
 .code-body pre.shiki {
   margin: 0;
   padding: 1rem 1.25rem;
+}
+
+/* An un-wrapped `pre` line is ~85ch and widens the whole stage on a phone. */
+@media (max-width: 639px) {
+  .code-body pre.shiki {
+    white-space: pre-wrap;
+    padding: 0.875rem 1rem;
+  }
 }
 </style>

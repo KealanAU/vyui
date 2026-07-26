@@ -32,9 +32,17 @@ let observer: IntersectionObserver | undefined
 // Host → card channel: web-core forwards this to the card's GlobalEventEmitter
 // (`lynx.getJSModule('GlobalEventEmitter')`). Events sent before boot are lost,
 // so callers should (re)send their state on `ready`.
-defineExpose({
-  send: (event: string, ...params: string[]) => lynxView?.sendGlobalEvent(event, params),
-})
+function send(event: string, ...params: string[]) {
+  lynxView?.sendGlobalEvent(event, params)
+}
+
+defineExpose({ send })
+
+// The card runs in a Web Worker with no `matchMedia`, so it can't read the
+// page's color mode — push it, or its light-mode text lands on our dark
+// `--ui-bg` backdrop.
+const colorMode = useColorMode()
+watch(() => colorMode.value, value => send('vyui:mode', value))
 // Safety net: if the card neither fires `load` nor `error` (e.g. an older
 // bundle), reveal it anyway so the skeleton can't linger forever.
 let revealTimer: ReturnType<typeof setTimeout> | undefined
@@ -76,11 +84,12 @@ async function mountPreview() {
       pixelHeight: 640,
     }
     el.style.width = '100%'
-    el.style.height = props.height
+    el.style.height = '100%'
     // web-core dispatches `load` once the card's first screen is painted — that's
     // the cue to drop the skeleton and reveal the live preview.
     el.addEventListener('load', () => {
       loading.value = false
+      send('vyui:mode', colorMode.value)
       emit('ready')
     })
     el.addEventListener('error', (event) => {
@@ -109,12 +118,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="not-prose relative flex items-center justify-center w-full overflow-hidden">
+  <!-- The wrapper owns the height so a `height="100%"` caller can size the
+       preview off its own box. -->
+  <div class="not-prose relative flex items-center justify-center w-full overflow-hidden" :style="{ height }">
     <div
       ref="host"
-      class="w-full transition-opacity duration-300"
+      class="h-full w-full transition-opacity duration-300"
       :class="{ 'opacity-0': loading || failed }"
-      :style="{ height }"
     />
 
     <!-- Placeholder while the Web Worker + WASM runtime boot and the card paints

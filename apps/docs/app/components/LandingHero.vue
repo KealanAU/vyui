@@ -125,9 +125,9 @@ onBeforeUnmount(() => {
 
             <div class="device-screen">
               <ClientOnly>
-                <LynxPreview ref="preview" name="landing-showcase" height="640px" @ready="push" />
+                <LynxPreview ref="preview" name="landing-showcase" height="100%" @ready="push" />
                 <template #fallback>
-                  <div class="flex h-[640px] flex-col items-center justify-center gap-3" aria-hidden="true">
+                  <div class="flex h-full flex-col items-center justify-center gap-3" aria-hidden="true">
                     <div class="hero-skeleton h-10 w-40 rounded-full" />
                     <div class="hero-skeleton h-3 w-52 rounded-full" />
                     <div class="hero-skeleton h-3 w-36 rounded-full" />
@@ -247,6 +247,7 @@ onBeforeUnmount(() => {
 
 .device-screen {
   width: 360px;
+  height: 640px;
   border-radius: 2rem;
   overflow: hidden;
   background: var(--ui-bg);
@@ -284,10 +285,12 @@ onBeforeUnmount(() => {
 @media (max-width: 420px) {
   .device-frame {
     width: 100%;
-    padding: 6px;
+    padding: 4px;
   }
   .device-screen {
     width: 100%;
+    height: auto;
+    aspect-ratio: 9 / 16;
   }
 }
 

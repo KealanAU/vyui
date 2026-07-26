@@ -73,15 +73,14 @@ const following = ref(false)
     </view>
 
     <view class="flex flex-col gap-1">
-      <view class="flex flex-row gap-1">
-        <view v-for="col in 3" :key="col" class="flex-1 h-20 rounded-lg bg-elevated items-center justify-center">
+      <view v-for="row in 2" :key="row" class="flex flex-row gap-1">
+        <view
+          v-for="col in 3"
+          :key="col"
+          class="flex-1 h-20 items-center justify-center rounded-lg bg-elevated"
+        >
           <VyIcon name="i-lucide-play" :size="18" :color="CHROME" />
         </view>
-      </view>
-      <!-- Not VySkeleton: `animate-pulse` never stops, and an animation inside a
-           Lynx runtime keeps that runtime painting forever. -->
-      <view class="flex flex-row gap-1">
-        <view v-for="col in 3" :key="col" class="flex-1 h-20 rounded-lg bg-accented" />
       </view>
     </view>
 
