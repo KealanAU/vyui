@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { GlobalEventEmitter } from '@lynx-js/types'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { ToastProvider, ToastViewport } from '@vyui/core'
-import { VyAvatar, VyAvatarGroup, VyBadge, VyButton, VyCard, VySlider, VySwitch, VyToast, VyToggleGroup, VyTray, VyTrayView } from '@vyui/kit'
+import { VyAvatar, VyAvatarGroup, VyBadge, VyButton, VyCard, VyProgress, VySlider, VySwitch, VyToast, VyTray, VyTrayView } from '@vyui/kit'
 import { globalEmitter } from '../../globalEmitter'
 
 const COLORS = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
@@ -15,14 +15,11 @@ function onColor(...args: unknown[]) {
   if (match) theme.value = match
 }
 
-const threshold = ref(35)
-const notify = ref(false)
-const scope = ref('All')
-const tray = ref(false)
+const SPEND = 820
 
-// Disabled rather than `v-if`: vue-lynx realizes a false v-if as a zero-size
-// anchor node that the card's `gap-4` still counts, leaving a phantom gap.
-const SCOPES = ['All', 'Mentions', 'None']
+const cap = ref(2000)
+const pause = ref(false)
+const tray = ref(false)
 
 const MEMBERS = [
   { src: '/avatars/12.jpg', text: 'AK' },
@@ -31,6 +28,8 @@ const MEMBERS = [
   { src: '/avatars/60.jpg', text: 'DL' },
   { src: '/avatars/68.jpg', text: 'SC' },
 ]
+
+const percent = computed(() => Math.min(100, Math.round((SPEND / cap.value) * 100)))
 
 const toasts = ref<number[]>([])
 let nextToast = 0
@@ -45,17 +44,15 @@ function dismissToast(id: number) {
 
 // Autoplay timeline — [wait ms, then run], looping.
 const SCENE: [number, () => void][] = [
-  [4200, () => tweenThreshold(82)],
-  [4400, () => { notify.value = true }],
-  [2400, () => { scope.value = 'Mentions' }],
-  [2800, () => pushToast()],
+  [4200, () => tweenCap(950)],
+  [4400, () => { pause.value = true }],
+  [4200, () => pushToast()],
   [2200, () => pushToast()],
   [7200, () => { tray.value = true }],
   [9600, () => { tray.value = false }],
   [4400, () => {
-    threshold.value = 35
-    notify.value = false
-    scope.value = 'All'
+    cap.value = 2000
+    pause.value = false
   }],
 ]
 
@@ -63,15 +60,15 @@ let step: ReturnType<typeof setTimeout> | undefined
 let tween: ReturnType<typeof setInterval> | undefined
 
 // Walked, not assigned: the slider has no transition, so the thumb would teleport.
-function tweenThreshold(to: number) {
+function tweenCap(to: number) {
   if (tween) clearInterval(tween)
   tween = setInterval(() => {
-    const gap = to - threshold.value
+    const gap = to - cap.value
     if (gap === 0) {
       clearInterval(tween)
       return
     }
-    threshold.value += Math.sign(gap) * Math.min(2, Math.abs(gap))
+    cap.value += Math.sign(gap) * Math.min(25, Math.abs(gap))
   }, 44)
 }
 
@@ -112,49 +109,47 @@ onUnmounted(() => {
         <VyAvatar text="VY" :color="theme" size="lg" />
         <view class="flex flex-col flex-1">
           <text class="text-base font-semibold text-highlighted">Vy UI</text>
-          <text class="text-sm text-muted">Workspace settings</text>
+          <text class="text-sm text-muted">Billing</text>
         </view>
         <VyBadge label="Pro" :color="theme" variant="soft" size="sm" />
       </view>
 
+      <view class="flex flex-col gap-4 p-4 rounded-2xl bg-elevated">
+        <view class="flex flex-col gap-2">
+          <view class="flex flex-row items-center">
+            <text class="flex-1 text-sm text-muted">This month</text>
+            <text class="text-sm font-medium text-highlighted">${{ SPEND }} of ${{ cap }}</text>
+          </view>
+          <VyProgress :model-value="percent" :color="theme" size="sm" />
+        </view>
+
+        <view class="flex flex-col gap-2">
+          <view class="flex flex-row items-center">
+            <text class="flex-1 text-sm text-muted">Monthly cap</text>
+            <text class="text-sm font-medium text-highlighted">${{ cap }}</text>
+          </view>
+          <VySlider v-model="cap" :color="theme" :min="0" :max="2000" :step="25" @update:model-value="takeOver" />
+        </view>
+
+        <VySwitch v-model="pause" :color="theme" label="Pause services at cap" @update:model-value="takeOver" />
+      </view>
+
       <VyCard variant="outline">
         <view class="flex flex-row items-center gap-3">
-          <VyAvatarGroup size="sm" :max="3" :color="theme">
+          <VyAvatarGroup size="md" :max="2" :color="theme">
             <VyAvatar v-for="member in MEMBERS" :key="member.src" :src="member.src" :text="member.text" />
           </VyAvatarGroup>
           <view class="flex flex-col flex-1">
-            <text class="text-sm font-medium text-highlighted">Members</text>
-            <text class="text-xs text-muted">5 people · 2 pending</text>
+            <text class="text-sm font-medium text-highlighted">Gets the alert</text>
+            <text class="text-xs text-muted">{{ MEMBERS.length }} people</text>
           </view>
         </view>
       </VyCard>
 
-      <view class="flex flex-col gap-4 p-4 rounded-2xl bg-elevated">
-        <view class="flex flex-col gap-2">
-          <view class="flex flex-row items-center">
-            <text class="flex-1 text-sm text-muted">Storage alert</text>
-            <text class="text-sm font-medium text-highlighted">{{ threshold }}%</text>
-          </view>
-          <VySlider v-model="threshold" :color="theme" :min="0" :max="100" @update:model-value="takeOver" />
-        </view>
-
-        <VySwitch v-model="notify" :color="theme" label="Push notifications" @update:model-value="takeOver" />
-
-        <VyToggleGroup
-          v-model="scope"
-          :items="SCOPES"
-          :color="theme"
-          :disabled="!notify"
-          variant="subtle"
-          size="sm"
-          @update:model-value="takeOver"
-        />
-      </view>
-
       <view class="flex flex-row gap-2">
         <view class="flex-1">
           <VyButton
-            label="Test alert"
+            label="Send a test"
             icon="i-lucide-bell"
             :color="theme"
             block
@@ -163,7 +158,7 @@ onUnmounted(() => {
         </view>
         <view class="flex-1">
           <VyButton
-            label="Manage plan"
+            label="Breakdown"
             color="neutral"
             variant="outline"
             block
@@ -179,9 +174,9 @@ onUnmounted(() => {
         :key="id"
         stacked
         stack-from="top"
-        :title="`Storage at ${threshold}%`"
-        description="Test alert sent to this device."
-        icon="i-lucide-hard-drive"
+        :title="`Spend at ${percent}% of cap`"
+        :description="`$${SPEND} of $${cap} used this month.`"
+        icon="i-lucide-credit-card"
         :color="theme"
         progress
         @update:open="open => !open && dismissToast(id)"
@@ -192,8 +187,8 @@ onUnmounted(() => {
       <template #default>
         <VyTrayView id="details">
           <view class="flex flex-col gap-2">
-            <text class="text-base font-semibold text-highlighted">Pro plan</text>
-            <text class="text-sm text-muted">5 of 10 seats used. Invites expire after 7 days.</text>
+            <text class="text-base font-semibold text-highlighted">${{ SPEND }} this month</text>
+            <text class="text-sm text-muted">Compute $510 · Storage $180 · Bandwidth $130. Pro plan, billed 1 Aug.</text>
           </view>
         </VyTrayView>
       </template>
