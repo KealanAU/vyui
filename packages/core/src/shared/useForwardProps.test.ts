@@ -1,6 +1,6 @@
 // Adapted from reka-ui (MIT) — https://github.com/unovue/reka-ui
 import { mount } from '@vue/test-utils'
-import { reactivePick } from '@vueuse/shared'
+import { reactivePick } from '@vueuse/core'
 import { describe, expect, it } from 'vitest'
 import { computed, defineComponent, watch } from 'vue'
 import { useForwardProps } from './useForwardProps'
