@@ -34,7 +34,7 @@ Two runtime layers plus a CLI to distribute them, with more planned (see Roadmap
 
 The runtime library. Provides headless, accessible component logic for Vue-Lynx:
 
-* Behavioral primitives: Dialog, Popover, Dropdown, Tooltip, Tabs, Accordion
+* Behavioral primitives: Dialog, Popover, Dropdown, Sheet, Tabs, Accordion
 
 * Form primitives: Field, Label, Error, Validation
 
