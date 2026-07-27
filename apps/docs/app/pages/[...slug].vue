@@ -38,7 +38,7 @@ useSeoMeta({
 // BreadcrumbList mirrors the sidebar hierarchy so search results can show the
 // section trail (e.g. Components > Accordion) instead of a bare URL.
 const breadcrumb = computed(() =>
-  (findPageBreadcrumb(navigation?.value, page.value?.path) ?? [])
+  (findPageBreadcrumb(navigation?.value, page.value?.path, { current: true }) ?? [])
     .filter(item => item.path)
     .map(item => ({ name: item.title, item: item.path })),
 )
