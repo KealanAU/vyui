@@ -103,11 +103,10 @@ interface CategoryConfig {
 }
 
 const CATEGORY_CONFIG: CategoryConfig[] = [
-  // /guides rides along rather than owning a tab: it falls through to
-  // categories[0] anyway, and this puts the guides in that sidebar.
-  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started', '/guides'] },
-  // '/components' must stay first — the sidebar groups items[0]'s children.
-  { id: 'components', title: 'Components', icon: 'i-lucide-boxes', paths: ['/components', '/packages'] },
+  // /packages and /guides ride along rather than owning tabs: they fall through
+  // to categories[0] anyway, and this puts them in that sidebar.
+  { id: 'getting-started', title: 'Getting Started', icon: 'i-lucide-rocket', paths: ['/getting-started', '/packages', '/guides'] },
+  { id: 'components', title: 'Components', icon: 'i-lucide-boxes', paths: ['/components'] },
   { id: 'composables', title: 'Composables', icon: 'i-lucide-square-function', paths: ['/composables'] },
   { id: 'styling', title: 'Styling', icon: 'i-lucide-palette', paths: ['/theming', '/accessibility', '/i18n'] },
 ]
@@ -214,15 +213,12 @@ export function useNavigation(navigation: Ref<ContentNavigationItem[] | null | u
     if (!cat)
       return []
     if (cat.id === 'components') {
-      const [componentsNode, ...extras] = cat.items
-      const children = (componentsNode?.children ?? []).filter((child) => {
+      const children = (cat.items[0]?.children ?? []).filter((child) => {
         if (layer.value === 'all')
           return true
         return (child as LayeredNavItem).package === layer.value
       })
-      // `extras` = the Packages section, rendered as its own group above the
-      // grouped component list (it isn't part of the Core/Kit filter).
-      return [...extras, ...groupByCategory(children)]
+      return groupByCategory(children)
     }
     return cat.items
   })
