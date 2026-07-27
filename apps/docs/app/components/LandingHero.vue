@@ -283,14 +283,20 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 420px) {
+  /* Eats half of UContainer's gutter — enough to unpick the card's button row
+     without going edge to edge. */
   .device-frame {
-    width: 100%;
-    padding: 4px;
+    width: calc(100% + 26px);
+    margin-inline: -13px;
+    padding: 0;
   }
   .device-screen {
     width: 100%;
     height: auto;
-    aspect-ratio: 9 / 16;
+    /* 10% taller than 9/16 — at phone widths 9/16 clipped the card's button row. */
+    aspect-ratio: 9 / 17.6;
+    /* Matches the frame now that there's no bezel padding to inset it. */
+    border-radius: 2.75rem;
   }
 }
 
