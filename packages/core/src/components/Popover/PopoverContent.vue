@@ -16,7 +16,7 @@ export interface PopoverContentProps extends PopoverContentImplProps {
 </script>
 
 <script setup lang="ts">
-import { reactiveOmit } from '@vueuse/shared'
+import { reactiveOmit } from '@vueuse/core'
 import { Presence } from '@/components/Presence'
 import { useEmitAsProps, useForwardExpose } from '@/shared'
 import PopoverContentModal from './PopoverContentModal.vue'
