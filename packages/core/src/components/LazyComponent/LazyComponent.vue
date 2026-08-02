@@ -41,9 +41,10 @@ export interface LazyComponentProps {
 </script>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { Primitive } from '../Primitive'
+import { useGlobalEvent } from '@/shared/composables/useGlobalEvent'
 
 const props = withDefaults(defineProps<LazyComponentProps>(), {
   top: '10px',
@@ -89,9 +90,6 @@ const exposureAttrs = computed<Record<string, unknown>>(() => ({
   'exposure-scene': props.scene,
 }))
 
-// Same pattern as `useGlobalKeyboard` — subscribe via
-// `lynx.getJSModule('GlobalEventEmitter')`. Web / jsdom degrade to no-op.
-
 function matchEvent(event: unknown, scene: string, pid: string): boolean {
   const e = event as Record<string, unknown> | null
   if (!e) return false
@@ -121,31 +119,12 @@ const onDisexposure = (...args: unknown[]) => {
   }
 }
 
-// Register synchronously in setup so the listener is in place before Lynx
-// can fire the first exposure event for the placeholder view. lynx-ui does
-// the same via `useMemo`, which runs at render-time, not mount-time.
-let emitter: any
-const lynxGlobal: any = (globalThis as any).lynx
-if (lynxGlobal && typeof lynxGlobal.getJSModule === 'function') {
-  try {
-    emitter = lynxGlobal.getJSModule('GlobalEventEmitter')
-    emitter?.addListener?.('exposure', onExposure)
-    emitter?.addListener?.('disexposure', onDisexposure)
-  }
-  catch {
-    // Best-effort — exposure is a perf optimisation, not correctness.
-  }
-}
-
-onUnmounted(() => {
-  try {
-    emitter?.removeListener?.('exposure', onExposure)
-    emitter?.removeListener?.('disexposure', onDisexposure)
-  }
-  catch {
-    // Swallow.
-  }
-})
+// `immediate`: register synchronously in setup so the listener is in place
+// before Lynx can fire the first exposure event for the placeholder view.
+// lynx-ui does the same via `useMemo`, which runs at render-time, not
+// mount-time.
+useGlobalEvent('exposure', onExposure, { immediate: true })
+useGlobalEvent('disexposure', onDisexposure, { immediate: true })
 </script>
 
 <template>

@@ -84,7 +84,7 @@ import { computed, ref, watch } from 'vue'
 
 import { useMainThreadRef } from 'vue-lynx'
 
-import { useStandardVModelOf } from '../../shared/composables'
+import { getViewportSize, useStandardVModelOf } from '../../shared/composables'
 import { clamp } from '../../shared/clamp'
 import { provideSheetRootContext } from './sheetContext'
 
@@ -118,20 +118,12 @@ const snapPoints = computed(() => {
 
 const viewportHeight = computed(() => {
   if (typeof props.viewportHeight === 'number') return props.viewportHeight
-  const sys: any = (globalThis as any).SystemInfo
-  if (sys && typeof sys.pixelHeight === 'number' && typeof sys.pixelRatio === 'number') {
-    return sys.pixelHeight / sys.pixelRatio
-  }
-  return 800
+  return getViewportSize()?.height ?? 800
 })
 
 const viewportWidth = computed(() => {
   if (typeof props.viewportWidth === 'number') return props.viewportWidth
-  const sys: any = (globalThis as any).SystemInfo
-  if (sys && typeof sys.pixelWidth === 'number' && typeof sys.pixelRatio === 'number') {
-    return sys.pixelWidth / sys.pixelRatio
-  }
-  return 400
+  return getViewportSize()?.width ?? 400
 })
 
 // MT drag progress (1 fully open → 0 dragged to dismiss; only written

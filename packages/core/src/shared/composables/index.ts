@@ -50,6 +50,12 @@ export {
 } from './useSafeArea.js'
 export type { SafeAreaInsets } from './useSafeArea.js'
 
+export { useGlobalEvent } from './useGlobalEvent.js'
+export type { UseGlobalEventOptions } from './useGlobalEvent.js'
+
+export { getViewportSize } from './useViewport.js'
+export type { ViewportSize } from './useViewport.js'
+
 export {
   directionAxis,
   directionCloseSign,

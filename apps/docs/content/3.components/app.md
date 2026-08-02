@@ -68,6 +68,10 @@ Pass `radius` to set `--ui-radius` (in rem) on the root, overriding the default 
 </VyApp>
 ```
 
+### Safe area
+
+`VyApp` snapshots the container's safe-area insets (notch, Dynamic Island, home indicator) and provides them to the whole tree, so any descendant's [`useSafeArea()`](/composables/use-safe-area) resolves without wiring. Set `safe-area="false"` to force zeros — e.g. a fullscreen surface drawing its own chrome. The insets come from global props the host injects; on your own iOS/Android host that injection is your job — see [native host integration](/guides/native-host-integration).
+
 ### Viewport size
 
 `VyApp` emits `viewport-change` with `{ width, height }` on mount and on every resize (rotation, split-screen), sourced from the background-thread `layoutchange` event. `main-thread-*` attrs do not reliably attach to this root, so this is the supported way to observe root size.
@@ -93,6 +97,7 @@ The default slot receives `{ mode, isDark }` — the same values `useColorMode()
 - Applies the `.dark` class and a `:key="mode"` remount together, so color mode toggles correctly on Lynx native and on web.
 - Mounts `OverlayRoot` as the first child by default; opt out with `overlays="false"` to place it yourself.
 - `radius` sets `--ui-radius` inline, in rem.
+- Provides safe-area insets tree-wide (`useSafeArea()`); `safe-area="false"` opts the app out with zeros.
 - Emits `viewport-change` on mount and resize, from the background-thread `layoutchange` event.
 - The default slot exposes `{ mode, isDark }` for consumers that want color mode without calling `useColorMode()` directly.
 

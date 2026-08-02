@@ -1,0 +1,63 @@
+/**
+ * useGlobalEvent — subscribe to a Lynx `GlobalEventEmitter` event from a Vue
+ * component, with automatic cleanup on unmount.
+ *
+ * `GlobalEventEmitter` is the background-thread channel for native → JS
+ * events: Lynx's own (`keyboardstatuschanged`, `exposure`, `disexposure`) and
+ * anything the host app sends via `sendGlobalEvent`. The documented entry
+ * point is `lynx.getJSModule('GlobalEventEmitter').addListener(...)` — there
+ * is no `lynx.addEventListener` on the background thread.
+ *
+ * On web / jsdom the `lynx` global is absent and the composable degrades to a
+ * no-op, so callers are safe to mount in vitest without mocks.
+ */
+
+import { onMounted, onUnmounted } from 'vue'
+
+export interface UseGlobalEventOptions {
+  /**
+   * Subscribe synchronously during `setup()` instead of in `onMounted`. Use
+   * when the event can fire before mount (e.g. `exposure` for a view in the
+   * initial layout). Cleanup still runs in `onUnmounted` either way.
+   * @defaultValue false
+   */
+  immediate?: boolean
+}
+
+/**
+ * Subscribe to a named `GlobalEventEmitter` event. Listeners receive the
+ * event's variadic args verbatim — cast to the expected payload at the call
+ * site. Call during `setup()`.
+ */
+export function useGlobalEvent(
+  name: string,
+  listener: (...args: unknown[]) => void,
+  options?: UseGlobalEventOptions,
+): void {
+  const lynxGlobal: any = (globalThis as any).lynx
+  if (!lynxGlobal || typeof lynxGlobal.getJSModule !== 'function')
+    return
+
+  let emitter: any
+  const subscribe = (): void => {
+    try {
+      emitter = lynxGlobal.getJSModule('GlobalEventEmitter')
+      emitter?.addListener?.(name, listener)
+    }
+    catch {
+      // Swallow — global events are best-effort.
+    }
+  }
+
+  if (options?.immediate) subscribe()
+  else onMounted(subscribe)
+
+  onUnmounted(() => {
+    try {
+      emitter?.removeListener?.(name, listener)
+    }
+    catch {
+      // Swallow.
+    }
+  })
+}
