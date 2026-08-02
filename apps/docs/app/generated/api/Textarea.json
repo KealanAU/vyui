@@ -61,8 +61,8 @@
       "name": "maxLength",
       "type": "number | undefined",
       "required": false,
-      "default": "140",
-      "description": "Maximum number of characters allowed. Defaults to `140` per the Lynx\ndefault."
+      "default": "100000",
+      "description": "Maximum number of characters allowed. Defaults to `100000` — effectively\nunbounded. Lynx's native default is `140`, which suits a single-line\ninput but silently truncates multi-line text; the attribute must always\nbe bound to override it. Set explicitly to enforce a real limit."
     },
     {
       "name": "maxLines",

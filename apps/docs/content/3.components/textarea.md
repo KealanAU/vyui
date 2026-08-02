@@ -145,7 +145,7 @@ The core instance provides `focus()`, `blur()`, `clear()`, `setValue(value)`, `g
 
 - `v-model` sends programmatic changes to the native element without re-pushing every native keystroke.
 - `rows` defaults to `3` and is forwarded as a native attribute by the kit wrapper.
-- `maxLength` is forwarded to core, whose native default is `140` when the prop is absent.
+- `maxLength` is forwarded to core, which defaults to `100000` (effectively unbounded) — Lynx's native `140` default suits a single-line input, not multi-line text. Set it explicitly to enforce a real limit.
 - `disabled` blocks interaction and applies reduced opacity through the default theme.
 - `loading` adds a spinning leading icon but does not disable the textarea.
 - A custom `leading` slot, `trailing` slot, icon, avatar, or loading state creates the corresponding side region.
@@ -173,7 +173,7 @@ The core instance provides `focus()`, `blur()`, `clear()`, `setValue(value)`, `g
 | `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Padding, text, gap, and icon scale. |
 | `highlight` | `boolean` | `false` | Always paints a semantic border. |
 | `rows` | `number` | `3` | Visible row hint forwarded to the native textarea. |
-| `maxLength` | `number` | Core default `140` | Maximum character count. |
+| `maxLength` | `number` | Core default `100000` | Maximum character count; the default is effectively unbounded. |
 | `id` | `string` | `undefined` | Native identifier. |
 | `name` | `string` | `undefined` | Native field name. |
 | `required` | `boolean` | `false` | Native required marker. |

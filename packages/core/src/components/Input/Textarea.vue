@@ -26,8 +26,10 @@ export interface TextareaProps extends PrimitiveProps {
   readonly?: boolean
   /** When `true`, prevents the user from interacting with the textarea. */
   disabled?: boolean
-  /** Maximum number of characters allowed. Defaults to `140` per the Lynx
-   *  default. */
+  /** Maximum number of characters allowed. Defaults to `100000` — effectively
+   *  unbounded. Lynx's native default is `140`, which suits a single-line
+   *  input but silently truncates multi-line text; the attribute must always
+   *  be bound to override it. Set explicitly to enforce a real limit. */
   maxLength?: number
   /** Maximum number of visible lines before scrolling kicks in. Defaults to
    *  `40` to match the React port. */
@@ -110,7 +112,7 @@ const props = withDefaults(defineProps<TextareaProps>(), {
   readonly: false,
   disabled: false,
   type: 'text',
-  maxLength: 140,
+  maxLength: 100000,
   maxLines: 40,
   bounces: true,
   confirmType: 'send',

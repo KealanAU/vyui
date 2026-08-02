@@ -14,7 +14,7 @@ describe('Textarea — default render', () => {
     const { container } = render(_Textarea)
     const el = ta(container)
     expect(el).not.toBeNull()
-    expect(el.getAttribute('maxlength')).toBe('140')
+    expect(el.getAttribute('maxlength')).toBe('100000')
     expect(el.getAttribute('maxlines')).toBe('40')
     expect(el.getAttribute('confirm-type')).toBe('send')
   })
