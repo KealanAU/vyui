@@ -145,7 +145,7 @@ The core instance provides `focus()`, `blur()`, `clear()`, `setValue(value)`, `g
 
 - `v-model` sends programmatic changes to the native element without re-pushing every native keystroke.
 - `rows` defaults to `3` and is forwarded as a native attribute by the kit wrapper.
-- `maxLength` is forwarded to core, which defaults to `100000` (effectively unbounded) — Lynx's native `140` default suits a single-line input, not multi-line text. Set it explicitly to enforce a real limit.
+- `maxLength` is forwarded to core and is unset by default, leaving the platform's own limit in place: iOS and Android accept unlimited text, while Harmony applies the documented Lynx default of `140`. Pass an explicit value to enforce a limit, or to get identical behavior on every platform.
 - `disabled` blocks interaction and applies reduced opacity through the default theme.
 - `loading` adds a spinning leading icon but does not disable the textarea.
 - A custom `leading` slot, `trailing` slot, icon, avatar, or loading state creates the corresponding side region.
@@ -173,7 +173,7 @@ The core instance provides `focus()`, `blur()`, `clear()`, `setValue(value)`, `g
 | `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Padding, text, gap, and icon scale. |
 | `highlight` | `boolean` | `false` | Always paints a semantic border. |
 | `rows` | `number` | `3` | Visible row hint forwarded to the native textarea. |
-| `maxLength` | `number` | Core default `100000` | Maximum character count; the default is effectively unbounded. |
+| `maxLength` | `number` | `undefined` | Maximum character count. Unset leaves the platform limit: unlimited on iOS/Android, `140` on Harmony. |
 | `id` | `string` | `undefined` | Native identifier. |
 | `name` | `string` | `undefined` | Native field name. |
 | `required` | `boolean` | `false` | Native required marker. |
