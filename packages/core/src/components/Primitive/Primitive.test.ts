@@ -51,7 +51,7 @@ describe('Primitive', () => {
     expect(element.childNodes.length).toBe(0)
   })
 
-  it('omits an undefined attr and keeps the defined ones', () => {
+  it('applies the defined attrs to the rendered element', () => {
     const { container } = render(Primitive, { as: 'view', type: 'button', placeholder: undefined })
     const element = container.querySelector('view')!
     expect(element.getAttribute('type')).toBe('button')

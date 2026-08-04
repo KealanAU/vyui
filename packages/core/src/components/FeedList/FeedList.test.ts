@@ -3,15 +3,26 @@
 
 import { describe, expect, it, vi } from 'vitest'
 
-// FeedList's pull-to-refresh worklets fire on a device only — under vitest we
-// verify the unit-testable parts: the `keyFor` helper, the SFC's PTR wiring
-// (touch worklets on a bare `<list>`, no native `<refresh>`), and the pure
-// refresh state-machine transitions. Keep the hygienic vue-lynx mock used
-// elsewhere to avoid `internal/ops` source-map noise.
+// FeedList's pull-to-refresh worklets fire on a device only, and its BG helpers
+// (`keyFor`, the refresh callbacks) are `<script setup>`-local with no observable
+// DOM output — so this suite pins the SFC source itself rather than mirroring the
+// logic, which would pass no matter what the component does. Keep the hygienic
+// vue-lynx mock used elsewhere to avoid `internal/ops` source-map noise.
 vi.mock('vue-lynx', async () => {
   const actual = await vi.importActual<typeof import('vue-lynx')>('vue-lynx')
   return { ...actual }
 })
+
+async function readSfc(): Promise<string> {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const here = path.dirname(new URL(import.meta.url).pathname)
+  return fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
+}
+
+function body(sfc: string, fn: string): string {
+  return sfc.match(new RegExp(`function ${fn}[\\s\\S]*?\\n}`))?.[0] ?? ''
+}
 
 describe('FeedList — exports', () => {
   it('exports FeedList default', async () => {
@@ -20,39 +31,21 @@ describe('FeedList — exports', () => {
   })
 })
 
-// Pure logic regression tests for the `keyFor` helper inside FeedList. Kept
-// here so the key-derivation behaviour is verified without rendering (which
-// is blocked on MTS test infra alongside the rest of the mobile suite).
+// `keyFor` feeds the row `v-for` key and the native `item-key` attr; neither
+// derivation is readable back out of the rendered tree, so pin the source.
 describe('FeedList — keyFor', () => {
-  function keyFor<T extends object>(
-    item: T,
-    index: number,
-    opts: { itemKey?: (item: T, i: number) => string, itemKeyField?: string },
-  ): string {
-    if (typeof opts.itemKey === 'function') return opts.itemKey(item, index)
-    const field = opts.itemKeyField ?? 'id'
-    const v = (item as Record<string, unknown>)[field]
-    if (v == null) return String(index)
-    return String(v)
-  }
-
-  it('reads the configured field by default', () => {
-    expect(keyFor({ id: 'a' }, 0, { itemKeyField: 'id' })).toBe('a')
-    expect(keyFor({ sku: 42 }, 7, { itemKeyField: 'sku' })).toBe('42')
+  it('prefers the itemKey fn, then itemKeyField, then the index', async () => {
+    const fn = body(await readSfc(), 'keyFor')
+    expect(fn).toMatch(/if \(typeof props\.itemKey === 'function'\) return props\.itemKey\(item, index\)/)
+    expect(fn).toMatch(/const field = \(props\.itemKeyField \?\? 'id'\)/)
+    expect(fn).toMatch(/if \(v == null\) return String\(index\)/)
+    expect(fn).toMatch(/return String\(v\)/)
   })
 
-  it('falls back to index when the field is missing / nullish', () => {
-    expect(keyFor({}, 3, { itemKeyField: 'id' })).toBe('3')
-    expect(keyFor({ id: null }, 1, { itemKeyField: 'id' })).toBe('1')
-  })
-
-  it('uses itemKey fn when provided, ignoring itemKeyField', () => {
-    expect(
-      keyFor({ id: 'a' }, 5, {
-        itemKey: (item, i) => `${(item as { id: string }).id}-${i}`,
-        itemKeyField: 'id',
-      }),
-    ).toBe('a-5')
+  it('is what both list branches key their rows on', async () => {
+    const sfc = await readSfc()
+    expect(sfc.match(/:key="keyFor\(item, index\)"/g)?.length).toBe(2)
+    expect(sfc.match(/'item-key': keyFor\(item, index\)/g)?.length).toBe(2)
   })
 })
 
@@ -63,13 +56,6 @@ describe('FeedList — keyFor', () => {
 // translated wrapper + the refreshHeader slot exposes `{ state, progress }`,
 // the touch handlers are bound, and the public API matches the demo contract.
 describe('FeedList — PTR wiring (touch worklets)', () => {
-  async function readSfc(): Promise<string> {
-    const fs = await import('node:fs')
-    const path = await import('node:path')
-    const here = path.dirname(new URL(import.meta.url).pathname)
-    return fs.readFileSync(path.join(here, 'FeedList.vue'), 'utf8')
-  }
-
   it('renders a translated wrapper + bare <list> (no native <refresh>) when enableRefresh is true', async () => {
     const sfc = await readSfc()
     // Look only at the <template> block so the explanatory comments above it
@@ -125,114 +111,58 @@ describe('FeedList — PTR wiring (touch worklets)', () => {
   })
 })
 
-// The refresh state machine is plain reactive BG logic (the worklets only feed
-// it `progress` / trigger events). Mirror the transition rules here so the
-// `idle → pulling → releaseReady → refreshing → done → idle` lifecycle and the
-// emitted `refreshStateChange` sequence are pinned without a device.
+// The refresh state machine is plain reactive BG logic driven by the worklets
+// (`runOnBackground(_onPull)` etc). The callbacks are `<script setup>`-local, so
+// the `idle → pulling → releaseReady → refreshing → done → idle` lifecycle and
+// its guards are pinned from the source.
 describe('FeedList — refresh state machine', () => {
-  type State = 'idle' | 'pulling' | 'releaseReady' | 'refreshing' | 'done'
-
-  function makeMachine() {
-    let state: State = 'idle'
-    let refreshing = false
-    let progress = 0
-    const changes: State[] = []
-    let refreshEmitted = 0
-
-    function set(next: State) {
-      if (state === next) return
-      state = next
-      changes.push(next)
-    }
-    // BG callbacks mirrored from FeedList.vue.
-    return {
-      get state() { return state },
-      get progress() { return progress },
-      get changes() { return changes },
-      get refreshEmitted() { return refreshEmitted },
-      onPull(p: number, releaseReady: boolean) {
-        progress = p
-        if (refreshing) return
-        set(releaseReady ? 'releaseReady' : 'pulling')
-      },
-      onRelease() {
-        progress = 0
-        if (!refreshing) set('idle')
-      },
-      onTriggerRefresh() {
-        progress = 1
-        if (refreshing) return
-        refreshing = true
-        set('refreshing')
-        refreshEmitted++
-      },
-      onClosed() {
-        progress = 0
-        set('done')
-        set('idle')
-      },
-      endRefresh() { refreshing = false },
-    }
-  }
-
-  it('pull below threshold then release returns to idle without firing refresh', () => {
-    const m = makeMachine()
-    m.onPull(0.4, false)
-    expect(m.state).toBe('pulling')
-    m.onRelease()
-    expect(m.state).toBe('idle')
-    expect(m.refreshEmitted).toBe(0)
+  it('dedupes state writes so refreshStateChange only fires on real transitions', async () => {
+    const fn = body(await readSfc(), 'setRefreshState')
+    expect(fn).toMatch(/if \(refreshState\.value === next\) return/)
+    expect(fn).toMatch(/emits\('refreshStateChange', next\)/)
   })
 
-  it('pull past threshold reports releaseReady', () => {
-    const m = makeMachine()
-    m.onPull(0.5, false)
-    m.onPull(1, true)
-    expect(m.changes).toEqual(['pulling', 'releaseReady'])
+  it('reports releaseReady past the threshold, and is inert while refreshing', async () => {
+    const fn = body(await readSfc(), '_onPull')
+    expect(fn).toMatch(/pullProgress\.value = progress/)
+    expect(fn).toMatch(/if \(refreshing\.value\) return/)
+    expect(fn).toMatch(/setRefreshState\(releaseReady \? 'releaseReady' : 'pulling'\)/)
   })
 
-  it('crossing threshold + release fires refresh once and enters refreshing', () => {
-    const m = makeMachine()
-    m.onPull(1, true)
-    m.onTriggerRefresh()
-    expect(m.state).toBe('refreshing')
-    expect(m.refreshEmitted).toBe(1)
-    // Further pulls while refreshing do not re-trigger.
-    m.onPull(1, true)
-    m.onTriggerRefresh()
-    expect(m.refreshEmitted).toBe(1)
+  it('returns to idle on release only when no refresh is in flight', async () => {
+    const fn = body(await readSfc(), '_onRelease')
+    expect(fn).toMatch(/pullProgress\.value = 0/)
+    expect(fn).toMatch(/if \(!refreshing\.value\) setRefreshState\('idle'\)/)
   })
 
-  it('consumer ending the refresh springs closed: done then idle', () => {
-    const m = makeMachine()
-    m.onPull(1, true)
-    m.onTriggerRefresh()
-    m.endRefresh()
-    m.onClosed()
-    expect(m.changes).toEqual(['releaseReady', 'refreshing', 'done', 'idle'])
-    expect(m.state).toBe('idle')
-    expect(m.progress).toBe(0)
+  it('fires refresh once — the guard precedes the emit so a held pull cannot re-trigger', async () => {
+    const fn = body(await readSfc(), '_onTriggerRefresh')
+    expect(fn).toMatch(/if \(refreshing\.value\) return/)
+    expect(fn).toMatch(/refreshing\.value = true/)
+    expect(fn).toMatch(/setRefreshState\('refreshing'\)/)
+    expect(fn.indexOf('if (refreshing.value) return')).toBeLessThan(fn.indexOf('emits(\'refresh\')'))
+  })
+
+  it('springs closed through done before idle', async () => {
+    const sfc = await readSfc()
+    expect(body(sfc, '_onClosed')).toMatch(/setRefreshState\('done'\)[\s\S]*setRefreshState\('idle'\)/)
+    // …and the MT spring-back is what calls it.
+    expect(body(sfc, '_springClose')).toMatch(/runOnBackground\(_onClosed as any\)\(\)/)
   })
 })
 
-// The inline rubber-band worklet in FeedList.vue must match the unit-tested
-// `physics.ts` spec (the two are kept in sync by hand). Mirror the same maths
-// and assert it agrees with `rubberEffect` so drift is caught.
-describe('FeedList — inline rubber matches physics.ts', () => {
-  function inlineRubber(delta: number, bounceWidth: number): number {
-    if (delta === 0 || bounceWidth === 0) return 0
-    const swipeLimit = bounceWidth * 2
-    const absDelta = delta < 0 ? -delta : delta
-    const effective = absDelta < swipeLimit ? absDelta : swipeLimit
-    const bounce = effective / (effective / bounceWidth + 1)
-    const sign = delta < 0 ? -1 : 1
-    return sign * bounce * 1.5
-  }
-
-  it('agrees with rubberEffect across a range', async () => {
-    const { rubberEffect } = await import('@/shared/gesture/physics')
-    for (const d of [-200, -64, -1, 0, 1, 32, 64, 128, 256]) {
-      expect(inlineRubber(d, 64)).toBeCloseTo(rubberEffect(d, 64), 6)
-    }
+// `_rubber` is a hand-kept copy of `physics.ts` `rubberEffect` — cross-file
+// worklet calls don't resolve, so the maths is duplicated. physics.test.ts owns
+// the behavioural spec; pin the copy's terms here so drift is caught.
+describe('FeedList — inline rubber mirrors physics.ts', () => {
+  it('keeps the rubberEffect terms in the _rubber worklet', async () => {
+    const fn = body(await readSfc(), '_rubber')
+    expect(fn).toMatch(/'main thread'/)
+    expect(fn).toMatch(/if \(delta === 0 \|\| bounceWidth === 0\) return 0/)
+    expect(fn).toMatch(/const swipeLimit = bounceWidth \* 2/)
+    expect(fn).toMatch(/const effective = absDelta < swipeLimit \? absDelta : swipeLimit/)
+    expect(fn).toMatch(/const bounce = effective \/ \(effective \/ bounceWidth \+ 1\)/)
+    // 1.5 is `scaleFactor` in physics.ts.
+    expect(fn).toMatch(/return sign \* bounce \* 1\.5/)
   })
 })

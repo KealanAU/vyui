@@ -34,7 +34,7 @@ describe('planProjectUpdates', () => {
     expect(lynx).toContain(`includeWorkletPackages: ['@vyui/core']`)
   })
 
-  it('allowlists worklets idempotently and warns when pluginVueLynx is absent', () => {
+  it('allowlists worklets idempotently', () => {
     const cwd = mkdtempSync(join(tmpdir(), 'vyui-update-'))
     mkdirSync(join(cwd, 'src'))
     writeFileSync(join(cwd, 'package.json'), JSON.stringify({ dependencies: { 'vue-lynx': '^0.4.0' } }))
@@ -47,5 +47,20 @@ describe('planProjectUpdates', () => {
 
     expect(plan.updates.some(update => update.path === 'lynx.config.ts')).toBe(false)
     expect(plan.warnings.some(w => w.includes('lynx.config'))).toBe(false)
+  })
+
+  it('warns instead of editing when pluginVueLynx is absent from lynx.config', () => {
+    const cwd = mkdtempSync(join(tmpdir(), 'vyui-update-'))
+    mkdirSync(join(cwd, 'src'))
+    writeFileSync(join(cwd, 'package.json'), JSON.stringify({ dependencies: { 'vue-lynx': '^0.4.0' } }))
+    // Neither includeWorkletPackages nor a pluginVueLynx(…) call to graft onto.
+    writeFileSync(join(cwd, 'lynx.config.ts'), `export default { plugins: [] }\n`)
+
+    const info = detectProject(cwd)
+    const config = defaultConfig('/registry', 'default', 'src', '@', 'slate')
+    const plan = planProjectUpdates(info, config)
+
+    expect(plan.updates.some(update => update.path === 'lynx.config.ts')).toBe(false)
+    expect(plan.warnings.some(w => w.includes('pluginVueLynx'))).toBe(true)
   })
 })

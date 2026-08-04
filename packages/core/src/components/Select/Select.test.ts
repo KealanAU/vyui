@@ -74,6 +74,8 @@ describe('Select — selection', () => {
   it('SelectItemIndicator is rendered only for selected item', async () => {
     const { container } = render(Select, { modelValue: 'Cherry', defaultOpen: true })
     expect(q(container, 'indicator-Cherry')).not.toBeNull()
+    expect(q(container, 'indicator-Apple')).toBeNull()
+    expect(q(container, 'indicator-Banana')).toBeNull()
   })
 })
 

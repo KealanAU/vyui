@@ -1,12 +1,31 @@
 // Adapted from lynx-family/lynx-ui (Apache-2.0).
 import { describe, expect, it } from 'vitest'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
-import { nextTick, ref } from 'vue'
+import { defineComponent, h, markRaw, nextTick, ref } from 'vue'
 import { Textarea } from '.'
 import _Textarea from './story/_Textarea.vue'
 
 function ta(container: Element) {
   return container.querySelector('[data-testid="textarea"]') as HTMLTextAreaElement
+}
+
+/**
+ * Renders Textarea through a probe component in place of the native
+ * `<textarea>` and returns the attrs it forwarded. A DOM assertion cannot tell
+ * "attribute never bound" from "attribute bound as null" — both leave no
+ * attribute — so key presence is the only way to test the maxLength contract.
+ */
+function forwardedAttrs(props?: Record<string, unknown>): Record<string, unknown> {
+  let attrs: Record<string, unknown> = {}
+  const Probe = markRaw(defineComponent({
+    inheritAttrs: false,
+    setup(_, ctx) {
+      attrs = { ...ctx.attrs }
+      return () => h('view')
+    },
+  }))
+  render(Textarea, { as: Probe, ...props })
+  return attrs
 }
 
 describe('Textarea — default render', () => {
@@ -32,6 +51,18 @@ describe('Textarea — default render', () => {
     expect(el.getAttribute('maxlines')).toBe('5')
     expect(el.getAttribute('line-spacing')).toBe('4px')
     expect(el.getAttribute('bounces')).toBe('false')
+  })
+
+  it('binds no maxlength attr at all by default', () => {
+    const attrs = forwardedAttrs()
+    // `maxlines` is the positive control: proves the probe received the attrs,
+    // so the absence below is a real omission and not an empty capture.
+    expect(Object.keys(attrs)).toContain('maxlines')
+    expect(Object.keys(attrs)).not.toContain('maxlength')
+  })
+
+  it('binds maxlength when maxLength is set', () => {
+    expect(forwardedAttrs({ maxLength: 280 }).maxlength).toBe(280)
   })
 })
 

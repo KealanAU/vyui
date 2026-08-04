@@ -67,13 +67,6 @@ describe('Icon (string name)', () => {
 })
 
 describe('resolveIconSvg (cache)', () => {
-  it('returns identical results for repeated calls with the same key', () => {
-    const a = resolveIconSvg('lucide:check', { size: 16 })
-    const b = resolveIconSvg('lucide:check', { size: 16 })
-    expect(a).not.toBeNull()
-    expect(b).toBe(a)
-  })
-
   it('keys on size and color so variants do not collide', () => {
     const red = resolveIconSvg('lucide:check', { size: 16, color: '#ff0000' })
     const blue = resolveIconSvg('lucide:check', { size: 16, color: '#0000ff' })

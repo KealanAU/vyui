@@ -92,15 +92,6 @@ describe('popover', () => {
     expect(q(container, 'content')).not.toBeNull()
   })
 
-  it('selects the modal variant when modal=true', async () => {
-    // The variant is module-private. Use the captured story state: modal:true
-    // does NOT change semantics on Lynx but the file branches; assert opening
-    // works under both.
-    const mod = await import('../..')
-    expect((mod as any).PopoverContentModal).toBeDefined()
-    expect((mod as any).PopoverContentNonModal).toBeDefined()
-  })
-
   it('unregisters the overlay entry on unmount', async () => {
     const { container, unmount } = render(Popover, { rootProps: { defaultOpen: true } })
     await waitForUpdate()

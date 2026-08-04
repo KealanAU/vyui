@@ -23,8 +23,10 @@ const Host = defineComponent({
 describe('overlayRoot', () => {
   it('renders nothing when the store is empty', () => {
     const { container } = render(Host)
-    expect(overlayEntries.value.length).toBe(0)
-    expect(container.querySelector('[data-overlay-test]')).toBeNull()
+    // No wrapper `<view>` around the v-for — one would swallow every touch in
+    // its empty regions. Counts painted tags only: v-for anchors are real
+    // zero-size nodes, so `container.children` is never 0.
+    expect(container.querySelectorAll('view').length).toBe(0)
   })
 
   it('paints a registered entry through the portal', async () => {
