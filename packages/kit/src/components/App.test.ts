@@ -1,9 +1,19 @@
 import { defineComponent, h, nextTick, onMounted } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { OverlayRoot, type SafeAreaInsets, useSafeArea } from '@vyui/core'
 import App from './App.vue'
 import { resetColorModeForTesting, useColorMode } from '../composables/useColorMode'
+
+// Non-zero stand-in for what a device container reports, so VyApp's provide and
+// its `safeArea: false` opt-out are distinguishable (jsdom reads zero for both).
+// The factory below repeats the literal on purpose: vi.mock is hoisted above
+// this declaration, so referencing the const inside it throws at import time.
+const CONTAINER_INSETS = { top: 47, bottom: 34 }
+vi.mock('@vyui/core', async () => ({
+  ...await vi.importActual<typeof import('@vyui/core')>('@vyui/core'),
+  getSafeAreaInsets: () => ({ top: 47, bottom: 34 }),
+}))
 
 // This file mounts via plain `@vue/test-utils` (a real `@vue/runtime-dom` tree,
 // not the vue-lynx renderer that `@vyui/testing-utils` render() drives), so
@@ -94,9 +104,11 @@ describe('VyApp', () => {
     expect(mount(App, { props: { overlays: false } }).findComponent(OverlayRoot).exists()).toBe(false)
   })
 
-  // Both assertions need a NON-ZERO container reading to mean anything: with
-  // jsdom's empty global props the container read is already zero, so a
-  // `safeArea: false` assertion of zeros passes even if the opt-out is deleted.
+  // Both cases need a NON-ZERO container reading to mean anything: the jsdom
+  // container reads zero, so asserting zeros for `safeArea: false` passes even
+  // with the opt-out deleted. `getSafeAreaInsets` is mocked (top of file)
+  // rather than stubbed through `lynx.__globalProps`, which the env owns —
+  // normalizing those props is core's contract, covered in useSafeArea.test.ts.
   describe('safe area', () => {
     const seen: SafeAreaInsets[] = []
     const Probe = defineComponent({
@@ -108,20 +120,13 @@ describe('VyApp', () => {
     const mountWithProbe = (props: Record<string, unknown>) =>
       mount(App, { props: { overlays: false, ...props }, slots: { default: () => h(Probe) } })
 
-    let originalGlobalProps: unknown
     beforeEach(() => {
       seen.length = 0
-      const lynx = ((globalThis as any).lynx ??= {})
-      originalGlobalProps = lynx.__globalProps
-      lynx.__globalProps = { os: 'ios', safeAreaTop: 47, safeAreaBottom: 34 }
-    })
-    afterEach(() => {
-      ;(globalThis as any).lynx.__globalProps = originalGlobalProps
     })
 
     it('provides the container insets app-wide', () => {
       mountWithProbe({})
-      expect(seen.at(-1)).toEqual({ top: 47, bottom: 34 })
+      expect(seen.at(-1)).toEqual(CONTAINER_INSETS)
     })
 
     it('zeroes the insets for the whole tree when `safeArea` is false', () => {
