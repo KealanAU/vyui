@@ -51,6 +51,36 @@ describe('Primitive', () => {
     expect(element.childNodes.length).toBe(0)
   })
 
+  it('omits an undefined attr and keeps the defined ones', () => {
+    const { container } = render(Primitive, { as: 'view', type: 'button', placeholder: undefined })
+    const element = container.querySelector('view')!
+    expect(element.getAttribute('type')).toBe('button')
+    expect(element.getAttribute('placeholder')).toBeNull()
+  })
+
+  // The DOM outcome above can't tell the two cases apart — an omitted attr and
+  // one patched as null both leave no attribute. Key *presence* is what drives
+  // the difference (Vue patches every key present in the props object, whatever
+  // its value), so assert on the keys Primitive actually forwards.
+  it('drops undefined attr keys, keeps defined and null ones', () => {
+    let forwarded: Record<string, unknown> = {}
+    const Probe = markRaw(defineComponent({
+      inheritAttrs: false,
+      setup(_, { attrs }) {
+        forwarded = { ...attrs }
+        return () => h('view')
+      },
+    }))
+
+    render(Primitive, { as: Probe, type: 'button', placeholder: undefined, role: null })
+
+    const keys = Object.keys(forwarded)
+    expect(keys).toContain('type')
+    expect(keys).not.toContain('placeholder')
+    // null stays a deliberate "reset this prop" signal — only undefined is dropped.
+    expect(keys).toContain('role')
+  })
+
   it('renders multiple child elements', () => {
     const Component = defineComponent({
       components: { Primitive },
