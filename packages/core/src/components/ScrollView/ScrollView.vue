@@ -135,7 +135,7 @@ export type ScrollViewEmits = {
 import { computed, useId, useSlots } from 'vue'
 import { runOnBackground, useMainThreadRef } from 'vue-lynx'
 
-import { BOUNCE_CONSTANTS, BOUNCING_STATUS } from '@/shared/composables'
+import { BOUNCE_CONSTANTS, BOUNCING_STATUS, getViewportSize } from '@/shared/composables'
 
 // NEITHER `runOnBackground` NOR `useMainThreadRef` may be aliased — SWC's
 // worklet transform only wraps the literal identifiers at the call site.
@@ -235,14 +235,10 @@ const prevScroll = useMainThreadRef<any>(null)
 const bouncingPositionInfo = useMainThreadRef<any>({})
 
 function readEstimatedHeight(): number {
-  const sys: any = (globalThis as any).SystemInfo
-  if (sys?.pixelHeight && sys?.pixelRatio) return sys.pixelHeight / sys.pixelRatio
-  return 800
+  return getViewportSize()?.height ?? 800
 }
 function readEstimatedWidth(): number {
-  const sys: any = (globalThis as any).SystemInfo
-  if (sys?.pixelWidth && sys?.pixelRatio) return sys.pixelWidth / sys.pixelRatio
-  return 400
+  return getViewportSize()?.width ?? 400
 }
 
 // Container geometry — estimated until the first layout-change event.

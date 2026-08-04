@@ -26,9 +26,28 @@ function stubMatchMedia(dark: boolean) {
   }
 }
 
+// Fake Lynx host: `theme` global prop for the boot snapshot, plus a
+// GlobalEventEmitter whose `themechanged` listeners a test can fire to
+// simulate the host pushing a live appearance change.
+function stubLynxHost(theme?: 'light' | 'dark') {
+  const listeners = new Set<(...args: unknown[]) => void>()
+  ;(globalThis as unknown as { lynx?: unknown }).lynx = {
+    __globalProps: theme ? { theme } : {},
+    getJSModule: (name: string) => (name === 'GlobalEventEmitter'
+      ? { addListener: (_e: string, cb: (...args: unknown[]) => void) => listeners.add(cb) }
+      : undefined),
+  }
+  return {
+    emitThemeChanged(...args: unknown[]) {
+      listeners.forEach(cb => cb(...args))
+    },
+  }
+}
+
 describe('useColorMode', () => {
   beforeEach(() => {
     delete (window as unknown as { matchMedia?: unknown }).matchMedia
+    delete (globalThis as unknown as { lynx?: unknown }).lynx
     resetColorModeForTesting()
   })
 
@@ -84,5 +103,33 @@ describe('useColorMode', () => {
     expect(isDark.value).toBe(false)
     os.set(true)
     expect(isDark.value).toBe(true)
+  })
+
+  it('system folds to a host-injected theme global prop at boot', () => {
+    stubLynxHost('dark')
+    resetColorModeForTesting()
+    const { mode, isDark } = useColorMode()
+    expect(mode.value).toBe('system')
+    expect(isDark.value).toBe(true)
+  })
+
+  it('host theme global prop wins over matchMedia', () => {
+    stubMatchMedia(true)
+    stubLynxHost('light')
+    resetColorModeForTesting()
+    expect(useColorMode().isDark.value).toBe(false)
+  })
+
+  it('system tracks a host themechanged event', () => {
+    const host = stubLynxHost('light')
+    resetColorModeForTesting()
+    const { isDark } = useColorMode() // first call subscribes to the emitter
+    expect(isDark.value).toBe(false)
+    host.emitThemeChanged('dark')
+    expect(isDark.value).toBe(true)
+    host.emitThemeChanged({ theme: 'light' })
+    expect(isDark.value).toBe(false)
+    host.emitThemeChanged('garbage') // ignored
+    expect(isDark.value).toBe(false)
   })
 })

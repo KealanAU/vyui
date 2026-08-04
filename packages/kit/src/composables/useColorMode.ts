@@ -8,14 +8,32 @@ import { computed, ref, type ComputedRef, type Ref } from 'vue'
 export type ColorMode = 'light' | 'dark' | 'system'
 
 /**
+ * The host-injected appearance, if any. Native hosts push the device theme as
+ * a `theme: 'light' | 'dark'` global prop (iOS `updateGlobalPropsWithDictionary`,
+ * Android `updateGlobalProps`) — see the native-host-integration guide. Global
+ * props are a boot-time snapshot; live changes arrive via the `themechanged`
+ * global event instead.
+ */
+function readGlobalPropsTheme(): 'light' | 'dark' | null {
+  try {
+    const theme = (globalThis as { lynx?: { __globalProps?: { theme?: unknown } } })
+      .lynx?.__globalProps?.theme
+    return theme === 'dark' || theme === 'light' ? theme : null
+  } catch {
+    return null
+  }
+}
+
+/**
  * Best-effort "is the OS in dark mode?" probe. Honest about the platform:
+ *   • Lynx native: the host's `theme` global prop, when it injects one.
  *   • Web (docs playground, web-target Lynx): `matchMedia` — real and live.
- *   • Lynx native: no stable appearance global is exposed yet, so this returns
- *     `false` (light). This is the single seam to wire the device signal —
- *     swap the body here once the host provides one.
+ *   • Neither available: `false` (light).
  * Never throws — safe under SSR / jsdom / tests (no `window`).
  */
 function detectSystemDark(): boolean {
+  const injected = readGlobalPropsTheme()
+  if (injected) return injected === 'dark'
   if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
     try {
       return window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -50,12 +68,31 @@ function toggle(): void {
   mode.value = isDark.value ? 'light' : 'dark'
 }
 
-// Keep `'system'` live on web by tracking the media query. No-op on Lynx native
-// / SSR (no `matchMedia`). Subscribed once, lazily, from the first composable
-// call; the singleton lives for the app lifetime so it's never torn down.
+// Keep `'system'` live: on web by tracking the media query, on Lynx native by
+// listening for the host's `themechanged` global event (emitted with
+// `sendGlobalEvent` when the device appearance flips — see the
+// native-host-integration guide). Subscribed once, lazily, from the first
+// composable call; the singleton lives for the app lifetime so it's never
+// torn down.
 let subscribed = false
 function subscribeToSystemChanges(): void {
   if (subscribed) return
+  subscribed = true
+
+  const lynxGlobal = (globalThis as { lynx?: { getJSModule?: (name: string) => any } }).lynx
+  if (typeof lynxGlobal?.getJSModule === 'function') {
+    try {
+      const emitter = lynxGlobal.getJSModule('GlobalEventEmitter')
+      emitter?.addListener?.('themechanged', (...args: unknown[]) => {
+        const arg = args[0] as string | { theme?: string } | undefined
+        const theme = typeof arg === 'string' ? arg : arg?.theme
+        if (theme === 'dark' || theme === 'light') systemDark.value = theme === 'dark'
+      })
+    } catch {
+      // No emitter — boot snapshot stands.
+    }
+  }
+
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
   try {
     const mql = window.matchMedia('(prefers-color-scheme: dark)')
@@ -64,7 +101,6 @@ function subscribeToSystemChanges(): void {
     if (typeof mql.addEventListener === 'function') mql.addEventListener('change', onChange)
     else if (typeof (mql as { addListener?: (cb: () => void) => void }).addListener === 'function')
       (mql as { addListener: (cb: () => void) => void }).addListener(onChange)
-    subscribed = true
   } catch {
     // matchMedia present but unusable — leave `'system'` at its boot value.
   }
