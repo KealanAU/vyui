@@ -51,6 +51,59 @@ describe('Primitive', () => {
     expect(element.childNodes.length).toBe(0)
   })
 
+  it('omits an undefined attr and keeps the defined ones', () => {
+    const { container } = render(Primitive, { as: 'view', type: 'button', placeholder: undefined })
+    const element = container.querySelector('view')!
+    expect(element.getAttribute('type')).toBe('button')
+    expect(element.getAttribute('placeholder')).toBeNull()
+  })
+
+  // The DOM outcome above is identical whether the attr is omitted or patched
+  // as null (both leave no attribute), so assert on the native call itself:
+  // an undefined attr must never reach `__SetAttribute`. Asserting the defined
+  // key IS seen keeps the spy honest — if the hook stopped working, this fails
+  // rather than passing vacuously.
+  it('never reaches the native setter for an undefined attr', () => {
+    const mt = (globalThis as any).lynxTestingEnv.mainThread.globalThis
+    const original = mt.__SetAttribute
+    const keys: string[] = []
+    mt.__SetAttribute = (el: any, key: string, value: unknown) => {
+      keys.push(key)
+      return original(el, key, value)
+    }
+
+    try {
+      render(Primitive, { as: 'view', type: 'button', placeholder: undefined })
+    }
+    finally {
+      mt.__SetAttribute = original
+    }
+
+    expect(keys).toContain('type')
+    expect(keys).not.toContain('placeholder')
+  })
+
+  // `null` stays a deliberate "reset this prop" escape hatch — only undefined
+  // is dropped.
+  it('still forwards an explicit null to the native setter', () => {
+    const mt = (globalThis as any).lynxTestingEnv.mainThread.globalThis
+    const original = mt.__SetAttribute
+    const keys: string[] = []
+    mt.__SetAttribute = (el: any, key: string, value: unknown) => {
+      keys.push(key)
+      return original(el, key, value)
+    }
+
+    try {
+      render(Primitive, { as: 'view', type: null })
+    }
+    finally {
+      mt.__SetAttribute = original
+    }
+
+    expect(keys).toContain('type')
+  })
+
   it('renders multiple child elements', () => {
     const Component = defineComponent({
       components: { Primitive },

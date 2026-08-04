@@ -14,18 +14,21 @@ describe('Textarea — default render', () => {
     const { container } = render(_Textarea)
     const el = ta(container)
     expect(el).not.toBeNull()
-    expect(el.getAttribute('maxlength')).toBe('140')
+    // Unset by default — the platform's own limit applies (see maxLength docs).
+    expect(el.getAttribute('maxlength')).toBeNull()
     expect(el.getAttribute('maxlines')).toBe('40')
     expect(el.getAttribute('confirm-type')).toBe('send')
   })
 
-  it('forwards maxLines / lineSpacing / bounces', () => {
+  it('forwards maxLength / maxLines / lineSpacing / bounces', () => {
     const { container } = render(_Textarea, {
+      maxLength: 280,
       maxLines: 5,
       lineSpacing: '4px',
       bounces: false,
     })
     const el = ta(container)
+    expect(el.getAttribute('maxlength')).toBe('280')
     expect(el.getAttribute('maxlines')).toBe('5')
     expect(el.getAttribute('line-spacing')).toBe('4px')
     expect(el.getAttribute('bounces')).toBe('false')
