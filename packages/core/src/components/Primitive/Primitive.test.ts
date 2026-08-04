@@ -58,50 +58,27 @@ describe('Primitive', () => {
     expect(element.getAttribute('placeholder')).toBeNull()
   })
 
-  // The DOM outcome above is identical whether the attr is omitted or patched
-  // as null (both leave no attribute), so assert on the native call itself:
-  // an undefined attr must never reach `__SetAttribute`. Asserting the defined
-  // key IS seen keeps the spy honest — if the hook stopped working, this fails
-  // rather than passing vacuously.
-  it('never reaches the native setter for an undefined attr', () => {
-    const mt = (globalThis as any).lynxTestingEnv.mainThread.globalThis
-    const original = mt.__SetAttribute
-    const keys: string[] = []
-    mt.__SetAttribute = (el: any, key: string, value: unknown) => {
-      keys.push(key)
-      return original(el, key, value)
-    }
+  // The DOM outcome above can't tell the two cases apart — an omitted attr and
+  // one patched as null both leave no attribute. Key *presence* is what drives
+  // the difference (Vue patches every key present in the props object, whatever
+  // its value), so assert on the keys Primitive actually forwards.
+  it('drops undefined attr keys, keeps defined and null ones', () => {
+    let forwarded: Record<string, unknown> = {}
+    const Probe = markRaw(defineComponent({
+      inheritAttrs: false,
+      setup(_, { attrs }) {
+        forwarded = { ...attrs }
+        return () => h('view')
+      },
+    }))
 
-    try {
-      render(Primitive, { as: 'view', type: 'button', placeholder: undefined })
-    }
-    finally {
-      mt.__SetAttribute = original
-    }
+    render(Primitive, { as: Probe, type: 'button', placeholder: undefined, role: null })
 
+    const keys = Object.keys(forwarded)
     expect(keys).toContain('type')
     expect(keys).not.toContain('placeholder')
-  })
-
-  // `null` stays a deliberate "reset this prop" escape hatch — only undefined
-  // is dropped.
-  it('still forwards an explicit null to the native setter', () => {
-    const mt = (globalThis as any).lynxTestingEnv.mainThread.globalThis
-    const original = mt.__SetAttribute
-    const keys: string[] = []
-    mt.__SetAttribute = (el: any, key: string, value: unknown) => {
-      keys.push(key)
-      return original(el, key, value)
-    }
-
-    try {
-      render(Primitive, { as: 'view', type: null })
-    }
-    finally {
-      mt.__SetAttribute = original
-    }
-
-    expect(keys).toContain('type')
+    // null stays a deliberate "reset this prop" signal — only undefined is dropped.
+    expect(keys).toContain('role')
   })
 
   it('renders multiple child elements', () => {
