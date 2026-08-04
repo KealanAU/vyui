@@ -61,7 +61,8 @@
       "name": "maxLength",
       "type": "number | undefined",
       "required": false,
-      "description": "Maximum number of characters allowed. Unset by default, leaving the\nplatform's own limit in place: iOS and Android are unlimited, while\nHarmony applies the documented Lynx default of 140. Pass an explicit\nvalue to enforce a limit, or to get identical behavior on every platform."
+      "default": "140",
+      "description": "Maximum number of characters allowed. Defaults to `140` per the Lynx\ndefault."
     },
     {
       "name": "maxLines",
