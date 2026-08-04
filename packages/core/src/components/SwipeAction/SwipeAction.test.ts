@@ -23,98 +23,61 @@ describe('SwipeAction — exports', () => {
   })
 })
 
-// Pure logic the touchend worklet runs. Kept here so the snap / commit
-// decision is regression-tested without rendering. Mirrors the body of
-// `_onTouchEnd` in SwipeAction.vue.
-describe('SwipeAction — release-snap decision', () => {
-  type Decision = 'commit' | 'open' | 'close'
-
-  function decide(opts: {
-    endX: number
-    velocity: number
-    actionWidth: number
-    rowWidth: number
-    snapThreshold: number
-    commitThreshold: number
-    commitVelocity: number
-    velocityThreshold: number
-  }): Decision {
-    // Mirrors `_onTouchEnd` in SwipeAction.vue (and physics.ts
-    // decideSwipeAction): commit on hard leftward flick / past commit
-    // threshold; a rightward flick always closes; else open vs close.
-    const opening = -opts.velocity // positive = leftward (revealing)
-    if (opening >= opts.commitVelocity || -opts.endX >= opts.commitThreshold * opts.rowWidth) {
-      return 'commit'
-    }
-    if (opts.velocity >= opts.velocityThreshold) {
-      return 'close'
-    }
-    if (opening >= opts.velocityThreshold || -opts.endX >= opts.snapThreshold * opts.actionWidth) {
-      return 'open'
-    }
-    return 'close'
+// The release decision itself (`decideSwipeAction`) and the ±45° axis cone
+// (`resolveAxisLock`) are unit-tested against the real implementations in
+// `shared/gesture/physics.test.ts`. Worklets can't call across files, so
+// `_dragEnd` / `_dragMove` carry hand-copied mirrors plus the parts physics.ts
+// cannot see: the order the branches are tested in, where each one settles the
+// row, and what it emits.
+describe('SwipeAction — release contract in the SFC source', () => {
+  async function readSfc(name: string): Promise<string> {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    return fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), name), 'utf8')
   }
 
-  const base = {
-    actionWidth: 80,
-    rowWidth: 320,
-    snapThreshold: 0.5,
-    commitThreshold: 0.5,
-    commitVelocity: 1200,
-    velocityThreshold: 400,
+  function body(sfc: string, fn: string): string {
+    return sfc.match(new RegExp(`function ${fn}[\\s\\S]*?\\n}`))?.[0] ?? ''
   }
 
-  it('closes when drag did not pass snap threshold and velocity is mild', () => {
-    expect(decide({ ...base, endX: -10, velocity: -50 })).toBe('close')
+  it('decides commit, then a closing flick, then open — in that order', async () => {
+    // Order is the contract: a hard leftward flick has to beat the open
+    // threshold, and a rightward flick has to beat the position check, or a
+    // fast flick out of a deep drag resolves to the wrong outcome.
+    const fn = body(await readSfc('SwipeAction.vue'), '_dragEnd')
+    const commit = fn.indexOf('opening >= commitVelocityRef.current')
+    const closeFlick = fn.indexOf('velocity >= velocityThresholdRef.current')
+    const open = fn.indexOf('opening >= velocityThresholdRef.current')
+    expect(commit).toBeGreaterThan(-1)
+    expect(closeFlick).toBeGreaterThan(commit)
+    expect(open).toBeGreaterThan(closeFlick)
   })
 
-  it('opens when drag passes snap threshold', () => {
-    // -endX = 50, snap threshold = 0.5 * 80 = 40 → open.
-    expect(decide({ ...base, endX: -50, velocity: 0 })).toBe('open')
+  it('settles each branch to its own resting position', async () => {
+    // commit → off the row entirely, closing flick → closed, open → the action
+    // panel width, fallthrough → closed.
+    const fn = body(await readSfc('SwipeAction.vue'), '_dragEnd')
+    expect([...fn.matchAll(/_animateTo\((.*?)\)/g)].map(m => m[1]))
+      .toEqual(['-rw', '0', '-aw', '0'])
   })
 
-  it('opens on mild leftward flick even before snap threshold', () => {
-    expect(decide({ ...base, endX: -20, velocity: -500 })).toBe('open')
+  it('emits commit once and otherwise reports the new open state', async () => {
+    const fn = body(await readSfc('SwipeAction.vue'), '_dragEnd')
+    const emitted = [...fn.matchAll(/runOnBackground\((_emit\w+) as any\)\((\w*)\)/g)]
+      .map(m => `${m[1]}(${m[2]})`)
+    expect(emitted).toEqual([
+      '_emitCommit()',
+      '_emitOpen(false)',
+      '_emitOpen(true)',
+      '_emitOpen(false)',
+    ])
   })
 
-  it('commits when dragged past commit threshold (half row width)', () => {
-    // -endX = 200, commit threshold = 0.5 * 320 = 160 → commit.
-    expect(decide({ ...base, endX: -200, velocity: 0 })).toBe('commit')
-  })
-
-  it('commits on hard leftward flick regardless of position', () => {
-    expect(decide({ ...base, endX: -30, velocity: -1400 })).toBe('commit')
-  })
-
-  it('a rightward flick closes even past the open threshold', () => {
-    // position alone (-endX = 50 ≥ 40) would open, but the flick is rightward
-    expect(decide({ ...base, endX: -50, velocity: 600 })).toBe('close')
-  })
-})
-
-// Axis-lock decision the touchmove worklet runs once per gesture: a gesture
-// past the 8px slop is "ours" only when |dx| >= |dy| (the ±45° horizontal
-// cone), otherwise it belongs to the surrounding vertical list scroll.
-describe('SwipeAction — axis lock', () => {
-  function axis(dx: number, dy: number): 0 | 1 | 2 {
-    const displacement = Math.sqrt(dx * dx + dy * dy)
-    if (displacement <= 8) return 0 // undecided
-    return Math.abs(dx) >= Math.abs(dy) ? 1 : 2 // 1 = horizontal, 2 = vertical
-  }
-
-  it('stays undecided below the slop threshold', () => {
-    expect(axis(3, 3)).toBe(0)
-    expect(axis(5, 5)).toBe(0)
-  })
-  it('locks horizontal for a mostly-horizontal drag', () => {
-    expect(axis(20, 4)).toBe(1)
-    expect(axis(-30, 10)).toBe(1)
-  })
-  it('yields to vertical scroll for a mostly-vertical drag', () => {
-    expect(axis(4, 20)).toBe(2)
-    expect(axis(10, -30)).toBe(2)
-  })
-  it('diagonal at exactly 45° is horizontal (boundary inclusive)', () => {
-    expect(axis(20, 20)).toBe(1)
+  it('yields the whole gesture to a vertical scroll once axis-locked', async () => {
+    // The lock is resolved once per gesture and stays sticky, and release is a
+    // no-op for a yielded gesture — snapping there would fight the list scroll.
+    const sfc = await readSfc('SwipeAction.vue')
+    expect(body(sfc, '_dragMove')).toMatch(/if \(axisLockRef\.current === 2\) return/)
+    expect(body(sfc, '_dragEnd')).toMatch(/if \(axisLockRef\.current === 2\) \{[\s\S]*?return/)
   })
 })

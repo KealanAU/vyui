@@ -128,20 +128,6 @@ describe('alertDialog', () => {
     expect(q(container, 'content')).not.toBeNull()
   })
 
-  it('injects root context into Action/Cancel via the captured-provides bridge', async () => {
-    // Painted Action/Cancel live inside the OverlayRoot portal. They call
-    // `rootContext.onOpenChange(false)`, proving the inject succeeded.
-    const { container } = render(AlertDialog)
-    fireEvent.tap(q(container, 'trigger')!)
-    await frames(40)
-    await waitForUpdate()
-    fireEvent.tap(q(container, 'cancel')!)
-    await waitForUpdate()
-    fireLeaveAnimations(container)
-    await waitForUpdate()
-    expect(q(container, 'content')).toBeNull()
-  })
-
   it('unregisters the overlay entry on unmount', async () => {
     const { container, unmount } = render(AlertDialog, { rootProps: { defaultOpen: true } })
     await waitForUpdate()
@@ -169,13 +155,10 @@ describe('alertDialog', () => {
     await waitForUpdate()
     // Sanity: content is still painted while Leaving.
     expect(q(container, 'content')).not.toBeNull()
-    // Drive both painted views to End — they share the same Presence so
-    // either-or settles the state machine; we fire on both to mirror the
-    // backdrop + panel wiring.
-    const content = q(container, 'content')!
-    const backdrop = content.parentElement!
+    // Backdrop only — the panel binds the same handler, so firing on both
+    // would still pass with the backdrop binding deleted.
+    const backdrop = q(container, 'content')!.parentElement!
     fireEvent.animationend(backdrop)
-    fireEvent.animationend(content)
     await waitForUpdate()
     expect(q(container, 'content')).toBeNull()
   })

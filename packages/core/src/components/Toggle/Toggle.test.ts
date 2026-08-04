@@ -7,24 +7,28 @@ import ToggleStory from './story/_Toggle.vue'
 
 describe('given default Toggle', () => {
   let container: Element
-  let toggle: Element
+  // Re-queried, never captured: the node identity changes across re-render, so
+  // a node held from `beforeEach` reads a stale attribute.
+  const toggle = () => container.querySelector('[data-state]')!
 
   beforeEach(() => {
     ;({ container } = render(ToggleStory))
-    toggle = container.querySelector('[data-state]')!
   })
 
   it('starts off', () => {
-    expect(toggle.getAttribute('data-state')).toBe('off')
+    expect(toggle().getAttribute('data-state')).toBe('off')
   })
 
   describe('after toggling', () => {
-    // The previously-skipped "should be toggled on" assertion is replaced by
-    // an emitted-event assertion. The data-state attribute is a side channel
-    // and is set on the same `view` element; the contract for "the toggle
-    // toggled" is the emitted `update:modelValue` value. Two-tick
-    // waitForUpdate did not observe the data-state attribute change reliably
-    // — but the emit fires synchronously inside the tap handler.
+    beforeEach(async () => {
+      fireEvent.tap(toggle())
+      await waitForUpdate()
+    })
+
+    it('is on', () => {
+      expect(toggle().getAttribute('data-state')).toBe('on')
+    })
+
     it('emits update:modelValue with true on tap', async () => {
       const updates: boolean[] = []
       const { container: c } = render({
@@ -42,12 +46,12 @@ describe('given default Toggle', () => {
 
     describe('after toggling again', () => {
       beforeEach(async () => {
-        fireEvent.tap(toggle)
+        fireEvent.tap(toggle())
         await waitForUpdate()
       })
 
       it('is off again', () => {
-        expect(toggle.getAttribute('data-state')).toBe('off')
+        expect(toggle().getAttribute('data-state')).toBe('off')
       })
     })
 
@@ -79,25 +83,24 @@ describe('given default Toggle', () => {
 
 describe('given disabled Toggle', () => {
   let container: Element
-  let toggle: Element
+  const toggle = () => container.querySelector('[data-state]')!
 
   beforeEach(() => {
     ;({ container } = render(ToggleStory, { disabled: true }))
-    toggle = container.querySelector('[data-state]')!
   })
 
   it('starts off', () => {
-    expect(toggle.getAttribute('data-state')).toBe('off')
+    expect(toggle().getAttribute('data-state')).toBe('off')
   })
 
   describe('try toggling', () => {
     beforeEach(async () => {
-      fireEvent.tap(toggle)
+      fireEvent.tap(toggle())
       await waitForUpdate()
     })
 
     it('stays off', () => {
-      expect(toggle.getAttribute('data-state')).toBe('off')
+      expect(toggle().getAttribute('data-state')).toBe('off')
     })
 
     it('does not emit update:modelValue when disabled', async () => {
@@ -116,8 +119,8 @@ describe('given disabled Toggle', () => {
     })
 
     it('renders disabled attributes', () => {
-      expect(toggle.getAttribute('data-disabled')).toBe('')
-      expect(toggle.getAttribute('disabled')).toBe('')
+      expect(toggle().getAttribute('data-disabled')).toBe('')
+      expect(toggle().getAttribute('disabled')).toBe('')
     })
   })
 })

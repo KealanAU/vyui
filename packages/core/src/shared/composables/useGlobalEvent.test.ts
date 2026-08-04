@@ -24,15 +24,21 @@ afterEach(() => {
 })
 
 describe('useGlobalEvent', () => {
-  it('no-ops without a lynx global', () => {
-    const lynx = (globalThis as any).lynx
-    delete (globalThis as any).lynx
-    try {
-      expect(() => render(host(() => useGlobalEvent('ping', vi.fn())))).not.toThrow()
-    }
-    finally {
-      ;(globalThis as any).lynx = lynx
-    }
+  // Deleting the global around `render()` does nothing: render() switches
+  // threads internally and the env reinstalls `lynx` before setup runs. It has
+  // to be deleted inside setup, where the composable actually reads it.
+  it('does not throw and registers nothing when the lynx global is absent', () => {
+    render(host(() => {
+      const lynx = (globalThis as any).lynx
+      delete (globalThis as any).lynx
+      try {
+        useGlobalEvent('ping', vi.fn())
+      }
+      finally {
+        ;(globalThis as any).lynx = lynx
+      }
+    }))
+    expect(emitter().listeners.ping).toBeUndefined()
   })
 
   it('subscribes on mount and unsubscribes on unmount', () => {

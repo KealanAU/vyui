@@ -1,6 +1,6 @@
 import { defineComponent, h, nextTick, onMounted } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { OverlayRoot, type SafeAreaInsets, useSafeArea } from '@vyui/core'
 import App from './App.vue'
 import { resetColorModeForTesting, useColorMode } from '../composables/useColorMode'
@@ -94,7 +94,10 @@ describe('VyApp', () => {
     expect(mount(App, { props: { overlays: false } }).findComponent(OverlayRoot).exists()).toBe(false)
   })
 
-  it('provides app-wide safe-area insets that `safeArea: false` zeroes out', () => {
+  // Both assertions need a NON-ZERO container reading to mean anything: with
+  // jsdom's empty global props the container read is already zero, so a
+  // `safeArea: false` assertion of zeros passes even if the opt-out is deleted.
+  describe('safe area', () => {
     const seen: SafeAreaInsets[] = []
     const Probe = defineComponent({
       setup() {
@@ -102,12 +105,29 @@ describe('VyApp', () => {
         return () => h('text', 'probe')
       },
     })
-    // `false` opts the whole app out with zeros (the container read is zero under jsdom too).
-    mount(App, {
-      props: { overlays: false, safeArea: false },
-      slots: { default: () => h(Probe) },
+    const mountWithProbe = (props: Record<string, unknown>) =>
+      mount(App, { props: { overlays: false, ...props }, slots: { default: () => h(Probe) } })
+
+    let originalGlobalProps: unknown
+    beforeEach(() => {
+      seen.length = 0
+      const lynx = ((globalThis as any).lynx ??= {})
+      originalGlobalProps = lynx.__globalProps
+      lynx.__globalProps = { os: 'ios', safeAreaTop: 47, safeAreaBottom: 34 }
     })
-    expect(seen.at(-1)).toEqual({ top: 0, bottom: 0 })
+    afterEach(() => {
+      ;(globalThis as any).lynx.__globalProps = originalGlobalProps
+    })
+
+    it('provides the container insets app-wide', () => {
+      mountWithProbe({})
+      expect(seen.at(-1)).toEqual({ top: 47, bottom: 34 })
+    })
+
+    it('zeroes the insets for the whole tree when `safeArea` is false', () => {
+      mountWithProbe({ safeArea: false })
+      expect(seen.at(-1)).toEqual({ top: 0, bottom: 0 })
+    })
   })
 
   describe('viewport-change', () => {

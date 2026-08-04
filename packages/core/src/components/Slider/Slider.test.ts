@@ -88,10 +88,8 @@ describe('SliderRoot rendering & a11y traits', () => {
 
   it('marks root and thumb data-disabled when disabled', () => {
     const { container } = mountSlider({ disabled: true })
-    // SliderRoot stamps data-disabled="" on the horizontal track wrapper
-    // and the thumb (`SliderThumbImpl`).
-    const disabledNodes = container.querySelectorAll('[data-disabled=""]')
-    expect(disabledNodes.length).toBeGreaterThanOrEqual(1)
+    expect(container.querySelector('[data-vyui-slider-impl]')!.getAttribute('data-disabled')).toBe('')
+    expect(container.querySelector('.vyui-slider-thumb')!.getAttribute('data-disabled')).toBe('')
   })
 })
 

@@ -27,101 +27,6 @@ describe('List — exports', () => {
   })
 })
 
-// Pure-logic regression tests for the inline alignment math inside the
-// `scrollIntoIdMT` worklet (List.vue ~line 220). Replicated here so the
-// arithmetic is verified without rendering — the worklet itself is blocked
-// by MTS test infra. See plans/mobile-first-pivot.md §3D.
-describe('List — scrollIntoId alignment math', () => {
-  function computeOffset(
-    alignTo: 'top' | 'bottom' | 'middle' | 'none',
-    rect: { upper: number, lower: number, childSize: number },
-    listSize: number,
-  ): number {
-    if (alignTo === 'top') return rect.upper
-    if (alignTo === 'bottom') return rect.lower - listSize
-    if (alignTo === 'middle') return rect.upper - (listSize - rect.childSize) / 2
-    return 0
-  }
-
-  it('top alignment = child upper edge offset', () => {
-    expect(computeOffset('top', { upper: 120, lower: 200, childSize: 80 }, 600)).toBe(120)
-  })
-
-  it('bottom alignment = child lower edge minus viewport', () => {
-    expect(computeOffset('bottom', { upper: 120, lower: 200, childSize: 80 }, 600)).toBe(-400)
-  })
-
-  it('middle alignment centers the child in the viewport', () => {
-    // child of 100 in a 600 viewport at upper 250 → offset 250 - (600-100)/2 = 0
-    expect(computeOffset('middle', { upper: 250, lower: 350, childSize: 100 }, 600)).toBe(0)
-  })
-
-  it('none alignment skips the corrective step (offset 0)', () => {
-    expect(computeOffset('none', { upper: 120, lower: 200, childSize: 80 }, 600)).toBe(0)
-  })
-})
-
-// `invoke()` is the selector-query wrapper used by scrollTo / autoScroll /
-// getVisibleCells. On hosts without the `lynx` global (vitest / SSR) it must
-// resolve `undefined` rather than throw — otherwise SSR / web fallback render
-// of `<List>` would crash on first ref call.
-describe('List — invoke() web fallback', () => {
-  function invoke(method: string, params: Record<string, unknown> = {}, listId = 'vy-list-x'): Promise<unknown> {
-    return new Promise((resolve, reject) => {
-      const g = globalThis as any
-      if (!g?.lynx?.createSelectorQuery) {
-        resolve(undefined)
-        return
-      }
-      g.lynx
-        .createSelectorQuery()
-        .select(`#${listId}`)
-        .invoke({ method, params, success: (r: unknown) => resolve(r), fail: reject })
-        .exec()
-    })
-  }
-
-  it('resolves undefined when `lynx.createSelectorQuery` is absent', async () => {
-    // The vyui test setup installs a default `lynx` global — null out the
-    // selector-query API for this case to exercise the SSR / web-fallback
-    // branch, then restore.
-    const original = (globalThis as any).lynx
-    ;(globalThis as any).lynx = { ...original, createSelectorQuery: undefined }
-    try {
-      await expect(invoke('scrollToPosition', { position: 0 })).resolves.toBeUndefined()
-    }
-    finally {
-      ;(globalThis as any).lynx = original
-    }
-  })
-
-  it('routes to lynx.createSelectorQuery().select().invoke() when available', async () => {
-    const exec = vi.fn()
-    const invokeCall = vi.fn((opts: any) => {
-      // mirror the runtime — fire `success` synchronously.
-      opts.success?.({ ok: true })
-      return { exec }
-    })
-    const select = vi.fn(() => ({ invoke: invokeCall }))
-    const createSelectorQuery = vi.fn(() => ({ select }))
-    ;(globalThis as any).lynx = { createSelectorQuery }
-
-    try {
-      const res = await invoke('scrollToPosition', { position: 3 })
-      expect(createSelectorQuery).toHaveBeenCalledOnce()
-      expect(select).toHaveBeenCalledWith('#vy-list-x')
-      expect(invokeCall).toHaveBeenCalledOnce()
-      expect(invokeCall.mock.calls[0][0].method).toBe('scrollToPosition')
-      expect(invokeCall.mock.calls[0][0].params).toEqual({ position: 3 })
-      expect(exec).toHaveBeenCalledOnce()
-      expect(res).toEqual({ ok: true })
-    }
-    finally {
-      delete (globalThis as any).lynx
-    }
-  })
-})
-
 // Regression — `scrollIntoId` threw on Lynx web and scrolled nowhere.
 //
 // The worklet reached for `lynx.querySelector('#id')` three times. That global
@@ -135,7 +40,7 @@ describe('List — invoke() web fallback', () => {
 // owns and can hold a `main-thread-ref` to. The third targets an arbitrary
 // consumer-owned child, so the global selector is the only route and it has to
 // be feature-checked instead.
-describe('List — scrollIntoId must survive a selector-less main thread', () => {
+describe('List — scrollIntoId must survive a selector-less host', () => {
   async function readSfc(name: string): Promise<string> {
     const fs = await import('node:fs')
     const path = await import('node:path')
@@ -172,6 +77,31 @@ describe('List — scrollIntoId must survive a selector-less main thread', () =>
     // the measured correction as `-offset + extraOffset`.
     expect(fn).toMatch(/offset: extraOffset,/)
     expect(fn).toMatch(/offset: -offset \+ extraOffset,/)
+  })
+
+  // The alignment arithmetic lives inside the worklet, which vitest can't run —
+  // pin the three branches from the source rather than re-deriving them here.
+  it('derives the corrective offset per alignTo branch', async () => {
+    const fn = body(await readSfc('List.vue'), 'scrollIntoIdMT')
+    expect(fn).toMatch(/let offset = 0/)
+    expect(fn).toMatch(/if \(alignTo === 'top'\) \{\s*\n\s*offset = upper\b/)
+    expect(fn).toMatch(/else if \(alignTo === 'bottom'\) \{\s*\n\s*offset = lower - listSize\b/)
+    expect(fn).toMatch(/else if \(alignTo === 'middle'\) \{\s*\n\s*offset = upper - \(listSize - childSize\) \/ 2/)
+    // 'none' has no branch on purpose: offset stays 0 and the step-1 landing stands.
+    expect(fn).not.toMatch(/if \(alignTo === 'none'/)
+    // The edges are picked off the rect by axis before any of that.
+    expect(fn).toMatch(/const upper = isVertical \? rect\.top : rect\.left/)
+    expect(fn).toMatch(/const lower = isVertical \? rect\.bottom : rect\.right/)
+  })
+
+  // Same failure mode one thread over: `invoke()` (scrollTo / autoScroll /
+  // getVisibleCells) must resolve `undefined` on a host with no selector query
+  // instead of throwing, or an SSR / web render crashes on the first ref call.
+  it('feature-checks createSelectorQuery before every ref-driven scroll', async () => {
+    const fn = body(await readSfc('List.vue'), 'invoke')
+    expect(fn).toMatch(/if \(!g\?\.lynx\?\.createSelectorQuery\) \{\s*\n\s*resolve\(undefined\)/)
+    expect(fn).toMatch(/\.select\(`#\$\{listId\.value\}`\)/)
+    expect(fn).toMatch(/\.exec\(\)/)
   })
 })
 
