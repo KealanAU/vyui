@@ -1,6 +1,6 @@
 ---
 title: Pagination
-description: Headless pagination primitive — page list, edges, and prev/next controls computed from total and page size.
+description: Headless pagination primitive with page list, edges, and prev/next controls computed from total and page size.
 navigation:
   icon: i-lucide-ellipsis
 package: core
@@ -13,10 +13,10 @@ links:
 
 ## Overview
 
-`Pagination` is a headless `@vyui/core` primitive that derives a page range from `total` and `itemsPerPage` and exposes the controls to move through it. It ships behavior only — you supply the markup and styling for each page item, ellipsis, and edge control.
+`Pagination` is a headless `@vyui/core` primitive that derives a page range from `total` and `itemsPerPage` and exposes the controls to move through it. It ships behavior only, so you supply the markup and styling for each page item, ellipsis, and edge control.
 
 ::callout{icon="i-lucide-box"}
-This is a layer of `@vyui/core` — behavior only, no styles.
+This is a layer of `@vyui/core`, behavior only and no styles.
 ::
 
 ## Anatomy
@@ -133,5 +133,5 @@ const page = ref(1)
 
 ## Related components
 
-- [`Tabs`](/components/tabs) — switch between a small fixed set of panels.
-- [`FeedList`](/components/feedlist) — infinite/virtualized lists instead of discrete pages.
+- [`Tabs`](/components/tabs) switches between a small fixed set of panels.
+- [`FeedList`](/components/feedlist) gives infinite or virtualized lists instead of discrete pages.

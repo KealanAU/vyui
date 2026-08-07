@@ -25,7 +25,7 @@ changelogOrder: 3007
 
   `ScrollView`'s bounce also moved off `lynx.querySelector('#id')` onto
   `main-thread-ref` handles. That selector exists only on the native main thread —
-  web-core's main-thread `lynx` object has no `querySelector` — so on web every
+  web-core's main-thread `lynx` object has no `querySelector`, so on web every
   call threw and took the whole bounce worklet down with it.
 
   Sortable fixes on top of that:

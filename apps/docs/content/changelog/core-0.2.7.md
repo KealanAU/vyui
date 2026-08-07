@@ -25,7 +25,7 @@ changelogOrder: 2007
 
   `ScrollView`'s bounce also moved off `lynx.querySelector('#id')` onto
   `main-thread-ref` handles. That selector exists only on the native main thread —
-  web-core's main-thread `lynx` object has no `querySelector` — so on web every
+  web-core's main-thread `lynx` object has no `querySelector`, so on web every
   call threw and took the whole bounce worklet down with it.
 
   Sortable fixes on top of that:
@@ -46,7 +46,7 @@ changelogOrder: 2007
 
   The worklet reached for `lynx.querySelector('#id')` three times. That global
   selector API exists only on the native main thread — web-core's MT `lynx`
-  object has no `querySelector` — so the first call raised a `TypeError` and took
+  object has no `querySelector`, so the first call raised a `TypeError` and took
   the whole worklet with it, and the list scrolled nowhere.
 
   Two of those lookups were for the `<list>` itself, which the component owns, so
@@ -164,7 +164,7 @@ changelogOrder: 2007
   background `@layoutchange` pushed across with `runOnMainThread`. `_beginAt`
   already fetches `invoke('boundingClientRect')` once per gesture for the origin,
   and that response carries `width`/`height` too, so the extent comes from it as
-  well. One measurement, one frame, no thread hop — and re-read per gesture,
+  well. One measurement, one frame, no thread hop, and re-read per gesture,
   which also fixes a track that resized while its tab was hidden.
 
   `draggingMT` is wired up while here: `SliderImplMTS` was setting a local ref of

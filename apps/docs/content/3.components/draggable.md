@@ -23,7 +23,7 @@ height: 320px
 ::
 
 ::callout{icon="i-lucide-box"}
-This is a vyui-original `@vyui/core` primitive — a 2D pan gesture over Lynx main-thread touch events. Behavior only, no styles.
+This is a vyui-original `@vyui/core` primitive, a 2D pan gesture over Lynx main-thread touch events. Behavior only, no styles.
 ::
 
 ## Usage
@@ -73,15 +73,15 @@ The `drag-move` payload adds `dx` / `dy` (delta from touchstart); `drag-end` add
 
 ## Accessibility
 
-- Pointer dragging has no keyboard equivalent — provide an alternative control path for keyboard and assistive-tech users where the interaction is essential.
+- Pointer dragging has no keyboard equivalent, so provide an alternative control path for keyboard and assistive-tech users where the interaction is essential.
 
 ## Platform notes
 
 - The gesture is implemented with main-thread (MTS) worklets, so tracking stays smooth independent of the background thread.
-- Touch and mouse are both wired: on-device drags use touch events, while desktop browsers (Lynx web) drive the same worklets from mouse events — the live preview above works with a mouse.
+- Touch and mouse are both wired: on-device drags use touch events, while desktop browsers (Lynx web) drive the same worklets from mouse events, and the live preview above works with a mouse.
 
 ## Related components
 
-- [`Sortable`](/components/sortable) — reorderable lists built on this primitive.
-- [`Swiper`](/components/swiper) — paged horizontal swiping.
-- [`Sheet`](/components/sheet) — snap/drag bottom sheet.
+- [`Sortable`](/components/sortable) gives reorderable lists built on this primitive.
+- [`Swiper`](/components/swiper) does paged horizontal swiping.
+- [`Sheet`](/components/sheet) is a snap and drag bottom sheet.

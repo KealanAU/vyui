@@ -1,6 +1,6 @@
 ---
 title: App
-description: The recommended app-root wrapper — owns dark mode, mounts the overlay host, and reports viewport size.
+description: The recommended app-root wrapper, which owns dark mode, mounts the overlay host, and reports viewport size.
 navigation:
   icon: i-lucide-smartphone
 package: kit
@@ -36,14 +36,14 @@ createApp(App).use(VyUI).mount('#app')
 ```
 
 ::callout{icon="i-lucide-box"}
-Reach for `VyApp` once, at the top of the tree. Everything it wires up — the dark ramp, the overlay host, the viewport signal — applies to the whole app below it.
+Reach for `VyApp` once, at the top of the tree. Everything it wires up (the dark ramp, the overlay host, the viewport signal) applies to the whole app below it.
 ::
 
 ## Usage
 
 ### Dark mode
 
-`VyApp` reads [`useColorMode`](/theming/dark-mode)'s `mode` / `isDark` and applies both pieces of the app-root contract: the `.dark` class and a `:key="mode"` remount. Lynx native only applies a class change to freshly mounted nodes, so toggling `.dark` on an already-mounted tree would not re-skin it — keying on `mode` remounts the subtree on every change, turning that platform quirk into the mechanism. You get this for free just by wrapping your app; nothing further to wire up.
+`VyApp` reads [`useColorMode`](/theming/dark-mode)'s `mode` / `isDark` and applies both pieces of the app-root contract: the `.dark` class and a `:key="mode"` remount. Lynx native only applies a class change to freshly mounted nodes, so toggling `.dark` on an already-mounted tree would not re-skin it, so keying on `mode` remounts the subtree on every change, turning that platform quirk into the mechanism. You get this for free just by wrapping your app; nothing further to wire up.
 
 ### Overlay host
 
@@ -70,7 +70,7 @@ Pass `radius` to set `--ui-radius` (in rem) on the root, overriding the default 
 
 ### Safe area
 
-`VyApp` snapshots the container's safe-area insets (notch, Dynamic Island, home indicator) and provides them to the whole tree, so any descendant's [`useSafeArea()`](/composables/use-safe-area) resolves without wiring. Set `safe-area="false"` to force zeros — e.g. a fullscreen surface drawing its own chrome. The insets come from global props the host injects; on your own iOS/Android host that injection is your job — see [native host integration](/guides/native-host-integration).
+`VyApp` snapshots the container's safe-area insets (notch, Dynamic Island, home indicator) and provides them to the whole tree, so any descendant's [`useSafeArea()`](/composables/use-safe-area) resolves without wiring. Set `safe-area="false"` to force zeros, as a fullscreen surface drawing its own chrome would want. The insets come from global props the host injects; on your own iOS/Android host that injection is your job. See [native host integration](/guides/native-host-integration).
 
 ### Viewport size
 
@@ -84,7 +84,7 @@ Pass `radius` to set `--ui-radius` (in rem) on the root, overriding the default 
 
 ### Reading color mode from the slot
 
-The default slot receives `{ mode, isDark }` — the same values `useColorMode()` returns — so a descendant can react to color mode without importing the composable itself.
+The default slot receives `{ mode, isDark }`, the same values `useColorMode()` returns, so a descendant can react to color mode without importing the composable itself.
 
 ```vue
 <VyApp v-slot="{ mode, isDark }">
@@ -126,9 +126,9 @@ Override globally through `appConfig.ui.app` or locally with the `ui` prop.
 
 ## Platform notes
 
-- The dark-mode remount relies on Lynx native applying class changes only to freshly mounted nodes — `:key="mode"` turns that into the toggle mechanism. See [`useColorMode`](/theming/dark-mode) for the full rationale.
+- The dark-mode remount relies on Lynx native applying class changes only to freshly mounted nodes, and `:key="mode"` turns that into the toggle mechanism. See [`useColorMode`](/theming/dark-mode) for the full rationale.
 - `viewport-change` is sourced from the background-thread `layoutchange` event rather than a `main-thread-*` binding, because those attrs do not reliably fall through onto this root.
-- Components that teleport (`Modal`, `Tray`, `Toast`, …) need an `OverlayRoot` somewhere in the tree to render at all — `VyApp` provides one by default so this is rarely something you need to think about.
+- Components that teleport (`Modal`, `Tray`, `Toast`, …) need an `OverlayRoot` somewhere in the tree to render at all, and `VyApp` provides one by default so this is rarely something you need to think about.
 
 ## Related components
 

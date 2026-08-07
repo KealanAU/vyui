@@ -13,10 +13,10 @@ links:
 
 ## Overview
 
-`AlertDialog` is a headless `@vyui/core` primitive for a modal that interrupts the user and expects a response. Unlike [`Dialog`](/components/dialog), it is always modal and cannot be dismissed by clicking the overlay — the user must choose an explicit action or cancel. Use it for destructive or irreversible confirmations.
+`AlertDialog` is a headless `@vyui/core` primitive for a modal that interrupts the user and expects a response. Unlike [`Dialog`](/components/dialog), it is always modal and cannot be dismissed by clicking the overlay, since the user must choose an explicit action or cancel. Use it for destructive or irreversible confirmations.
 
 ::callout{icon="i-lucide-box"}
-This is a layer of `@vyui/core` — behavior only, no styles. Compose it when you need a custom-styled confirmation flow.
+This is a layer of `@vyui/core`, behavior only and no styles. Compose it when you need a custom-styled confirmation flow.
 ::
 
 ## Anatomy
@@ -122,9 +122,9 @@ import {
 
 - Announced with native alert-dialog semantics; include both `AlertDialogTitle` and `AlertDialogDescription`.
 - Default focus lands on the cancel control so an accidental confirmation is harder.
-- The dialog cannot be dismissed implicitly — only `AlertDialogAction` or `AlertDialogCancel` close it.
+- The dialog cannot be dismissed implicitly; only `AlertDialogAction` or `AlertDialogCancel` close it.
 
 ## Related components
 
-- [`Dialog`](/components/dialog) — the general, dismissible dialog primitive.
-- [`Modal`](/components/modal) — the styled `@vyui/kit` dialog.
+- [`Dialog`](/components/dialog) is the general, dismissible dialog primitive.
+- [`Modal`](/components/modal) is the styled `@vyui/kit` dialog.

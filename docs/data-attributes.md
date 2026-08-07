@@ -1,11 +1,11 @@
 # Data attributes
 
 Vy UI components expose two families of `data-*` attributes. Both are part of the
-public surface — you can target them from styles and rely on them in tests.
+public surface, so you can target them from styles and rely on them in tests.
 
-- **State attributes** (`data-state`, `data-disabled`, …) — reactive; reflect the
+- **State attributes** (`data-state`, `data-disabled`, …) are reactive and reflect the
   current state of a component. Use them to style by state.
-- **Structural markers** (`data-vyui-*`) — static; tag a specific element inside a
+- **Structural markers** (`data-vyui-*`) are static and tag a specific element inside a
   component so it can be selected without a wrapper or extra ref.
 
 Because Vy UI follows the shadcn-style "own your components" model, these names are

@@ -11,7 +11,7 @@ changelogOrder: 3005
 
 - Fix every Sheet-backed surface rendering white in dark mode. `@vyui/core` was shipping color it can't ship. ([#154](https://github.com/KealanAU/vyui/pull/154))
 
-  `.vyui-sheet__content` hardcoded `background-color: #fff`, which beat the consumer's `bg-default` on source order and pinned **drawer, tray, action sheet, select, combobox and popover** to white in both color modes. `SheetBackdropImpl` and `SwipeAction` set `backgroundColor` **inline**, which no class can outrank at all — so a theme's dim or row color on those elements was dead on arrival. It only read as a dark-mode bug because white-on-white is invisible.
+  `.vyui-sheet__content` hardcoded `background-color: #fff`, which beat the consumer's `bg-default` on source order and pinned **drawer, tray, action sheet, select, combobox and popover** to white in both color modes. `SheetBackdropImpl` and `SwipeAction` set `backgroundColor` **inline**, which no class can outrank at all, so a theme's dim or row color on those elements was dead on arrival. It only read as a dark-mode bug because white-on-white is invisible.
 
   All three now ship no color, matching the "No defaults — pass `backgroundColor` here" contract every sibling overlay already documents.
 

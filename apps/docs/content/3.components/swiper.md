@@ -23,7 +23,7 @@ height: 280px
 ::
 
 ::callout{icon="i-lucide-pointer"}
-Works with touch and mouse: drag the slides in the preview above with a mouse, or swipe on device — both drive the same gesture.
+Works with touch and mouse: drag the slides in the preview above with a mouse, or swipe on device, since both drive the same gesture.
 ::
 
 ::callout{icon="i-lucide-box"}
@@ -64,7 +64,7 @@ When `itemWidth` is omitted, the wrapper measures its container and makes each s
 
 ### Loop and autoplay
 
-Set `loop` to navigate seamlessly across both ends — the edge slides are cloned so motion continues over the seam instead of rewinding. Set `autoplay` to `true` for the default `3000ms` interval, or pass an interval in milliseconds.
+Set `loop` to navigate seamlessly across both ends, where the edge slides are cloned so motion continues over the seam instead of rewinding. Set `autoplay` to `true` for the default `3000ms` interval, or pass an interval in milliseconds.
 
 ```vue
 <script setup lang="ts">
@@ -190,7 +190,7 @@ These tables are generated directly from the component source.
 ::component-emits{name="Swiper"}
 ::
 
-The kit wrapper does not forward the core `swipeStart` / `swipeEnd` events — use `SwiperRoot` directly when you need drag lifecycle callbacks.
+The kit wrapper does not forward the core `swipeStart` / `swipeEnd` events, so use `SwiperRoot` directly when you need drag lifecycle callbacks.
 
 ### Slots
 
@@ -243,18 +243,18 @@ The `direction` variant positions the indicator strip horizontally at the bottom
 
 ## Accessibility
 
-- The swiper does not add carousel, group, or live-region semantics, and the indicator dots are visual elements, not controls. There is no keyboard navigation — provide separate accessible controls when users must be able to move directly between slides, and avoid placing essential information only in an automatically advancing slide.
+- The swiper does not add carousel, group, or live-region semantics, and the indicator dots are visual elements, not controls. There is no keyboard navigation, so provide separate accessible controls when users must be able to move directly between slides, and avoid placing essential information only in an automatically advancing slide.
 - Loop mode renders cloned copies of the slide slot that are not hidden from the accessibility tree. Test looped carousels with VoiceOver and TalkBack before using them for interactive content.
 
 ## Platform notes
 
 - Drag tracking, velocity sampling, snapping, looping, and autoplay all run in Lynx main-thread worklets, so slides track the finger without a background-thread round trip.
-- Touch and mouse are both wired: on-device swipes use touch events, while desktop browsers (Lynx web) drive the same worklets from mouse events — the live preview above works with a mouse. There is no keyboard support.
+- Touch and mouse are both wired: on-device swipes use touch events, while desktop browsers (Lynx web) drive the same worklets from mouse events, and the live preview above works with a mouse. There is no keyboard support.
 - The wrapper listens for Lynx `layoutchange` to update full-width slides after its container resizes.
 - Avoid changing slide identity or count during a gesture, especially in loop mode where the slot is cloned.
 
 ## Related components
 
 - [`SwipeAction`](/components/swipe-action) for revealing row actions with a horizontal gesture.
-- [`Draggable`](/components/draggable) — the headless pan-gesture primitive family behind vyui's drag surfaces.
+- [`Draggable`](/components/draggable) is the headless pan-gesture primitive family behind vyui's drag surfaces.
 - `Tabs` for persistent, directly selectable peer views.

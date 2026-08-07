@@ -38,7 +38,7 @@ import { VyKeyboardAwareResponder, VyKeyboardAwareRoot } from '@vyui/kit/keyboar
 </template>
 ```
 
-For a long form, use the responder's scroll-view mode. The scroll region only scrolls once its height is bounded — pass the cap through `scroll-view-class`:
+For a long form, use the responder's scroll-view mode. The scroll region only scrolls once its height is bounded, so pass the cap through `scroll-view-class`:
 
 ```vue
 <VyKeyboardAwareRoot>
@@ -92,7 +92,7 @@ The primitives render as normal wrappers when used outside a root, but no keyboa
 | --- | --- | --- | --- |
 | `mode` | `'view' \| 'scroll-view'` | `'view'` | Translates a static view or scrolls a native scroll view. |
 | `scrollviewId` | `string` | `'scrollview'` | Native scroll-view identifier used by the root. Make it unique when several scroll-mode responders can be on screen. |
-| `scrollViewClass` | `any` | — | Class applied to the inner `<scroll-view>` in scroll-view mode. Put the height cap here — the region only scrolls once bounded. |
+| `scrollViewClass` | `any` | — | Class applied to the inner `<scroll-view>` in scroll-view mode. Put the height cap here; the region only scrolls once bounded. |
 | `as` | `AsTag` | `'view'` | Underlying element in view mode. |
 | `asChild` | `boolean` | `false` | Merges behavior into the single child element in view mode. |
 
@@ -110,7 +110,7 @@ The primitives render as normal wrappers when used outside a root, but no keyboa
 
 | Event | Payload | Description |
 | --- | --- | --- |
-| `keyboardHeightChange` | `number` | Fires whenever the tracked keyboard height changes, in px (`0` = hidden). Lets wrappers react without their own listener — `VyTray` uses it to drive its panel rise. |
+| `keyboardHeightChange` | `number` | Fires whenever the tracked keyboard height changes, in px (`0` = hidden). Lets wrappers react without their own listener; `VyTray` uses it to drive its panel rise. |
 
 ## Slots
 

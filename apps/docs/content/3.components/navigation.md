@@ -1,6 +1,6 @@
 ---
 title: Navigation
-description: Headless stack-navigation primitive — push/pop pages with iOS/Material-style slide transitions.
+description: Headless stack-navigation primitive for pushing and popping pages with iOS/Material-style slide transitions.
 navigation:
   icon: i-lucide-route
 package: core
@@ -16,7 +16,7 @@ links:
 `Navigation` is a headless `@vyui/core` primitive for in-app stack navigation: a stack of pages where the top entry is visible, with push/pop slide transitions. State is driven by the `useNavigationStack()` composable; `NavigationStack` renders the active `NavigationPage` and animates between them.
 
 ::callout{icon="i-lucide-box"}
-This is a layer of `@vyui/core` — behavior only, no styles.
+This is a layer of `@vyui/core`, behavior only and no styles.
 ::
 
 ## Anatomy
@@ -68,7 +68,7 @@ function openDetail() {
 ## Features and behavior
 
 - `useNavigationStack()` owns the stack; `push`, `pop`, `replace`, and `reset` update `entries` and `direction`.
-- `entries` drives which `NavigationPage` is visible — the top entry's `key` wins.
+- `entries` drives which `NavigationPage` is visible, and the top entry's `key` wins.
 - `direction` (`forward` / `back` / `replace` / `reset`) picks the enter/leave animation.
 - `transition="slide"` mirrors the iOS / Material push-pop slide; `'none'` swaps instantly.
 
@@ -99,5 +99,5 @@ Returns the stack controller: `entries`, `direction`, and the `push` / `pop` / `
 
 ## Related components
 
-- [`Tabs`](/components/tabs) — flat switching between peers rather than a push/pop stack.
-- [`Sheet`](/components/sheet) — present a page modally from the bottom edge.
+- [`Tabs`](/components/tabs) does flat switching between peers rather than a push/pop stack.
+- [`Sheet`](/components/sheet) presents a page modally from the bottom edge.
