@@ -15,7 +15,7 @@ lynx.getJSModule('GlobalEventEmitter')
   .addListener('keyboardstatuschanged', (status, height) => { … })
 ```
 
-On the iOS simulator the native side **does** emit this — the unified log shows:
+On the iOS simulator the native side **does** emit this, and the unified log shows:
 
 ```
 [I:LynxKeyboardEventDispatcher.m] keyboard status is on / keyboard height is 336
@@ -25,7 +25,7 @@ call jsmodule:GlobalEventEmitter.emit.keyboardstatuschanged 0x…   ← the vue 
 …but the listener registered from a vue-lynx component (`onMounted`) **never
 fires**. The emit reaches the right background JS context, yet the vue-lynx-side
 `GlobalEventEmitter` listener does not receive it. So vyui's `KeyboardAware*`
-components are effectively inert on device under vue-lynx. (Upstream item — see
+components are effectively inert on device under vue-lynx. (Upstream item; see
 "Open questions" below.)
 
 ## What works: the element `keyboard` event
@@ -68,7 +68,7 @@ reactive layout:
 - Render a spacer **below** it whose height tracks the keyboard:
   `<view :style="{ height: kbHeight + 'px' }" />`.
 
-Lynx overlays the keyboard (the page does not resize — layout stays full
+Lynx overlays the keyboard (the page does not resize, so layout stays full
 height), so growing the spacer pushes the composer up by exactly the keyboard
 height. Reset to `0` on `blur`.
 
@@ -77,11 +77,11 @@ Reference implementation: `apps/examples/vyai/src/sections/Composer.vue`.
 ## The lift math: viewport height, not screen height
 
 The lynx-ui `KeyboardAwareRoot` computes the input's distance to the keyboard
-as `SystemInfo.pixelHeight / pixelRatio - rect.bottom` — i.e. against the
+as `SystemInfo.pixelHeight / pixelRatio - rect.bottom`, i.e. against the
 **screen**. But `boundingClientRect` is relative to the **LynxView viewport**.
 Under containers whose view doesn't fill the screen (Lynx Explorer's header),
 the margin is inflated by the chrome above the view and the lift comes up
-short by exactly that much (~50-100px — "the input is half hidden behind the
+short by exactly that much (~50-100px, "the input is half hidden behind the
 keyboard"). vyui's port measures the real viewport via
 `lynx.createSelectorQuery().selectRoot()` and computes the margin against
 that, falling back to the upstream screen math when the root query is
@@ -91,7 +91,7 @@ Three more shortfall sources fixed alongside (all deliberate divergences from
 the React port):
 
 - **`offset` sign.** Upstream ADDS the offset to the translate, which
-  *reduces* the lift — a positive offset pushes the field INTO the keyboard.
+  *reduces* the lift, because a positive offset pushes the field INTO the keyboard.
   Both vyui props document offset as extra clearance, so vyui subtracts it
   (and adds it to the scroll target in scroll mode).
 - **Trigger registration clobber.** Inputs reported focus to their wrapping
@@ -114,10 +114,10 @@ Lynx's `<input>`/`<textarea>` support native `avoid-keyboard` +
 would cover the focused input, the platform shifts the WHOLE LynxView up by
 the exact overlap (window-coordinate math, animated, restored on dismiss).
 vyui exposes these as `avoidKeyboard` / `avoidKeyboardSpacing` on core and
-kit Input/Textarea — spacing is normalized to a px string because Android's
+kit Input/Textarea, where spacing is normalized to a px string because Android's
 setter only parses strings. Use for simple forms where shifting the entire
 view is acceptable; use `KeyboardAware*` when only a region should move.
-Never combine the two — the lifts stack.
+Never combine the two, because the lifts stack.
 
 ## Open questions / upstream
 
@@ -127,7 +127,7 @@ Never combine the two — the lifts stack.
   0.4.2 (0.5.x Draggable regression), so the element `keyboard` event remains
   the primary signal; `useGlobalKeyboard` starts working on the day the pin
   moves past that release.
-- **`KeyboardAware*` rework:** DONE — the root's primary signal is the input's
+- **`KeyboardAware*` rework:** DONE. The root's primary signal is the input's
   `keyboard` event relayed through the trigger context;
   `useGlobalKeyboard` is retained as a harmless fallback.
 - **Android:** verify the `keyboard` event payload field names and units.

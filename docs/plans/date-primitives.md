@@ -1,4 +1,4 @@
-# Date primitives (`@vyui/core/date`) — pending
+# Date primitives (`@vyui/core/date`): pending
 
 Status: **parked, not yet consumed.** Kept deliberately; see the utilization
 audit (Finding 2).
@@ -8,7 +8,7 @@ audit (Finding 2).
 `packages/core/src/date/` is a melt-ui port (`calendar.ts`, `comparators.ts`,
 `types.ts`) built on `@internationalized/date` `DateValue` objects, published as
 the `@vyui/core/date` subpath. It has grid/week/leap/range math and a test
-(`calendar.test.ts`). **No component consumes it** — `useDateFormatter` only
+(`calendar.test.ts`). **No component consumes it**; `useDateFormatter` only
 uses the `hasTime` / `isZonedDateTime` / `toDate` helpers from it.
 
 ## Why it isn't wired up
@@ -28,7 +28,7 @@ migrated onto them. Until then:
 
 - `date/` stays as the reference math for those primitives.
 - `date-iso.ts` stays as the shipped `VyCalendar`'s runtime.
-- Don't grow a third calendar-math implementation — extend one of these two.
+- Don't grow a third calendar-math implementation; extend one of these two.
 
 If the `DateValue` direction is abandoned, removing `date/` + the `./date`
 subpath + the `@internationalized/date` dependency is a clean deletion (this was
