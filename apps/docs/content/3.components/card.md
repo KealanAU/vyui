@@ -13,7 +13,7 @@ links:
 
 ## Overview
 
-`VyCard` is a rounded, clipped surface with three optional regions — `header`, default body, and `footer`. Each region renders only when its slot is provided. Cards use neutral surfaces; the `variant` prop selects the fill and border treatment.
+`VyCard` is a rounded, clipped surface with three optional regions: `header`, default body, and `footer`. Each region renders only when its slot is provided. Cards use neutral surfaces; the `variant` prop selects the fill and border treatment.
 
 ## Usage
 
@@ -50,7 +50,7 @@ import { VyCard } from '@vyui/kit/card'
 
 - Each region (`header`, default, `footer`) renders only when its slot is present.
 - The root clips overflow and rounds its corners; content padding lives on each region slot.
-- `solid` paints a dark `root` fill and sets a white foreground on the region slots — Lynx does not cascade text color into deeply-nested `<text>`, so plain-text children of a solid card should set their own color or pass `ui.{header,body,footer}`.
+- `solid` paints a dark `root` fill and sets a white foreground on the region slots, because Lynx does not cascade text color into deeply-nested `<text>`, so plain-text children of a solid card should set their own color or pass `ui.{header,body,footer}`.
 
 ## Props
 

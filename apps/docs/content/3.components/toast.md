@@ -128,7 +128,7 @@ The newest mounted toast is at the front. Tapping any stacked toast toggles the 
 
 ### Progress color
 
-The countdown bar is colored by the toast's `color` by default. Pass `progress` an object to color the bar independently — either a fixed `color`, or a function of the remaining fraction (`1` at the start, `0` at dismissal) so the bar recolors as it drains.
+The countdown bar is colored by the toast's `color` by default. Pass `progress` an object to color the bar independently, using either a fixed `color`, or a function of the remaining fraction (`1` at the start, `0` at dismissal) so the bar recolors as it drains.
 
 ::component-code
 ---

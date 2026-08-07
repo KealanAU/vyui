@@ -23,7 +23,7 @@ height: 280px
 ::
 
 ::callout{icon="i-lucide-pointer"}
-Works with touch and mouse: press and hold a row (~150ms) to lift it, then drag to reorder — in the preview above as well as on device.
+Works with touch and mouse: press and hold a row (~150ms) to lift it, then drag to reorder, in the preview above as well as on device.
 ::
 
 ::callout{icon="i-lucide-box"}
@@ -178,7 +178,7 @@ Do not make drag reordering the only way to perform an essential ordering task. 
 
 - Touch tracking, row transforms, sibling shifts, velocity sampling, and edge scrolling run in main-thread worklets to avoid a background-thread round trip on every move.
 - Long-press timing uses a main-thread `requestAnimationFrame` poller because the Lynx worklet runtime does not expose `setTimeout`.
-- The gesture listens to touch start, move, end, and cancel on device, and to the matching mouse events on Lynx web — both feed the same worklets. There is no keyboard reordering.
+- The gesture listens to touch start, move, end, and cancel on device, and to the matching mouse events on Lynx web, and both feed the same worklets. There is no keyboard reordering.
 - Reorder state is committed back on the background thread only at drag start/end boundaries, rather than during every movement frame.
 - The core primitive can nudge a scroll container near its top or bottom edge. The kit wrapper does not expose the edge and speed settings, and its default themed root hides overflow, so use the core primitives for custom long-list autoscroll composition.
 - All mounted rows must share the same height. The transform and target-index math cannot account for variable-height content.

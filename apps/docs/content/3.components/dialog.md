@@ -1,6 +1,6 @@
 ---
 title: Dialog
-description: Headless modal/non-modal dialog primitive — trigger, portal, overlay, and content with full focus and dismiss behavior.
+description: Headless modal and non-modal dialog primitive covering trigger, portal, overlay, and content with full focus and dismiss behavior.
 navigation:
   icon: i-lucide-app-window
 package: core
@@ -13,7 +13,7 @@ links:
 
 ## Overview
 
-`Dialog` is a headless `@vyui/core` primitive for an overlay window layered above the page. It ships behavior only — open/close state, portalling, overlay, focus management, and dismissal — and leaves all markup and styling to you. The styled [`Modal`](/components/modal) component in `@vyui/kit` is built on top of it.
+`Dialog` is a headless `@vyui/core` primitive for an overlay window layered above the page. It ships behavior only: open/close state, portalling, overlay, focus management, and dismissal, and it leaves all markup and styling to you. The styled [`Modal`](/components/modal) component in `@vyui/kit` is built on top of it.
 
 ::callout{icon="i-lucide-box"}
 This is a layer of `@vyui/core`. If you want a drop-in styled dialog, reach for `VyModal` in `@vyui/kit` instead and only compose these primitives when you need full control.
@@ -126,6 +126,6 @@ const open = ref(false)
 
 ## Related components
 
-- [`Modal`](/components/modal) — the styled `@vyui/kit` dialog built on this primitive.
-- [`AlertDialog`](/components/alert-dialog) — a focus-trapping confirmation variant with required action/cancel.
-- [`Sheet`](/components/sheet) — a drag-snappable bottom sheet alternative.
+- [`Modal`](/components/modal) is the styled `@vyui/kit` dialog built on this primitive.
+- [`AlertDialog`](/components/alert-dialog) is a focus-trapping confirmation variant with required action/cancel.
+- [`Sheet`](/components/sheet) is a drag-snappable bottom sheet alternative.

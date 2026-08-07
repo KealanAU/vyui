@@ -1,6 +1,6 @@
 ---
 title: Collapsible
-description: Headless disclosure primitive — a single region that expands and collapses.
+description: Headless disclosure primitive for a single region that expands and collapses.
 navigation:
   icon: i-lucide-chevrons-down-up
 package: core
@@ -16,7 +16,7 @@ links:
 `Collapsible` is a headless `@vyui/core` primitive for a single show/hide region toggled by a trigger. It is the one-region building block that the [`Accordion`](/components/accordion) composes for multiple coordinated sections.
 
 ::callout{icon="i-lucide-box"}
-This is a layer of `@vyui/core` — behavior only. For a styled multi-section disclosure, use `VyAccordion` from `@vyui/kit`.
+This is a layer of `@vyui/core`, behavior only. For a styled multi-section disclosure, use `VyAccordion` from `@vyui/kit`.
 ::
 
 ## Anatomy
@@ -90,5 +90,5 @@ const open = ref(false)
 
 ## Related components
 
-- [`Accordion`](/components/accordion) — multiple collapsible sections with single/multiple selection.
-- [`Tabs`](/components/tabs) — switch between persistent peer panels instead of toggling one.
+- [`Accordion`](/components/accordion) gives multiple collapsible sections with single or multiple selection.
+- [`Tabs`](/components/tabs) switches between persistent peer panels instead of toggling one.

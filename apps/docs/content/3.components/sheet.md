@@ -119,6 +119,6 @@ const open = ref(false)
 
 ## Related components
 
-- [`Drawer`](/components/drawer) — the styled `@vyui/kit` sheet.
-- [`ActionSheet`](/components/action-sheet) — a styled list-of-actions sheet.
-- [`Dialog`](/components/dialog) — a centered modal alternative.
+- [`Drawer`](/components/drawer) is the styled `@vyui/kit` sheet.
+- [`ActionSheet`](/components/action-sheet) is a styled list-of-actions sheet.
+- [`Dialog`](/components/dialog) is a centered modal alternative.

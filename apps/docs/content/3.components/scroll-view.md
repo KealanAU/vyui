@@ -50,7 +50,7 @@ function onLower() {
 ## Features and behavior
 
 - `scrollOrientation` chooses `'vertical'` (default) or `'horizontal'`.
-- `upperThreshold` / `lowerThreshold` set the distance from each edge that fires `scrollToUpper` / `scrollToLower` — useful for infinite loading.
+- `upperThreshold` / `lowerThreshold` set the distance from each edge that fires `scrollToUpper` / `scrollToLower`, which is useful for infinite loading.
 - `bounces` forwards the native bounce (iOS / Harmony / PC); `scrollBarEnable` shows the native scroll bar.
 - `enableBounces` turns on the custom main-thread bounce. Then `startBounceTriggerDistance` / `endBounceTriggerDistance`, `alwaysBouncing`, and the bounce edges control overscroll, emitting `scrollToBounces`.
 - `id` is required by the bounce system to select the container on the main thread; it is auto-generated when omitted.
@@ -73,5 +73,5 @@ function onLower() {
 
 ## Related components
 
-- [`FeedList`](/components/feedlist) — virtualized lists with pull-to-refresh built on the scroll/gesture layer.
-- [`Swiper`](/components/swiper) — paged horizontal scrolling.
+- [`FeedList`](/components/feedlist) gives virtualized lists with pull-to-refresh built on the scroll/gesture layer.
+- [`Swiper`](/components/swiper) does paged horizontal scrolling.
