@@ -191,7 +191,7 @@ The panel announces as a dialog and traps focus, inherited from the core `SheetC
 - The height morph relies on animating between concrete pixel heights; Lynx animates `height` via CSS `transition` (not via main-thread style writes), which is what `VyTray` uses under the hood.
 - The keyboard rise is driven by the focused input's per-element `keyboard` event — the reliable keyboard signal under vue-lynx (see [`KeyboardAware`](/components/keyboard-aware)). It is applied as panel padding rather than a transform so it cannot fight the sheet's main-thread drag physics.
 - `floating` positions the panel with inset utilities that override the core edge-anchored sheet rules; on Lynx the later-injected utilities win.
-- Open/close motion and drag physics come from the core `Sheet` primitives — see [`Sheet`](/components/sheet) for the underlying behavior.
+- Open/close motion and drag physics come from the core `Sheet` primitives. See [`Sheet`](/components/sheet) for the underlying behavior.
 
 ## Related components
 

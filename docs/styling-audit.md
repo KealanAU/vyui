@@ -78,7 +78,7 @@ single-level `var()` resolution on device.
 - **Size scales are coherent**: `sm–xl` core everywhere, with intentional extensions
   (avatar/chip `2xl/3xl`, button `xs`) and reductions (actionSheet/calendar/sortable
   `sm–lg`).
-- **The token-only overlay concept works** — `styles/rounded` restyles the whole kit by
+- **The token-only overlay concept works.** `styles/rounded` restyles the whole kit by
   shipping just a CSS file.
 - **The in-file documentation culture.** The `style.css` banner (sync contract, dark-mode
   rationale, single-level-var rule) is the best styling doc in the repo.
