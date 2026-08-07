@@ -1,4 +1,3 @@
-/// <reference path="../../_shared/vue-shim.d.ts" />
 // Augments Vue's `GlobalComponents` with the Lynx intrinsic elements (`view`,
 // `text`, …) so this fixture's SFC template type-checks against Lynx props.
 // Paired with the Volar plugin in `tsconfig.json` (`vue-lynx/types/volar-plugin`).
