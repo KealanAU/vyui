@@ -1,9 +1,9 @@
-# ActionSheet close/animation bugs — investigation notes (2026-07-25)
+# ActionSheet close/animation bugs: investigation notes (2026-07-25)
 
 Context: on `fix/presence-web-wedge` the ActionSheet "flashes up and then plays
 back" on close. One cause was found and fixed (see §0); the user reports the
 surface is still buggy. These are the remaining hypotheses, ranked, for a
-round-two pass with fresh context. **None below are verified on device** — the
+round-two pass with fresh context. **None below are verified on device**. The
 user does all visual checks.
 
 Files that matter:
@@ -16,10 +16,10 @@ Files that matter:
 
 ---
 
-## 0. FIXED — close racing the enter animation
+## 0. FIXED: close racing the enter animation
 
 `handleDismiss` cut `Entering` → `Leaving` immediately. The exit keyframe omits
-its `from` step, so it starts from the element's *underlying* transform —
+its `from` step, so it starts from the element's *underlying* transform,
 `.vyui-sheet__content.ui-leaving { transform: translate(0,0) }`, i.e. fully
 open. Panel jumped from mid-slide to open, then played the exit from there.
 
@@ -30,7 +30,7 @@ entering watchdog route it to `Leaving`. Test:
 
 ---
 
-## 0b. FIXED — drag-dismiss drove the close twice
+## 0b. FIXED: drag-dismiss drove the close twice
 
 User observation that cracked it: "if I drag it down slowly it plays kinda
 well, then at the end it plays the animation again."
@@ -50,10 +50,10 @@ Reset in `SheetRoot`'s `watch(open)` on reopen.
 
 This subsumes §1 below (the scrim had the same double-drive).
 
-## 1. FIXED via §0b — backdrop scrim flashed back to full dim on a drag-dismiss
+## 1. FIXED via §0b: backdrop scrim flashed back to full dim on a drag-dismiss
 
 `_settleTo` (`SheetContentImpl.vue`) pins the **panel** with inline
-`animation: 'none'` so the `.ui-leaving` slide-out keyframe can't hijack it —
+`animation: 'none'` so the `.ui-leaving` slide-out keyframe can't hijack it,
 but it never does the same for the **backdrop**. It only writes `transition` +
 `opacity` via `_setBackdropStyle`.
 
@@ -78,7 +78,7 @@ the shared `vyui-fade-out` is still the thing to look at.
 `ActionSheet.vue` does not pass `fit-content` to `<SheetContent>`, and passes no
 `snapPoints`, so `maxSnap === 1` and `panelStyle` emits inline **`height: 100vh`**
 (`SheetContentImpl.vue` `panelStyle`). The kit theme only sets
-`max-h-[100vh]` (a max — it does not shrink), `flex flex-col`, and
+`max-h-[100vh]` (a max that does not shrink), `flex flex-col`, and
 `list: 'flex-1'` which *grows*. Net: the panel is the full screen painted
 `bg-default`, rows at the top.
 
@@ -86,7 +86,7 @@ Knock-on effects even if the visual is somehow fine:
 
 - `panelExtentPx` (measured via `@layoutchange`) = viewport height, so the
   drag-dismiss threshold `mostClosed + extentPx * 0.4` is **40% of the whole
-  screen** — dragging an action sheet down "far enough" is nearly impossible.
+  screen**, so dragging an action sheet down "far enough" is nearly impossible.
 - `_translateClosed()` translates by 100% of a full-screen panel, so the exit
   travel is a screenful regardless of how tall the sheet looks.
 - backdrop drag-fade progress (`1 - pos / extentPx`) barely moves.
@@ -105,17 +105,17 @@ On the Lynx **web** runtime DOM events bubble, so a row's press-feedback
 `isTransitionAnimating` is a **boolean, not a counter**. Interleaved child
 transitions (tap a row → it closes → rows still transitioning) can leave it
 stuck `true`, so `handleAnimationEnd` refuses to advance `Leaving → Left` and
-the sheet only resolves via the 3s `MAX_STUCK_MS` cap — an invisible
+the sheet only resolves via the 3s `MAX_STUCK_MS` cap, an invisible
 full-screen backdrop eating taps for 3 seconds.
 
 **Fix candidates:** filter the handlers by event target (only fire for the
 Presence element itself), or make the two flags counters. Target-filtering is
-the real fix — the `MAX_STUCK_MS` watchdog exists because of exactly this
+the real fix; the `MAX_STUCK_MS` watchdog exists because of exactly this
 bubbling and is a band-aid over it.
 
 ## 4. Double rAF in `_settleTo` widens the unpinned window on native (medium)
 
-`_settleTo` now does `rAF(rAF(apply))` — added because the web runtime fires a
+`_settleTo` now does `rAF(rAF(apply))`, added because the web runtime fires a
 single rAF *before* the frame's style commit. On native this holds the panel
 frozen at the release position for **two** frames before the eased move starts,
 and widens the window in which BG's `.ui-leaving` class patch can land between
@@ -132,7 +132,7 @@ can't set `dragClosing` without a `runOnBackground` hop that would race the
 class patch. It only bites with multiple snap points, so ActionSheet
 (single snap, `posRef` always 0, worklet bails) is unaffected.
 
-## 5. Do BG style patches wipe MT inline styles here? (unknown — needs proving)
+## 5. Do BG style patches wipe MT inline styles here? (unknown, needs proving)
 
 Memory note `sheet-ghost-close-hard-cap-only` records that MT inline-style
 animations die under BG style wipes while class/keyframe ones survive. The whole
@@ -160,7 +160,7 @@ still churn `ctx.open`. Cheapest hardening: gate the sheet's close paths on
 `SheetContent` and `SheetBackdrop` each wrap their own `<Presence>`, each with
 its own watchdog and its own animation events. They can resolve at different
 times, and either can wedge alone. If a bug shows the scrim outliving the panel
-(or vice versa), this is why. A shared `usePresenceGroup` would sync them —
+(or vice versa), this is why. A shared `usePresenceGroup` would sync them,
 `usePresenceGroup.ts` already exists and Dialog uses `groupState`.
 
 ---
@@ -168,6 +168,6 @@ times, and either can wedge alone. If a bug shows the scrim outliving the panel
 ## Suggested order for round two
 
 1. Look at the ActionSheet on device and settle §2 (is it full-screen?).
-2. §3 — target-filter the Presence animation handlers.
-3. §5 — trace whether the inline pin survives, then decide §4.
-4. §6 — busy-tap guard, if repeated taps still churn `open`.
+2. §3: target-filter the Presence animation handlers.
+3. §5: trace whether the inline pin survives, then decide §4.
+4. §6: busy-tap guard, if repeated taps still churn `open`.
