@@ -4,7 +4,7 @@
 
 **Vy UI** brings a Radix-style primitives layer to the Vue-Lynx ecosystem. Build native mobile apps for iOS, Android, and Web from a single Vue codebase, with components you own and can modify.
 
-> ⚠️ **Status: alpha.** Vue-Lynx itself is pre-alpha. APIs will change. Not production-ready.
+> ⚠️ **Status: alpha.** Component names, props, and slots have held steady across recent releases — the breaking changes so far removed unused exports rather than reshaping APIs. What can still shift is underneath: Vue-Lynx labels itself pre-alpha. Pin your versions and read the [changelog](https://vyui.dev/changelog) before upgrading.
 
 ***
 
