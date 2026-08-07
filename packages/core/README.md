@@ -4,8 +4,10 @@ Headless, accessible UI primitives for [Vue-Lynx](https://vue.lynxjs.org) — th
 Radix-style behavior layer of [Vy UI](https://vyui.dev). Ship native apps for
 iOS, Android, and web from one Vue codebase.
 
-> ⚠️ **Alpha.** Vue-Lynx itself is pre-alpha. Expect breaking changes on every
-> release until 1.0.0.
+> ⚠️ **Alpha.** Primitive names, props, and slots have held steady across
+> `0.2.x` — the breaking changes were removals of unused exports, plus one move
+> of overlay backgrounds out to the styling layer. What can still shift is
+> underneath: Vue-Lynx labels itself pre-alpha. Pin your versions.
 
 ## What's in it
 

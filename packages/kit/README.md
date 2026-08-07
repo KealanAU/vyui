@@ -5,7 +5,9 @@ headless [`@vyui/core`](https://www.npmjs.com/package/@vyui/core) primitives —
 the ready-to-use layer of [Vy UI](https://vyui.dev). Ship native apps for iOS,
 Android, and web from one Vue codebase.
 
-> ⚠️ **Alpha.** Expect breaking changes on every release until 1.0.0.
+> ⚠️ **Alpha.** Component names, props, and slots have held steady across
+> `0.3.x`. What can still shift is underneath: Vue-Lynx labels itself
+> pre-alpha. Pin your versions.
 
 `@vyui/kit` depends on `@vyui/core` but does **not** re-export the full core
 surface: import styled `Vy*` components from kit, and raw primitives from core.
