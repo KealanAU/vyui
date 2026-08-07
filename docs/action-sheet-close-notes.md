@@ -36,11 +36,11 @@ User observation that cracked it: "if I drag it down slowly it plays kinda
 well, then at the end it plays the animation again."
 
 On release, `_dragEnd` starts the MT inline transition off-screen AND emits the
-close, which puts `.ui-leaving` on the panel — so the keyframe ran the same
+close, which puts `.ui-leaving` on the panel, so the keyframe ran the same
 close a second time, from the fully-open underlying value. The inline
 `animation: 'none'` pin was supposed to stop that, but a class-driven keyframe
 outranks inline on the Lynx style path. (Inline `transform` clearly *does* work,
-or the drag wouldn't paint at all — so the failure is specific to `animation`.)
+or the drag wouldn't paint at all, so the failure is specific to `animation`.)
 
 Fixed by removing the class instead of fighting it: `ctx.dragClosing` on the
 sheet root context, set in `_emitClose` before `setOpen(false)`, makes the panel

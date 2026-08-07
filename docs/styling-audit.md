@@ -119,7 +119,7 @@ var(--ui-color-primary-900)`) — the same two-level `var()` collapse the dark-m
 changeset fixed in the base `style.css` (mode tier must hold `theme()` literals; Lynx
 resolves one level only). On device their `bg-primary` / `text-primary` shorthands
 collapsed. Both now hold literals, and `registry-output.test.ts` asserts that no shipped
-style's `style.css` declares a `--ui-*` token whose value opens with `var(` — so the
+style's `style.css` declares a `--ui-*` token whose value opens with `var(`, so the
 class of bug is now a red test rather than a device-only surprise.
 
 Blast radius inside the library was **zero**: excluding comments, neither `@vyui/kit` nor
