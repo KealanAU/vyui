@@ -70,7 +70,7 @@ Pass `radius` to set `--ui-radius` (in rem) on the root, overriding the default 
 
 ### Safe area
 
-`VyApp` snapshots the container's safe-area insets (notch, Dynamic Island, home indicator) and provides them to the whole tree, so any descendant's [`useSafeArea()`](/composables/use-safe-area) resolves without wiring. Set `safe-area="false"` to force zeros, as a fullscreen surface drawing its own chrome would want. The insets come from global props the host injects; on your own iOS/Android host that injection is your job. See [native host integration](/guides/native-host-integration).
+`VyApp` snapshots the container's safe-area insets (notch, Dynamic Island, home indicator) and provides them to the whole tree, so any descendant's [`useSafeArea()`](/composables/use-safe-area) resolves without wiring. Set `safe-area="false"` to force zeros, as a fullscreen surface drawing its own chrome would want. The insets come from global props the host injects; [Sparkling](/guides/sparkling) does this automatically, and if you are building a custom host see [native host integration](/guides/native-host-integration).
 
 ### Viewport size
 
