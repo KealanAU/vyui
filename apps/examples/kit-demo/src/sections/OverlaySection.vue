@@ -50,10 +50,8 @@ const drawerLeftOpen = ref(false)
 const drawerTopOpen = ref(false)
 const dropdownOpen = ref(false)
 
-// v-model (modelValue alias) + #header/#body/#footer slots — the nuxt.ui parity
-// API. `v-model` (not `v-model:open`) binds `modelValue`; `#footer="{ close }"`
-// gives the slot a programmatic dismiss helper. `handleOnly` restricts drag to
-// the pill so form interactions inside the body don't fight the sheet drag.
+// v-model:open + #header/#body/#footer slots. `handleOnly` restricts drag
+// to the pill so form interactions inside the body don't fight the sheet drag.
 const formDrawerOpen = ref(false)
 const formDraft = reactive({ name: '', role: '', bio: '' })
 
@@ -407,10 +405,9 @@ const fruitItems = [
     </view>
 
     <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
-      <text class="text-highlighted text-base font-semibold">Drawer — v-model + slots</text>
+      <text class="text-highlighted text-base font-semibold">Drawer — slots</text>
       <text class="text-muted text-xs">
-        nuxt.ui parity: <text class="font-medium">v-model</text> (not
-        <text class="font-medium">v-model:open</text>) binds <text class="font-medium">modelValue</text>;
+        <text class="font-medium">v-model:open</text> controls the drawer;
         <text class="font-medium">#header</text>, <text class="font-medium">#body</text>, and
         <text class="font-medium">#footer</text> slots shape the panel. The footer receives a
         <text class="font-medium">close()</text> helper. <text class="font-medium">handleOnly</text>
@@ -427,10 +424,10 @@ const fruitItems = [
         />
       </view>
       <text class="text-muted text-xs">
-        v-model state: {{ formDrawerOpen }} · draft: {{ formDraft.name || '—' }}
+        open state: {{ formDrawerOpen }} · draft: {{ formDraft.name || '—' }}
       </text>
       <VyDrawer
-        v-model="formDrawerOpen"
+        v-model:open="formDrawerOpen"
         handle-only
         :snap-points="[0.9]"
       >

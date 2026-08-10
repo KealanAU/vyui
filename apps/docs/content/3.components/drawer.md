@@ -13,7 +13,7 @@ links:
 
 ## Overview
 
-`VyDrawer` presents a panel that slides in from any viewport edge and settles at a snap point. It supports drag-to-dismiss, a drag handle, an optional backdrop, multiple snap points, keyboard-aware footers, and controlled or uncontrolled open state. Its API mirrors Nuxt UI's `Drawer` (vaul-style): the default slot carries the trigger, then `#content` / `#header` / `#body` / `#footer` slots shape the panel.
+`VyDrawer` presents a panel that slides in from any viewport edge and settles at a snap point. It supports drag-to-dismiss, a drag handle, an optional backdrop, multiple snap points, keyboard-aware footers, and controlled or uncontrolled open state. The default slot carries the trigger, then `#content` / `#header` / `#body` / `#footer` slots shape the panel.
 
 ::component-code
 ---
@@ -75,7 +75,7 @@ height: 480px
 
 ### Controlling open state
 
-Bind `v-model:open` to `open`, or use the plain `v-model` alias backed by `modelValue`. When uncontrolled, `defaultOpen` seeds the initial state.
+Bind `v-model:open` to control the drawer. When uncontrolled, `defaultOpen` seeds the initial state.
 
 ```vue
 <script setup lang="ts">
@@ -95,15 +95,14 @@ const open = ref(false)
 
 ## Features and behavior
 
-- Bind `v-model:open` to `open`, or use the `v-model` alias backed by `modelValue`.
-- Both `update:open` and `update:modelValue` are emitted on every open-state change.
+- Bind `v-model:open` to control the drawer; `update:open` is emitted on every open-state change.
 - `defaultOpen` initializes uncontrolled open state (now honored by the underlying `SheetRoot`).
 - `direction` / `side` pick the edge: `top`, `right`, `bottom`, or `left`; default `bottom`.
 - `overlay` toggles the dimmed backdrop; `dismissible` controls both backdrop dismissal and drag-to-close.
 - `handle` shows the drag-handle pill; `handleOnly` restricts dragging to the handle.
 - `snapPoints` are 0 → 1 fractions of the viewport on the slide axis. Defaults to `[0.75]` (a three-quarter-height bottom sheet). Pass `[1]` for full-screen or e.g. `[0.4, 0.9]` for a resizable sheet.
 - `keyboardAware` lifts the footer above the on-screen keyboard when a field inside it is focused.
-- The `#content`, `#header`, `#body`, and `#footer` slots receive a `close()` helper for programmatic dismissal (Nuxt UI parity).
+- The `#content`, `#header`, `#body`, and `#footer` slots receive a `close()` helper for programmatic dismissal.
 
 ## Props
 
