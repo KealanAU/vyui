@@ -101,7 +101,7 @@ export interface DrawerSlots {
 </script>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed, getCurrentInstance, useSlots } from 'vue'
 import {
   KeyboardAwareResponder,
   KeyboardAwareRoot,
@@ -139,7 +139,13 @@ const hasContentSlot = computed(() => !!slots.content)
 
 const resolvedSide = computed(() => props.direction || props.side || 'bottom')
 
-const resolvedOpen = computed(() => (props.open !== undefined ? props.open : props.modelValue))
+// vue-lynx normalizes unset boolean props to `false`, so `props.open !== undefined`
+// reads `false` whether `open` was bound or omitted — the `v-model` (modelValue)
+// alias would never win. Detect the binding from the raw vnode props (same approach
+// as `useStandardVModel.isControlled`): the key set is stable per parent usage.
+const vnodeProps = getCurrentInstance()?.vnode?.props as Record<string, unknown> | undefined
+const openBound = !!vnodeProps && 'open' in vnodeProps
+const resolvedOpen = computed(() => (openBound ? props.open : props.modelValue))
 
 function onOpenChange(value: boolean) {
   emit('update:open', value)
