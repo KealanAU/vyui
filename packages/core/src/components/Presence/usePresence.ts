@@ -338,7 +338,7 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       // wherever the enter animation currently has it, so swapping the two
       // mid-flight snaps the element to fully open and plays the exit from
       // there — the "flashes up, then plays back" on a close that races the
-      // open (Sheet/ActionSheet is where it reads worst). Let the enter
+      // open (Sheet/Drawer is where it reads worst). Let the enter
       // finish; `handleAnimationEnd` routes Entering → Leaving on its own
       // because `show` is already false, and the entering watchdog (still
       // live — we deliberately don't bump its loop id here) does the same

@@ -72,6 +72,23 @@ describe('SheetRoot — v-model:open / v-model:snapIndex', () => {
     expect(ctx.snapIndex.value).toBe(0)
   })
 
+  it('defaultOpen seeds the uncontrolled open state', async () => {
+    const { ctx } = await mountRoot({ defaultOpen: true })
+    expect(ctx.open.value).toBe(true)
+  })
+
+  // Regression: `setOpen` must mutate local state when the sheet is
+  // uncontrolled (no `open` prop), not just emit. vue-lynx normalizes unset
+  // boolean props to `false`, so the old `passive: props.open === undefined`
+  // detection always treated the sheet as controlled and `setOpen` was a no-op
+  // against a pinned value (see useStandardVModel.ts).
+  it('setOpen mutates local open state when uncontrolled', async () => {
+    const { ctx } = await mountRoot()
+    expect(ctx.open.value).toBe(false)
+    ctx.setOpen(true)
+    expect(ctx.open.value).toBe(true)
+  })
+
   // `setOpen` runs through vueuse `useVModel`, which under vue-lynx's
   // dual-thread `render()` doesn't sync `open.value = next` back to the
   // captured probe within a single microtask. The flow is exercised at

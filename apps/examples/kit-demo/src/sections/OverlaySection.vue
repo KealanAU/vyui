@@ -50,6 +50,11 @@ const drawerLeftOpen = ref(false)
 const drawerTopOpen = ref(false)
 const dropdownOpen = ref(false)
 
+// v-model:open + #header/#body/#footer slots. `handleOnly` restricts drag
+// to the pill so form interactions inside the body don't fight the sheet drag.
+const formDrawerOpen = ref(false)
+const formDraft = reactive({ name: '', role: '', bio: '' })
+
 // Notifications — each entry has a "Show" button that surfaces its detail as a
 // transient Toast (one at a time, auto-dismissing).
 const notifications = [
@@ -396,6 +401,59 @@ const fruitItems = [
         :snap-points="[0.5]"
       >
         <VyButton color="neutral" variant="subtle" label="Open top drawer" />
+      </VyDrawer>
+    </view>
+
+    <view class="bg-default border border-default rounded-lg p-4 flex flex-col gap-2">
+      <text class="text-highlighted text-base font-semibold">Drawer — slots</text>
+      <text class="text-muted text-xs">
+        <text class="font-medium">v-model:open</text> controls the drawer;
+        <text class="font-medium">#header</text>, <text class="font-medium">#body</text>, and
+        <text class="font-medium">#footer</text> slots shape the panel. The footer receives a
+        <text class="font-medium">close()</text> helper. <text class="font-medium">handleOnly</text>
+        restricts drag to the pill so form fields don't fight the sheet drag.
+      </text>
+      <view class="flex flex-row gap-2">
+        <VyButton color="neutral" variant="subtle" label="Open form drawer" @tap="formDrawerOpen = true" />
+        <VyButton
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          :label="formDrawerOpen ? 'open ✓' : 'closed'"
+          @tap="formDrawerOpen = !formDrawerOpen"
+        />
+      </view>
+      <text class="text-muted text-xs">
+        open state: {{ formDrawerOpen }} · draft: {{ formDraft.name || '—' }}
+      </text>
+      <VyDrawer
+        v-model:open="formDrawerOpen"
+        handle-only
+        :snap-points="[0.9]"
+      >
+        <VyButton color="neutral" variant="soft" label="Open (trigger slot)" />
+        <template #header="{ close }">
+          <view class="flex flex-row items-center justify-between px-4 py-3">
+            <view class="flex flex-col">
+              <text class="text-highlighted text-base font-semibold">Edit profile</text>
+              <text class="text-muted text-xs">Changes save when you tap Save.</text>
+            </view>
+            <VyButton color="neutral" variant="ghost" size="sm" label="✕" @tap="close()" />
+          </view>
+        </template>
+        <template #body>
+          <view class="flex flex-col gap-3 px-4">
+            <VyInput v-model="formDraft.name" placeholder="Name" />
+            <VyInput v-model="formDraft.role" placeholder="Role" />
+            <VyTextarea v-model="formDraft.bio" placeholder="Bio" />
+          </view>
+        </template>
+        <template #footer="{ close }">
+          <view class="flex flex-row gap-2 px-4 py-3">
+            <VyButton color="neutral" variant="ghost" label="Cancel" @tap="close()" />
+            <VyButton color="primary" label="Save" @tap="close()" />
+          </view>
+        </template>
       </VyDrawer>
     </view>
 

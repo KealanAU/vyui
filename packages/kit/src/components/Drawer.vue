@@ -8,16 +8,13 @@ type DrawerVariants = VariantProps<DrawerTV>
 export interface DrawerProps {
   /** Controlled open state. */
   open?: boolean
-  /** v-model alias for `open` (Nuxt UI parity). */
-  modelValue?: boolean
   /** Initial open state when uncontrolled. */
   defaultOpen?: boolean
   /**
-   * Side the drawer slides in from. Map `direction` from Nuxt UI's Drawer
-   * to the same prop for parity.
+   * Side the drawer slides in from.
    */
   side?: DrawerVariants['side']
-  /** Alias for `side` — matches Nuxt UI's Drawer (vaul) API. */
+  /** Alias for `side`. */
   direction?: DrawerVariants['side']
   /** Animate the drawer when opening/closing. */
   transition?: boolean
@@ -35,6 +32,12 @@ export interface DrawerProps {
   dragDisabled?: boolean
   /** Show the drag-handle pill at the top of the drawer. @defaultValue `true` */
   handle?: boolean
+  /**
+   * When `true`, only the `<SheetHandle>` is draggable; the rest of the
+   * drawer body does not respond to touch drag.
+   * @defaultValue `false`
+   */
+  handleOnly?: boolean
   /**
    * Snap fractions (0 → 1) forwarded to `SheetRoot`. Defaults to a single
    * three-quarter-height snap so a bottom drawer doesn't take over the entire
@@ -65,20 +68,18 @@ export interface DrawerProps {
 
 export interface DrawerEmits {
   (e: 'update:open', value: boolean): void
-  (e: 'update:modelValue', value: boolean): void
 }
 
 export interface DrawerSlots {
   /**
    * Trigger content. `SheetTrigger` sets open to `true` on tap; do NOT bind
    * a `@tap` handler on the slotted child that also sets open — use
-   * `v-model:open` (or `v-model`).
+   * `v-model:open`.
    */
   default(props: { open: boolean }): any
   /**
    * Full content override — replaces the default header/body/footer layout.
-   * Matches the Nuxt UI escape hatch: pass arbitrary children when the
-   * standard slot scaffold doesn't fit.
+   * Pass arbitrary children when the standard slot scaffold doesn't fit.
    */
   content(props: { close: () => void }): any
   /** Header region. */
@@ -95,7 +96,7 @@ export interface DrawerSlots {
 </script>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed } from 'vue'
 import {
   KeyboardAwareResponder,
   KeyboardAwareRoot,
@@ -112,6 +113,7 @@ const props = withDefaults(defineProps<DrawerProps>(), {
   defaultOpen: false,
   transition: true,
   handle: true,
+  handleOnly: false,
   overlay: true,
   portal: true,
   dismissible: true,
@@ -132,15 +134,11 @@ const hasContentSlot = computed(() => !!slots.content)
 
 const resolvedSide = computed(() => props.direction || props.side || 'bottom')
 
-const resolvedOpen = computed(() => (props.open !== undefined ? props.open : props.modelValue))
-
 function onOpenChange(value: boolean) {
   emit('update:open', value)
-  emit('update:modelValue', value)
 }
 
-// Slot prop for programmatic dismiss inside body/footer/content — Nuxt UI
-// parity (`<template #footer="{ close }">…@click="close"…`).
+// Slot prop for programmatic dismiss inside body/footer/content.
 const close = () => onOpenChange(false)
 
 const { ui } = useStyledComponent('drawer', theme, () => ({
@@ -151,16 +149,17 @@ const { ui } = useStyledComponent('drawer', theme, () => ({
 
 <template>
   <SheetRoot
-    :open="resolvedOpen"
+    :open="props.open"
     :default-open="defaultOpen"
     :side="resolvedSide"
     :snap-points="snapPoints"
     :default-snap-index="defaultSnapIndex"
     :enable-drag-to-close="dismissible"
+    :handle-only="handleOnly"
     @update:open="onOpenChange"
   >
     <SheetTrigger>
-      <slot :open="!!resolvedOpen" />
+      <slot :open="!!props.open" />
     </SheetTrigger>
 
     <SheetBackdrop

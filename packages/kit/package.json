@@ -72,10 +72,6 @@
       "types": "./dist/entries/accordion.d.ts",
       "import": "./dist/entries/accordion.js"
     },
-    "./action-sheet": {
-      "types": "./dist/entries/action-sheet.d.ts",
-      "import": "./dist/entries/action-sheet.js"
-    },
     "./alert": {
       "types": "./dist/entries/alert.d.ts",
       "import": "./dist/entries/alert.js"

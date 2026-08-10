@@ -35,7 +35,7 @@ const attrs = useAttrs()
 // Default to flex-centering the single child so overlays without their own
 // `position: fixed` + anchor coords (Popover, DropdownMenu,
 // Select/Combobox content panels) land in the middle of the screen instead of
-// docking to the top-left. Callers that need a different dock (ActionSheet's
+// docking to the top-left. Callers that need a different dock (Drawer's
 // bottom sheet, Dialog if it ever wants a custom anchor) override via
 // `backdropStyle` or `style` — both spread after the defaults below.
 const mergedStyle = computed<VyStyle>(() => ({

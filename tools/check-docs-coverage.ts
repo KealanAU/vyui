@@ -31,7 +31,6 @@ const KNOWN_GAPS = new Set([
   'badge',
   'chip',
   'combobox',
-  'drawer',
   'dropdown-menu',
   'feed-list',
   'form-field',

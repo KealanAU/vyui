@@ -126,6 +126,6 @@ The built-in close region is currently a tappable Lynx `view` without an explici
 
 ## Related components
 
-- [`ActionSheet`](/components/action-sheet) for choosing an action.
+- [`Drawer`](/components/drawer) for choosing an action from an edge sheet.
 - `Toast` for transient feedback.
 - `Banner` for page-wide announcements.
