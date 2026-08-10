@@ -36,6 +36,12 @@ export interface DrawerProps {
   /** Show the drag-handle pill at the top of the drawer. @defaultValue `true` */
   handle?: boolean
   /**
+   * When `true`, only the `<SheetHandle>` is draggable; the rest of the
+   * drawer body does not respond to touch drag. Nuxt UI's `handleOnly` parity.
+   * @defaultValue `false`
+   */
+  handleOnly?: boolean
+  /**
    * Snap fractions (0 → 1) forwarded to `SheetRoot`. Defaults to a single
    * three-quarter-height snap so a bottom drawer doesn't take over the entire
    * viewport. Pass `[1]` for a full-screen drawer or e.g. `[0.4, 0.9]` for a
@@ -112,6 +118,7 @@ const props = withDefaults(defineProps<DrawerProps>(), {
   defaultOpen: false,
   transition: true,
   handle: true,
+  handleOnly: false,
   overlay: true,
   portal: true,
   dismissible: true,
@@ -157,6 +164,7 @@ const { ui } = useStyledComponent('drawer', theme, () => ({
     :snap-points="snapPoints"
     :default-snap-index="defaultSnapIndex"
     :enable-drag-to-close="dismissible"
+    :handle-only="handleOnly"
     @update:open="onOpenChange"
   >
     <SheetTrigger>

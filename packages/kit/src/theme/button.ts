@@ -35,8 +35,8 @@ import { type IconFg, iconFgFromToken } from './iconColor'
 // root <view>) separately from the foreground color (`fg`: text-*). CSS
 // inheritance is OFF in the Lynx build (`enableCSSInheritance: false`), so a
 // `text-*` on the root <view> does NOT reach the label <text> or the icons —
-// the color must sit on those slots directly. Same convention as `avatar.ts` /
-// `actionSheet.ts`. `variantClass` spreads `fg` onto the text-bearing slots.
+// the color must sit on those slots directly. Same convention as `avatar.ts`.
+// `variantClass` spreads `fg` onto the text-bearing slots.
 
 // ── Chromatic colors (primary / secondary / success / info / warning / error) ─
 // Text uses the vibrant `-600` (mimics nuxt's `text-primary` ≈ 500-level) so

@@ -28,7 +28,7 @@ export enum PresenceState {
 /**
  * `true` while the Presence state machine is mid-animation (Entering /
  * DelayedEntering / Leaving). Consumers (Dialog/AlertDialog triggers + close
- * buttons, ActionSheet actions, ...) use it to swallow taps during a running
+ * buttons, Drawer actions, ...) use it to swallow taps during a running
  * animation so a fast double-tap can't re-trigger the open/close sequence
  * before it finishes.
  *

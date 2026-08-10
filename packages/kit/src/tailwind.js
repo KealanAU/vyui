@@ -73,7 +73,6 @@ const NON_THEME_EXPORTS = new Set(['icons', 'ALL_COLORS', 'COLORS', 'NEUTRAL', '
  * so on transitively. Keys/values are `@vyui/kit/theme` export names.
  */
 const THEME_DEPS = {
-  actionSheet: ['avatar'],
   avatar: ['chip'],
   avatarGroup: ['avatar'],
   badge: ['avatar'],
@@ -217,7 +216,7 @@ export function createVyuiPreset(options = {}) {
     if (unknown.length > 0) {
       console.warn(
         `[vyui/tailwind] unknown component theme(s) in \`components\`: [${unknown.join(', ')}]. `
-        + 'Names must match the `@vyui/kit/theme` exports (e.g. `button`, `actionSheet`).',
+        + 'Names must match the `@vyui/kit/theme` exports (e.g. `button`, `drawer`).',
       )
     }
   }

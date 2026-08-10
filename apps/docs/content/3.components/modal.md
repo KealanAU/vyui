@@ -254,7 +254,6 @@ The native panel is treated as an accessibility container rather than one combin
 
 ## Related components
 
-- [`ActionSheet`](/components/action-sheet) for a mobile list of actions.
 - `Drawer` for forms, long content, drag gestures, and full-screen presentation.
 - `AlertDialog` primitives from `@vyui/core` when alert-dialog semantics are required.
 - `Popover` for non-blocking contextual content.

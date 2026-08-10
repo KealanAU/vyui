@@ -22,7 +22,7 @@ function code(source: string): string {
  *
  * It survives every normal check — the class string reads fine in review, and a
  * browser shows nothing wrong because the rule simply isn't there to be wrong.
- * That is how `modal`, `drawer`, `tray` and `actionSheet` all shipped an overlay
+ * That is how `modal`, `drawer` and `tray` all shipped an overlay
  * dim that never dimmed (docs/styling-audit.md §4.1); it only became obvious in
  * dark mode, where a `bg-default` panel over an undimmed `bg-default` page has
  * nothing to separate it.

@@ -180,4 +180,4 @@ Keep companion islands in a logical source order. With `align="between"`, visual
 
 - [`Island`](/components/island) for each pill or expandable surface.
 - [`Island Button`](/components/island-button) for actions inside an island.
-- [`Action Sheet`](/components/action-sheet) for temporary grouped actions that should not remain in the viewport.
+- [`Drawer`](/components/drawer) for temporary grouped actions that should not remain in the viewport.

@@ -302,7 +302,6 @@ Lynx currently has no DOM-style focus scope or programmatic focus restoration. T
 
 ## Related components
 
-- `ActionSheet` for a bottom sheet containing a list of actions.
 - `DropdownMenu` for a structured anchored action menu.
 - `Drawer` for larger persistent or multi-step content.
 - The `@vyui/core` Popover primitives for preventable outside-interaction events and custom composition.

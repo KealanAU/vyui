@@ -132,11 +132,6 @@ const tabsUi = computed(() =>
         root: 'flex-1 min-h-0',
         content: 'flex-1 min-h-0 overflow-hidden',
       })
-
-// ActionSheet header trigger removed for now: ActionSheet wraps the core
-// `Sheet*` primitives whose main-thread worklet currently throws "cannot read
-// property 'bind' of undefined" (see SheetContent.vue header and wip commit
-// 1403a97). Restore the trigger once the MT worklet target is sorted.
 </script>
 
 <template>

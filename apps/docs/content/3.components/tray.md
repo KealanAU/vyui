@@ -23,7 +23,7 @@ height: 420px
 ::
 
 ::callout{icon="i-lucide-box"}
-Built on the `@vyui/core` [`Sheet`](/components/sheet) primitives in `fitContent` mode, so the panel hugs its content. Reach for [`Drawer`](/components/drawer) instead when you want a fixed-height, snap-point sheet, or [`ActionSheet`](/components/action-sheet) for a simple list of actions.
+Built on the `@vyui/core` [`Sheet`](/components/sheet) primitives in `fitContent` mode, so the panel hugs its content. Reach for [`Drawer`](/components/drawer) instead when you want a fixed-height, snap-point sheet.
 ::
 
 ## Usage
@@ -196,6 +196,5 @@ The panel announces as a dialog and traps focus, inherited from the core `SheetC
 ## Related components
 
 - [`Drawer`](/components/drawer) for a fixed-height, snap-point bottom sheet.
-- [`Action Sheet`](/components/action-sheet) for a simple list of actions.
 - [`Modal`](/components/modal) for a centered blocking dialog.
 - [`Island`](/components/island) for a floating pill that morphs and expands in place.
