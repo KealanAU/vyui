@@ -47,6 +47,13 @@
       "description": "Show the drag-handle pill at the top of the drawer."
     },
     {
+      "name": "handleOnly",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, only the `<SheetHandle>` is draggable; the rest of the\ndrawer body does not respond to touch drag. Nuxt UI's `handleOnly` parity."
+    },
+    {
       "name": "keyboardAware",
       "type": "boolean | undefined",
       "required": false,

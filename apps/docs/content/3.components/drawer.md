@@ -105,53 +105,20 @@ const open = ref(false)
 - `keyboardAware` lifts the footer above the on-screen keyboard when a field inside it is focused.
 - The `#content`, `#header`, `#body`, and `#footer` slots receive a `close()` helper for programmatic dismissal (Nuxt UI parity).
 
-## Typed API
-
-The component ships fully typed interfaces exported from `packages/kit/src/components/Drawer.vue` — `DrawerProps`, `DrawerEmits`, and `DrawerSlots` — so agents and editors get exact prop, event, and slot signatures from the source and the generated `.d.ts`.
-
 ## Props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `open` | `boolean` | `undefined` | Controlled state used by `v-model:open`; takes precedence over `modelValue`. |
-| `modelValue` | `boolean` | `undefined` | Convenience controlled state used by `v-model`. |
-| `defaultOpen` | `boolean` | `false` | Initial state when uncontrolled. |
-| `direction` | `'top' \| 'right' \| 'bottom' \| 'left'` | `'bottom'` | Edge the drawer slides from. Alias: `side`. |
-| `side` | `'top' \| 'right' \| 'bottom' \| 'left'` | `'bottom'` | Alias for `direction` (Nuxt UI parity). |
-| `transition` | `boolean` | `true` | Applies the kit slide animation markers. |
-| `overlay` | `boolean` | `true` | Renders the dimmed backdrop. |
-| `portal` | `boolean` | `true` | API-parity prop; sheet content is always portalled through `OverlayRoot`. |
-| `dismissible` | `boolean` | `true` | When `false`, backdrop taps and drag do not close the drawer. |
-| `title` | `string` | `undefined` | Header title text, replaced by the `title` or `header` slot. |
-| `description` | `string` | `undefined` | Header supporting text, replaced by the `description` or `header` slot. |
-| `handle` | `boolean` | `true` | Renders the drag-handle pill. |
-| `handleOnly` | `boolean` | `false` | When `true`, only the handle is draggable. |
-| `dragDisabled` | `boolean` | `false` | Disables dragging on the underlying `SheetContent`. |
-| `snapPoints` | `number[]` | `[0.75]` | 0 → 1 snap fractions forwarded to `SheetRoot`. |
-| `defaultSnapIndex` | `number` | `0` | Initial snap index when uncontrolled. |
-| `keyboardAware` | `boolean` | `false` | Lifts the footer above the on-screen keyboard. |
-| `keyboardAwareForceAttach` | `boolean` | `true` | Forces the footer to stick to the keyboard's top edge. |
-| `class` | `any` | `undefined` | Classes merged onto the sheet content. |
-| `ui` | `Partial<Record<DrawerSlot, any>>` | `undefined` | Per-instance theme slot overrides. |
+::component-props{name="Drawer"}
+::
 
 ## Emits
 
-| Event | Payload | Description |
-| --- | --- | --- |
-| `update:open` | `boolean` | Open-state update for `v-model:open`. |
-| `update:modelValue` | `boolean` | Open-state update for `v-model`. |
+::component-emits{name="Drawer"}
+::
 
 ## Slots
 
-| Slot | Props | Description |
-| --- | --- | --- |
-| `default` | `{ open: boolean }` | Trigger content wrapped by `SheetTrigger`. |
-| `content` | `{ close: () => void }` | Replaces the complete default header/body/footer layout. |
-| `header` | `{ close: () => void }` | Replaces the title and description block. |
-| `title` | — | Overrides the built-in title text. |
-| `description` | — | Overrides the built-in description text. |
-| `body` | `{ close: () => void }` | Main scrollable content region. |
-| `footer` | `{ close: () => void }` | Bottom action region. |
+::component-slots{name="Drawer"}
+::
 
 ## Styling and theming
 
