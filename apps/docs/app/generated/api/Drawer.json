@@ -24,7 +24,7 @@
       "name": "direction",
       "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
       "required": false,
-      "description": "Alias for `side` — matches Nuxt UI's Drawer (vaul) API."
+      "description": "Alias for `side`."
     },
     {
       "name": "dismissible",
@@ -47,6 +47,13 @@
       "description": "Show the drag-handle pill at the top of the drawer."
     },
     {
+      "name": "handleOnly",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, only the `<SheetHandle>` is draggable; the rest of the\ndrawer body does not respond to touch drag."
+    },
+    {
       "name": "keyboardAware",
       "type": "boolean | undefined",
       "required": false,
@@ -59,12 +66,6 @@
       "required": false,
       "default": "true",
       "description": "Forwarded to `KeyboardAwareRoot.forceAttach`. Defaults to `true` so the\nfooter sticks to the keyboard's top edge (chat-style UX). Set `false`\nfor forms where the input only needs to be barely above the keyboard."
-    },
-    {
-      "name": "modelValue",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "v-model alias for `open` (Nuxt UI parity)."
     },
     {
       "name": "open",
@@ -91,7 +92,7 @@
       "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
       "required": false,
       "default": "\"bottom\"",
-      "description": "Side the drawer slides in from. Map `direction` from Nuxt UI's Drawer\nto the same prop for parity."
+      "description": "Side the drawer slides in from."
     },
     {
       "name": "snapPoints",
@@ -121,10 +122,6 @@
   ],
   "events": [
     {
-      "name": "update:modelValue",
-      "type": "[value: boolean]"
-    },
-    {
       "name": "update:open",
       "type": "[value: boolean]"
     }
@@ -133,12 +130,12 @@
     {
       "name": "default",
       "type": "{ open: boolean; }",
-      "description": "Trigger content. `SheetTrigger` sets open to `true` on tap; do NOT bind\na `@tap` handler on the slotted child that also sets open — use\n`v-model:open` (or `v-model`)."
+      "description": "Trigger content. `SheetTrigger` sets open to `true` on tap; do NOT bind\na `@tap` handler on the slotted child that also sets open — use\n`v-model:open`."
     },
     {
       "name": "content",
       "type": "{ close: () => void; }",
-      "description": "Full content override — replaces the default header/body/footer layout.\nMatches the Nuxt UI escape hatch: pass arbitrary children when the\nstandard slot scaffold doesn't fit."
+      "description": "Full content override — replaces the default header/body/footer layout.\nPass arbitrary children when the standard slot scaffold doesn't fit."
     },
     {
       "name": "header",

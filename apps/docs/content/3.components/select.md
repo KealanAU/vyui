@@ -229,5 +229,5 @@ The sheet is optimized for touch selection. Test custom rows with VoiceOver and 
 
 - `Combobox` for searchable selection.
 - `DropdownMenu` for action-oriented choices.
-- `ActionSheet` for actions that do not represent a form value.
+- `Drawer` for actions that do not represent a form value.
 - The `@vyui/core` select primitives for custom presentations.

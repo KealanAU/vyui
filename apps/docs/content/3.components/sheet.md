@@ -13,7 +13,7 @@ links:
 
 ## Overview
 
-`Sheet` is a headless `@vyui/core` primitive for a panel that slides in from a viewport edge and settles at one of several snap points. Dragging is driven on the main thread for native-smooth tracking, with fling-to-advance and optional drag-to-dismiss. The styled [`Drawer`](/components/drawer) and [`ActionSheet`](/components/action-sheet) components build on it.
+`Sheet` is a headless `@vyui/core` primitive for a panel that slides in from a viewport edge and settles at one of several snap points. Dragging is driven on the main thread for native-smooth tracking, with fling-to-advance and optional drag-to-dismiss. The styled [`Drawer`](/components/drawer) component builds on it, and [`Tray`](/components/tray) uses the same primitives in `fitContent` mode.
 
 ::callout{icon="i-lucide-box"}
 This is a vyui-original `@vyui/core` primitive (the snap/drag pattern is adapted from `lynx-ui`). Compose it directly when you need custom snap behavior; otherwise use the styled kit components.
@@ -74,7 +74,7 @@ const open = ref(false)
 - `snapPoints` are fractions of viewport extent on that axis, low → high (e.g. `[0.25, 0.5, 0.9]`); default is `[1]` (full height or width).
 - `snapIndex` / `v-model:snapIndex` controls the current snap (0 = most closed); `defaultSnapIndex` seeds it.
 - A fling projects a short coast and advances by a snap; outward flings past `dismissVelocity` dismiss when `enableDragToClose` (default `true`).
-- `dragHandleOnly` restricts dragging to `<SheetHandle>`, leaving the body non-interactive to touch.
+- `handleOnly` restricts dragging to `<SheetHandle>`, leaving the body non-interactive to touch.
 - `viewportHeight` overrides the runtime height read; `duration` tunes the settle animation.
 
 ## API
@@ -120,5 +120,5 @@ const open = ref(false)
 ## Related components
 
 - [`Drawer`](/components/drawer) is the styled `@vyui/kit` sheet.
-- [`ActionSheet`](/components/action-sheet) is a styled list-of-actions sheet.
+- [`Tray`](/components/tray) is the `fitContent` sheet for content that hugs its bounds.
 - [`Dialog`](/components/dialog) is a centered modal alternative.

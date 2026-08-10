@@ -291,5 +291,5 @@ The examples add Lynx `accessibility-element`, `accessibility-traits`, and `acce
 ## Related components
 
 - [`Swiper`](/components/swiper) for paging between full content panels.
-- [`ActionSheet`](/components/action-sheet) for presenting a temporary list of actions.
+- [`Drawer`](/components/drawer) for presenting a temporary list of actions.
 - `DropdownMenu` for actions opened by an explicit trigger.

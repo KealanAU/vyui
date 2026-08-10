@@ -195,6 +195,6 @@ The core trigger exposes native Lynx button semantics and announces `collapsed` 
 
 ## Related components
 
-- [`ActionSheet`](/components/action-sheet) for a temporary list of actions.
+- [`Drawer`](/components/drawer) for a temporary list of actions.
 - `Collapsible` in `@vyui/core` for one headless disclosure region.
 - `Tabs` for switching between persistent peer panels.

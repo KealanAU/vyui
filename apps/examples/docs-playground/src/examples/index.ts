@@ -7,8 +7,6 @@ import AccordionControlled from './accordion/AccordionControlled.vue'
 import AccordionDisabled from './accordion/AccordionDisabled.vue'
 import AccordionExample from './accordion/AccordionExample.vue'
 import AccordionMultiple from './accordion/AccordionMultiple.vue'
-import ActionSheetExample from './action-sheet/ActionSheetExample.vue'
-import ActionSheetGrouped from './action-sheet/ActionSheetGrouped.vue'
 import AlertClosable from './alert/AlertClosable.vue'
 import AlertExample from './alert/AlertExample.vue'
 import AlertVariants from './alert/AlertVariants.vue'
@@ -30,6 +28,8 @@ import ButtonStyling from './button/ButtonStyling.vue'
 import ButtonVariants from './button/ButtonVariants.vue'
 import CalendarExample from './calendar/CalendarExample.vue'
 import DraggableExample from './draggable/DraggableExample.vue'
+import DrawerDirections from './drawer/DrawerDirections.vue'
+import DrawerExample from './drawer/DrawerExample.vue'
 import IconColor from './icon/IconColor.vue'
 import IconExample from './icon/IconExample.vue'
 import IconSize from './icon/IconSize.vue'
@@ -89,8 +89,6 @@ export const examples: Record<string, Component> = {
   'accordion-disabled': AccordionDisabled,
   'accordion-example': AccordionExample,
   'accordion-multiple': AccordionMultiple,
-  'action-sheet-example': ActionSheetExample,
-  'action-sheet-grouped': ActionSheetGrouped,
   'alert-closable': AlertClosable,
   'alert-example': AlertExample,
   'alert-variants': AlertVariants,
@@ -112,6 +110,8 @@ export const examples: Record<string, Component> = {
   'button-variants': ButtonVariants,
   'calendar-example': CalendarExample,
   'draggable-example': DraggableExample,
+  'drawer-directions': DrawerDirections,
+  'drawer-example': DrawerExample,
   'icon-color': IconColor,
   'icon-example': IconExample,
   'icon-size': IconSize,

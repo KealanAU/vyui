@@ -1,7 +1,6 @@
 import type { Component } from 'vue'
 import { AspectRatio, Icon } from '@vyui/core'
 import Accordion from './Accordion.vue'
-import ActionSheet from './ActionSheet.vue'
 import Alert from './Alert.vue'
 import App from './App.vue'
 import Avatar from './Avatar.vue'
@@ -116,7 +115,6 @@ import TrayView from './TrayView.vue'
 // concrete component type in `typeof REGISTRY` while still checking the shape.
 export const REGISTRY = {
   VyAccordion: Accordion,
-  VyActionSheet: ActionSheet,
   VyAlert: Alert,
   VyApp: App,
   // Pure layout primitive — re-exported from @vyui/core (nothing to theme),

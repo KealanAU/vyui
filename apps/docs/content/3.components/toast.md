@@ -300,5 +300,5 @@ Keep durations long enough to read and act on the message. Use `duration="0"` on
 ## Related components
 
 - [`Alert`](/components/alert) for persistent inline feedback.
-- [`ActionSheet`](/components/action-sheet) for choosing an action.
+- [`Drawer`](/components/drawer) for choosing an action from an edge sheet.
 - `Progress` for persistent task progress.
