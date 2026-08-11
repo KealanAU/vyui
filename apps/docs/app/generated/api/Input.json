@@ -1,73 +1,122 @@
 {
   "props": [
     {
-      "name": "as",
-      "type": "AsTag | Component | undefined",
-      "required": false,
-      "default": "\"input\"",
-      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
-    },
-    {
-      "name": "asChild",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while keeping the primitive's props and behavior."
-    },
-    {
       "name": "autocapitalize",
       "type": "string | undefined",
       "required": false,
-      "description": "Browser/native capitalization hint forwarded to the underlying input."
+      "description": "Forwarded to the underlying `<input>`. Defaults to `'none'` for email and password inputs."
+    },
+    {
+      "name": "autocomplete",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"off\"",
+      "description": "Forwarded to the underlying `<input>`. Defaults to `'off'`."
     },
     {
       "name": "autocorrect",
       "type": "string | undefined",
       "required": false,
-      "description": "Browser/native correction hint forwarded to the underlying input."
+      "description": "Forwarded to the underlying `<input>`. Defaults to `'off'` for email and password inputs."
+    },
+    {
+      "name": "autofocus",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Focus the input on mount (after `autofocusDelay` ms)."
+    },
+    {
+      "name": "autofocusDelay",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Delay before applying `autofocus`, in milliseconds."
+    },
+    {
+      "name": "avatar",
+      "type": "AvatarProps | undefined",
+      "required": false,
+      "description": "When set, render `<VyAvatar>` in the leading slot instead of an icon."
+    },
+    {
+      "name": "avoidKeyboard",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Native keyboard avoidance (Lynx `avoid-keyboard`): the platform shifts\nthe whole LynxView up so the focused input clears the keyboard — exact\nnative window-coordinate math, no JS. Zero-setup alternative to the\n`VyKeyboardAware*` family for simple forms; do NOT combine with a\n`VyKeyboardAwareRoot`, the two lifts stack. Pair with\n`avoidKeyboardSpacing` to also clear the field's bottom chrome."
+    },
+    {
+      "name": "avoidKeyboardSpacing",
+      "type": "number | undefined",
+      "required": false,
+      "description": "Extra clearance in px above the keyboard when `avoidKeyboard` is set."
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
     },
     {
       "name": "confirmType",
       "type": "InputConfirmType | undefined",
       "required": false,
-      "default": "\"send\"",
-      "description": "On-screen return-key label — see `InputConfirmType`."
-    },
-    {
-      "name": "defaultValue",
-      "type": "string | undefined",
-      "required": false,
-      "description": "Initial value when uncontrolled."
+      "description": "On-screen return-key label and behavior. Maps to iOS `returnKeyType` /\nAndroid `imeOptions`. Defaults to `'done'` from the core primitive.\nPair with `@confirm` to handle the tap."
     },
     {
       "name": "disabled",
       "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "highlight",
+      "type": "boolean | undefined",
       "required": false,
-      "default": "false",
-      "description": "When `true`, prevents the user from interacting with the input."
+      "description": "Forces the colored ring on permanently; by default it paints while focused."
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify shorthand. Routed to the trailing side when `trailing` is true,\notherwise to the leading side. Explicit `leadingIcon` / `trailingIcon`\nalways win."
     },
     {
       "name": "id",
       "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying `<input>`."
+    },
+    {
+      "name": "leading",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Force `icon` shorthand onto the leading side."
+    },
+    {
+      "name": "leadingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown on the leading side (wins over `icon`)."
+    },
+    {
+      "name": "loading",
+      "type": "boolean | undefined",
       "required": false
     },
     {
-      "name": "inputFilter",
+      "name": "loadingIcon",
       "type": "string | undefined",
       "required": false,
-      "description": "Regex string filter applied by the native input before the value is\nsurfaced to JS. Passed through unchanged."
-    },
-    {
-      "name": "maxLength",
-      "type": "number | undefined",
-      "required": false,
-      "default": "140",
-      "description": "Maximum number of characters allowed. Defaults to `140` per the Lynx\ndefault — set explicitly to `0` for no limit on platforms that support it."
+      "description": "Iconify name for the spinner. Defaults to `appConfig.ui.icons.loading`."
     },
     {
       "name": "modelValue",
+      "type": "string | number | undefined",
+      "required": false
+    },
+    {
+      "name": "name",
       "type": "string | undefined",
       "required": false,
-      "description": "Controlled value — pair with `@update:modelValue` (or `v-model`)."
+      "description": "Forwarded to the underlying `<input>`."
     },
     {
       "name": "placeholder",
@@ -75,61 +124,82 @@
       "required": false
     },
     {
-      "name": "readonly",
+      "name": "required",
       "type": "boolean | undefined",
       "required": false,
-      "default": "false",
-      "description": "Whether the input renders as read-only."
+      "description": "Forwarded to the underlying `<input>`."
     },
     {
-      "name": "showSoftInputOnFocus",
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "trailing",
       "type": "boolean | undefined",
       "required": false,
-      "default": "true",
-      "description": "When `false`, focus will not raise the software keyboard."
+      "description": "Force `icon` shorthand onto the trailing side."
+    },
+    {
+      "name": "trailingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown on the trailing side (wins over `icon`)."
     },
     {
       "name": "type",
       "type": "InputType | undefined",
       "required": false,
       "default": "\"text\"",
-      "description": "Input mode hint — see `InputType`."
+      "description": "Input mode — drives the on-screen software keyboard on native and the\n`type` attribute on web. `'digit'` shows a pure 0-9 pad (no decimal /\nsign), `'number'` shows the numeric keyboard with decimal, `'tel'` /\n`'email'` give the matching layouts, `'password'` masks input."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"leadingIcon\" | \"trailingIcon\" | \"leading\" | \"trailing\" | \"base\" | \"leadingAvatar\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"outline\" | \"soft\" | \"subtle\" | \"ghost\" | \"none\" | undefined",
+      "required": false
     }
   ],
   "events": [
     {
-      "name": "input",
-      "type": "[value: string, selectionStart: number, selectionEnd: number, isComposing: boolean]"
-    },
-    {
       "name": "update:modelValue",
-      "type": "[value: string]"
-    },
-    {
-      "name": "focus",
-      "type": "[value: string]"
-    },
-    {
-      "name": "blur",
-      "type": "[value: string]"
+      "type": "any[]"
     },
     {
       "name": "confirm",
-      "type": "[value: string]"
+      "type": "any[]"
     },
     {
-      "name": "selectionChange",
-      "type": "[selectionStart: number, selectionEnd: number]"
+      "name": "focus",
+      "type": "any[]"
+    },
+    {
+      "name": "blur",
+      "type": "any[]"
     },
     {
       "name": "keyboard",
-      "type": "[info: { visible: boolean; height: number; safeAreaBottom: number; }]"
+      "type": "any[]"
     }
   ],
   "slots": [
     {
+      "name": "leading",
+      "type": "{ iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the input's resolved theme color."
+    },
+    {
+      "name": "trailing",
+      "type": "{ iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the input's resolved theme color."
+    },
+    {
       "name": "default",
-      "type": "{}"
+      "type": "{} | undefined"
     }
   ]
 }

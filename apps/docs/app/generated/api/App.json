@@ -14,6 +14,12 @@
       "description": "Corner radius in rem — sets `--ui-radius` on the root. Omit to keep the\n`@vyui/kit/style.css` default."
     },
     {
+      "name": "safeArea",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Provide app-wide safe-area insets to the whole tree (`useSafeArea()`).\n`false` opts the app out with zeros (e.g. a fullscreen surface drawing its\nown chrome). Omit to use the container's reported insets as-is. A subtree\ncan still override with its own `provideSafeAreaInsets`."
+    },
+    {
       "name": "ui",
       "type": "Partial<Record<\"root\", any>> | undefined",
       "required": false

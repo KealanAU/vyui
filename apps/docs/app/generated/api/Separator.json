@@ -1,36 +1,55 @@
 {
   "props": [
     {
-      "name": "as",
-      "type": "AsTag | Component | undefined",
-      "required": false,
-      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
-    },
-    {
-      "name": "asChild",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while keeping the primitive's props and behavior."
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
     },
     {
       "name": "decorative",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Whether or not the component is purely decorative. <br>When `true`, accessibility-related attributes\nare updated so that that the rendered element is removed from the accessibility tree."
+      "description": "Forwarded to the underlying Separator primitive — strips a11y attrs."
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown in the middle."
+    },
+    {
+      "name": "label",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Display a label in the middle."
     },
     {
       "name": "orientation",
-      "type": "DataOrientation | undefined",
+      "type": "\"vertical\" | \"horizontal\" | undefined",
       "required": false,
-      "default": "\"horizontal\"",
-      "description": "Orientation of the component.\n\nEither `vertical` or `horizontal`. Defaults to `horizontal`."
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "type",
+      "type": "\"solid\" | \"dashed\" | \"dotted\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"icon\" | \"label\" | \"container\" | \"border\", any>> | undefined",
+      "required": false
     }
   ],
   "events": [],
   "slots": [
     {
       "name": "default",
-      "type": "{}"
+      "type": "{} | undefined"
     }
   ]
 }

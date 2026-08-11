@@ -3,64 +3,43 @@
     {
       "name": "bounces",
       "type": "boolean | undefined",
-      "required": false,
-      "default": "true",
-      "description": "Native list bounce at the edges (ignored on the PTR list, which forces it\noff so the top-edge pull isn't stolen)."
-    },
-    {
-      "name": "defaultLoadingMore",
-      "type": "boolean | undefined",
-      "required": false,
-      "default": "false",
-      "description": "Initial loading-more state when uncontrolled."
-    },
-    {
-      "name": "defaultRefreshing",
-      "type": "boolean | undefined",
-      "required": false,
-      "default": "false",
-      "description": "Initial refreshing state when uncontrolled."
+      "required": false
     },
     {
       "name": "disabled",
       "type": "boolean | undefined",
       "required": false,
-      "default": "false",
-      "description": "Disable scrolling and refresh interactions."
+      "description": "Disable scrolling."
     },
     {
       "name": "enableBounce",
       "type": "boolean | undefined",
       "required": false,
-      "default": "false",
-      "description": "Rubber-band overscroll bounce at both edges that springs back on release.\nIndependent of `enableRefresh`: enable it alone for a bounce-only list, or\nalongside refresh to add a bottom-edge bounce (the top edge already bounces\nwhile pulling to refresh)."
+      "description": "Rubber-band overscroll bounce at both edges."
     },
     {
       "name": "enableLoadMore",
       "type": "boolean | undefined",
       "required": false,
-      "default": "false",
       "description": "Enable load-more on scroll-to-lower."
     },
     {
       "name": "enableRefresh",
       "type": "boolean | undefined",
       "required": false,
-      "default": "false",
-      "description": "Enable the rubber-band pull-to-refresh. Off → a bare `<list>`, no touch\nhandlers."
+      "description": "Enable the custom rubber-band pull-to-refresh (touch worklets)."
     },
     {
       "name": "itemKey",
       "type": "((item: T, index: number) => string) | undefined",
       "required": false,
-      "description": "Alternative to `itemKeyField`: a function returning the key. Wins if both set."
+      "description": "Alternative to `itemKeyField`: a function returning the key."
     },
     {
       "name": "itemKeyField",
       "type": "(keyof T & string) | undefined",
       "required": false,
-      "default": "\"id\" as never",
-      "description": "Field on `T` used as the unique key per row. Required by Lynx's `<list>`\nfor diffing — unstable keys recycle rows wrong. The native diff appends /\nremoves by key but does NOT reorder, so when the data order changes (e.g. a\nrefresh) replace the keys rather than permuting existing ones."
+      "description": "Field on `T` to use as the unique key per row. Defaults to `'id'`."
     },
     {
       "name": "items",
@@ -72,34 +51,25 @@
       "name": "itemSnap",
       "type": "boolean | { factor: number; offset: number; } | undefined",
       "required": false,
-      "description": "Native `<list>` `item-snap` paging. `true` snaps each item to the top\n(`{ factor: 0, offset: 0 }`, full-screen paging); pass an object for a\ncustom factor/offset. `listType: 'single'` only."
+      "description": "Snap each item to a rest position after scrolling (native `item-snap`).\n`true` = full-screen paging (snap each item to the top); pass an object for\na custom `{ factor, offset }`. `listType: 'single'` only."
     },
     {
       "name": "listType",
       "type": "\"single\" | \"flow\" | \"waterfall\" | undefined",
       "required": false,
-      "default": "\"single\"",
-      "description": "Layout type. `'flow'` / `'waterfall'` require `spanCount > 1`."
-    },
-    {
-      "name": "loadingMore",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Controlled loading-more state. Bind with `v-model:loadingMore`."
+      "description": "Layout type. `'flow'` and `'waterfall'` require `spanCount > 1`."
     },
     {
       "name": "loadMoreThresholdItemCount",
       "type": "number | undefined",
       "required": false,
-      "default": "2",
-      "description": "Items from the bottom that triggers `load-more`."
+      "description": "Number of items from the bottom that triggers `load-more`."
     },
     {
       "name": "noMoreData",
       "type": "boolean | undefined",
       "required": false,
-      "default": "false",
-      "description": "No more data to load. Shows the `noMoreDataFooter` slot (end-of-list). Until\nthis is `true` — and while not `loadingMore` — no footer renders, so a list\nwith more pages to fetch never displays an \"end of list\" message."
+      "description": "No more data to load — stops `loadMore` and shows the end-of-list footer."
     },
     {
       "name": "refreshing",
@@ -111,43 +81,39 @@
       "name": "refreshThreshold",
       "type": "number | undefined",
       "required": false,
-      "default": "64",
-      "description": "Pull distance (px) past which release triggers a refresh."
+      "description": "Pull distance (px) past which release triggers a refresh. Default 64."
     },
     {
       "name": "scrollBarEnable",
       "type": "boolean | undefined",
-      "required": false,
-      "default": "true"
+      "required": false
     },
     {
       "name": "scrollOrientation",
       "type": "\"vertical\" | \"horizontal\" | undefined",
-      "required": false,
-      "default": "\"vertical\""
+      "required": false
     },
     {
       "name": "spanCount",
       "type": "number | undefined",
       "required": false,
-      "default": "1",
       "description": "Columns / rows for `flow` / `waterfall`."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<string | number | symbol, any>> | undefined",
+      "required": false
     },
     {
       "name": "upperThresholdItemCount",
       "type": "number | undefined",
       "required": false,
-      "default": "0",
-      "description": "Items from the top that triggers `scrollToUpper`."
+      "description": "Number of items from the top that triggers `scrollToUpper`."
     }
   ],
   "events": [
     {
       "name": "update:refreshing",
-      "type": "[value: boolean]"
-    },
-    {
-      "name": "update:loadingMore",
       "type": "[value: boolean]"
     },
     {
@@ -192,22 +158,22 @@
     {
       "name": "refreshHeader",
       "type": "{ state: FeedListRefreshState; progress: number; }",
-      "description": "Pull-to-refresh header. `state` is the current refresh state; `progress` is\nthe pull distance as a fraction of `refreshThreshold` (0..1, clamped)."
-    },
-    {
-      "name": "loadMoreFooter",
-      "type": "any",
-      "description": "Shown at the bottom while `loadingMore` is true."
-    },
-    {
-      "name": "noMoreDataFooter",
-      "type": "any",
-      "description": "Shown at the bottom when there is no more data to load."
+      "description": "Pull-to-refresh header. `state` is the lifecycle phase; `progress` is the\npull distance as a fraction of the threshold (0..1)."
     },
     {
       "name": "empty",
-      "type": "any",
+      "type": "{} | undefined",
       "description": "Rendered in place of the list when `items` is empty."
+    },
+    {
+      "name": "loadMoreFooter",
+      "type": "{ loading: boolean; }",
+      "description": "Footer shown at the bottom while more data can be loaded."
+    },
+    {
+      "name": "noMoreDataFooter",
+      "type": "{} | undefined",
+      "description": "Footer shown at the bottom once `noMoreData` is true."
     }
   ]
 }

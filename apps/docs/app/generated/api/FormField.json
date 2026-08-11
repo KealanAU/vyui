@@ -4,19 +4,66 @@
       "name": "defaultValue",
       "type": "unknown",
       "required": false,
-      "description": "Initial value when the form's `defaultValues` doesn't supply one.\nForm-level `defaultValues` takes precedence."
+      "description": "Initial value when the form's `defaultValues` doesn't supply one."
+    },
+    {
+      "name": "description",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Description rendered between the label and the control. Overridden by the `description` slot."
+    },
+    {
+      "name": "error",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Manual error override. When provided, takes precedence over the\nvalidator-derived error from the surrounding `<VyForm>`."
+    },
+    {
+      "name": "help",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Helper text rendered below the control. Hidden when an error is showing."
+    },
+    {
+      "name": "hint",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Small auxiliary text rendered next to the label (right-aligned). Overridden by the `hint` slot."
+    },
+    {
+      "name": "label",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Label text rendered above the control. Overridden by the `label` slot."
     },
     {
       "name": "name",
       "type": "string",
       "required": true,
-      "description": "Field name — must be unique within the form."
+      "description": "Field name — must be unique within the parent `<VyForm>`."
+    },
+    {
+      "name": "required",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "Marks the field as required — appends a red asterisk to the label."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"label\" | \"error\" | \"description\" | \"hint\" | \"help\" | \"wrapper\" | \"labelWrapper\" | \"container\", any>> | undefined",
+      "required": false
     },
     {
       "name": "validators",
       "type": "FormFieldValidator[] | undefined",
       "required": false,
-      "description": "Synchronous validators. Each returns `null` (or `undefined`) for valid,\nor a non-empty string describing the error. Stops at the first error."
+      "description": "Synchronous validators (see `@vyui/core`). Stops at the first error."
     }
   ],
   "events": [],
@@ -24,6 +71,26 @@
     {
       "name": "default",
       "type": "{ value: unknown; error: string | null; setValue: (value: unknown) => void; disabled: boolean; }"
+    },
+    {
+      "name": "label",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "description",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "hint",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "help",
+      "type": "{} | undefined"
+    },
+    {
+      "name": "error",
+      "type": "{ error: string; }"
     }
   ]
 }

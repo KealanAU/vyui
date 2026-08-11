@@ -1,30 +1,32 @@
 {
   "props": [
     {
-      "name": "as",
-      "type": "AsTag | Component | undefined",
-      "required": false,
-      "default": "\"text\"",
-      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
-    },
-    {
-      "name": "asChild",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while keeping the primitive's props and behavior."
-    },
-    {
       "name": "for",
       "type": "string | undefined",
       "required": false,
-      "description": "The id of the element the label is associated with."
+      "description": "The id of the form control this label is associated with."
+    },
+    {
+      "name": "required",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"base\", any>> | undefined",
+      "required": false
     }
   ],
   "events": [],
   "slots": [
     {
       "name": "default",
-      "type": "{}"
+      "type": "{} | undefined"
     }
   ]
 }

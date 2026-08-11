@@ -4,21 +4,7 @@
       "name": "actionWidth",
       "type": "number",
       "required": true,
-      "description": "Width of the revealed trailing action panel in px."
-    },
-    {
-      "name": "commitThreshold",
-      "type": "number | undefined",
-      "required": false,
-      "default": "0.5",
-      "description": "Fraction of `rowWidth` the user must drag past to fire `commit` instead\nof just snapping open. Range 0–1."
-    },
-    {
-      "name": "commitVelocity",
-      "type": "number | undefined",
-      "required": false,
-      "default": "1200",
-      "description": "Absolute velocity in px/s (leftward) above which a flick fires `commit`\nregardless of position."
+      "description": "Width of the revealed action panel in px. Forwarded to the core\n`SwipeAction` primitive — required for the threshold math."
     },
     {
       "name": "defaultOpen",
@@ -35,13 +21,6 @@
       "description": "Disable interaction."
     },
     {
-      "name": "duration",
-      "type": "number | undefined",
-      "required": false,
-      "default": "240",
-      "description": "Release animation duration in ms."
-    },
-    {
       "name": "open",
       "type": "boolean | undefined",
       "required": false,
@@ -51,41 +30,47 @@
       "name": "rowWidth",
       "type": "number",
       "required": true,
-      "description": "Width of the row in px. Required to compute the commit threshold."
+      "description": "Width of the row in px. Forwarded to the core primitive — required to\ncompute the commit threshold."
     },
     {
-      "name": "snapThreshold",
-      "type": "number | undefined",
+      "name": "side",
+      "type": "\"right\" | \"left\" | undefined",
       "required": false,
-      "default": "0.5",
-      "description": "Fraction of `actionWidth` the user must drag past (without velocity) to\nsnap open. Range 0–1."
+      "default": "\"right\"",
+      "description": "Which side reveals the actions. Drives styling only — the core\nprimitive currently always reveals from the trailing (right) edge."
     },
     {
-      "name": "velocityThreshold",
+      "name": "threshold",
       "type": "number | undefined",
       "required": false,
-      "default": "400",
-      "description": "Absolute velocity in px/s for \"snap to open\" / \"snap to closed\" override."
+      "description": "Fraction of `actionWidth` the user must drag past to snap open. 0–1.\nMaps to the core `snapThreshold` prop."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"actions\" | \"content\", any>> | undefined",
+      "required": false
     }
   ],
   "events": [
     {
-      "name": "update:open",
-      "type": "[value: boolean]"
-    },
-    {
       "name": "commit",
       "type": "[]"
+    },
+    {
+      "name": "update:open",
+      "type": "[value: boolean]"
     }
   ],
   "slots": [
     {
       "name": "default",
-      "type": "{ open: boolean; close: () => void; }"
+      "type": "{ open: boolean; close: () => void; }",
+      "description": "Main row content. Scoped with `{ open, close }` from the core primitive."
     },
     {
-      "name": "action",
-      "type": "{ open: boolean; close: () => void; }"
+      "name": "actions",
+      "type": "{ open: boolean; close: () => void; }",
+      "description": "Action panel revealed on swipe. Scoped with `{ open, close }`."
     }
   ]
 }
