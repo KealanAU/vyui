@@ -6,7 +6,7 @@
   "packageManager": "pnpm@11.4.0",
   "scripts": {
     "dev": "pnpm -r run dev",
-    "build": "pnpm -r --filter='./packages/*' build",
+    "build": "pnpm gen:api && pnpm -r --filter='./packages/*' build",
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r typecheck",
@@ -17,7 +17,8 @@
     "release": "pnpm build && changeset publish",
     "new-component": "tsx tools/make-component.ts",
     "gen:registry": "tsx tools/gen-registry.ts",
-    "gen:schemas": "tsx tools/gen-schemas.ts"
+    "gen:schemas": "tsx tools/gen-schemas.ts",
+    "gen:api": "tsx tools/gen-component-api.ts"
   },
   "devDependencies": {
     "@changesets/cli": "2.31.0",
