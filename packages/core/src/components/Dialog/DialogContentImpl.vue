@@ -2,18 +2,11 @@
 import type { DismissableLayerEmits } from '@/shared/composables'
 import type { PrimitiveProps } from '@/components/Primitive'
 
-export type DialogContentImplEmits = DismissableLayerEmits & {
-  /**
-   * Event handler called when auto-focusing on open. Can be prevented.
-   * Inert on Lynx because Lynx has no DOM focus model.
-   */
-  openAutoFocus: [event: any]
-  /**
-   * Event handler called when auto-focusing on close. Can be prevented.
-   * Inert on Lynx because Lynx has no DOM focus model.
-   */
-  closeAutoFocus: [event: any]
-}
+// reka-ui's `DialogContentImpl` also emits `openAutoFocus` / `closeAutoFocus`.
+// Those are dropped on Lynx: there is no focus-trap and no programmatic focus
+// model, so the auto-focus events never fire (same call PopoverContentImpl
+// makes).
+export type DialogContentImplEmits = DismissableLayerEmits
 
 export interface DialogContentImplProps extends PrimitiveProps {
   /**

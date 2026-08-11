@@ -15,13 +15,6 @@
       "description": "Enable native bounce on iOS / Harmony / PC. Ignored when\n`enableBounces` turns on the custom main-thread bounce."
     },
     {
-      "name": "debugLog",
-      "type": "boolean | undefined",
-      "required": false,
-      "default": "false",
-      "description": "Emit verbose bounce diagnostics to the console."
-    },
-    {
       "name": "disabled",
       "type": "boolean | undefined",
       "required": false,

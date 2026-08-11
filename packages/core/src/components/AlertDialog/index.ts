@@ -9,12 +9,10 @@ export {
 } from './AlertDialogCancel.vue'
 export {
   default as AlertDialogContent,
-  type AlertDialogContentEmits,
   type AlertDialogContentProps,
 } from './AlertDialogContent.vue'
 export {
   default as AlertDialogContentImpl,
-  type AlertDialogContentImplEmits,
   type AlertDialogContentImplProps,
 } from './AlertDialogContentImpl.vue'
 export {

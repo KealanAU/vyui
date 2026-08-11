@@ -22,7 +22,17 @@ export interface ToggleEmits {
 }
 
 export interface ToggleSlots {
-  default(props?: {}): any
+  /** Pressed state and disabled flag forwarded from the core primitive. */
+  default(props: {
+    /** Current value */
+    modelValue: boolean
+    /** Current state */
+    state: 'on' | 'off'
+    /** Current pressed state */
+    pressed: boolean
+    /** Current disabled state */
+    disabled: boolean
+  }): any
 }
 </script>
 
@@ -52,7 +62,12 @@ const { ui } = useStyledComponent('toggle', theme, () => ({
     :class="ui.base({ class: [props.class, props.ui?.base] })"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <slot>
+    <slot
+      :model-value="modelValue"
+      :state="modelValue ? 'on' : 'off'"
+      :pressed="modelValue"
+      :disabled="disabled"
+    >
       <VyIcon v-if="icon" :name="icon" :class="ui.icon({ class: props.ui?.icon })" />
     </slot>
   </CoreToggle>

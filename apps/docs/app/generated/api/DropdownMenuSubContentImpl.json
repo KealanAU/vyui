@@ -21,10 +21,6 @@
     {
       "name": "pointerDownOutside",
       "type": "[event: DismissableLayerEvent]"
-    },
-    {
-      "name": "escapeKeyDown",
-      "type": "[event: DismissableLayerEvent]"
     }
   ],
   "slots": [
