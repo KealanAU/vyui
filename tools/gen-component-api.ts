@@ -59,6 +59,14 @@ const sources = [
   { name: 'core', tsconfig: resolve(root, 'packages/core/tsconfig.json'), dir: resolve(root, 'packages/core/src/components') },
 ]
 
+// Kit wrappers are the documented surface; core is the headless layer beneath
+// them. When both share an SFC basename (e.g. `Toggle.vue` in kit and core) the
+// two would write the same `Toggle.json`, and the later core write would clobber
+// the kit table. Skip core collidees so the kit wrapper's props win — the headless
+// core component is still reachable through the kit wrapper's inherited props.
+const kitDir = sources.find(s => s.name === 'kit')?.dir
+const kitNames = kitDir ? new Set(vueFilesIn(kitDir).map(file => file.split('/').pop()!.replace(/\.vue$/, ''))) : new Set<string>()
+
 for (const source of sources) {
   if (!statSync(source.tsconfig, { throwIfNoEntry: false })) {
     console.warn(`[gen-api] no tsconfig for ${source.name}, skipping`)
@@ -67,6 +75,7 @@ for (const source of sources) {
   const checker = createChecker(source.tsconfig, { forceUseTs: true, printer: { newLine: 1 } })
   for (const file of vueFilesIn(source.dir)) {
     const name = file.split('/').pop()!.replace(/\.vue$/, '')
+    if (source.name === 'core' && kitNames.has(name)) continue
     if (only.length && !only.includes(name)) continue
     try {
       const meta = checker.getComponentMeta(file)

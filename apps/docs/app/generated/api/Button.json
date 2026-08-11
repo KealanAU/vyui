@@ -1,36 +1,122 @@
 {
   "props": [
     {
-      "name": "as",
-      "type": "AsTag | undefined",
-      "required": false,
-      "default": "\"view\"",
-      "description": "Underlying element. Defaults to `view`."
-    },
-    {
-      "name": "asChild",
+      "name": "autofocus",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Merge props onto the slot child instead of wrapping."
+      "description": "Focus the button on mount. Kept for API parity with Nuxt UI v4 — the\nVue-Lynx core button renders a non-focusable `<view>`, so this is\ncurrently a no-op."
+    },
+    {
+      "name": "avatar",
+      "type": "AvatarProps | undefined",
+      "required": false,
+      "description": "When set, render `<VyAvatar>` in the leading slot instead of an icon."
+    },
+    {
+      "name": "block",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
     },
     {
       "name": "disabled",
       "type": "boolean | undefined",
-      "required": false,
-      "default": "false",
-      "description": "Disables tap + active feedback."
-    }
-  ],
-  "events": [
+      "required": false
+    },
     {
-      "name": "tap",
-      "type": "[]"
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify shorthand. Routed to the trailing side when `trailing` is true,\notherwise to the leading side. Explicit `leadingIcon` / `trailingIcon`\nalways win."
+    },
+    {
+      "name": "label",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Text label. Overridden by the default slot if provided."
+    },
+    {
+      "name": "leading",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Force `icon` shorthand onto the leading side."
+    },
+    {
+      "name": "leadingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown on the leading side (wins over `icon`)."
+    },
+    {
+      "name": "loading",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "loadingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name for the spinner. Defaults to `appConfig.ui.icons.loading`."
+    },
+    {
+      "name": "size",
+      "type": "\"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "square",
+      "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "trailing",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Force `icon` shorthand onto the trailing side."
+    },
+    {
+      "name": "trailingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown on the trailing side (wins over `icon`)."
+    },
+    {
+      "name": "type",
+      "type": "\"button\" | \"submit\" | \"reset\" | undefined",
+      "required": false,
+      "default": "\"button\"",
+      "description": "HTML button type. Kept for API parity with Nuxt UI v4 — the Vue-Lynx\ncore button renders a `<view>`, so this is currently a no-op forward."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"leadingIcon\" | \"trailingIcon\" | \"label\" | \"base\" | \"leadingAvatar\" | \"leadingAvatarSize\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"solid\" | \"outline\" | \"soft\" | \"subtle\" | \"ghost\" | \"link\" | undefined",
+      "required": false
     }
   ],
+  "events": [],
   "slots": [
     {
       "name": "default",
-      "type": "{ active: boolean; disabled: boolean; }"
+      "type": "{} | undefined"
+    },
+    {
+      "name": "leading",
+      "type": "{ iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the variant's resolved foreground."
+    },
+    {
+      "name": "trailing",
+      "type": "{ iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the variant's resolved foreground."
     }
   ]
 }

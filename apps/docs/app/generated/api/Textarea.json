@@ -1,80 +1,103 @@
 {
   "props": [
     {
-      "name": "as",
-      "type": "AsTag | Component | undefined",
-      "required": false,
-      "default": "\"textarea\"",
-      "description": "The element or component this component should render as. Can be overwritten by `asChild`."
-    },
-    {
-      "name": "asChild",
+      "name": "autofocus",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while keeping the primitive's props and behavior."
+      "description": "Focus the textarea on mount (after `autofocusDelay` ms)."
     },
     {
-      "name": "bounces",
+      "name": "autofocusDelay",
+      "type": "number | undefined",
+      "required": false,
+      "default": "0",
+      "description": "Delay before applying `autofocus`, in milliseconds."
+    },
+    {
+      "name": "avatar",
+      "type": "AvatarProps | undefined",
+      "required": false,
+      "description": "When set, render `<VyAvatar>` in the leading slot instead of an icon."
+    },
+    {
+      "name": "avoidKeyboard",
       "type": "boolean | undefined",
       "required": false,
-      "default": "true",
-      "description": "Whether the textarea scroll-view should bounce at its edges (iOS)."
+      "description": "Native keyboard avoidance (Lynx `avoid-keyboard`) — see `VyInput`'s prop\nof the same name. Do NOT combine with a `VyKeyboardAwareRoot`."
     },
     {
-      "name": "confirmType",
-      "type": "InputConfirmType | undefined",
+      "name": "avoidKeyboardSpacing",
+      "type": "number | undefined",
       "required": false,
-      "default": "\"send\"",
-      "description": "On-screen return-key label — see `InputConfirmType`."
+      "description": "Extra clearance in px above the keyboard when `avoidKeyboard` is set."
     },
     {
-      "name": "defaultValue",
-      "type": "string | undefined",
-      "required": false,
-      "description": "Initial value when uncontrolled."
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
     },
     {
       "name": "disabled",
       "type": "boolean | undefined",
+      "required": false
+    },
+    {
+      "name": "highlight",
+      "type": "boolean | undefined",
       "required": false,
-      "default": "false",
-      "description": "When `true`, prevents the user from interacting with the textarea."
+      "description": "Paints a static ring matching `color`, ignoring focus state."
+    },
+    {
+      "name": "icon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify shorthand. Routed to the trailing side when `trailing` is true,\notherwise to the leading side. Explicit `leadingIcon` / `trailingIcon`\nalways win."
     },
     {
       "name": "id",
       "type": "string | undefined",
+      "required": false,
+      "description": "Forwarded to the underlying `<textarea>`."
+    },
+    {
+      "name": "leading",
+      "type": "boolean | undefined",
+      "required": false,
+      "description": "Force `icon` shorthand onto the leading side."
+    },
+    {
+      "name": "leadingIcon",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Iconify name shown on the leading side (wins over `icon`)."
+    },
+    {
+      "name": "loading",
+      "type": "boolean | undefined",
       "required": false
     },
     {
-      "name": "inputFilter",
+      "name": "loadingIcon",
       "type": "string | undefined",
       "required": false,
-      "description": "Regex string filter applied by the native input before the value is\nsurfaced to JS."
-    },
-    {
-      "name": "lineSpacing",
-      "type": "string | number | undefined",
-      "required": false,
-      "description": "Spacing between lines in px / lynx-units. Forwarded to the native node."
+      "description": "Iconify name for the spinner. Defaults to `appConfig.ui.icons.loading`."
     },
     {
       "name": "maxLength",
       "type": "number | undefined",
       "required": false,
-      "description": "Maximum number of characters allowed. Unset by default, leaving the\nplatform's own limit in place: iOS and Android are unlimited, while\nHarmony applies the documented Lynx default of 140. Pass an explicit\nvalue to enforce a limit, or to get identical behavior on every platform."
-    },
-    {
-      "name": "maxLines",
-      "type": "number | undefined",
-      "required": false,
-      "default": "40",
-      "description": "Maximum number of visible lines before scrolling kicks in. Defaults to\n`40` to match the React port."
+      "description": "Max input length. Forwarded to the underlying core `<textarea>`."
     },
     {
       "name": "modelValue",
+      "type": "string | number | undefined",
+      "required": false
+    },
+    {
+      "name": "name",
       "type": "string | undefined",
       "required": false,
-      "description": "Controlled value — pair with `@update:modelValue` (or `v-model`)."
+      "description": "Forwarded to the underlying `<textarea>`."
     },
     {
       "name": "placeholder",
@@ -82,61 +105,82 @@
       "required": false
     },
     {
-      "name": "readonly",
+      "name": "required",
       "type": "boolean | undefined",
       "required": false,
-      "default": "false",
-      "description": "Whether the textarea renders as read-only."
+      "description": "Forwarded to the underlying `<textarea>`."
     },
     {
-      "name": "showSoftInputOnFocus",
+      "name": "rows",
+      "type": "number | undefined",
+      "required": false,
+      "default": "3",
+      "description": "Visible rows. Forwarded to the underlying core `<textarea>`."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "trailing",
       "type": "boolean | undefined",
       "required": false,
-      "default": "true",
-      "description": "When `false`, focus will not raise the software keyboard."
+      "description": "Force `icon` shorthand onto the trailing side."
     },
     {
-      "name": "type",
-      "type": "InputType | undefined",
+      "name": "trailingIcon",
+      "type": "string | undefined",
       "required": false,
-      "default": "\"text\"",
-      "description": "Input mode hint — see `InputType`."
+      "description": "Iconify name shown on the trailing side (wins over `icon`)."
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"root\" | \"leadingIcon\" | \"trailingIcon\" | \"leading\" | \"trailing\" | \"base\" | \"leadingAvatar\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"outline\" | \"soft\" | \"subtle\" | \"ghost\" | \"none\" | undefined",
+      "required": false
     }
   ],
   "events": [
     {
-      "name": "input",
-      "type": "[value: string, selectionStart: number, selectionEnd: number, isComposing: boolean]"
-    },
-    {
       "name": "update:modelValue",
-      "type": "[value: string]"
-    },
-    {
-      "name": "focus",
-      "type": "[value: string]"
-    },
-    {
-      "name": "blur",
-      "type": "[value: string]"
+      "type": "any[]"
     },
     {
       "name": "confirm",
-      "type": "[value: string]"
+      "type": "any[]"
     },
     {
-      "name": "selectionChange",
-      "type": "[selectionStart: number, selectionEnd: number]"
+      "name": "focus",
+      "type": "any[]"
+    },
+    {
+      "name": "blur",
+      "type": "any[]"
     },
     {
       "name": "keyboard",
-      "type": "[info: { visible: boolean; height: number; safeAreaBottom: number; }]"
+      "type": "any[]"
     }
   ],
   "slots": [
     {
+      "name": "leading",
+      "type": "{ iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the textarea's resolved theme color."
+    },
+    {
+      "name": "trailing",
+      "type": "{ iconColor: string; }",
+      "description": "Receives `iconColor` so custom icons can match the textarea's resolved theme color."
+    },
+    {
       "name": "default",
-      "type": "{}"
+      "type": "{} | undefined"
     }
   ]
 }

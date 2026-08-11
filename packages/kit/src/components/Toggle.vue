@@ -1,11 +1,15 @@
 <script lang="ts">
+import type { ToggleProps as CoreToggleProps } from '@vyui/core'
 import theme from '../theme/toggle'
 import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type ToggleTV = ThemeTV<typeof theme>
 type ToggleVariants = VariantProps<ToggleTV>
 
-export interface ToggleProps {
+// Extends the core primitive so `as` / `asChild` / `defaultValue` — which work
+// at runtime through $attrs fall-through — get real TS/IDE support here too.
+// `modelValue` / `disabled` are narrowed to the kit's concrete types.
+export interface ToggleProps extends CoreToggleProps {
   modelValue?: boolean
   disabled?: boolean
   color?: ToggleVariants['color']

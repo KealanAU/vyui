@@ -4,7 +4,6 @@
       "name": "as",
       "type": "AsTag | Component | undefined",
       "required": false,
-      "default": "\"view\"",
       "description": "The element or component this component should render as. Can be overwritten by `asChild`."
     },
     {
@@ -12,6 +11,11 @@
       "type": "boolean | undefined",
       "required": false,
       "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+    },
+    {
+      "name": "color",
+      "type": "keyof VyuiColorRegistry | undefined",
+      "required": false
     },
     {
       "name": "defaultValue",
@@ -27,11 +31,32 @@
       "description": "When `true`, prevents the user from interacting with the toggle."
     },
     {
-      "name": "modelValue",
-      "type": "boolean | null | undefined",
+      "name": "icon",
+      "type": "string | undefined",
       "required": false,
-      "default": "undefined",
+      "description": "Iconify name rendered inside the toggle when no default slot is supplied."
+    },
+    {
+      "name": "modelValue",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
       "description": "The controlled pressed state of the toggle. Can be bind as `v-model`."
+    },
+    {
+      "name": "size",
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "required": false
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<\"icon\" | \"base\", any>> | undefined",
+      "required": false
+    },
+    {
+      "name": "variant",
+      "type": "\"solid\" | \"outline\" | \"soft\" | \"ghost\" | undefined",
+      "required": false
     }
   ],
   "events": [
@@ -43,7 +68,8 @@
   "slots": [
     {
       "name": "default",
-      "type": "{ modelValue: boolean; state: DataState; pressed: boolean; disabled: boolean; }"
+      "type": "{ modelValue: boolean; state: \"off\" | \"on\"; pressed: boolean; disabled: boolean; }",
+      "description": "Pressed state and disabled flag forwarded from the core primitive."
     }
   ]
 }
