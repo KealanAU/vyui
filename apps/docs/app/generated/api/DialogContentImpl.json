@@ -11,7 +11,7 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while keeping the primitive's props and behavior."
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
     },
     {
       "name": "backdropClass",
@@ -42,28 +42,16 @@
       "name": "trapFocus",
       "type": "boolean | undefined",
       "required": false,
-      "description": "When `true`, focus cannot escape the `Content`. No-op on Lynx (there is\nno focus trap); no-op on Lynx because there is no DOM focus trap."
+      "description": "When `true`, focus cannot escape the `Content`. No-op on Lynx because\nthere is no DOM focus trap."
     }
   ],
   "events": [
-    {
-      "name": "openAutoFocus",
-      "type": "[event: any]"
-    },
-    {
-      "name": "closeAutoFocus",
-      "type": "[event: any]"
-    },
     {
       "name": "interactOutside",
       "type": "[event: DismissableLayerEvent]"
     },
     {
       "name": "pointerDownOutside",
-      "type": "[event: DismissableLayerEvent]"
-    },
-    {
-      "name": "escapeKeyDown",
       "type": "[event: DismissableLayerEvent]"
     }
   ],

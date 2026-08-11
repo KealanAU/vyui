@@ -10,10 +10,8 @@
  *   - There is no `pointerdown`; outside interaction is a `tap` on the overlay
  *     backdrop `<view>`. `interactOutside` / `pointerDownOutside` cover that.
  *   - There is no focus-outside model, so `focusOutside` is omitted.
- *   - Hardware keyboards are not yet wired on Lynx. `escapeKeyDown` and
- *     `onEscapeKeyDown` are defined now so call sites can bind them unchanged
- *     once the platform delivers key events — until then the handler is simply
- *     never invoked.
+ *   - reka-ui's `escapeKeyDown` is omitted: hardware keyboards are not wired
+ *     on Lynx, so there is no Escape key source to drive it.
  *
  * Usage (inside an overlay `*Content` component):
  * ```ts
@@ -48,11 +46,6 @@ export type DismissableLayerEmits = {
    * preventable event object, so preventing either keeps the layer open.
    */
   pointerDownOutside: [event: DismissableLayerEvent]
-  /**
-   * Fired when the Escape key is pressed. Inert until Lynx exposes key
-   * events; call `event.preventDefault()` to keep the layer open.
-   */
-  escapeKeyDown: [event: DismissableLayerEvent]
 }
 
 /**
@@ -89,9 +82,7 @@ function createEvent(originalEvent: unknown): DismissableLayerEvent {
 /**
  * Wires the preventable-event dismissal flow for an overlay content component.
  *
- * @returns
- *  - `onInteractOutside` — bind to the backdrop view's `onTap`.
- *  - `onEscapeKeyDown` — bind to the Escape key once Lynx delivers key events.
+ * @returns `onInteractOutside` — bind to the backdrop view's `onTap`.
  */
 export function useDismissableLayer(options: UseDismissableLayerOptions) {
   function dispatch(
@@ -110,10 +101,5 @@ export function useDismissableLayer(options: UseDismissableLayerOptions) {
     dispatch(['pointerDownOutside', 'interactOutside'], originalEvent)
   }
 
-  /** Bind to the Escape key — inert until Lynx exposes key events. */
-  function onEscapeKeyDown(originalEvent?: unknown) {
-    dispatch(['escapeKeyDown'], originalEvent)
-  }
-
-  return { onInteractOutside, onEscapeKeyDown }
+  return { onInteractOutside }
 }

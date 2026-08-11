@@ -86,7 +86,7 @@ name: toggle-disabled
 
 | Slot | Props | Description |
 | --- | --- | --- |
-| `default` | — | Replaces the built-in icon. |
+| `default` | `{ modelValue: boolean, state: 'on' \| 'off', pressed: boolean, disabled: boolean }` | Replaces the built-in icon; same prop contract as the core primitive. |
 
 ## Styling and theming
 

@@ -1,18 +1,6 @@
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
 
-/**
- * Emits kept for API parity with reka-ui's `DialogContentImpl`. Both are inert
- * on Lynx: there is no focus model, so `openAutoFocus` / `closeAutoFocus` never
- * fire.
- */
-export type AlertDialogContentImplEmits = {
-  /** Auto-focus on open. Inert on Lynx — kept so call sites mirror reka-ui. */
-  openAutoFocus: [event: any]
-  /** Auto-focus on close. Inert on Lynx — kept so call sites mirror reka-ui. */
-  closeAutoFocus: [event: any]
-}
-
 export interface AlertDialogContentImplProps extends PrimitiveProps {
   /**
    * Used to force mounting when more control is needed. Useful when
@@ -53,7 +41,6 @@ defineOptions({ inheritAttrs: false })
 const props = withDefaults(defineProps<AlertDialogContentImplProps>(), {
   as: 'view',
 })
-defineEmits<AlertDialogContentImplEmits>()
 
 const rootContext = injectAlertDialogRootContext()
 const { forwardRef } = useForwardExpose()

@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type {
-  AlertDialogContentImplEmits,
   AlertDialogContentImplProps,
 } from './AlertDialogContentImpl.vue'
 import { getCurrentInstance, h, onUnmounted, useAttrs, useSlots, watch } from 'vue'
-import { useEmitAsProps, useForwardExpose, useId } from '@/shared'
+import { useForwardExpose, useId } from '@/shared'
 import { registerOverlay, unregisterOverlay } from '@/components/OverlayRoot/overlayStore'
 import AlertDialogContentImpl from './AlertDialogContentImpl.vue'
 import { injectAlertDialogRootContext } from './AlertDialogRoot.vue'
@@ -12,11 +11,9 @@ import { injectAlertDialogRootContext } from './AlertDialogRoot.vue'
 defineOptions({ inheritAttrs: false })
 
 const props = defineProps<AlertDialogContentImplProps>()
-const emits = defineEmits<AlertDialogContentImplEmits>()
 
 const rootContext = injectAlertDialogRootContext()
 
-const emitsAsProps = useEmitAsProps(emits)
 const { forwardRef } = useForwardExpose()
 
 // --- Overlay-portal registration -------------------------------------------
@@ -40,7 +37,6 @@ function render() {
     AlertDialogContentImpl,
     {
       ...props,
-      ...emitsAsProps,
       ...attrs,
       // AlertDialog is always modal; focus-trap is a no-op on Lynx but kept
       // so the prop threads through exactly as in reka-ui.

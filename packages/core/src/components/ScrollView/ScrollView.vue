@@ -110,8 +110,6 @@ export interface ScrollViewProps {
    * @defaultValue `false`
    */
   enableRTL?: boolean
-  /** Emit verbose bounce diagnostics to the console. */
-  debugLog?: boolean
 }
 
 export type ScrollViewEmits = {
@@ -154,7 +152,6 @@ const props = withDefaults(defineProps<ScrollViewProps>(), {
   alwaysBouncing: true,
   singleSidedBounce: 'both',
   enableRTL: false,
-  debugLog: false,
 })
 
 // Mobile-first guidance: touch UX prefers one-axis scroll. `horizontal` stays

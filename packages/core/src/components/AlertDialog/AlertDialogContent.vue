@@ -1,11 +1,5 @@
 <script lang="ts">
-import type {
-  AlertDialogContentImplEmits,
-  AlertDialogContentImplProps,
-} from './AlertDialogContentImpl.vue'
-
-/** Focus lifecycle events (inert on Lynx) — see `AlertDialogContentImpl`. */
-export type AlertDialogContentEmits = AlertDialogContentImplEmits
+import type { AlertDialogContentImplProps } from './AlertDialogContentImpl.vue'
 
 export interface AlertDialogContentProps extends Omit<AlertDialogContentImplProps, 'trapFocus'> {
   /**
@@ -18,18 +12,16 @@ export interface AlertDialogContentProps extends Omit<AlertDialogContentImplProp
 
 <script setup lang="ts">
 import { Presence } from '@/components/Presence'
-import { useEmitAsProps, useForwardExpose } from '@/shared'
+import { useForwardExpose } from '@/shared'
 import AlertDialogContentModal from './AlertDialogContentModal.vue'
 import { injectAlertDialogRootContext } from './AlertDialogRoot.vue'
 
 defineOptions({ inheritAttrs: false })
 
 const props = defineProps<AlertDialogContentProps>()
-const emits = defineEmits<AlertDialogContentEmits>()
 
 const rootContext = injectAlertDialogRootContext()
 
-const emitsAsProps = useEmitAsProps(emits)
 const { forwardRef } = useForwardExpose()
 </script>
 
@@ -48,7 +40,7 @@ const { forwardRef } = useForwardExpose()
   <Presence :show="forceMount || rootContext.open.value">
     <AlertDialogContentModal
       :ref="forwardRef"
-      v-bind="{ ...props, ...emitsAsProps, ...$attrs }"
+      v-bind="{ ...props, ...$attrs }"
     >
       <slot />
     </AlertDialogContentModal>

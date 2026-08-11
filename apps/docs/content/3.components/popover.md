@@ -260,7 +260,7 @@ The `content` prop is used only by `presentation="anchor"`.
 | `update:modelValue` | `boolean` | Open-state update for `v-model`. |
 | `close:prevent` | none | An outside tap was blocked because `dismissible` is `false` in anchor mode. |
 
-Core `interactOutside`, `pointerDownOutside`, and `escapeKeyDown` events are not exposed by the kit wrapper.
+Core `interactOutside` and `pointerDownOutside` events are not exposed by the kit wrapper.
 
 ## Slots
 
