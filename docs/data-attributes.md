@@ -61,6 +61,7 @@ override. Each is the stable selector for that element.
 | `data-vyui-sheet-handle` | Sheet | drag handle |
 | `data-vyui-sheet-view` | Sheet | view container |
 | `data-vyui-slider-impl` | Slider | the track implementation node |
+| `data-vyui-slider-shield` | Slider | web-only pointer shield, present while dragging |
 | `data-vyui-sortable-root` | Sortable | root |
 | `data-vyui-sortable-item` | Sortable | each item |
 | `data-vyui-swipe-action` | SwipeAction | root |

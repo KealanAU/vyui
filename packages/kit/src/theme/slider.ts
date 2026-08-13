@@ -25,12 +25,16 @@ export default (colors: Color[]) => ({
       xl: { thumb: 'size-6' },
     },
     orientation: {
+      // Cross-axis padding IS the touch target — the thumb is absolutely
+      // positioned, so the root is otherwise as thin as the track. Padding
+      // rather than a height/width because the drag measures the root's
+      // main-axis extent, which cross-axis padding leaves alone.
       horizontal: {
-        root: 'w-full flex-row',
+        root: 'w-full flex-row py-2',
         range: 'h-full',
       },
       vertical: {
-        root: 'flex-col h-full',
+        root: 'flex-col h-full px-2',
         range: 'w-full',
       },
     },

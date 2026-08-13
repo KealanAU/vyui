@@ -11,7 +11,7 @@ const VARIANTS = ['solid', 'outline', 'soft', 'ghost'] as const
  */
 describe('pressed state is visible at rest', () => {
   const pressedBase = (variant: string) =>
-    theme(COLORS).compoundVariants
+    theme([...COLORS]).compoundVariants
       .find(c => c.pressed && c.color === 'primary' && c.variant === variant)!
       .class.base as string
 
