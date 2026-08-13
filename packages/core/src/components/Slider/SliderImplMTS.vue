@@ -110,6 +110,25 @@ const activeIndexRef = useMainThreadRef<number>(-1)
 const thumbElsRef = useMainThreadRef<any[]>([])
 const rangeElRef = useMainThreadRef<any>(null)
 
+// Drag shield — WEB ONLY, and rendered nowhere else.
+//
+// Lynx web re-targets pointer events by position (same root cause as the
+// `zIndex` in SortableItem), and the slider's box is barely thicker than its
+// track, so a mouse drag stranded the moment the cursor drifted off it. A
+// viewport-sized element raised for the length of the gesture keeps the cursor
+// over a bound element wherever it goes.
+//
+// Lynx native gets neither the element nor its bindings: it delivers the whole
+// gesture to the node the press started on, and a stuck full-screen view there
+// would eat every touch in the app.
+//
+// Read at render, not setup — `SystemInfo` can resolve late.
+function isWeb() {
+  return (globalThis as any).SystemInfo?.platform === 'web'
+}
+
+const shieldRef = useMainThreadRef<any>(null)
+
 function _resolveEls() {
   'main thread'
   const track = trackRef.current
@@ -302,6 +321,13 @@ function _paintRange(vals: number[]) {
   el.setStyleProperty(endName, `${100 - hi}%`)
 }
 
+function _setShield(up: boolean) {
+  'main thread'
+  const el = shieldRef.current as { setStyleProperty?: (k: string, v: string) => void } | null
+  if (!el?.setStyleProperty) return
+  el.setStyleProperty('display', up ? 'flex' : 'none')
+}
+
 // Coordinate-based gesture cores — take ELEMENT-LOCAL offsets. Every wrapper
 // below converts to them the same way: viewport coordinate minus the track
 // origin `_beginAt` captured for this gesture.
@@ -362,6 +388,9 @@ function _dragMove(localX: number, localY: number) {
 
 function _dragEnd() {
   'main thread'
+  // Ahead of the guard: a press that never became a drag (disabled root, zero
+  // extent) still raised the shield, and a stuck shield eats the whole page.
+  _setShield(false)
   if (activeIndexRef.current === -1) return
   // Already sorted and gap-checked by `_applyValue` on every frame, so this is
   // exactly what the commit will write — and therefore what the fill should be
@@ -415,6 +444,13 @@ function _beginAt(clientX: number, clientY: number) {
     .catch(() => {})
 }
 
+// The template's `hit-slop` / `consume-slide-event` are the native forgiveness
+// knobs (Lynx web ignores both). Slop because the element is only as thick as
+// the track — 9px at the kit's default size. Consuming every slide angle
+// because an ancestor `<scroll-view>` otherwise claims the gesture the moment
+// the finger drifts off-axis; the drift itself is harmless, `_valueFromTouch`
+// clamps the cross-axis away.
+
 function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
   'main thread'
   const t = e.touches[0]
@@ -448,6 +484,9 @@ function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number })
   // Primary button only: a right/middle press would start a phantom drag that
   // the next hover move then "releases", teleporting the thumb.
   if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) return
+  // Synchronously, not from `_beginAt`'s `boundingClientRect` continuation —
+  // the cursor can already be off the element by the time that resolves.
+  _setShield(true)
   _beginAt(e.clientX, e.clientY)
 }
 
@@ -492,6 +531,8 @@ function _commit(values: number[]) {
   <Primitive
     data-vyui-slider-impl
     v-bind="props"
+    hit-slop="16px"
+    :consume-slide-event="[[0, 360]]"
     :main-thread-ref="mtBound ? trackRef : undefined"
     :main-thread-bindtouchstart="mtBound ? _onTouchStart : undefined"
     :main-thread-bindtouchmove="mtBound ? _onTouchMove : undefined"
@@ -502,5 +543,13 @@ function _commit(values: number[]) {
     :main-thread-bindmouseup="mtBound ? _onMouseUp : undefined"
   >
     <slot />
+    <view
+      v-if="mtBound && isWeb()"
+      data-vyui-slider-shield
+      style="display: none; position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 9999;"
+      :main-thread-ref="shieldRef"
+      :main-thread-bindmousemove="_onMouseMove"
+      :main-thread-bindmouseup="_onMouseUp"
+    />
   </Primitive>
 </template>

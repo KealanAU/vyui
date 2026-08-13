@@ -292,6 +292,23 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     expect(sfc).not.toMatch(/@layoutchange=|useResizeObserver\(/)
   })
 
+  // Forgiveness, per platform. Native loses the gesture to an ancestor
+  // `<scroll-view>` on off-axis drift and hit-tests only the track's own
+  // thickness; web re-targets pointer events by position, so a mouse drag that
+  // leaves the element strands. The shield answers the web half and must exist
+  // only there — a stuck full-screen view on native would eat every touch.
+  it('is forgiving off-axis: native slop and slide claim, a web-only shield', async () => {
+    const sfc = await readSfc('SliderImplMTS.vue')
+    expect(sfc).toMatch(/hit-slop="\d+px"/)
+    expect(sfc).toMatch(/:consume-slide-event="\[\[0, 360\]\]"/)
+    expect(sfc).toMatch(/v-if="mtBound && isWeb\(\)"/)
+    expect(body(sfc, 'isWeb')).toMatch(/SystemInfo\?\.platform === 'web'/)
+    expect(body(sfc, '_onMouseDown')).toMatch(/_setShield\(true\)/)
+    // Lowered AHEAD of the early return: a press that never became a drag
+    // (disabled, zero extent) would otherwise leave the shield over the page.
+    expect(body(sfc, '_dragEnd')).toMatch(/_setShield\(false\)[\s\S]*?activeIndexRef\.current === -1\) return/)
+  })
+
   it('keeps values sorted and re-tracks the active thumb every frame', async () => {
     const sfc = await readSfc('SliderImplMTS.vue')
     // Thumbs may cross mid-drag; the old BG path re-derived the active index
