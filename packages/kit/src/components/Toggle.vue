@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { ToggleProps as CoreToggleProps } from '@vyui/core'
-import theme from '../theme/toggle'
+import theme, { iconFg } from '../theme/toggle'
 import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type ToggleTV = ThemeTV<typeof theme>
@@ -36,13 +36,19 @@ export interface ToggleSlots {
     pressed: boolean
     /** Current disabled state */
     disabled: boolean
+    /** Resolved hex for the current state, for custom SVG icons. */
+    iconColor: string
   }): any
 }
 </script>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Toggle as CoreToggle, Icon as VyIcon } from '@vyui/core'
+import { useAppConfig } from '../composables/useAppConfig'
+import { useColorMode } from '../composables/useColorMode'
 import { useStyledComponent } from '../composables/useStyledComponent'
+import { resolveColorHex } from '../utils/resolveColor'
 
 const props = withDefaults(defineProps<ToggleProps>(), {
   modelValue: false,
@@ -57,6 +63,15 @@ const { ui } = useStyledComponent('toggle', theme, () => ({
   size: props.size,
   pressed: props.modelValue,
 }))
+
+const appConfig = useAppConfig()
+const { isDark } = useColorMode()
+
+// Fallbacks mirror the theme's `defaultVariants` (`primary` / `ghost`).
+const iconColor = computed(() => {
+  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'ghost', props.modelValue, isDark.value)
+  return fg === 'white' ? 'white' : resolveColorHex(appConfig, fg.semantic, fg.shade)
+})
 </script>
 
 <template>
@@ -71,8 +86,9 @@ const { ui } = useStyledComponent('toggle', theme, () => ({
       :state="modelValue ? 'on' : 'off'"
       :pressed="modelValue"
       :disabled="disabled"
+      :icon-color="iconColor"
     >
-      <VyIcon v-if="icon" :name="icon" :class="ui.icon({ class: props.ui?.icon })" />
+      <VyIcon v-if="icon" :name="icon" :color="iconColor" :class="ui.icon({ class: props.ui?.icon })" />
     </slot>
   </CoreToggle>
 </template>
