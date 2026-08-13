@@ -86,7 +86,7 @@ name: toggle-disabled
 
 | Slot | Props | Description |
 | --- | --- | --- |
-| `default` | `{ modelValue: boolean, state: 'on' \| 'off', pressed: boolean, disabled: boolean }` | Replaces the built-in icon; same prop contract as the core primitive. |
+| `default` | `{ modelValue: boolean, state: 'on' \| 'off', pressed: boolean, disabled: boolean, iconColor: string }` | Replaces the built-in icon; `iconColor` is the resolved hex for the current state, for custom SVG icons. |
 
 ## Styling and theming
 
@@ -103,10 +103,10 @@ The theme combines `color`, `variant`, `size`, and the internal `pressed` state.
 | --- | --- |
 | `solid` | Semantic filled surface with a white icon. |
 | `outline` | Semantic border and foreground with a light active surface. |
-| `soft` | Light semantic surface and semantic foreground. |
-| `ghost` | Transparent surface with semantic foreground and active feedback. |
+| `soft` | Semantic surface and semantic foreground. |
+| `ghost` | Lightest semantic surface with semantic foreground. |
 
-The unpressed state uses a neutral icon and neutral active feedback regardless of `color`. The `size` variant changes root spacing and the `icon` slot from `size-5` through `size-7`.
+Every pressed surface rests on screen rather than only painting while the finger is down. The unpressed state uses a neutral icon and neutral active feedback regardless of `color`. The `size` variant changes root spacing and the `icon` slot from `size-5` through `size-7`.
 
 ## Accessibility
 
@@ -117,7 +117,7 @@ Provide `accessibility-label` for icon-only toggles. Text in the default slot gi
 ## Platform notes
 
 - The component renders a Lynx `view` through the core primitive and responds to the Lynx `tap` event.
-- Lynx SVG does not inherit `currentColor`, so the theme places foreground classes directly on the built-in icon slot.
+- Lynx rasterizes each SVG, so a `text-*` class never reaches the glyph. The component bakes the pressed and unpressed fills into the built-in icon through the Icon `color` prop, and exposes the same hex to the default slot as `iconColor`.
 - The default theme uses vyui's semantic surface/text/border tokens, so it adapts automatically under dark mode (see [Theming → Dark Mode](/theming/dark-mode)).
 
 ## Built on `@vyui/core`

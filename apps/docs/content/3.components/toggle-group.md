@@ -92,6 +92,19 @@ The default slot replaces an entire item's built-in icon and label. It receives 
 </VyToggleGroup>
 ```
 
+### Select boxes
+
+Vertical orientation plus the default slot turns the group into a list of selectable cards: each box is one tap target, and selection paints the container border rather than a separate control. Override `ui.root` to replace the connected `-space-y-px` with a gap, and `ui.item` to round every corner and own the padding.
+
+::component-code
+---
+name: toggle-group-select-box
+height: 260px
+---
+::
+
+Use `type="multiple"` for the multi-select form of the same layout. Render the check icon from your own model state, since the default slot exposes the item, not its pressed state.
+
 ## Features and behavior
 
 - `single` mode stores one string or number. Tapping the selected item again clears the runtime value.

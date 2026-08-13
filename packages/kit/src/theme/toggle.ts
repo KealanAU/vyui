@@ -13,6 +13,7 @@
  * Same convention as `button.ts`.
  */
 import type { Color } from './colors'
+import { type IconFg, iconFgFromToken } from './iconColor'
 
 const solid = (c: string) =>
   ({ base: `bg-${c}-500 active:bg-${c}-600 active:bg-${c}-600`, fg: 'text-white' })
@@ -21,16 +22,30 @@ const outline = (c: string) =>
   ({ base: `border border-${c}-300 active:bg-${c}-50 active:bg-${c}-100`, fg: `text-${c}-500` })
 
 const soft = (c: string) =>
-  ({ base: `bg-${c}-50 active:bg-${c}-100 active:bg-${c}-200`, fg: `text-${c}-500` })
+  ({ base: `bg-${c}-100 active:bg-${c}-100 active:bg-${c}-200`, fg: `text-${c}-500` })
 
+// The pressed surface has to REST on screen, not only under a finger: an
+// `active:` -only ghost is invisible the moment the tap ends, which left the
+// default variant with no on-state at all. Mirrors ToggleGroup's `ui-on:bg-50`.
 const ghost = (c: string) =>
-  ({ base: `active:bg-${c}-50 active:bg-${c}-100`, fg: `text-${c}-500` })
+  ({ base: `bg-${c}-50 active:bg-${c}-100`, fg: `text-${c}-500` })
 
 const VARIANT_BUILDERS = { solid, outline, soft, ghost } as const
 
-type Variant = keyof typeof VARIANT_BUILDERS
+export type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
+
+// Same Lynx constraint as `button.ts` / `toggleGroup.ts`: the `<svg>` rasterizes
+// its XML, so neither the pressed `text-{color}-500` nor the resting
+// `text-default` on the `icon` slot ever reaches the glyph — Toggle.vue bakes
+// the fill from the same `fg` strings so class and baked color can't drift.
+export function iconFg(color: string, variant: Variant, pressed: boolean, isDark = false): IconFg {
+  const suffix = pressed
+    ? VARIANT_BUILDERS[variant](color).fg.match(/^text-(\S+)/)?.[1]
+    : 'default'
+  return iconFgFromToken(suffix, isDark)
+}
 
 export default (colors: Color[]) => ({
   slots: {
