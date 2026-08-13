@@ -9,7 +9,9 @@ type ToggleVariants = VariantProps<ToggleTV>
 // Extends the core primitive so `as` / `asChild` / `defaultValue` — which work
 // at runtime through $attrs fall-through — get real TS/IDE support here too.
 // `modelValue` / `disabled` are narrowed to the kit's concrete types.
-export interface ToggleProps extends CoreToggleProps {
+// `@vue-ignore` because rspack/vue-loader can't resolve the base type across the
+// package boundary; the inherited props are fallthrough attrs either way.
+export interface ToggleProps extends /* @vue-ignore */ CoreToggleProps {
   modelValue?: boolean
   disabled?: boolean
   color?: ToggleVariants['color']
