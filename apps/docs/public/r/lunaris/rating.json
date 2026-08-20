@@ -1,0 +1,22 @@
+{
+  "name": "rating",
+  "type": "registry:ui",
+  "dependencies": [
+    "@vyui/core@^0.2.10"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/Rating.vue",
+      "target": "Rating.vue",
+      "type": "registry:ui",
+      "content": "<script lang=\"ts\">\nimport theme from '@@vyui:theme/rating'\nimport type { ThemeTV, VariantProps } from '@@vyui:composables/useStyledComponent'\n\ntype RatingTV = ThemeTV<typeof theme>\ntype RatingVariants = VariantProps<RatingTV>\n\nexport interface RatingProps {\n  /** Controlled rating value. Can be bound with `v-model`. */\n  modelValue?: number\n  /** Total number of rating items rendered. Defaults to 5. */\n  count?: number\n  /** When true, all interactions are blocked. */\n  disabled?: boolean\n  color?: RatingVariants['color']\n  size?: RatingVariants['size']\n  /** Iconify name for the star glyph. Defaults to `appConfig.ui.icons.star`. */\n  icon?: string\n  class?: any\n  ui?: Partial<Record<keyof RatingTV['slots'], any>>\n}\n\nexport interface RatingEmits {\n  (e: 'update:modelValue', value: number): void\n}\n</script>\n\n<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport { RatingItem, RatingItemIndicator, RatingRoot, Icon as VyIcon } from '@vyui/core'\nimport { useAppConfig } from '@@vyui:composables/useAppConfig'\nimport { useStyledComponent } from '@@vyui:composables/useStyledComponent'\n\nconst props = withDefaults(defineProps<RatingProps>(), {\n  modelValue: 0,\n  count: 5,\n  disabled: false,\n})\nconst emit = defineEmits<RatingEmits>()\n\nconst appConfig = useAppConfig()\n\nconst resolvedIcon = computed(() => props.icon || appConfig.ui.icons?.star || 'i-lucide-star')\n\nconst { ui } = useStyledComponent('rating', theme, () => ({\n  color: props.color,\n  size: props.size,\n  disabled: props.disabled,\n}))\n</script>\n\n<template>\n  <RatingRoot\n    :model-value=\"modelValue\"\n    :length=\"count\"\n    :disabled=\"disabled\"\n    :class=\"ui.root({ class: [props.class, props.ui?.root] })\"\n    @update:model-value=\"emit('update:modelValue', $event)\"\n  >\n    <RatingItem\n      v-for=\"i in count\"\n      :key=\"i\"\n      :item=\"i\"\n      :class=\"ui.base({ class: props.ui?.base })\"\n    >\n      <RatingItemIndicator :step=\"i\">\n        <VyIcon :name=\"resolvedIcon\" :class=\"ui.icon({ class: props.ui?.icon })\" />\n      </RatingItemIndicator>\n    </RatingItem>\n  </RatingRoot>\n</template>\n"
+    },
+    {
+      "path": "theme/rating.ts",
+      "target": "theme/rating.ts",
+      "type": "registry:theme",
+      "content": "/**\n * Rating theme — styled wrapper over `@vyui/core`'s `RatingRoot` /\n * `RatingItem` / `RatingItemIndicator` primitives.\n *\n * Classes use semantic color names (`text-warning-500`) which Tailwind resolves\n * via CSS variables defined in the consuming app — see\n * `apps/examples/kit-demo/src/index.css`.\n *\n * The filled vs. empty state is driven by the `data-state=\"active\"` attribute\n * core emits on each `RatingItemIndicator` — see `RatingItemIndicator.vue`.\n */\nimport type { Color } from '@@vyui:theme/colors'\n\nexport default (colors: Color[]) => ({\n  slots: {\n    root: 'flex flex-row items-center gap-1',\n    base: 'shrink-0',\n    icon: 'text-dimmed',\n  },\n  variants: {\n    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,\n    size: {\n      sm: { icon: 'size-5' },\n      md: { icon: 'size-6' },\n      lg: { icon: 'size-7' },\n      xl: { icon: 'size-8' },\n    },\n    disabled: {\n      true: { base: 'opacity-50 cursor-not-allowed' },\n    },\n  },\n  compoundVariants: [\n    ...colors.map(c => ({ color: c, class: { icon: `ui-active:text-${c}-500` } })),\n  ],\n  defaultVariants: {\n    color: 'warning' as const,\n    size: 'md' as const,\n  },\n})\n"
+    }
+  ]
+}
