@@ -1,0 +1,22 @@
+{
+  "name": "tray-view",
+  "type": "registry:ui",
+  "dependencies": [
+    "@vyui/core@^0.2.10"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/TrayView.vue",
+      "target": "TrayView.vue",
+      "type": "registry:ui",
+      "content": "<script lang=\"ts\">\nexport interface TrayViewProps {\n  /**\n   * Unique id for this view. The tray shows this view's content only when its\n   * current `view` matches — set it via `defaultView`, `useTray().setView(id)`,\n   * or a trigger's `view` prop.\n   */\n  id: string\n}\n\nexport interface TrayViewSlots {\n  default(props?: {}): any\n}\n</script>\n\n<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport { injectTrayContext } from '@@vyui:components/trayContext'\n\nconst props = defineProps<TrayViewProps>()\ndefineSlots<TrayViewSlots>()\n\nconst ctx = injectTrayContext()\n\n// Only the active view mounts, so the tray's measuring wrapper always sees a\n// single view's natural height — that measured height is what the panel morphs\n// to. Unmounting inactive views also keeps their state from lingering across\n// navigation (matches the reference tray).\nconst active = computed(() => ctx.view.value === props.id)\n</script>\n\n<template>\n  <view v-if=\"active\" data-vyui-tray-view :style=\"{ display: 'flex', flexDirection: 'column' }\">\n    <slot />\n  </view>\n</template>\n"
+    },
+    {
+      "path": "components/trayContext.ts",
+      "target": "trayContext.ts",
+      "type": "registry:component",
+      "content": "import type { ComputedRef, Ref } from 'vue'\nimport { createContext } from '@vyui/core'\n\n/**\n * Context shared between `<VyTray>` and its subtree (`<VyTrayView>` children,\n * trigger/footer slots, and any consumer calling `useTray()`).\n *\n * A tray is a morphing bottom sheet that hosts multiple named **views** and\n * navigates between them with a history stack — the panel height animates to\n * fit each view (\"grows into place\"). This context is the single source of\n * truth for that navigation:\n *\n *  - `view`      — id of the currently-rendered view. `<VyTrayView :id>` shows\n *                  its slot only when this matches.\n *  - `visible`   — whether the tray is open.\n *  - `canGoBack` — true when the history stack is non-empty (a `setView` has\n *                  pushed a frame that `goBack` can pop).\n *\n * Navigation writers (`open`/`setView`/`goBack`) maintain the stack; consumers\n * read the refs. Mirrors `expo-dynamic-tray`'s `useTray()` surface.\n */\nexport interface TrayContext {\n  /** Id of the currently-visible view. */\n  view: Ref<string>\n  /** Whether the tray is open. */\n  visible: Ref<boolean>\n  /** True when `goBack()` has somewhere to return to. */\n  canGoBack: ComputedRef<boolean>\n  /** Open the tray, optionally jumping to `view` (defaults to `defaultView`). */\n  open: (view?: string) => void\n  /** Close the tray. */\n  close: () => void\n  /** Navigate to `id`, pushing the current view onto the back stack. */\n  setView: (id: string) => void\n  /** Pop the back stack and return to the previous view. No-op if empty. */\n  goBack: () => void\n}\n\nexport const [injectTrayContext, provideTrayContext]\n  = createContext<TrayContext>('VyTray')\n\n/**\n * Read the enclosing `<VyTray>`'s navigation controller. Call from any\n * component rendered inside a tray (view bodies, footer, custom triggers) to\n * drive it imperatively:\n *\n * ```ts\n * const tray = useTray()\n * tray.setView('confirm')   // navigate + push history\n * tray.goBack()             // pop back\n * ```\n *\n * Throws if used outside a `<VyTray>`.\n */\nexport function useTray(): TrayContext {\n  return injectTrayContext()\n}\n"
+    }
+  ]
+}

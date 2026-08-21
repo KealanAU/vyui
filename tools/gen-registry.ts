@@ -32,8 +32,7 @@
  * downstream project, rewriting relative imports to the user's aliases.
  *
  * Usage:
- *   tsx tools/gen-registry.ts          # pilot set (Chip, Avatar, Button, …)
- *   tsx tools/gen-registry.ts --all    # every top-level component
+ *   tsx tools/gen-registry.ts    # every top-level component, every style
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, posix, resolve } from 'node:path'
@@ -45,10 +44,6 @@ import { writeSchemas } from './gen-schemas.js'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const kitSrc = resolve(root, 'packages/kit/src')
 const outRoot = resolve(root, 'apps/docs/public/r')
-
-const all = process.argv.includes('--all')
-/** Pilot set — exercises the full dependency graph (Toast→Button,Avatar; Avatar→Chip). */
-const PILOT = ['Chip', 'Avatar', 'Button', 'Accordion', 'Toast']
 
 /** Theme files that belong to the shared `init` payload, not a single component. */
 const SHARED_THEME = new Set(['colors', 'icons', 'color-constants', 'index'])
@@ -438,7 +433,7 @@ function generateStyle(style: StyleDef) {
   mkdirSync(outDir, { recursive: true })
 
   const catalog: Array<{ name: string, type: string, dependencies: string[], registryDependencies: string[] }> = []
-  const names = componentNames(style).filter(name => all || PILOT.includes(name))
+  const names = componentNames(style)
 
   for (const name of names) {
     const deps = new Set<string>()

@@ -7,7 +7,23 @@
       "name": "accordion",
       "type": "registry:ui",
       "dependencies": [
-        "@vyui/core@^0.2.7"
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "app",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
       ],
       "registryDependencies": []
     },
@@ -15,21 +31,63 @@
       "name": "avatar",
       "type": "registry:ui",
       "dependencies": [
-        "@vyui/core@^0.2.7"
+        "@vyui/core@^0.2.10"
       ],
       "registryDependencies": [
         "chip"
       ]
     },
     {
-      "name": "button",
+      "name": "avatar-group",
+      "type": "registry:ui",
+      "dependencies": [],
+      "registryDependencies": [
+        "avatar"
+      ]
+    },
+    {
+      "name": "badge",
       "type": "registry:ui",
       "dependencies": [
-        "@vyui/core@^0.2.7"
+        "@vyui/core@^0.2.10"
       ],
       "registryDependencies": [
         "avatar"
       ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": [
+        "avatar"
+      ]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": [
+        "alert"
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "dependencies": [],
+      "registryDependencies": []
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
     },
     {
       "name": "chip",
@@ -38,15 +96,290 @@
       "registryDependencies": []
     },
     {
+      "name": "combobox",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "drawer",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": [
+        "avatar"
+      ]
+    },
+    {
+      "name": "feed-list",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "form",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "form-field",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": [
+        "avatar"
+      ]
+    },
+    {
+      "name": "island",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "island-button",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "island-group",
+      "type": "registry:ui",
+      "dependencies": [],
+      "registryDependencies": []
+    },
+    {
+      "name": "label",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "modal",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": [
+        "button"
+      ]
+    },
+    {
+      "name": "number-field",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "pin-input",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "placeholder",
+      "type": "registry:ui",
+      "dependencies": [],
+      "registryDependencies": []
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10",
+        "tailwind-variants@^0.3.1"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "rating",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "dependencies": [],
+      "registryDependencies": []
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "sortable",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "stepper",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "swipe-action",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "swiper",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "textarea",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": [
+        "avatar"
+      ]
+    },
+    {
       "name": "toast",
       "type": "registry:ui",
       "dependencies": [
-        "@vyui/core@^0.2.7"
+        "@vyui/core@^0.2.10"
       ],
       "registryDependencies": [
         "avatar",
         "button"
       ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "toggle-group",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "tray",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "tray-view",
+      "type": "registry:ui",
+      "dependencies": [
+        "@vyui/core@^0.2.10"
+      ],
+      "registryDependencies": []
     }
   ]
 }

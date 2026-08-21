@@ -1,0 +1,20 @@
+{
+  "name": "placeholder",
+  "type": "registry:ui",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/Placeholder.vue",
+      "target": "Placeholder.vue",
+      "type": "registry:ui",
+      "content": "<script lang=\"ts\">\nimport theme from '@@vyui:theme/placeholder'\n\nexport interface PlaceholderProps {\n  class?: any\n}\n</script>\n\n<script setup lang=\"ts\">\nimport { useStyledComponent } from '@@vyui:composables/useStyledComponent'\n\nconst props = defineProps<PlaceholderProps>()\n\nconst { ui } = useStyledComponent('placeholder', theme, () => ({ class: props.class }))\n\n// Diagonal hatch via repeating-linear-gradient — scales with the element at\n// any size and needs no SVG sizing tricks. On Lynx an `<svg>` rasterizes at\n// a fixed point, which made the previous SVG approach blur or clip when the\n// container grew beyond the rasterization size. The gradient is painted by\n// the layout engine each frame, so an `h-48` panel looks the same as an\n// `h-12` chip — exactly what a layout-stub placeholder should do.\n//\n// `9 9` keeps the stripe pitch dense enough to read on a phone screen;\n// 1.5px stroke + neutral/slate at ~8% gives enough contrast on the `bg-muted` fill\n// without dominating any real content layered above (e.g. demo labels).\nconst hatchStyle = {\n  backgroundImage:\n    'repeating-linear-gradient(135deg, rgba(15,23,42,0.08) 0, rgba(15,23,42,0.08) 1.5px, transparent 1.5px, transparent 9px)',\n}\n</script>\n\n<template>\n  <view :class=\"ui\" :style=\"hatchStyle\" />\n</template>\n"
+    },
+    {
+      "path": "theme/placeholder.ts",
+      "target": "theme/placeholder.ts",
+      "type": "registry:theme",
+      "content": "/**\n * Placeholder theme — adapted from nuxt/ui v3 `theme/placeholder.ts`.\n *\n * A dashed-bordered, X-hatched panel used to mark out layout regions in demos\n * and docs. Sizes itself to whatever the caller passes via `class` (`h-48`,\n * `aspect-square`, etc.).\n */\nexport default {\n  // No `w-full` — flex children already stretch cross-axis via\n  // `align-items: stretch`, AND that path honours `m-*` margins. Setting\n  // `w-full` here would make the box 100% of the parent BEFORE margins,\n  // pushing it past the right edge of any parent it sits inside (e.g.\n  // `w-full + m-4` overflows by 2rem). Callers outside a flex container can\n  // add `w-full` themselves via `class`.\n  base: 'relative overflow-hidden rounded-md border border-dashed border-accented bg-muted',\n}\n"
+    }
+  ]
+}

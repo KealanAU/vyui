@@ -1,0 +1,22 @@
+{
+  "name": "label",
+  "type": "registry:ui",
+  "dependencies": [
+    "@vyui/core@^0.2.10"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/Label.vue",
+      "target": "Label.vue",
+      "type": "registry:ui",
+      "content": "<script lang=\"ts\">\nimport theme from '@@vyui:theme/label'\nimport type { ThemeTV, VariantProps } from '@@vyui:composables/useStyledComponent'\n\ntype LabelTV = ThemeTV<typeof theme>\ntype LabelVariants = VariantProps<LabelTV>\n\nexport interface LabelProps {\n  /** The id of the form control this label is associated with. */\n  for?: string\n  size?: LabelVariants['size']\n  required?: boolean\n  class?: any\n  ui?: Partial<Record<keyof LabelTV['slots'], any>>\n}\n\nexport interface LabelSlots {\n  default(props?: {}): any\n}\n</script>\n\n<script setup lang=\"ts\">\nimport { Label as CoreLabel } from '@vyui/core'\nimport { useStyledComponent } from '@@vyui:composables/useStyledComponent'\n\nconst props = withDefaults(defineProps<LabelProps>(), {})\ndefineSlots<LabelSlots>()\n\nconst { ui } = useStyledComponent('label', theme, () => ({\n  size: props.size,\n  required: props.required,\n}))\n</script>\n\n<template>\n  <CoreLabel\n    :for=\"props.for\"\n    :class=\"ui.base({ class: [props.class, props.ui?.base] })\"\n  >\n    <slot />\n  </CoreLabel>\n</template>\n"
+    },
+    {
+      "path": "theme/label.ts",
+      "target": "theme/label.ts",
+      "type": "registry:theme",
+      "content": "/**\n * `VyLabel` theme. nuxt/ui v3 has no standalone Label (it lives inside\n * FormField), so this is a minimal single-part design: a `base` slot with\n * `size` and `required` variants. When `required` is true we append a red\n * asterisk via the `after:` pseudo-element, matching the convention used by\n * nuxt/ui's FormField label.\n */\nexport default {\n  slots: {\n    base: 'font-medium text-highlighted select-none',\n  },\n  variants: {\n    size: {\n      sm: 'text-base',\n      md: 'text-lg',\n      lg: 'text-xl',\n      xl: 'text-2xl',\n    },\n    required: {\n      true: \"after:content-['*'] after:ms-0.5 after:text-red-500\",\n    },\n  },\n  defaultVariants: {\n    size: 'md' as const,\n    required: false as const,\n  },\n}\n"
+    }
+  ]
+}
