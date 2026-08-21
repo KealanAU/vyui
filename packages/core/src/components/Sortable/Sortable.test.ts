@@ -106,6 +106,6 @@ describe('Sortable — drop settle contract in the SFC source', () => {
   it('keeps the raise off native, where z-index jumps the row out of layout', async () => {
     const style = (await readSfc('SortableItem.vue'))
       .match(/const rowStyle = computed\([\s\S]*?\n\}\)/)?.[0] ?? ''
-    expect(style).toMatch(/SystemInfo\)?\??\.?\w*\?\.platform === 'web'/)
+    expect(style).toMatch(/SystemInfo\?\.platform\b[^\n]*=== 'web'/)
   })
 })
