@@ -10,10 +10,7 @@ import type { AsTag } from '@/components/Primitive'
 export interface ButtonProps {
   /** Disables tap + active feedback. */
   disabled?: boolean
-  /**
-   * Underlying element. Defaults to `view`.
-   * @defaultValue `'view'`
-   */
+  /** Underlying element. Defaults to `view`. @defaultValue `'view'` */
   as?: AsTag
   /** Merge props onto the slot child instead of wrapping. */
   asChild?: boolean

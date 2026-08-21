@@ -12,7 +12,7 @@
       "type": "number | undefined",
       "required": false,
       "default": "0",
-      "description": "Initial snap index when uncontrolled (defaults to 0). The enter\nanimation always slides fully in first; when this points below the\nlargest snap the sheet then settles down to it. The index persists\nacross close/reopen."
+      "description": "Initial snap index when uncontrolled (defaults to 0). The enter animation\nalways slides fully in first, then settles down to this snap. Persists\nacross close/reopen."
     },
     {
       "name": "dismissVelocity",
@@ -26,21 +26,21 @@
       "type": "number | undefined",
       "required": false,
       "default": "280",
-      "description": "Settle animation duration in ms. Drag release snap-back uses it\ndirectly; drag-dismiss and touch-cancel use shorter cuts of it."
+      "description": "Settle animation duration in ms. Drag release snap-back uses it directly;\ndrag-dismiss and touch-cancel use shorter cuts of it."
     },
     {
       "name": "enableDragToClose",
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "Allow drag below the most-closed snap to dismiss. When `false` with\nmultiple snap points, drag between snaps still works — only the\ndismiss branch is disabled."
+      "description": "Allow drag below the most-closed snap to dismiss. When `false` with\nmultiple snap points, drag between snaps still works."
     },
     {
       "name": "handleOnly",
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Restrict drag interaction to `<SheetHandle>` only. When `true`, the\n`<SheetContent>` body does not respond to touch."
+      "description": "Restrict drag interaction to `<SheetHandle>` only."
     },
     {
       "name": "open",
@@ -59,26 +59,26 @@
       "name": "snapIndex",
       "type": "number | undefined",
       "required": false,
-      "description": "Controlled current snap index. Bind with `v-model:snapIndex`. Indexes\nthe SORTED `snapPoints` (0 = smallest fraction = most closed). Updated\nby drag settles; writing it animates the open sheet to that snap."
+      "description": "Controlled current snap index. Bind with `v-model:snapIndex`. Indexes the\nSORTED `snapPoints` (0 = most closed). Updated by drag settles; writing it\nanimates the open sheet to that snap."
     },
     {
       "name": "snapPoints",
       "type": "number[] | undefined",
       "required": false,
       "default": "[1]",
-      "description": "Snap points as fractions of viewport extent on the sheet axis, low → high.\ne.g. `[0.25, 0.5, 0.9]`. For `top`/`bottom` this is viewport height;\nfor `left`/`right` this is viewport width."
+      "description": "Snap points as fractions of viewport extent on the sheet axis, low → high\n(viewport height for `top`/`bottom`, width for `left`/`right`)."
     },
     {
       "name": "viewportHeight",
       "type": "number | undefined",
       "required": false,
-      "description": "Viewport height in px. If omitted, reads from `SystemInfo.pixelHeight /\npixelRatio` at runtime, falling back to `800`."
+      "description": "Viewport height in px. Defaults to `SystemInfo.pixelHeight / pixelRatio`\nat runtime, falling back to `800`."
     },
     {
       "name": "viewportWidth",
       "type": "number | undefined",
       "required": false,
-      "description": "Viewport width in px. If omitted, reads from `SystemInfo.pixelWidth /\npixelRatio` at runtime, falling back to `400`."
+      "description": "Viewport width in px. Defaults to `SystemInfo.pixelWidth / pixelRatio` at\nruntime, falling back to `400`."
     }
   ],
   "events": [

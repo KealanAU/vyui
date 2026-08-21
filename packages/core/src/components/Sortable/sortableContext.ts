@@ -6,17 +6,13 @@ import type { MainThreadRef } from 'vue-lynx'
 
 import { createContext } from '../../shared/createContext'
 
-/**
- * Per-item registry slot. The MT touch worklets read every entry to paint
- * non-lifted item transforms during drag without crossing into BG.
- */
+/** Per-item registry slot. The MT touch worklets read every entry to paint
+ *  non-lifted item transforms during drag without crossing into BG. */
 export interface SortableItemHandle {
   /** Logical index at the time of registration. Updated via `watch` on prop changes. */
   index: number
-  /**
-   * Plain JS object that holds the MT element. BG seeds `.current` on mount
-   * from the item's `useMainThreadRef` — same pattern Slider thumbs use.
-   */
+  /** Plain JS object holding the MT element; BG seeds `.current` on mount from
+   *  the item's `useMainThreadRef`, as Slider thumbs do. */
   elementRef: { current: { setStyleProperty?(k: string, v: string): void } | null }
 }
 
@@ -52,7 +48,6 @@ export interface SortableRootContext<T = unknown> {
   /** Max autoscroll speed in px per touchmove frame. */
   autoScrollSpeedMT: MainThreadRef<number>
 
-  // ── BG callbacks invoked from MT worklets ────────────────────────────────
   /** Commit a reorder from `from` → `to`. Emits `update:modelValue` + `reorder`. */
   commitReorder: (from: number, to: number) => void
   /** Mark drag started (sets `draggingIndex` for slot reactivity). */

@@ -2,24 +2,15 @@
   Adapted from lynx-family/lynx-ui (Apache-2.0) —
   packages/lynx-ui-input/src/KeyboardAwareResponder.tsx.
 
-  The responder is the outer surface that physically moves to keep the
-  focused trigger above the on-screen keyboard. The root mutates the
-  responder's native `transform` (or, in scrollview mode, scrolls a dummy
-  spacer into view).
+  The outer surface that physically moves to keep the focused trigger above the
+  on-screen keyboard. `as="view"` (default) is a plain `<view>` whose
+  `transform: translateY(...)` the root sets; `as="scroll-view"` wraps children
+  in a scrollview plus a 1px dummy spacer whose height the root grows to match
+  the keyboard.
 
-  Two modes:
-   - `as="view"` (default): the responder is a plain `<view>` whose
-     `transform: translateY(...)` is set by the root.
-   - `as="scroll-view"`: the responder wraps its children in a scrollview and
-     a 1px dummy spacer at the bottom whose height the root grows to match
-     the keyboard.
-
-  Note vs. the React port: the upstream component depends on
-  `@lynx-js/lynx-ui-scroll-view`'s `<ScrollView>`. vyui has its own
-  `ScrollArea` family but no straight `ScrollView`, so we render Lynx's
-  native `<scroll-view>` element directly when in scrollview mode. The
-  generated content-view id (`keyboard-aware-trigger-scroll-content-{id}`)
-  is preserved so the root can scroll-to it by id.
+  Upstream depends on `@lynx-js/lynx-ui-scroll-view`; vyui renders Lynx's native
+  `<scroll-view>` directly instead, keeping the generated content-view id
+  (`keyboard-aware-trigger-scroll-content-{id}`) so the root can scroll to it.
 -->
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
@@ -27,25 +18,20 @@ import type { PrimitiveProps } from '@/components/Primitive'
 export type KeyboardAwareResponderMode = 'view' | 'scroll-view'
 
 export interface KeyboardAwareResponderProps extends PrimitiveProps {
-  /**
-   * Which underlying element to render. `'view'` (the default) renders a
-   * static `<view>` whose `transform` the root mutates. `'scroll-view'`
-   * wraps content in a `<scroll-view>` and lets the root grow a dummy
-   * spacer at the bottom to push the focused trigger upward.
-   */
+  /** Which underlying element to render: `'view'` (default) for a static
+   *  `<view>` whose `transform` the root mutates, or `'scroll-view'` for the
+   *  spacer-growing scroll path. */
   mode?: KeyboardAwareResponderMode
   /**
-   * The id of the inner `<scroll-view>` when `mode === 'scroll-view'`. The
-   * root uses this to dispatch `scrollTo` ops. Defaults to `'scrollview'`
-   * for parity with the React port — pass a unique id when more than one
-   * scroll-mode responder can be on screen.
+   * Id of the inner `<scroll-view>` when `mode === 'scroll-view'`, used by the
+   * root to dispatch `scrollTo` ops. Defaults to `'scrollview'` — pass a unique
+   * id when more than one scroll-mode responder can be on screen.
    */
   scrollviewId?: string
   /**
-   * Class applied to the inner `<scroll-view>` when `mode === 'scroll-view'`.
-   * The scroll path only engages when the scroll region has a bounded height
-   * — pass the height cap here (fallthrough attrs land on the outer wrapper
-   * view, not the scroll-view).
+   * Class applied to the inner `<scroll-view>`. The scroll path only engages
+   * when the region has a bounded height, so pass the height cap here
+   * (fallthrough attrs land on the outer wrapper view).
    */
   scrollViewClass?: any
 }
@@ -65,16 +51,14 @@ const props = withDefaults(defineProps<KeyboardAwareResponderProps>(), {
 const { primitiveElement, currentElement } = usePrimitiveElement()
 const rootContext = injectKeyboardAwareRootContext(null)
 
-/** Mirror the React port's dummy element: a 1px-wide spacer at the bottom of
- *  the scrollview that the root grows vertically to push the focused content
- *  above the keyboard. */
+/** Mirror of the React port's dummy element: a 1px-wide spacer the root grows
+ *  vertically to push focused content above the keyboard. */
 const dummyEl = ref<unknown>(null)
 const dummyRef = ref<{ current: unknown }>({ current: null })
 
 function syncResponderRef() {
   if (!rootContext)
     return
-  // Publish the underlying element to the root's responder ref slot.
   ;(rootContext.keyboardAwareResponder as { current: unknown }).current = currentElement.value
 }
 
@@ -90,8 +74,8 @@ function reportScrollInfo() {
     )
   }
   else {
-    // Make sure stale scroll-info from a previous mode is cleared so the root
-    // takes the `transform`-based path.
+    // Clear stale scroll-info from a previous mode so the root takes the
+    // `transform`-based path.
     rootContext.keyboardAwareResponderScrollInfoCollected(undefined, undefined, undefined)
   }
 }
@@ -122,8 +106,7 @@ watch(() => props.mode, reportScrollInfo)
     as="view"
     flatten="false"
   >
-    <!-- `id` (not `scroll-view-id`) — the root scrolls it via a `#{id}`
-         selector query. -->
+    <!-- `id`, not `scroll-view-id` — the root scrolls it via a `#{id}` query. -->
     <Primitive
       as="scroll-view"
       scroll-orientation="vertical"

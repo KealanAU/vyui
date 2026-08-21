@@ -10,7 +10,6 @@ export function useSize(element: MaybeElementRef) {
   onMounted(() => {
     const el = unrefElement(element) as HTMLElement
     if (el) {
-      // provide size as early as possible
       size.value = { width: el.offsetWidth, height: el.offsetHeight }
 
       if (typeof ResizeObserver === 'undefined')
@@ -31,7 +30,6 @@ export function useSize(element: MaybeElementRef) {
 
         if ('borderBoxSize' in entry) {
           const borderSizeEntry = entry.borderBoxSize
-          // iron out differences between browsers
           const borderSize = Array.isArray(borderSizeEntry)
             ? borderSizeEntry[0]
             : borderSizeEntry

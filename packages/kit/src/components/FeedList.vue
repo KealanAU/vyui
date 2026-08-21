@@ -18,11 +18,9 @@ export interface FeedListProps<T = unknown> {
   spanCount?: number
   scrollOrientation?: 'vertical' | 'horizontal'
   bounces?: boolean
-  /**
-   * Snap each item to a rest position after scrolling (native `item-snap`).
-   * `true` = full-screen paging (snap each item to the top); pass an object for
-   * a custom `{ factor, offset }`. `listType: 'single'` only.
-   */
+  /** Snap each item to a rest position after scrolling (native `item-snap`).
+   *  `true` = full-screen paging; pass `{ factor, offset }` to customise.
+   *  `listType: 'single'` only. */
   itemSnap?: boolean | { factor: number, offset: number }
   scrollBarEnable?: boolean
   /** Disable scrolling. */
@@ -129,7 +127,7 @@ const { ui: cls } = useStyledComponent('feedList', theme, () => ({ class: props.
       <slot name="empty" />
     </template>
     <!-- Core only renders this slot while loading, so `loading` is always true
-         here; kept in the kit slot contract for consumer convenience. -->
+         here; kept in the kit slot contract for convenience. -->
     <template #loadMoreFooter>
       <slot name="loadMoreFooter" :loading="true" />
     </template>

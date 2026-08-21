@@ -1,23 +1,17 @@
 /**
  * Switch theme — adapted from nuxt/ui v3.0.2 `theme/switch.ts` for Vue-Lynx.
- *
- * Classes use semantic color names (`bg-primary-500`) which Tailwind resolves
- * via CSS variables defined in the consuming app — see
- * `apps/examples/kit-demo/src/index.css`.
+ * Semantic color names resolve via CSS variables defined in the consuming app.
  */
 import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-center min-w-0 max-w-full gap-2',
-    // `items-center` centers the thumb vertically — without it, the thumb
-    // (`h-4` < rail's `h-5`) pins to the cross-axis start (top edge) on Lynx.
-    //
-    // Thumb position is driven by flexbox justification (`justify-start` /
-    // `justify-end` via the `checked` variant), NOT `translate-x-*`. The Lynx
-    // tailwind preset compiles `translate-x-*` to `transform: translate3d(var(…))`,
-    // and `transform`/`var()` positioning silently fails to paint on Lynx —
-    // see the canonical write-up in `core/src/components/Slider/SliderThumbImpl.vue`.
+    // `items-center` centers the thumb vertically — without it the thumb pins to
+    // the cross-axis start on Lynx. Thumb position is driven by flexbox
+    // justification, NOT `translate-x-*`: the Lynx preset compiles that to
+    // `transform: translate3d(var(…))`, and `transform`/`var()` positioning
+    // silently fails to paint (see `core/src/components/Slider/SliderThumbImpl.vue`).
     // `px-0.5` keeps the thumb off the rail edges at both ends.
     base: 'relative flex flex-row items-center justify-start shrink-0 px-0.5 rounded-full transition-colors',
     thumb: 'pointer-events-none flex flex-row items-center justify-center rounded-full bg-white shadow',

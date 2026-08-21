@@ -14,13 +14,9 @@ export interface SwitchRootProps<T = boolean> extends PrimitiveProps, FormFieldP
   id?: string
   /** The value given as data when submitted with a `name`. */
   value?: string
-  /**
-   * The value used when the switch is on. Defaults to `true`.
-   */
+  /** The value used when the switch is on. Defaults to `true`. */
   trueValue?: T
-  /**
-   * The value used when the switch is off. Defaults to `false`.
-   */
+  /** The value used when the switch is off. Defaults to `false`. */
   falseValue?: T
 }
 

@@ -5,7 +5,7 @@
       "type": "AsTag | undefined",
       "required": false,
       "default": "\"view\"",
-      "description": "Element this container renders as. Defaults to `view` (Lynx layout tag).\nUse a different tag/component when you need different semantic intent\n(e.g. wrap in a custom navigation component)."
+      "description": "Element this container renders as — any Lynx tag or Vue component."
     }
   ],
   "events": [],

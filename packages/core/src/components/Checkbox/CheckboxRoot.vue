@@ -20,13 +20,9 @@ export interface CheckboxRootProps<T = boolean> extends PrimitiveProps, FormFiel
   value?: AcceptableValue
   /** Id of the element */
   id?: string
-  /**
-   * The value used when the checkbox is checked. Defaults to `true`.
-   */
+  /** The value used when the checkbox is checked. Defaults to `true`. */
   trueValue?: T
-  /**
-   * The value used when the checkbox is unchecked. Defaults to `false`.
-   */
+  /** The value used when the checkbox is unchecked. Defaults to `false`. */
   falseValue?: T
 }
 

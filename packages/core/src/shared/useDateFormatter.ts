@@ -7,9 +7,8 @@ import { getLocalTimeZone, today } from '@internationalized/date'
 import { ref } from 'vue'
 import { hasTime, isZonedDateTime, toDate } from '@/date'
 // Stopgap: format through the in-house `DateFormatter` instead of
-// `@internationalized/date`'s, which leans on a complete host `Intl` that
-// Lynx's PrimJS engine does not provide. Swap for a real i18n library later
-// — see `shared/intl/`.
+// `@internationalized/date`'s, which leans on a complete host `Intl` that PrimJS
+// does not provide. See `shared/intl/`.
 import { DateFormatter } from './intl'
 
 export interface DateFormatterOptions extends Intl.DateTimeFormatOptions {
@@ -32,10 +31,8 @@ export type Formatter = {
 }
 
 /**
- * Creates a wrapper around the `DateFormatter`, which is
- * an improved version of the {@link Intl.DateTimeFormat} API,
- * that is used internally by the various date builders to
- * easily format dates in a consistent way.
+ * Wrapper around `DateFormatter` — an improved {@link Intl.DateTimeFormat} — used
+ * by the date builders to format dates consistently.
  *
  * @see [DateFormatter](https://react-spectrum.adobe.com/internationalized/date/DateFormatter.html)
  */

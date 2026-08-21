@@ -1,15 +1,10 @@
 <script lang="ts">
 export interface NavigationPageProps {
-  /**
-   * Stable identifier for this page. Must match the `key` of an entry in
-   * the stack's `entries` for the page to mount.
-   */
+  /** Stable identifier for this page. Must match the `key` of a stack entry for
+   *  the page to mount. */
   pageKey: string
-  /**
-   * When `false`, force-unmount even if this page matches the current
-   * stack key — useful for memory pressure or screen-specific reset.
-   * @defaultValue true
-   */
+  /** When `false`, force-unmount even if this page matches the current stack key
+   *  — for memory pressure or a screen-specific reset. @defaultValue true */
   keepAlive?: boolean
 }
 </script>
@@ -27,15 +22,12 @@ const ctx = injectNavigationStackContext()
 const isCurrent = computed(() => ctx.currentKey.value === props.pageKey)
 
 /**
- * Slide-in animation class for the current page. Lynx's preset ships the
- * named `slide-in` keyframe (used by Sheet / Toast) which we reuse here.
- * Both forward push and back pop currently apply the same slide-in enter
- * animation; there is no distinct leave/back animation yet.
+ * Slide-in animation class for the current page, reusing the Lynx preset's named
+ * `slide-in` keyframe. Both push and pop apply the same enter animation; there
+ * is no distinct leave/back animation yet.
  *
- * Animations are CSS — no MT worklet — so the page is rendered absolute and
- * the layout engine handles the transform. For more native-feeling physics
- * (rubber-band, swipe-back gesture) wrap individual pages in a custom MT
- * driver later.
+ * Animations are CSS — no MT worklet — so the page renders absolute and the
+ * layout engine handles the transform.
  */
 const animationClass = computed(() => {
   if (ctx.transition.value === 'none') return ''

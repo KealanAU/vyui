@@ -20,16 +20,11 @@ export function createContext<ContextValue>(
           ? providerComponentName.join('-')
           : 'Context')
 
-  // `Symbol.for` (global registry), not `Symbol`, on purpose.
-  //
-  // The rspeedy/Lynx build compiles every dual-`<script>` SFC twice (once via
-  // rspack-vue-loader, once via builtin:swc-loader), so this module — and thus
-  // `createContext` — can run more than once for the same component. A plain
-  // `Symbol()` would mint a different key per copy: a child injecting through
-  // one copy can't see a parent that provided through the other, and Vue
-  // throws "Injection not found". A registry symbol is keyed by string, so
-  // every copy resolves to the identical key. Descriptions are unique
-  // per-component, so registry collisions are not a concern.
+  // `Symbol.for` (global registry), not `Symbol`, on purpose: the rspeedy/Lynx
+  // build compiles every dual-`<script>` SFC twice, so this module can run more
+  // than once for the same component. A plain `Symbol()` would mint a different
+  // key per copy and Vue would throw "Injection not found"; a registry symbol is
+  // keyed by string, and descriptions are unique per component.
   const injectionKey: InjectionKey<ContextValue | null>
     = Symbol.for(`vyui:${symbolDescription}`)
 

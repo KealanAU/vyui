@@ -1,13 +1,10 @@
-// Styled NumberField — composes the core NumberField parts (stepper buttons +
-// numeric input) into a single bordered control. Adapted for Vue-Lynx.
-//
-// Semantic color names (`primary`, `error`, …) resolve to actual palettes via
-// the consuming app's CSS variables and Tailwind config — see
-// `apps/examples/kit-demo/src/index.css`.
+// Styled NumberField — composes the core NumberField parts into a single
+// bordered control. Semantic color names resolve via the consuming app's CSS
+// variables.
 //
 // Lynx adaptation mirrors `./input`: border + bg + radius live on `root`, the
-// inner `<input>` (`base`) stays transparent and sits between the two stepper
-// buttons. `ring-*` → `border-*` (no ringWidth plugin in the Lynx preset).
+// inner `<input>` stays transparent between the two stepper buttons, and
+// `ring-*` becomes `border-*` (no ringWidth plugin in the Lynx preset).
 
 import type { Color } from './colors'
 
@@ -51,10 +48,8 @@ export default (colors: Color[]) => ({
         decrementIcon: 'size-6',
       },
     },
-    // Surface only (bg/border) on `root`; typed-text color lives on `base`
-    // (the <input>) — CSS inheritance is OFF in the Lynx build
-    // (`enableCSSInheritance: false`), so a `text-*` on the root <view> never
-    // reaches the input element.
+    // Surface only (bg/border) on `root`; typed-text color lives on `base` —
+    // CSS inheritance is OFF in the Lynx build.
     variant: {
       outline: { root: 'bg-default border border-default' },
       soft: { root: 'bg-muted disabled:bg-muted border-transparent' },

@@ -6,17 +6,12 @@ import type { AppConfig, ComponentThemes, DeepPartial } from './types'
  * `provideVyUI` / `app.use(VyUI)` (runtime).
  */
 export interface VyuiConfig {
-  /**
-   * Palette + semantic selection. Build-AND-runtime meaningful: `colors` drives
-   * which utilities the Tailwind preset generates; `primary`/`gray`/`icons`
-   * drive runtime variant + icon-hex resolution.
-   */
+  /** Palette + semantic selection. `colors` drives which utilities the Tailwind
+   *  preset generates; `primary`/`gray`/`icons` drive runtime variant + icon-hex
+   *  resolution. */
   theme?: DeepPartial<Pick<AppConfig['ui'], 'primary' | 'gray' | 'colors' | 'icons'>>
-  /**
-   * Per-component `tailwind-variants` overrides, keyed by component name
-   * (`button`, `input`, …). Runtime-only — selects from classes Tailwind has
-   * already emitted; it cannot create new ones.
-   */
+  /** Per-component `tailwind-variants` overrides, keyed by component name.
+   *  Runtime-only — selects from classes Tailwind has already emitted. */
   components?: ComponentThemes
 }
 
@@ -31,10 +26,8 @@ export interface ResolvedVyuiConfig {
  *
  * ```ts
  * // vyui.config.ts
- * import { defineVyuiConfig } from '@vyui/kit/config'
  * export default defineVyuiConfig({
  *   theme: { primary: 'orange', gray: 'stone' },
- *   components: { button: { slots: { base: 'rounded-xl' } } },
  * })
  * ```
  */

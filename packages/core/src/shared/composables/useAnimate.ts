@@ -3,32 +3,20 @@
  * Animations API (`element.animate()`).
  *
  * Lynx CSS does not run the full transition spec, and CSS-driven enter/leave
- * loses control of timing (no `Animation.finished` Promise, no cancellation).
- * The main-thread `element.animate()` path gives us a real animation handle
- * we can drive from the background thread via `runOnMainThread`.
- *
- * Pattern:
- *   1. Bind `elRef` to a view via `:main-thread-ref="elRef"`.
- *   2. Call a helper (`fadeIn`, `slideOut`, etc.) from the background thread.
- *   3. The helper hops to the main thread and calls `element.animate()` with
- *      the right keyframes.
+ * loses control of timing (no `Animation.finished`, no cancellation).
+ * `element.animate()` on the main thread gives a real handle the background
+ * thread can drive via `runOnMainThread`: bind `elRef` with
+ * `:main-thread-ref`, then call a helper from BG.
  *
  * Caveats:
- *   - Web target: `element.animate()` for lynx web-core landed in upstream
- *     PR #2329; older runtimes silently no-op. The helpers gate on
- *     `typeof ref.current?.animate === 'function'`, so absent support is a
- *     no-op rather than a crash — caller must keep a fallback (e.g. plain
- *     show/hide) for animation-less paint.
- *   - Worklet args are serialized across the thread bridge; only numbers /
- *     strings cross cleanly. Helpers pre-bake direction into `axis` (0|1)
- *     and percent values.
- *   - `'main thread'` is a Lynx compiler directive — the function body runs
- *     on the main thread when invoked via `runOnMainThread`. In jsdom / web
- *     test environments the directive is ignored and the function runs
- *     in-process.
+ *   - Web target: `element.animate()` for lynx web-core landed in upstream PR
+ *     #2329; older runtimes silently no-op, and the helpers gate on
+ *     `typeof ref.current?.animate === 'function'`, so callers must keep a
+ *     fallback for animation-less paint.
+ *   - Worklet args are serialized across the bridge; only numbers / strings
+ *     cross cleanly, so helpers pre-bake direction into `axis` (0|1).
  *
- * Lifted from huxpro/vue-lynx's vant-lynx port (MIT) — same Lynx animation
- * constraints apply to both projects.
+ * Lifted from huxpro/vue-lynx's vant-lynx port (MIT).
  */
 
 import { runOnMainThread, useMainThreadRef } from 'vue-lynx'
@@ -36,36 +24,25 @@ import { runOnMainThread, useMainThreadRef } from 'vue-lynx'
 export type SlideDirection = 'up' | 'down' | 'left' | 'right'
 
 // `runOnMainThread` must be called with the LITERAL identifier at every call
-// site — SWC's worklet transform pattern-matches on `runOnMainThread(fn)`
-// before wrapping `fn` and rewriting the call to dispatch through the MT
-// runtime. Aliasing `const toMainThread = runOnMainThread` defeats detection
-// and the worklet never registers; the runtime later throws `cannot read
-// property 'bind' of undefined` on first invoke from any view whose MT
-// bundle pulls this module in. The `as any` on each `fn` argument is the
-// cost of `runOnMainThread`'s loose public signature
-// (`(...args: unknown[]) => unknown`) — we know what we're passing.
+// site — SWC's worklet transform pattern-matches on `runOnMainThread(fn)`.
+// Aliasing defeats detection and the runtime throws `cannot read property
+// 'bind' of undefined` on first invoke. The `as any` on each `fn` is the cost of
+// `runOnMainThread`'s loose public signature.
 
 /**
- * Creates a main-thread animation controller bound to a single element.
- *
- * @returns
- *   - `elRef` — bind to a view via `:main-thread-ref="elRef"`.
- *   - `fadeIn`/`fadeOut` — opacity 0↔1.
- *   - `slideIn`/`slideOut` — translateX/Y from off-screen.
- *   - `zoomIn`/`zoomOut` — scale 0.9↔1 with opacity. Pass `centered = true`
- *     for elements already positioned with `transform: translate(-50%, -50%)`.
- *   - `bounceIn` — spring-like scale 0 → 1.1 → 0.95 → 1.
+ * Creates a main-thread animation controller bound to a single element:
+ * `elRef` (bind via `:main-thread-ref`), `fadeIn`/`fadeOut`,
+ * `slideIn`/`slideOut`, `zoomIn`/`zoomOut` (pass `centered = true` for elements
+ * already at `transform: translate(-50%, -50%)`), and `bounceIn`.
  */
 export function useAnimate() {
   const elRef = useMainThreadRef<any>(null)
 
-  // -- Main-thread worklets ------------------------------------------------
 
   // Write the animation's end state inline before animating: Lynx web's
-  // animation PAPI reads Lynx-style timing keys (fillMode/timingFunction) and
-  // silently drops WAAPI fill/easing, so a fill-forwards preset would finish
-  // fill-less on web and snap back. The inline value is what the element
-  // rests on either way; both key spellings are passed below.
+  // animation PAPI reads Lynx-style timing keys and silently drops WAAPI
+  // fill/easing, so a fill-forwards preset would finish fill-less on web and
+  // snap back. Both key spellings are passed below.
   function _restAt(opacity: string | null, transform: string | null) {
     'main thread'
     const el = elRef.current
@@ -172,7 +149,6 @@ export function useAnimate() {
     }
   }
 
-  // -- Background-thread wrappers ------------------------------------------
 
   function fadeIn(duration = 300) {
     runOnMainThread(_fadeIn as any)(duration)
@@ -216,11 +192,8 @@ export function useAnimate() {
   }
 }
 
-/**
- * Maps a slide direction to `[axis, startPercent]`:
- *   - axis: 0 = translateX, 1 = translateY
- *   - startPercent: where the element begins, as a percent of its own size
- */
+/** Maps a slide direction to `[axis, startPercent]` — axis 0 = translateX,
+ *  1 = translateY; startPercent is a percent of the element's own size. */
 function getSlideParams(direction: SlideDirection): [axis: number, pct: number] {
   switch (direction) {
     case 'up': return [1, 100] // from below

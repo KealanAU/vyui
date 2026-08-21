@@ -12,64 +12,45 @@ export interface SheetRootProps {
   /** Initial open state when uncontrolled. */
   defaultOpen?: boolean
   /**
-   * Controlled current snap index. Bind with `v-model:snapIndex`. Indexes
-   * the SORTED `snapPoints` (0 = smallest fraction = most closed). Updated
-   * by drag settles; writing it animates the open sheet to that snap.
+   * Controlled current snap index. Bind with `v-model:snapIndex`. Indexes the
+   * SORTED `snapPoints` (0 = most closed). Updated by drag settles; writing it
+   * animates the open sheet to that snap.
    */
   snapIndex?: number
   /**
-   * Initial snap index when uncontrolled (defaults to 0). The enter
-   * animation always slides fully in first; when this points below the
-   * largest snap the sheet then settles down to it. The index persists
+   * Initial snap index when uncontrolled (defaults to 0). The enter animation
+   * always slides fully in first, then settles down to this snap. Persists
    * across close/reopen.
    */
   defaultSnapIndex?: number
-  /**
-   * Edge the sheet is anchored to. Controls enter/exit animation and drag axis.
-   * @defaultValue `'bottom'`
-   */
+  /** Edge the sheet is anchored to. Controls enter/exit animation and drag axis.
+   *  @defaultValue `'bottom'` */
   side?: SheetDirection
   /**
-   * Snap points as fractions of viewport extent on the sheet axis, low → high.
-   * e.g. `[0.25, 0.5, 0.9]`. For `top`/`bottom` this is viewport height;
-   * for `left`/`right` this is viewport width.
+   * Snap points as fractions of viewport extent on the sheet axis, low → high
+   * (viewport height for `top`/`bottom`, width for `left`/`right`).
    * @defaultValue `[1]`
    */
   snapPoints?: number[]
-  /**
-   * Viewport height in px. If omitted, reads from `SystemInfo.pixelHeight /
-   * pixelRatio` at runtime, falling back to `800`.
-   */
+  /** Viewport height in px. Defaults to `SystemInfo.pixelHeight / pixelRatio`
+   *  at runtime, falling back to `800`. */
   viewportHeight?: number
-  /**
-   * Viewport width in px. If omitted, reads from `SystemInfo.pixelWidth /
-   * pixelRatio` at runtime, falling back to `400`.
-   */
+  /** Viewport width in px. Defaults to `SystemInfo.pixelWidth / pixelRatio` at
+   *  runtime, falling back to `400`. */
   viewportWidth?: number
-  /**
-   * Downward velocity (px/s) at which a fling dismisses from any position
-   * (when `enableDragToClose`).
-   * @defaultValue `600`
-   */
+  /** Downward velocity (px/s) at which a fling dismisses from any position
+   *  (when `enableDragToClose`). @defaultValue `600` */
   dismissVelocity?: number
-  /**
-   * Settle animation duration in ms. Drag release snap-back uses it
-   * directly; drag-dismiss and touch-cancel use shorter cuts of it.
-   * @defaultValue `280`
-   */
+  /** Settle animation duration in ms. Drag release snap-back uses it directly;
+   *  drag-dismiss and touch-cancel use shorter cuts of it. @defaultValue `280` */
   duration?: number
   /**
    * Allow drag below the most-closed snap to dismiss. When `false` with
-   * multiple snap points, drag between snaps still works — only the
-   * dismiss branch is disabled.
+   * multiple snap points, drag between snaps still works.
    * @defaultValue `true`
    */
   enableDragToClose?: boolean
-  /**
-   * Restrict drag interaction to `<SheetHandle>` only. When `true`, the
-   * `<SheetContent>` body does not respond to touch.
-   * @defaultValue `false`
-   */
+  /** Restrict drag interaction to `<SheetHandle>` only. @defaultValue `false` */
   handleOnly?: boolean
 }
 
@@ -126,15 +107,13 @@ const viewportWidth = computed(() => {
   return getViewportSize()?.width ?? 400
 })
 
-// MT drag progress (1 fully open → 0 dragged to dismiss; only written
-// during drag — see sheetContext). Lives at the root so the backdrop can
-// read it without injecting through SheetContent.
+// MT drag progress (1 fully open → 0 dragged to dismiss; only written during
+// drag — see sheetContext). Lives at the root so the backdrop can read it.
 const progressMTRef = useMainThreadRef<number>(0)
 const backdropElRef = useMainThreadRef<any>(null)
 
-// Close does NOT reset snapIndex: the index persists so reopen restores the
-// last snap (and a settled v-model value isn't silently rewritten mid-close,
-// which would misfire SheetContentImpl's close-time position logic).
+// Close does NOT reset snapIndex: reopen restores the last snap, and rewriting
+// a settled v-model mid-close would misfire SheetContentImpl's close logic.
 function setOpen(next: boolean) {
   if (open.value === next) return
   open.value = next
@@ -146,8 +125,8 @@ function setSnap(idx: number) {
 }
 
 // True only between a drag-dismiss release and the next open — see
-// `dragClosing` in sheetContext. Cleared here rather than in SheetContent
-// because the panel unmounts on close and the backdrop reads it too.
+// `dragClosing` in sheetContext. Cleared here because the panel unmounts on
+// close and the backdrop reads it too.
 const dragClosing = ref(false)
 
 watch(open, (isOpen) => {

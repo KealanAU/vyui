@@ -2,13 +2,8 @@ import type { DateValue } from '@internationalized/date'
 import type { Matcher } from './types'
 import { CalendarDateTime, getDayOfWeek, getLocalTimeZone, parseDate, parseDateTime, parseZonedDateTime, toCalendar, ZonedDateTime } from '@internationalized/date'
 
-/**
- * Given a date string and a reference `DateValue` object, parse the
- * string to the same type as the reference object.
- *
- * Useful for parsing strings from data attributes, which are always
- * strings, to the same type being used by the date component.
- */
+/** Parse a date string to the same `DateValue` type as a reference object —
+ *  e.g. strings from data attributes. */
 export function parseStringToDateValue(dateStr: string, referenceVal: DateValue): DateValue {
   let dateValue: DateValue
   if (isZonedDateTime(referenceVal))
@@ -23,11 +18,7 @@ export function parseStringToDateValue(dateStr: string, referenceVal: DateValue)
   return dateValue.calendar !== referenceVal.calendar ? toCalendar(dateValue, referenceVal.calendar) : dateValue
 }
 
-/**
- * Given a `DateValue` object, convert it to a native `Date` object.
- * If a timezone is provided, the date will be converted to that timezone.
- * If no timezone is provided, the date will be converted to the local timezone.
- */
+/** Convert a `DateValue` to a native `Date`, in `tz` when given, else local. */
 export function toDate(dateValue: DateValue, tz: string = getLocalTimeZone()) {
   if (isZonedDateTime(dateValue))
     return dateValue.toDate()
@@ -47,18 +38,12 @@ export function hasTime(dateValue: DateValue) {
   return isCalendarDateTime(dateValue) || isZonedDateTime(dateValue)
 }
 
-/**
- * Given a date, return the number of days in the month.
- */
+/** Given a date, return the number of days in the month. */
 export function getDaysInMonth(date: Date | DateValue) {
   if (date instanceof Date) {
     const year = date.getFullYear()
     const month = date.getMonth() + 1
-    /**
-     * By using zero as the day, we get the
-     * last day of the previous month, which
-     * is the month we originally passed in.
-     */
+    // Day zero is the last day of the previous month — the month passed in.
     return new Date(year, month, 0).getDate()
   }
   else {
@@ -66,74 +51,38 @@ export function getDaysInMonth(date: Date | DateValue) {
   }
 }
 
-/**
- * Determine if a date is before the reference date.
- * @param dateToCompare - is this date before the `referenceDate`
- * @param referenceDate - is the `dateToCompare` before this date
- *
- * @see {@link isBeforeOrSame} for inclusive
- */
+/** Determine if a date is before the reference date.
+ *  @see {@link isBeforeOrSame} for inclusive */
 export function isBefore(dateToCompare: DateValue, referenceDate: DateValue) {
   return dateToCompare.compare(referenceDate) < 0
 }
 
-/**
- * Determine if a date is after the reference date.
- * @param dateToCompare - is this date after the `referenceDate`
- * @param referenceDate - is the `dateToCompare` after this date
- *
- * @see {@link isAfterOrSame} for inclusive
- */
+/** Determine if a date is after the reference date.
+ *  @see {@link isAfterOrSame} for inclusive */
 export function isAfter(dateToCompare: DateValue, referenceDate: DateValue) {
   return dateToCompare.compare(referenceDate) > 0
 }
 
-/**
- * Determine if a date is before or the same as the reference date.
- *
- * @param dateToCompare - the date to compare
- * @param referenceDate - the reference date to make the comparison against
- *
- * @see {@link isBefore} for non-inclusive
- */
+/** Determine if a date is before or the same as the reference date.
+ *  @see {@link isBefore} for non-inclusive */
 export function isBeforeOrSame(dateToCompare: DateValue, referenceDate: DateValue) {
   return dateToCompare.compare(referenceDate) <= 0
 }
 
-/**
- * Determine if a date is after or the same as the reference date.
- *
- * @param dateToCompare - is this date after or the same as the `referenceDate`
- * @param referenceDate - is the `dateToCompare` after or the same as this date
- *
- * @see {@link isAfter} for non-inclusive
- */
+/** Determine if a date is after or the same as the reference date.
+ *  @see {@link isAfter} for non-inclusive */
 export function isAfterOrSame(dateToCompare: DateValue, referenceDate: DateValue) {
   return dateToCompare.compare(referenceDate) >= 0
 }
 
-/**
- * Determine if a date is inclusively between a start and end reference date.
- *
- * @param date - is this date inclusively between the `start` and `end` dates
- * @param start - the start reference date to make the comparison against
- * @param end - the end reference date to make the comparison against
- *
- * @see {@link isBetween} for non-inclusive
- */
+/** Determine if a date is inclusively between a start and end reference date.
+ *  @see {@link isBetween} for non-inclusive */
 export function isBetweenInclusive(date: DateValue, start: DateValue, end: DateValue) {
   return isAfterOrSame(date, start) && isBeforeOrSame(date, end)
 }
 
-/**
- * Determine if a date is between a start and end reference date.
- *
- * @param date - is this date between the `start` and `end` dates
- * @param start - the start reference date to make the comparison against
- * @param end - the end reference date to make the comparison against
- *
- * @see {@link isBetweenInclusive} for inclusive
- */
+/** Determine if a date is between a start and end reference date.
+ *  @see {@link isBetweenInclusive} for inclusive */
 export function isBetween(date: DateValue, start: DateValue, end: DateValue) {
   return isAfter(date, start) && isBefore(date, end)
 }
@@ -143,12 +92,8 @@ export function getLastFirstDayOfWeek<T extends DateValue = DateValue>(
   firstDayOfWeek: number,
   locale: string,
 ): T {
-  /**
-   * "firstDayOfWeek" is fixed to 0(Sunday) to avoid confusion regarding locales.
-   * This also aligns with other date libraries, e.g., date-fns.
-   *
-   * #see https://github.com/unovue/reka-ui/issues/2157
-   */
+  /** `firstDayOfWeek` is fixed to 0 (Sunday) to avoid locale confusion, matching
+   *  date-fns. https://github.com/unovue/reka-ui/issues/2157 */
   const day = getDayOfWeek(date, locale, 'sun')
 
   if (firstDayOfWeek > day)
@@ -165,12 +110,8 @@ export function getNextLastDayOfWeek<T extends DateValue = DateValue>(
   firstDayOfWeek: number,
   locale: string,
 ): T {
-  /**
-   * "firstDayOfWeek" is fixed to 0(Sunday) to avoid confusion regarding locales.
-   * This also aligns with other date libraries, e.g., date-fns.
-   *
-   * #see https://github.com/unovue/reka-ui/issues/2157
-   */
+  /** `firstDayOfWeek` is fixed to 0 (Sunday) to avoid locale confusion, matching
+   *  date-fns. https://github.com/unovue/reka-ui/issues/2157 */
   const day = getDayOfWeek(date, locale, 'sun')
 
   const lastDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1
@@ -184,16 +125,12 @@ export function getNextLastDayOfWeek<T extends DateValue = DateValue>(
   return date.add({ days: lastDayOfWeek - day }) as T
 }
 
-/**
- * Check if two dates are in the same year and month.
- */
+/** Check if two dates are in the same year and month. */
 export function isSameYearMonth(a: DateValue, b: DateValue): boolean {
   return a.year === b.year && a.month === b.month
 }
 
-/**
- * Check if two dates are in the same year.
- */
+/** Check if two dates are in the same year. */
 export function isSameYear(a: DateValue, b: DateValue): boolean {
   return a.year === b.year
 }
@@ -225,46 +162,34 @@ export function areAllDaysBetweenValid(
   return true
 }
 
-/**
- * Compare two dates by year and month only (ignoring day).
- */
+/** Compare two dates by year and month only (ignoring day). */
 export function compareYearMonth(a: DateValue, b: DateValue): number {
   if (a.year !== b.year)
     return a.year - b.year
   return a.month - b.month
 }
 
-/**
- * Check if a date's month is between start and end (inclusive), comparing year+month only.
- */
+/** Check if a date's month is between start and end (inclusive), comparing year+month only. */
 export function isMonthBetweenInclusive(date: DateValue, start: DateValue, end: DateValue): boolean {
   return compareYearMonth(date, start) >= 0 && compareYearMonth(date, end) <= 0
 }
 
-/**
- * Check if a date's year is between start and end (inclusive), comparing year only.
- */
+/** Check if a date's year is between start and end (inclusive), comparing year only. */
 export function isYearBetweenInclusive(date: DateValue, start: DateValue, end: DateValue): boolean {
   return date.year >= start.year && date.year <= end.year
 }
 
-/**
- * Get the number of months between two dates (inclusive).
- */
+/** Get the number of months between two dates (inclusive). */
 export function getMonthsBetween(start: DateValue, end: DateValue): number {
   return (end.year - start.year) * 12 + (end.month - start.month) + 1
 }
 
-/**
- * Get the number of years between two dates (inclusive).
- */
+/** Get the number of years between two dates (inclusive). */
 export function getYearsBetween(start: DateValue, end: DateValue): number {
   return end.year - start.year + 1
 }
 
-/**
- * Check if all months between start and end are valid (not unavailable/disabled).
- */
+/** Check if all months between start and end are valid (not unavailable/disabled). */
 export function areAllMonthsBetweenValid(
   start: DateValue,
   end: DateValue,
@@ -285,9 +210,7 @@ export function areAllMonthsBetweenValid(
   return true
 }
 
-/**
- * Check if all years between start and end are valid (not unavailable/disabled).
- */
+/** Check if all years between start and end are valid (not unavailable/disabled). */
 export function areAllYearsBetweenValid(
   start: DateValue,
   end: DateValue,

@@ -74,7 +74,6 @@ export default (colors: Color[]) => ({
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
   },
   compoundVariants: [
-    // color -> active/completed trigger + completed separator fills
     ...colors.map(color => ({
       color,
       class: {
@@ -82,12 +81,10 @@ export default (colors: Color[]) => ({
         separator: `group-ui-completed:bg-${color}-500`,
       },
     })),
-    // horizontal separator x-positioning per size
     { orientation: 'horizontal' as const, size: 'sm' as const, class: { separator: 'start-[calc(50%+28px)] end-[calc(-50%+28px)]' } },
     { orientation: 'horizontal' as const, size: 'md' as const, class: { separator: 'start-[calc(50%+32px)] end-[calc(-50%+32px)]' } },
     { orientation: 'horizontal' as const, size: 'lg' as const, class: { separator: 'start-[calc(50%+36px)] end-[calc(-50%+36px)]' } },
     { orientation: 'horizontal' as const, size: 'xl' as const, class: { separator: 'start-[calc(50%+40px)] end-[calc(-50%+40px)]' } },
-    // vertical separator y-positioning + item gap per size
     { orientation: 'vertical' as const, size: 'sm' as const, class: { separator: 'top-[46px]', item: 'gap-2.5' } },
     { orientation: 'vertical' as const, size: 'md' as const, class: { separator: 'top-[54px]', item: 'gap-3' } },
     { orientation: 'vertical' as const, size: 'lg' as const, class: { separator: 'top-[62px]', item: 'gap-3.5' } },

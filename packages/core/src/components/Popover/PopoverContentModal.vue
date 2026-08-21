@@ -9,11 +9,10 @@ import PopoverContentImpl from './PopoverContentImpl.vue'
 import { injectPopoverRootContext } from './PopoverRoot.vue'
 
 /**
- * Modal variant. On the DOM reka-ui would scroll-lock the body
- * (`useBodyScrollLock`) and hide siblings from assistive tech
- * (`useHideOthers`); both are no-ops on Lynx, so this differs from the
- * non-modal variant only in intent — it is kept as a separate file to mirror
- * reka-ui's structure and to host modal-specific behaviour if Lynx gains it.
+ * Modal variant. reka-ui would scroll-lock the body and hide siblings from
+ * assistive tech; both are no-ops on Lynx, so this differs from the non-modal
+ * variant only in intent — kept separate to mirror reka-ui's structure and to
+ * host modal-specific behaviour if Lynx gains it.
  */
 
 defineOptions({ inheritAttrs: false })
@@ -26,10 +25,9 @@ const emits = defineEmits<PopoverContentImplEmits>()
 const rootContext = injectPopoverRootContext()
 useForwardExpose()
 
-// Portal registration (Lynx has no Teleport).
-// The provides chain is captured once and replayed by OverlayRoot's
-// ContextBridge so slot content (PopoverClose, …) injects normally even though
-// it paints outside this component's tree.
+// Portal registration (Lynx has no Teleport). The provides chain is captured
+// once and replayed by OverlayRoot's ContextBridge, so slot content injects
+// normally despite painting outside this component's tree.
 const slots = useSlots()
 // Undeclared fall-through attrs (`data-testid`, `:style`, …) must reach the
 // rendered `PopoverContentImpl` node — it is the only thing painted.
@@ -45,9 +43,8 @@ const { onInteractOutside } = useDismissableLayer({
 })
 
 function renderFn() {
-  // `backdropStyle` belongs to the `OverlayBackdrop` wrapper (alignment /
-  // padding for trigger-anchored docking), not to the content primitive
-  // itself — strip it out before forwarding props onward.
+  // `backdropStyle` belongs to the `OverlayBackdrop` wrapper, not the content
+  // primitive — strip it before forwarding props onward.
   const { backdropStyle, ...implProps } = props
   return h(
     OverlayBackdrop,

@@ -37,8 +37,8 @@ import { injectToastProviderContext } from './ToastProvider.vue'
 const props = withDefaults(defineProps<ToastRootProps>(), {
   as: 'view',
   // `open: undefined` is required: without an explicit default, Vue coerces an
-  // absent Boolean prop to `false`, so `props.open === undefined` is never
-  // true, `useVModel` never runs passive, and `defaultOpen` is ignored.
+  // absent Boolean prop to `false`, so `useVModel` never runs passive and
+  // `defaultOpen` is ignored.
   open: undefined,
   defaultOpen: true,
   type: 'foreground',
@@ -61,10 +61,9 @@ defineSlots<{
     /** Resolved auto-dismiss duration (ms); `0` when auto-dismiss is off. */
     duration: number
     /**
-     * Remaining auto-dismiss time as a fraction: `1` at the start of the
-     * countdown, `0` at dismissal. Frozen while the stack is expanded (the
-     * timer is paused). Always `1` when `duration` is `0`. Drive a progress
-     * bar from this.
+     * Remaining auto-dismiss time as a fraction: `1` at the start, `0` at
+     * dismissal, frozen while the stack is expanded. Always `1` when `duration`
+     * is `0`. Drive a progress bar from this.
      */
     progress: number
     expand: () => void
@@ -80,7 +79,6 @@ const provider = injectToastProviderContext()
 
 const open = useStandardVModelOf<boolean>(props, 'open', emits)
 
-// A stable identity for this toast within the provider registry.
 const id = Symbol('toast')
 
 const index = computed(() => provider.indexOf(id))
@@ -89,17 +87,16 @@ const isFront = computed(() => index.value === 0)
 const heightBefore = computed(() => provider.heightBefore(id))
 
 // Report layout height so a consumer can lay out an expanded stack — the
-// geometry data lives in the primitive; the transforms stay downstream.
+// geometry lives here, the transforms stay downstream.
 const { onLayoutChange } = useResizeObserver((rect) => {
   provider.setToastHeight(id, rect.height)
 })
 
 const resolvedDuration = computed(() => props.duration ?? provider.duration.value)
 
-// `progress` ticks 1 → 0 over the active duration for a consumer-rendered
-// countdown bar. It rides the same start/clear/pause lifecycle as the
-// dismiss timer, so the bar can't drift from the actual dismissal. ~30ms
-// ticks (~33fps) — smooth enough for a thin bar without per-frame churn.
+// `progress` ticks 1 → 0 over the active duration on the same start/clear/pause
+// lifecycle as the dismiss timer, so the bar can't drift from the dismissal.
+// ~30ms ticks — smooth enough for a thin bar without per-frame churn.
 const progress = ref(1)
 const PROGRESS_TICK_MS = 30
 
@@ -119,8 +116,8 @@ function clearTimer() {
 
 function startTimer() {
   clearTimer()
-  // Auto-dismiss pauses while the stack is expanded (Sonner-style). Leaving
-  // `progress` at its current value freezes the bar mid-drain.
+  // Auto-dismiss pauses while the stack is expanded (Sonner-style); leaving
+  // `progress` as-is freezes the bar mid-drain.
   if (provider.expanded.value)
     return
   const duration = resolvedDuration.value

@@ -10,7 +10,7 @@
       "name": "chip",
       "type": "boolean | ChipProps | undefined",
       "required": false,
-      "description": "Decorative chip rendered on top of the avatar. Pass `true` for the\ndefault style, or a `ChipProps` object to customize color / size /\nposition / inset. Defaults to `inset: true` so it isn't clipped by the\navatar's `overflow-hidden` root."
+      "description": "Decorative chip rendered on top of the avatar: `true` for the default style,\nor a `ChipProps` object. Defaults to `inset: true` so it isn't clipped by\nthe avatar's `overflow-hidden` root."
     },
     {
       "name": "color",

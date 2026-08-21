@@ -1,32 +1,19 @@
 /**
  * Linear-inspired pill-island container.
  *
- * Sizing model (see also [[islandButton.ts]]):
- *   sm → 40px buttons, compact padding
- *   md → 44px buttons (default — Apple HIG min tap target)
- *   lg → 56px buttons (Linear mobile feel)
- *   xl → 64px buttons (oversized hero dock)
+ * Sizing (see also [[islandButton.ts]]): sm → 40px buttons, md → 44px (default,
+ * Apple HIG min tap target), lg → 56px, xl → 64px.
  *
- * **`expandStyle`** controls how the panel relates visually to the row:
- *   - `floating` (default) — row pill and panel are **independent** floating
- *     surfaces (each with its own background/blur/border/shadow), separated
- *     by a gap. Panel reads as a menu popping in front of the dock; the
- *     shadow falling between the two surfaces gives the stack obvious depth.
- *   - `attached` — when open, panel and row merge into ONE continuous
- *     rounded-rectangle surface (chrome moves to root, panel/row become
- *     transparent inner sections, gap goes to zero, children stretch
- *     edge-to-edge). Reads as the dock itself growing upward.
+ * `expandStyle` controls how the panel relates to the row: `floating` (default)
+ * keeps them as independent surfaces separated by a gap, `attached` merges them
+ * into one continuous rounded rectangle when open.
  *
- * Asymmetric `px > py` on the row gives multi-item rows a clear horizontal
- * pill shape. A SOLO row (one child) flips this: padding goes symmetric +
- * tight so the surface hugs the single button — an icon-only button reads as
- * one clean circle instead of a wide pill with a small circle floating inside
- * it. See the `solo` variant + compoundVariants below.
+ * Asymmetric `px > py` gives multi-item rows a horizontal pill shape; a SOLO row
+ * flips to symmetric + tight padding so an icon-only button reads as one clean
+ * circle (see the `solo` variant + compoundVariants below).
  *
- * `size` flows from the wrapper to child `<VyIslandButton>`s via context.
- * `position` (`top`/`bottom`) picks the viewport edge; `layer`
- * (`overlay`/`base`/`inline`) controls stacking vs in-flow. Panel grows away
- * from the anchored edge.
+ * `size` flows to child `<VyIslandButton>`s via context. `position` picks the
+ * viewport edge, `layer` controls stacking vs in-flow.
  */
 
 const PILL_SURFACE
@@ -35,24 +22,19 @@ const PILL_SURFACE
 
 export default {
   slots: {
-    // Layout shim — owns positioning + the gap between row and panel.
-    // No background of its own by default; gains chrome in `attached` mode
-    // (see compoundVariants).
+    // Layout shim — owns positioning + the row/panel gap. Gains chrome in
+    // `attached` mode (see compoundVariants).
     root: 'flex flex-col max-w-[calc(100vw-1rem)]',
-    // Independently styled row pill. `floating` mode keeps the chrome here;
-    // `attached + open` strips it (chrome shifts to root).
+    // Row pill. `floating` keeps the chrome here; `attached + open` strips it.
     row: `flex flex-row items-center max-w-full ${PILL_SURFACE} rounded-full`,
-    // Independently styled panel surface — a wider rounded-rectangle
-    // floating in front of the row when `open === true`. Stripped of chrome
-    // in `attached` mode.
+    // Panel surface, floating in front of the row when `open === true`.
+    // Stripped of chrome in `attached` mode.
     panel: `flex flex-col max-w-full max-h-[calc(100vh-4rem)] overflow-y-auto ${PILL_SURFACE} rounded-3xl`,
   },
   variants: {
-    // Which viewport edge to float against — only takes effect when
-    // `layer !== 'inline'`. The actual fixed placement is applied as an inline
-    // `style` in Island.vue (Lynx ignores tailwind `fixed`); these variants
-    // just own cross-axis centering. `inline`-flow vs floating is the `layer`
-    // axis, not this one.
+    // Which viewport edge to float against, when `layer !== 'inline'`. The fixed
+    // placement is applied as an inline `style` in Island.vue (Lynx ignores
+    // tailwind `fixed`); these variants only own cross-axis centering.
     position: {
       top: { root: 'items-center' },
       bottom: { root: 'items-center' },
@@ -79,44 +61,36 @@ export default {
         panel: 'gap-2.5 p-3.5',
       },
     },
-    // `floating` keeps each surface chromed individually (theme default).
-    // `attached` is a no-op by itself — the merge only fires when open
-    // (handled via compoundVariants below). Keep both branches present so
-    // tailwind-variants emits the data-attr toggle even when closed.
+    // `attached` is a no-op by itself — the merge fires only when open. Keep
+    // both branches so tailwind-variants emits the toggle even when closed.
     expandStyle: {
       floating: {},
       attached: {},
     },
-    // `open` is exposed as a variant (not just a `data-state`) so the
-    // attached-surface compound variant can fire only when the panel is
-    // actually visible — closed islands keep the rounded-full row pill
-    // regardless of `expandStyle`.
+    // `open` is a variant (not just a `data-state`) so the attached-surface
+    // compound fires only when the panel is visible.
     open: {
       true: {},
       false: {},
     },
-    // `solo` fires when the row hosts a single child. Tightens row padding to
-    // symmetric (see compoundVariants) AND zeroes the gap: vue-lynx renders
-    // empty `<text>` anchor nodes flanking the slotted button, and a non-zero
-    // `gap` inserts spacing on either side of them — adding horizontal-only
-    // width that warps the would-be circle into a wide pill. Counted in
-    // `Island.vue`.
+    // `solo` fires when the row hosts a single child: symmetric padding plus a
+    // zero gap, because vue-lynx renders empty `<text>` anchor nodes flanking
+    // the slotted button and a non-zero `gap` spaces those too, warping the
+    // would-be circle into a wide pill. Counted in `Island.vue`.
     solo: {
       true: { row: 'gap-0' },
       false: {},
     },
   },
   compoundVariants: [
-    // Solo row: collapse the asymmetric px→py to a symmetric ring so the
-    // surface hugs the lone button (icon-only → clean circle). Only the `px`
-    // is overridden; the `py` from the size variant already sets the ring.
+    // Solo row: collapse the asymmetric px→py to a symmetric ring. Only `px` is
+    // overridden; the size variant's `py` already sets the ring.
     { solo: true, size: 'sm', class: { row: 'px-1' } },
     { solo: true, size: 'md', class: { row: 'px-1.5' } },
     { solo: true, size: 'lg', class: { row: 'px-2' } },
     { solo: true, size: 'xl', class: { row: 'px-2.5' } },
-    // Attached + open: collapse the two surfaces into one. Chrome migrates
-    // to root, row + panel become transparent, gap goes to 0, and children
-    // stretch edge-to-edge so the visual width is uniform.
+    // Attached + open: chrome migrates to root, row + panel go transparent, gap
+    // goes to 0, children stretch edge-to-edge.
     {
       expandStyle: 'attached',
       open: true,

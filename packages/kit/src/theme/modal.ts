@@ -1,35 +1,26 @@
 /**
  * Modal theme — adapted from nuxt/ui v3.0.2 `theme/modal.ts` for Vue-Lynx.
  *
- * Scope on mobile: short blocking alerts / confirms only — typically two
- * lines of text + one or two action buttons. For non-trivial overlays
- * (forms, pickers, content that should drag-to-dismiss, full-screen
- * presentations) use `VyDrawer` — it gives you snap points, drag physics,
- * and bottom-sheet ergonomics built on `SheetRoot`. The `fullscreen`
- * variant was removed deliberately: a full-screen Modal is just a Drawer
- * with `snapPoints: [1]`.
+ * Scope on mobile: short blocking alerts / confirms only. For anything larger
+ * (forms, pickers, drag-to-dismiss, full-screen) use `VyDrawer` — a full-screen
+ * Modal is just a Drawer with `snapPoints: [1]`, which is why the `fullscreen`
+ * variant was dropped.
  *
- * Stripped: all `dark:*`, `focus:*`, `focus-visible:*`, `shadow-*`,
- * `transition-shadow`. `ring-*` converted to `border-*` (Lynx preset has no
- * ringWidth plugin).
+ * Stripped: `dark:*`, `focus*`, `shadow-*`; `ring-*` converted to `border-*`
+ * (the Lynx preset has no ringWidth plugin).
  *
- * Motion: core is headless (ships no animation). `overlay` lands on the
- * Presence-wired backdrop via the Dialog's `backdropClass`; `content` lands on
- * the panel. Both elements carry the Presence lifecycle classes
- * (`ui-entering` / `ui-leaving` / `ui-open` / `ui-closed`), so the open/close
- * choreography is keyed off the `vy-modal-overlay` / `vy-modal-content` marker
- * classes in `style.css` — NOT `data-[state]`. Lifecycle classes are required
- * here: they keep the surface hidden during Presence's mount→enter gap (so the
- * dim doesn't flash full-opacity before fading in) and fire the exit animation
+ * Motion: core is headless. `overlay` lands on the Presence-wired backdrop via
+ * the Dialog's `backdropClass`, `content` on the panel; both carry the Presence
+ * lifecycle classes, so the choreography is keyed off the `vy-modal-*` marker
+ * classes in `style.css`, NOT `data-[state]`. The lifecycle classes keep the
+ * surface hidden through Presence's mount→enter gap and fire the exit animation
  * only on a real close.
  */
 export default {
   slots: {
     // Dim: `bg-black/50`, NOT an alpha on a semantic color. The preset wires
     // semantic colors to raw `var()` without `<alpha-value>`, so Tailwind skips
-    // generating `bg-neutral-900/50` entirely — this slot painted nothing for
-    // as long as it read that way (docs/styling-audit.md §4.1). `black` parses
-    // to rgb, so the modifier applies, and a scrim needs no mode awareness.
+    // `bg-neutral-900/50` entirely (docs/styling-audit.md §4.1).
     overlay: 'fixed inset-0 bg-black/50',
     content: 'relative overflow-hidden bg-default divide-y divide-default flex flex-col w-[calc(100vw-2rem)] max-w-lg max-h-[calc(100vh-1rem)] rounded-lg border border-default',
     header: 'flex flex-row items-center gap-1.5 px-4 py-3 min-h-12',

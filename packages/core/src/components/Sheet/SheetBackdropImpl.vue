@@ -1,12 +1,11 @@
 <!-- Copyright 2026 The Lynx Authors. All rights reserved.
      Licensed under the Apache License Version 2.0.
 
-     Renders inside `<Presence>`, but painted by `OverlayRoot` — so
+     Renders inside `<Presence>` but is painted by `OverlayRoot`, so
      `inject(PresenceContextKey)` resolves through the provides `OverlayPortal`
-     captured at registration, not through tree ancestry.
-     Binds `@animationstart` / `@animationend` etc. on
-     the root `<view>` — Lynx fires these as plain BG-thread events on
-     keyframe animations, so they advance Presence into Entered / Left. -->
+     captured at registration, not through tree ancestry. The `@animation*`
+     bindings on the root `<view>` are what advance Presence into Entered /
+     Left. -->
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 
@@ -23,11 +22,10 @@ const emits = defineEmits<{
 
 const ctx = injectSheetRootContext()
 
-// Same MT element handle SheetContent's drag worklets paint inline
-// `opacity` into during drag; the keyframe-based fade below covers the
-// open / close transitions on the same `<view>` via class. Inline styles
-// from a drag can't leak across opens: Presence unmounts this view on
-// close, so each open starts from a fresh element.
+// Same MT element handle SheetContent's drag worklets paint inline `opacity`
+// into; the keyframe fade below covers open / close on the same `<view>` via
+// class. Presence unmounts this view on close, so inline drag styles can't leak
+// into the next open.
 const overlayRef = ctx.backdropElRef
 
 const presence = inject(PresenceContextKey, null)
@@ -37,11 +35,9 @@ const presenceState = computed<PresenceState>(() =>
 )
 
 // Same reason as the panel (see SheetContentImpl): after a drag-dismiss the
-// scrim's inline `opacity` is already being faded out by the release
-// transition, and `vyui-fade-out` — which, unlike the slide-out keyframes,
-// keeps an explicit `from { opacity: 1 }` — would yank the dim back to full
-// before fading it again. Dropping `ui-leaving` leaves the base
-// `opacity: 0` rule underneath the inline fade.
+// scrim's inline `opacity` is already fading out, and `vyui-fade-out` — which
+// keeps an explicit `from { opacity: 1 }` — would yank the dim back to full.
+// Dropping `ui-leaving` leaves the base `opacity: 0` rule under the inline fade.
 const presenceClass = computed(() =>
   presenceClassVariants({
     state: presenceState.value,
@@ -75,10 +71,9 @@ const handlers = presence?.animationHandlers
       right: '0',
       bottom: '0',
       zIndex: '1000',
-      // No `backgroundColor` — headless. It was inline here, which no class can
-      // override, so a consumer's dim class on this element was silently dead.
-      // Inline longhand overrides the 280ms keyframe shorthands below so the
-      // fade tracks the sheet's `duration` prop (panel does the same).
+      // No `backgroundColor` — headless. Inline here, no class could override
+      // it, so a consumer's dim class was silently dead. Inline longhand
+      // overrides the 280ms keyframe shorthands so the fade tracks `duration`.
       animationDuration: `${ctx.duration.value}ms`,
     }"
     @tap="emits('tap')"
@@ -92,11 +87,9 @@ const handlers = presence?.animationHandlers
 </template>
 
 <style>
-/* Hidden at rest AND through Presence's mount→enter gap (the element mounts
-   ~8 frames before the state flips to Entering). Without this the dim paints
-   at full opacity for those frames, then snaps to 0 and fades in — the
-   first-open flash. `ui-open` is the resting-visible state; the keyframes
-   bridge the transitions. */
+/* Hidden at rest AND through Presence's mount→enter gap (the element mounts ~8
+   frames before the state flips to Entering) — without this the dim paints at
+   full opacity for those frames, then snaps to 0 and fades in. */
 .vyui-sheet__backdrop {
   opacity: 0;
 }

@@ -20,27 +20,22 @@ defineProps<SheetHandleProps>()
 
 const attrs = useAttrs()
 
-// Drag context is provided by SheetContent. Falls back to null when used
-// outside a SheetContent (tests), so the handle still renders.
+// Drag context is provided by SheetContent; null fallback keeps the handle
+// renderable standalone (tests).
 const drag = injectSheetDragContext(null)
 
-// Root context carries `side`. Null fallback keeps the handle renderable
-// when mounted standalone (tests) — defaults to a bottom-sheet horizontal pill.
+// Root context carries `side`; the null fallback defaults to a bottom-sheet
+// horizontal pill.
 const root = injectSheetRootContext(null)
 
-// The pill runs perpendicular to the drag axis: horizontal for top/bottom
-// sheets, vertical for left/right. SheetContent's per-side `flex-direction`
-// (column / column-reverse / row / row-reverse) then floats this first child
-// onto the sheet's inner edge; here we only flip the pill's own geometry and
-// which margins hold it off that edge.
+// The pill runs perpendicular to the drag axis. SheetContent's per-side
+// `flex-direction` floats this first child onto the sheet's inner edge; here we
+// only flip the pill's own geometry and its holding margins.
 const isVertical = computed(() => directionAxis(root?.side.value ?? 'bottom') === 'x')
 
-// No background here, inline OR as a class. An inline `rgba(0,0,0,…)` would
-// vanish on a dark sheet AND outrank any consumer class; core previously
-// reached for `bg-accented` instead, which fixed the dark case but hardcoded a
-// @vyui/kit token utility into a headless package — meaningless without kit's
-// preset, and redundant since all three kit themes already put `bg-accented` on
-// their `handle` slot. The consumer owns the color.
+// No background here, inline OR as a class: an inline `rgba(0,0,0,…)` vanishes
+// on a dark sheet and outranks any consumer class, and a kit token utility is
+// meaningless in a headless package. The consumer owns the color.
 const mergedStyle = computed<VyStyle>(() => ({
   width: isVertical.value ? '4px' : '36px',
   height: isVertical.value ? '36px' : '4px',
@@ -54,9 +49,8 @@ const mergedStyle = computed<VyStyle>(() => ({
 }))
 
 // Forward the consumer's class alongside our own. `class`/`style` are bound
-// explicitly (below), so strip them from the attrs spread to avoid binding
-// them twice — and so the element's `class` type stays non-null (Lynx's
-// `<view>` class prop rejects `null`, which a raw attrs spread would admit).
+// explicitly below, so strip them from the attrs spread — binding twice, and
+// Lynx's `<view>` class prop rejects the `null` a raw spread would admit.
 const forwardedClass = computed(() => ['vyui-sheet__handle', attrs.class as string])
 const restAttrs = computed(() => {
   const { class: _class, style: _style, ...rest } = attrs

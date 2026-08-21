@@ -5,9 +5,8 @@ import type { Ref } from 'vue'
 import { createContext } from '@/shared'
 
 /**
- * Synchronous validator. Return `null` (or `undefined`) when the value is
- * valid, or a non-empty `string` describing the error. Async validators are
- * out of scope for v1.
+ * Synchronous validator: return `null`/`undefined` when valid, or a non-empty
+ * `string` describing the error. Async validators are out of scope for v1.
  */
 export type FormFieldValidator = (value: unknown) => string | null | undefined
 
@@ -20,10 +19,8 @@ export interface FormRootContext {
   errors: Ref<Record<string, string | null>>
   /** Per-field current value keyed by name. */
   values: Ref<Record<string, unknown>>
-  /**
-   * Register a field at mount. The field reports its initial value, its
-   * default value, and the validators that should be run on submit.
-   */
+  /** Register a field at mount, reporting its initial value, default value and
+   *  the validators to run on submit. */
   registerField: (
     name: string,
     options: {
@@ -37,10 +34,8 @@ export interface FormRootContext {
   setFieldValue: (name: string, value: unknown) => void
   /** Manually set a field's error (e.g. external server-side validation). */
   setFieldError: (name: string, error: string | null) => void
-  /**
-   * Run all sync validators, collect errors, and — if clean — fire the
-   * `submit` event with the current values.
-   */
+  /** Run all sync validators, collect errors, and — if clean — fire the `submit`
+   *  event with the current values. */
   submit: () => void
 }
 

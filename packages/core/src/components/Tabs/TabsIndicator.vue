@@ -24,26 +24,22 @@ interface IndicatorStyle {
   size: number
   position: number
 }
-// Always start with a zero rect so the `<Primitive>` is mounted on first
-// render. On Lynx, swapping the indicator element via `v-if` once the first
-// measurement lands has been observed to mis-patch under nested Tabs — keep
-// the node alive and just toggle opacity instead.
+// Always start with a zero rect so the `<Primitive>` is mounted on first render:
+// swapping the indicator element via `v-if` once the first measurement lands
+// mis-patches under nested Tabs. Toggle opacity instead.
 const indicatorStyle = ref<IndicatorStyle>({
   size: 0,
   position: 0,
 })
-// The pill stays hidden AND un-transitioned until `ready` — flipped one
-// microtask after the first real measurement. One deferral, two jobs: the
-// initial `0 → size` commit paints invisibly (no flash at the wrong size), and
-// the theme's `transition-[translate,width]` only arms afterwards, so the pill
-// never animates growing in from zero on mount / CSS reload — only genuine tab
-// switches slide. PrimJS has no `queueMicrotask`; a resolved Promise hops the
-// queue (same idiom as `TabsTrigger`'s deferred registration).
+// The pill stays hidden AND un-transitioned until `ready`, flipped one microtask
+// after the first real measurement: the initial `0 → size` commit paints
+// invisibly and the theme's `transition-[translate,width]` only arms afterwards,
+// so the pill never animates in from zero. PrimJS has no `queueMicrotask`; a
+// resolved Promise hops the queue.
 const ready = ref(false)
 
 // The list rect only moves on a layout change (or an orientation/dir flip), so
-// cache it and re-measure only then. A plain tab switch reuses the cache and
-// costs a single trigger `boundingClientRect` round-trip instead of two.
+// cache it and re-measure only then.
 // ponytail: assumes the list rect is stable between `layoutTick` bumps —
 // TabsList + TabsTrigger bump it from their own `@layoutchange`, so a list that
 // shifts without emitting one would read stale until the next bump.
@@ -51,11 +47,9 @@ let cachedListRect: Awaited<ReturnType<typeof useElementRect>> | null = null
 
 /**
  * Measure the active trigger relative to the tabs list via Lynx's
- * `boundingClientRect` (see `useElementRect`). Replaces the prior
- * `querySelectorAll('[role="tab"]')` + `offsetWidth`/`offsetLeft` reads which
- * relied on a DOM that does not exist on Lynx native. `refreshList` re-measures
- * the cached list rect (a layout/orientation/dir change); a tab switch leaves
- * it false and measures only the trigger.
+ * `boundingClientRect` (see `useElementRect`) — the DOM `offsetWidth`/`offsetLeft`
+ * reads it replaces do not exist on Lynx native. `refreshList` re-measures the
+ * cached list rect; a tab switch measures only the trigger.
  */
 async function updateIndicatorStyle(refreshList = false) {
   const activeValue = context.modelValue.value
@@ -72,10 +66,8 @@ async function updateIndicatorStyle(refreshList = false) {
   const listRect = cachedListRect
   const triggerRect = await useElementRect(triggerEl)
 
-  // First paint on Lynx can return a zero rect; skip that frame and wait for
-  // the follow-up `@layoutchange` (which bumps `layoutTick` and re-runs us).
-  // We still commit if the trigger has at least a non-zero dimension — partial
-  // layout (e.g. width measured before height) shouldn't block the indicator.
+  // First paint on Lynx can return a zero rect; skip that frame and wait for the
+  // follow-up `@layoutchange`. A partially measured trigger still commits.
   if (triggerRect.width === 0 && triggerRect.height === 0 && listRect.width === 0 && listRect.height === 0)
     return
 
@@ -105,13 +97,10 @@ watch(
 )
 
 // Orientation / direction / `layoutTick` changes can move the list itself, so
-// refresh the cached list rect. `layoutTick` is bumped by `TabsList` +
-// `TabsTrigger` from their `@layoutchange`; `immediate` drives the first
-// measurement once the triggers paint. The triggers map is intentionally NOT a
-// watch source: mutating it (from `TabsTrigger`'s deferred registration) used
-// to wake this `flush: 'post'` watcher mid-patch under nested Tabs and produce
-// `Cannot read property 'parent' of null` from `node-ops.parentNode`. The
-// trigger element is read inside `updateIndicatorStyle` instead.
+// refresh the cached rect; `immediate` drives the first measurement once the
+// triggers paint. The triggers map is intentionally NOT a watch source: mutating
+// it woke this `flush: 'post'` watcher mid-patch under nested Tabs and produced
+// `Cannot read property 'parent' of null` from `node-ops.parentNode`.
 watch(
   () => [
     context.orientation.value,
@@ -122,15 +111,13 @@ watch(
   { immediate: true, flush: 'post' },
 )
 
-// Lynx native ignores `var()` references that point at custom properties set
-// via inline `:style` — see the canonical write-up in
-// `core/src/components/Slider/SliderThumbImpl.vue`. Keep size +
-// transform as concrete pixel values so the indicator actually paints.
+// Lynx native ignores `var()` references pointing at custom properties set via
+// inline `:style` — canonical write-up in `Slider/SliderThumbImpl.vue`. Keep
+// size + transform as concrete pixel values.
 const indicatorInlineStyle = computed(() => {
   const { size, position } = indicatorStyle.value
-  // `transitionProperty: 'none'` (inline) overrides the theme class until the
-  // pill is `ready`; `undefined` drops the inline value so the class's
-  // `transition-[translate,width]` takes over for subsequent switches.
+  // Inline `transitionProperty: 'none'` overrides the theme class until the pill
+  // is `ready`; `undefined` hands control back to the class.
   const transitionProperty = ready.value ? undefined : 'none'
   if (context.orientation.value === 'horizontal') {
     return {

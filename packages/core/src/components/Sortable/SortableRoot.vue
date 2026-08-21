@@ -10,28 +10,19 @@ export interface SortableRootProps<T = unknown> {
   modelValue?: T[]
   /** Initial ordering when uncontrolled. */
   defaultValue?: T[]
-  /**
-   * Fixed item height in px. Required — swap math relies on a uniform row size.
-   */
+  /** Fixed item height in px. Required — swap math relies on a uniform row size. */
   itemHeight: number
   /** Disable all dragging. */
   disabled?: boolean
-  /**
-   * Long-press activation delay in ms. Set to 0 to drag immediately.
-   * @defaultValue 150
-   */
+  /** Long-press activation delay in ms. Set to 0 to drag immediately. @defaultValue 150 */
   longPressMs?: number
   /**
-   * Edge band in px from the top/bottom of the root within which a drag
-   * triggers autoscroll. Set to 0 to disable. Requires the root to be a
-   * scroll container (e.g. `scroll-view` / overflow scroll) for any effect.
+   * Edge band in px from the top/bottom of the root within which a drag triggers
+   * autoscroll; 0 disables it. Requires the root to be a scroll container.
    * @defaultValue 48
    */
   autoScrollEdge?: number
-  /**
-   * Max autoscroll speed in px per touchmove frame at the very edge.
-   * @defaultValue 12
-   */
+  /** Max autoscroll speed in px per touchmove frame at the very edge. @defaultValue 12 */
   autoScrollSpeed?: number
 }
 
@@ -102,9 +93,8 @@ function _syncAutoScroll(edge: number, speed: number) {
 }
 
 // Seed the scroll container + viewport metrics on the MT side once the root
-// element appears. Bound to `main-thread-binduiappear`; reads the root element
-// from its own MT ref. `viewportHeightMT` of 0 keeps autoscroll inert until
-// the element reports a size.
+// element appears. A `viewportHeightMT` of 0 keeps autoscroll inert until the
+// element reports a size.
 function _bindScroll() {
   'main thread'
   const el = (rootRef as any).current
@@ -122,8 +112,7 @@ function _bindScroll() {
 }
 
 // Item registration lives in SortableItem and runs on the MAIN thread: the
-// registry is a MainThreadRef and BG writes to `.current` are dropped by
-// vue-lynx 0.4.0, so a BG-side `register()` here left the registry empty.
+// registry is a MainThreadRef, and BG writes to `.current` are dropped.
 
 function commitReorder(from: number, to: number) {
   if (from === to || from < 0 || to < 0) return

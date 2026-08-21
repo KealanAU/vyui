@@ -44,9 +44,7 @@ export interface AccordionRootProps<T = string | string[]>
 }
 
 export type AccordionRootEmits<T extends SingleOrMultipleType = SingleOrMultipleType> = {
-  /**
-   * Event handler called when the expanded state of an item changes
-   */
+  /** Event handler called when the expanded state of an item changes */
   'update:modelValue': [value: (T extends 'single' ? string : string[]) | undefined]
 }
 

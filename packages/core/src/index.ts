@@ -6,7 +6,6 @@
 
 export * from './components/OverlayRoot'
 
-// Overlays + menus (tap-driven; work on Lynx native)
 export * from './components/AlertDialog'
 export * from './components/Dialog'
 export * from './components/DropdownMenu'
@@ -16,7 +15,6 @@ export * from './components/Sheet'
 
 export * from './components/Combobox'
 
-// vyui originals
 export * from './components/Button'
 export * from './components/ConfigProvider'
 export * from './components/Form'
@@ -24,7 +22,6 @@ export * from './components/Icon'
 export * from './components/Input'
 export * from './components/IslandContainer'
 
-// Disclosure + universal Phase 1 components
 export * from './components/Accordion'
 export * from './components/AspectRatio'
 export * from './components/Avatar'
@@ -48,7 +45,6 @@ export * from './components/Toast'
 export * from './components/Toggle'
 export * from './components/ToggleGroup'
 
-// Screen-stack navigation (push/pop pages, iOS / Material style)
 export * from './components/Navigation'
 
 export * from './components/Draggable'
@@ -60,7 +56,6 @@ export * from './components/Sortable'
 export * from './components/SwipeAction'
 export * from './components/Swiper'
 
-// Lynx-native composables (universal — used across tiers)
 export * from './shared/composables'
 
 // Intl polyfill for Lynx's PrimJS engine — call once at app entry if any

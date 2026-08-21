@@ -2,42 +2,25 @@
   Adapted from lynx-family/lynx-ui (Apache-2.0) —
   packages/lynx-ui-input/src/Input.tsx.
 
-  Single-line text input that wraps Lynx's `<input>` element. The React port
-  uses imperative `inputRef.invoke({ method: 'setValue' })` calls to keep the
-  native state in sync; in Vue we expose v-model AND the same imperative
-  methods (`focus`, `blur`, `clear`, `setValue`, `getValue`,
-  `setSelectionRange`) via `defineExpose`, so consumers can drive the input
-  either declaratively or imperatively.
+  Single-line text input wrapping Lynx's `<input>`. Exposes v-model AND the
+  React port's imperative methods (`focus`, `blur`, `clear`, `setValue`,
+  `getValue`, `setSelectionRange`) via `defineExpose`.
 
-  Native event mapping
-  --------------------
-    Lynx ReactLynx prop  →  vue-lynx attribute on `<input>`
-    -------------------- → --------------------------------
-    `main-thread:bindinput` → `@input` (background-thread `onInput`)
-    `bindfocus`             → `@focus`
-    `bindblur`              → `@blur`
-    `bindconfirm`           → `@confirm`
-    `bindselection`         → `@selection`
-    `bindkeyboard`          → `@keyboard`
-  The main-thread `bindinput` variant from the React port is dropped here —
-  vue-lynx doesn't surface `main-thread:` event bindings in templates, so we
-  use the equivalent background-thread `@input` (same `event.detail` payload).
+  The port's main-thread `bindinput` is dropped: vue-lynx doesn't surface
+  `main-thread:` event bindings in templates, so `@input` (same `event.detail`
+  payload) stands in.
 -->
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
 
 /**
- * `type` mirrors Lynx's input modes. `password`, `digit`, `tel`, `email` map
- * onto the corresponding software-keyboard modes on native; on web the value
- * is forwarded to the underlying `<input type="...">`.
+ * `type` mirrors Lynx's input modes: software-keyboard modes on native,
+ * forwarded to `<input type="...">` on web.
  */
 export type InputType = 'text' | 'number' | 'digit' | 'tel' | 'email' | 'password'
 
-/**
- * `confirmType` controls the on-screen return-key label. The Lynx defaults
- * are: `done`, `next`, `search`, `send`, `go`. Defaulting to `'send'` keeps
- * parity with the React port.
- */
+/** `confirmType` controls the on-screen return-key label: `done`, `next`,
+ *  `search`, `send`, `go`. Defaults to `'send'`, matching the React port. */
 export type InputConfirmType = 'done' | 'next' | 'search' | 'send' | 'go'
 
 export interface InputProps extends PrimitiveProps {
@@ -68,26 +51,21 @@ export interface InputProps extends PrimitiveProps {
   /** When `false`, focus will not raise the software keyboard. */
   showSoftInputOnFocus?: boolean
   /**
-   * Native keyboard avoidance (Lynx `avoid-keyboard`): when the on-screen
-   * keyboard would cover this focused input, the platform shifts the WHOLE
-   * LynxView up by the overlap — window-coordinate math on the native side,
-   * exact under any container — and restores it on dismiss. Zero-JS
-   * alternative to the `KeyboardAware*` family for simple forms. Do NOT
-   * combine with a `KeyboardAwareRoot`: the two lifts stack.
+   * Native keyboard avoidance (Lynx `avoid-keyboard`): the platform shifts the
+   * WHOLE LynxView up by the keyboard overlap and restores it on dismiss. Do
+   * NOT combine with a `KeyboardAwareRoot` — the two lifts stack.
    */
   avoidKeyboard?: boolean
   /**
-   * Extra clearance in px kept above the keyboard when `avoidKeyboard`
-   * shifts the view. Normalized to a px string on the wire — Android's
-   * native setter only parses string values.
+   * Extra clearance in px kept above the keyboard when `avoidKeyboard` shifts
+   * the view. Normalized to a px string — Android's setter only parses strings.
    */
   avoidKeyboardSpacing?: number
 }
 
 /**
- * Imperative handle exposed via `defineExpose`. Mirrors the methods exposed
- * by the React port's `InputRef`, including the async return shape — these
- * are real cross-thread invokes on Lynx, synchronous fallbacks on web.
+ * Imperative handle exposed via `defineExpose`. Mirrors the React port's
+ * `InputRef`, including the async return shape.
  */
 export interface InputExposed {
   focus: () => Promise<void>
@@ -115,16 +93,12 @@ export type InputEmits = {
   'selectionChange': [selectionStart: number, selectionEnd: number]
   /**
    * Fires when the software keyboard shows/hides while this input is focused.
-   * Lynx delivers this as an element event on the native `<input>` with the
-   * raw shape `{ show: 0|1, keyBoardHeight, safeAreaBottom }` (note the capital
-   * B in `keyBoardHeight`); it is normalized here to `{ visible, height,
-   * safeAreaBottom }`.
+   * Lynx delivers the raw shape `{ show: 0|1, keyBoardHeight, safeAreaBottom }`
+   * (capital B); normalized here to `{ visible, height, safeAreaBottom }`.
    *
-   * This is the reliable way to react to the keyboard under vue-lynx: the
-   * global `GlobalEventEmitter` `keyboardstatuschanged` event is emitted by the
-   * native side but is NOT delivered to the vue-lynx background runtime, so
-   * this per-element event is what consumers (and keyboard-aware lifts) should
-   * use. Verified on the iOS simulator; Android payload fields may differ.
+   * This per-element event is the reliable keyboard signal under vue-lynx: the
+   * global `keyboardstatuschanged` event is emitted natively but never
+   * delivered to the vue-lynx background runtime.
    */
   'keyboard': [info: { visible: boolean, height: number, safeAreaBottom: number }]
 }
@@ -140,9 +114,8 @@ import {
 } from './keyboardAwareContext'
 
 /**
- * Minimal local error type used to reject the `invoke()` promise without
- * pulling a util dependency. Carries the upstream `{ code, data }` shape so
- * consumers that already pattern-match on `errorCode` keep working.
+ * Minimal local error type carrying the upstream `{ code, data }` shape so
+ * consumers pattern-matching on `errorCode` keep working.
  */
 class InvokeRejectError extends Error {
   errorCode: number
@@ -180,20 +153,14 @@ const rootContext = triggerContext ? null : injectKeyboardAwareRootContext(null)
 // compares `focusedRef.value === triggerRef` before clearing.
 const selfRef: KeyboardAwareNodeRef = { current: null }
 
-/**
- * Tracks whether this is a controlled input. We honor v-model when
- * `modelValue` was supplied at mount, regardless of later prop churn (this
- * matches the React port's `useRef(value !== undefined)`).
- */
+/** Controlled when `modelValue` was supplied at mount, regardless of later prop
+ *  churn (matches the React port's `useRef(value !== undefined)`). */
 const controlled = ref(props.modelValue !== undefined)
 
 /**
- * Resolve the underlying DOM `<input>` element behind the Lynx
- * `ShadowElement` returned by `currentElement`. In native Lynx there is no
- * paired DOM node and this returns `null` — callers fall back to a no-op.
- * In jsdom / vue-lynx tests the ShadowElement is paired with a real
- * `HTMLInputElement` tagged with `[vue-ref-{id}]`, which is what we look up
- * here so the imperative API still works under test.
+ * Resolve the underlying DOM `<input>` behind the Lynx `ShadowElement`. Native
+ * Lynx has no paired DOM node and returns `null`; under jsdom the ShadowElement
+ * is paired with a real `HTMLInputElement` tagged `[vue-ref-{id}]`.
  */
 function resolveDomEl(el: any): any {
   if (!el)
@@ -204,13 +171,10 @@ function resolveDomEl(el: any): any {
 }
 
 /**
- * Invoke a Lynx UI method via the cross-thread selector query.
- *
- * On native Lynx this is the only way to drive focus / value / selection
- * changes from background-thread JS. In the test environment the
- * ShadowElement carries an `invoke()` method that throws "not implemented"
- * — we catch that synchronous throw and let the calling method take its DOM
- * fallback path.
+ * Invoke a Lynx UI method via the cross-thread selector query — on native the
+ * only way to drive focus / value / selection from background JS. In tests the
+ * ShadowElement's `invoke()` throws "not implemented"; the synchronous throw is
+ * caught so callers take their DOM fallback path.
  */
 function invokeMethod<T = void>(method: string, params?: Record<string, any>): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -277,9 +241,7 @@ async function getValue(): Promise<{ value: string, selectionStart: number, sele
       }
     }
     // No DOM access (vue-lynx tests expose a virtual element with no `.value`
-    // mirror). Fall back to the last value the component observed — that is
-    // the controlled `renderValue` for v-model users and the latest input
-    // event payload for uncontrolled ones.
+    // mirror). Fall back to the last value the component observed.
     return {
       value: lastNativeValue ?? renderValue.value,
       selectionStart: 0,
@@ -303,11 +265,10 @@ async function clear(): Promise<void> {
     emit('update:modelValue', '')
 }
 
-// `renderValue` is what `:value` binds to in the template. We decouple it
-// from `props.modelValue` so that when the user types, the prop updates via
-// v-model without re-pushing the whole (growing) string back through
-// vue-lynx's `patchProp → SET_PROP` op. Programmatic updates still flow
-// through because they don't match `lastNativeValue`.
+// `renderValue` is what `:value` binds to. Decoupled from `props.modelValue` so
+// typing doesn't re-push the whole growing string back through vue-lynx's
+// `patchProp → SET_PROP` op. Programmatic updates still flow through because
+// they don't match `lastNativeValue`.
 const renderValue = ref(props.modelValue ?? '')
 let lastNativeValue: string | undefined
 watch(() => props.modelValue, (next) => {
@@ -317,16 +278,12 @@ watch(() => props.modelValue, (next) => {
   if (v === lastNativeValue)
     return
   renderValue.value = v
-  // The reactive `:value` binding repaints the field on the web DOM, but a
-  // native Lynx `<input>` treats `value` as initial-only — once rendered, it
-  // ignores prop updates. So programmatic changes (e.g. a stepper button
-  // driving NumberField) must be pushed imperatively too. The `lastNativeValue`
-  // guard above means we never reach here for the user's own keystrokes, so
-  // this can't fight the caret while typing.
+  // A native Lynx `<input>` treats `value` as initial-only, so programmatic
+  // changes must be pushed imperatively too. The `lastNativeValue` guard above
+  // means this never runs for the user's own keystrokes.
   setValue(v)
 })
 
-// Apply `defaultValue` once for uncontrolled inputs.
 onMounted(() => {
   if (!controlled.value && props.defaultValue !== undefined)
     setValue(props.defaultValue)
@@ -344,18 +301,16 @@ function readInputEventDetail(event: any) {
 function handleInput(event: any) {
   const { value, selectionStart, selectionEnd, isComposing } = readInputEventDetail(event)
   lastNativeValue = value
-  // Controlled: forward via v-model — the new value flows back through the
-  // `watch` above. Uncontrolled: let the native input own the value, just
-  // emit the change event so consumers can observe.
+  // Controlled: forward via v-model, which flows back through the `watch`
+  // above. Uncontrolled: let the native input own the value.
   if (controlled.value)
     emit('update:modelValue', value)
   emit('input', value, selectionStart, selectionEnd, isComposing)
 }
 
 // A surrounding Trigger owns the registration when present: it reports its
-// WRAPPER element (the visual field) and its own offset. Self-registering as
-// well would clobber both — the root keeps only the last report — so the lift
-// would measure the bare input and drop the trigger's offset.
+// WRAPPER element and its own offset. Self-registering as well would clobber
+// both — the root keeps only the last report.
 function handleFocus(event: any) {
   if (triggerContext) {
     triggerContext.onInputFocused()
@@ -387,11 +342,9 @@ function handleSelection(event: any) {
   emit('selectionChange', detail.selectionStart ?? 0, detail.selectionEnd ?? 0)
 }
 
-// Normalize Lynx's raw `{ show, keyBoardHeight, safeAreaBottom }` keyboard
-// payload. See the `keyboard` entry in `InputEmits` for why this element event
-// (not the global emitter) is the keyboard signal under vue-lynx. The payload
-// is also piped up the KeyboardAware chain — it is the only keyboard signal
-// that reaches `KeyboardAwareRoot` on device.
+// Normalize Lynx's raw `{ show, keyBoardHeight, safeAreaBottom }` payload. Also
+// piped up the KeyboardAware chain — it is the only keyboard signal that
+// reaches `KeyboardAwareRoot` on device.
 function handleKeyboard(event: any) {
   const d = event?.detail ?? {}
   const info = {

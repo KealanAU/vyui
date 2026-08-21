@@ -2,16 +2,12 @@
 // Licensed under the Apache License Version 2.0.
 //
 // Shared, pure gesture physics — the unit-tested spec mirrored by the
-// `'main thread'` worklets that drive drag components (Swiper, Sheet, …).
-// Extracted so the math can be tested without the `:main-thread-bind*` MT
-// worklet pipeline (which crashes under vitest — see #6). Adapted from
-// `lynx-family/lynx-ui` `packages/lynx-ui-swiper` (Apache 2.0); see
-// `src/hooks/useOffset.ts`, `src/hooks/useVelocity.ts`, `src/hooks/useAxisLock.ts`,
-// `src/utils/index.ts`.
+// `'main thread'` worklets that drive drag components (Swiper, Sheet, …), which
+// cannot import across the worklet boundary. Adapted from
+// `lynx-family/lynx-ui` `packages/lynx-ui-swiper` (Apache 2.0).
 //
-// `decideSnapTarget` is the uniform-paging (carousel) specialization;
-// the sheet family's arbitrary-snap release spec lives in
-// `useSheetBehavior.pickRelease` instead.
+// `decideSnapTarget` is the uniform-paging (carousel) specialization; the sheet
+// family's arbitrary-snap release spec lives in `useSheetBehavior.pickRelease`.
 
 /** Gospel: `const/index.ts` — slop before axis lock engages. */
 export const GESTURE_THRESHOLD = 8
@@ -20,11 +16,8 @@ export const GESTURE_THRESHOLD = 8
 export const VELOCITY_THRESHOLD_DEFAULT = 300
 
 /**
- * Multi-step snap rounding. `threshold=0.5` rounds 1.4→1, 1.6→2.
- * `threshold=0.95` favors the lower integer (gospel uses this for
- * `swipeNext` to be aggressive about forward snapping).
- *
- * Gospel: `useOffset.ts:65`.
+ * Multi-step snap rounding. `threshold=0.5` rounds 1.4→1, 1.6→2;
+ * `threshold=0.95` favors the lower integer. Gospel: `useOffset.ts:65`.
  */
 export function customRound(num: number, threshold = 0.5): number {
   'main thread'
@@ -35,14 +28,9 @@ export function customRound(num: number, threshold = 0.5): number {
 }
 
 /**
- * Rubber-band resistance curve. Returns the dampened delta the user
- * actually feels when overscrolling past a boundary.
- *
- * Gospel: `useOffset.ts:77-94`.
- *
- * `bounceWidth` is the natural maximum bounce; effective drag is capped
- * at `2 * bounceWidth` and the curve is `delta / (delta / bounceWidth + 1)`
- * scaled by 1.5. Output approaches `1.5 * bounceWidth` asymptotically.
+ * Rubber-band resistance curve — the dampened delta felt when overscrolling
+ * past a boundary. Effective drag is capped at `2 * bounceWidth`; output
+ * approaches `1.5 * bounceWidth` asymptotically. Gospel: `useOffset.ts:77-94`.
  */
 export function rubberEffect(rubberDelta: number, bounceWidth: number): number {
   'main thread'
@@ -63,11 +51,8 @@ export interface LimitResult {
   reachingLimit: -1 | 0 | 1
 }
 
-/**
- * Clamp an offset to the swiper's valid range. Loop mode never clamps.
- *
- * Gospel: `useOffset.ts:185-210`.
- */
+/** Clamp an offset to the swiper's valid range; loop mode never clamps.
+ *  Gospel: `useOffset.ts:185-210`. */
 export function calcLimit(
   offset: number,
   fullSize: number,
@@ -89,10 +74,8 @@ export function calcLimit(
 }
 
 /**
- * Apply rubber-band when the user has dragged past a boundary, else clamp.
- * Returns the offset the user should actually see during touchmove.
- *
- * Gospel: `useOffset.ts:212-226`.
+ * Rubber-band past a boundary, else clamp — the offset the user sees during
+ * touchmove. Gospel: `useOffset.ts:212-226`.
  */
 export function applyBounce(
   rawOffset: number,
@@ -111,11 +94,9 @@ export function applyBounce(
 }
 
 /**
- * Compute the snap target offset for a released swipe (no velocity).
- * `rounding` is the fraction-of-an-item past which the snap rounds up
- * (0.5 default — gospel `useOffset.ts:230`).
- *
- * Returns the boundary-clamped offset when the user has dragged off-screen.
+ * Snap target offset for a released swipe (no velocity). `rounding` is the
+ * fraction-of-an-item past which the snap rounds up (0.5 default). Returns the
+ * boundary-clamped offset when the user has dragged off-screen.
  */
 export function calcPaging(
   offset: number,
@@ -142,17 +123,11 @@ export interface LoopRebase {
  * Seam-aware loop rebasing — the heart of seamless (non-snapping) looping.
  *
  * The track holds the real slides PLUS `loopDuplicateCount` cloned edge slides
- * on each side, so the region just past either seam shows real-looking content.
- * When a drag/autoplay step would settle into that clone region (offset beyond
- * the real range), we shift BOTH the animate-from and animate-to offsets by one
- * full content width. The visible motion is unchanged (from and to move
- * together), but the destination lands back inside the real range — so the
- * NEXT gesture continues seamlessly instead of snapping back across the seam.
- *
- * `start`/`end` are the pre-rebase animate-from / animate-to offsets.
- * `totalWidth` is `fullSize * count` (one full period). Returns the rebased pair.
- *
- * Gospel: `useOffset.ts:240-263` (`calcLoop`).
+ * per side. When a step would settle into that clone region, BOTH the
+ * animate-from and animate-to offsets shift by one full content width: the
+ * visible motion is unchanged, but the destination lands back inside the real
+ * range so the NEXT gesture continues seamlessly. `totalWidth` is one full
+ * period. Gospel: `useOffset.ts:240-263` (`calcLoop`).
  */
 export function calcLoop(
   start: number,
@@ -180,11 +155,9 @@ export function calcLoop(
 }
 
 /**
- * Drop samples older than `ms` from the velocity queues, keeping at
- * least `minLength` samples (so sparse touchmove still produces a
- * release velocity from the latest two points).
- *
- * Mutates `positions` and `times` in place. Gospel: `useVelocity.ts:22-33`.
+ * Drop samples older than `ms`, keeping at least `minLength` (so sparse
+ * touchmove still yields a release velocity). Mutates in place.
+ * Gospel: `useVelocity.ts:22-33`.
  */
 export function pruneQueue(
   positions: number[],
@@ -201,12 +174,9 @@ export function pruneQueue(
 }
 
 /**
- * Compute velocity (px/s) from position/time queues. Returns 0 if fewer
- * than two samples, or if the time window is non-positive. Gospel:
- * `useVelocity.ts:35-55`.
- *
- * RTL flips the sign so positive = drag in the "forward" reading
- * direction regardless of layout.
+ * Velocity (px/s) from position/time queues; 0 with fewer than two samples or a
+ * non-positive window. RTL flips the sign so positive = "forward".
+ * Gospel: `useVelocity.ts:35-55`.
  */
 export function calcVelocity(positions: number[], times: number[], rtl = false): number {
   'main thread'
@@ -223,11 +193,8 @@ export function calcVelocity(positions: number[], times: number[], rtl = false):
 }
 
 /**
- * Test if `angle` (degrees, -180..180) falls in any of the wrap-aware
- * ranges. Used by axis lock to decide whether a gesture is "horizontal
- * enough" to consume.
- *
- * Gospel: `useAxisLock.ts:12-21`.
+ * Test if `angle` (degrees, -180..180) falls in any of the wrap-aware ranges —
+ * axis lock's "horizontal enough" test. Gospel: `useAxisLock.ts:12-21`.
  */
 export function isAngleInRanges(angle: number, ranges: [number, number][]): boolean {
   'main thread'
@@ -259,10 +226,8 @@ export type AxisLockState =
   | { gestureLocked: true, axisLocked: true }
 
 /**
- * Resolve axis-lock state for a touchmove. Returns `null` if the gesture
- * hasn't crossed `GESTURE_THRESHOLD` yet — caller should keep its existing
- * state and continue waiting.
- *
+ * Resolve axis-lock state for a touchmove. `null` means the gesture hasn't
+ * crossed `GESTURE_THRESHOLD` yet — keep waiting.
  * Gospel: `useAxisLock.ts:46-73`.
  */
 export function resolveAxisLock(
@@ -293,21 +258,15 @@ export interface SnapTargetOpts {
   loop: boolean
   /** Velocity at release (px/s, positive = drag right). */
   velocity: number
-  /**
-   * Fraction of `fullSize` past which a release snaps one item further.
-   * Only used as the `customRound` threshold for the position-based snap.
-   */
+  /** Fraction of `fullSize` past which a release snaps one item further. */
   threshold: number
   /** Absolute velocity (px/s) above which a flick wins. */
   velocityThreshold: number
 }
 
 /**
- * Decide the final index for a released swipe. Velocity flick wins over
- * the position-based snap. Multi-step drags are honored via `calcPaging`.
- *
- * Mirrors gospel's `handleTouchEnd` (`useOffset.ts:536-563`) +
- * `handleVelocity` (`:467-495`), reduced to a pure index computation.
+ * Final index for a released swipe; velocity flick wins over the position-based
+ * snap. Mirrors gospel's `handleTouchEnd` + `handleVelocity`.
  */
 export function decideSnapTarget(opts: SnapTargetOpts): number {
   'main thread'
@@ -319,8 +278,8 @@ export function decideSnapTarget(opts: SnapTargetOpts): number {
   const snappedOffset = calcPaging(endOffset, fullSize, count, loop, threshold)
   let target = Math.round(-snappedOffset / fullSize)
 
-  // Velocity flick overrides — advance/retreat one step from where the
-  // user grabbed, but only if the flick is in a direction with room.
+  // Velocity flick overrides — advance/retreat one step from where the user
+  // grabbed, but only if the flick is in a direction with room.
   if (Math.abs(velocity) >= velocityThreshold) {
     const startIdx = Math.round(-startOffset / fullSize)
     // Negative velocity = drag left = move forward to next.
@@ -345,17 +304,9 @@ export function easeOutCubic(progress: number): number {
 }
 
 /**
- * Project where a released drag would coast to under exponential friction.
- * `position` is the offset at release, `velocity` is px/s. `decel` is the
- * deceleration rate (px/s² equivalent expressed as a fraction retained per
- * second); higher `decel` → shorter fling. Returns the projected resting
- * offset.
- *
- * The closed-form of v(t) = v0 * e^(-decel*t) integrated to rest:
- *   distance = v0 / decel
- * (the same model iOS UIScrollView uses). Used by Draggable's momentum
- * release and any free-pan surface that wants a flick to keep coasting
- * instead of stopping dead at the finger.
+ * Project where a released drag coasts to under exponential friction: the
+ * closed form of v(t) = v0 * e^(-decel*t) integrated to rest, `v0 / decel` (the
+ * model iOS UIScrollView uses). Higher `decel` → shorter fling.
  */
 export function projectMomentum(position: number, velocity: number, decel = 5): number {
   'main thread'
@@ -365,15 +316,10 @@ export function projectMomentum(position: number, velocity: number, decel = 5): 
 }
 
 /**
- * Settle duration (ms) for a released drag, scaled by release speed. `time =
- * distance / speed`: a hard flick covers the remaining travel in less time, so
- * the settle plays quicker; a slow or stationary release yields a huge time
- * that clamps to `maxMs` (the component's configured duration), preserving the
- * unflicked feel. Floored at `minMs` so a violent flick can't snap instantly.
- *
- * Sign-agnostic — only the magnitudes of distance and velocity matter.
- * Mirrored inline by `SheetContentImpl`'s `_onTouchEnd` worklet (worklets
- * can't call across files — keep the two in sync).
+ * Settle duration (ms) for a released drag, `distance / speed` clamped to
+ * `[minMs, maxMs]`: a hard flick settles quicker, a slow release keeps the
+ * unflicked feel. Sign-agnostic. Mirrored inline by `SheetContentImpl`'s
+ * `_onTouchEnd` worklet (worklets can't call across files — keep in sync).
  */
 export function settleDurationMs(
   remainingPx: number,
@@ -413,15 +359,11 @@ export interface SwipeActionDecisionOpts {
 }
 
 /**
- * Velocity-aware release decision for SwipeAction. A hard leftward flick
- * commits; a softer leftward flick (or a drag past the open threshold) snaps
- * open; a rightward flick or short drag closes. Velocity wins over position
- * so a fast flick from near-closed still triggers the right outcome.
- *
- * Pure mirror of `_onTouchEnd` in `SwipeAction.vue` — kept here so the
- * decision is unit-tested without the MT worklet pipeline. Mirrors lynx-ui
- * `swipeWithEasingInOut` / `swipeCancelDueToSmallVelocity`
- * (`lynx-ui-swipe-action/src/index.tsx`).
+ * Velocity-aware release decision for SwipeAction: a hard leftward flick
+ * commits, a softer one (or a drag past the open threshold) snaps open, a
+ * rightward flick or short drag closes. Pure mirror of `_onTouchEnd` in
+ * `SwipeAction.vue`, kept here so the decision is unit-testable. Mirrors lynx-ui
+ * `swipeWithEasingInOut` / `swipeCancelDueToSmallVelocity`.
  */
 export function decideSwipeAction(opts: SwipeActionDecisionOpts): SwipeActionDecision {
   'main thread'
@@ -439,13 +381,10 @@ export function decideSwipeAction(opts: SwipeActionDecisionOpts): SwipeActionDec
 }
 
 /**
- * Clamp a Sortable target index to the valid range, factoring in a
- * velocity-aware overshoot: a fast flick lets the drop land one row further
- * in the direction of travel than the raw pointer offset would, which makes a
- * quick toss feel like it "throws" the row rather than dropping it short.
- *
- * `rawTarget` is the pointer-derived target (startIdx + round(dy/itemH)).
- * `velocity` is px/s along Y (positive = downward). `count` is item count.
+ * Clamp a Sortable target index, with a velocity-aware overshoot: a fast flick
+ * lets the drop land one row further in the direction of travel, so a quick
+ * toss "throws" the row rather than dropping it short. `rawTarget` is the
+ * pointer-derived target (startIdx + round(dy/itemH)).
  */
 export function sortableDropTarget(
   startIdx: number,
@@ -484,14 +423,9 @@ export interface AutoscrollOpts {
 }
 
 /**
- * Compute the per-frame autoscroll delta for a drag near a list edge.
- * Returns a negative delta near the top edge (scroll up), positive near the
- * bottom edge (scroll down), and 0 in the dead zone. Speed ramps linearly
- * from 0 at the edge band's inner boundary to `maxSpeed` at the very edge.
- *
- * Mirrors the edge-autoscroll behavior common to drag-and-drop lists; lynx-ui
- * relies on the host ScrollView's native momentum, so this is the vyui port
- * of that affordance for the MT pipeline.
+ * Per-frame autoscroll delta for a drag near a list edge: negative near the top,
+ * positive near the bottom, 0 in the dead zone. Speed ramps linearly from 0 at
+ * the band's inner boundary to `maxSpeed` at the very edge.
  */
 export function autoscrollDelta({ pointer, viewport, edge, maxSpeed }: AutoscrollOpts): number {
   'main thread'

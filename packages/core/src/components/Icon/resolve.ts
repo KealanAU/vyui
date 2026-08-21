@@ -4,25 +4,20 @@ import { getIconData, iconToHTML, iconToSVG } from '@iconify/utils'
 /**
  * Iconify icon-set data registered for resolution, keyed by prefix.
  *
- * Iconify ships icon *data* (plain JSON: SVG body + viewBox) separately from any
- * renderer. We reuse the data and `@iconify/utils`, and feed the resulting SVG
- * string to Lynx's `<svg content="...">` element — the DOM `<svg>` element and
- * CSS-mask renderers don't exist on Lynx.
+ * Iconify ships icon *data* (SVG body + viewBox JSON) separately from any
+ * renderer; we feed the resulting SVG string to Lynx's `<svg content="...">`,
+ * since the DOM `<svg>` element and CSS-mask renderers don't exist on Lynx.
  *
- * No sets are registered by default. Iconify icon-set JSON blobs don't
- * tree-shake (importing `@iconify-json/lucide/icons.json` ships the entire
- * lucide payload), so the primitive deliberately stays vendor-neutral.
- * Consumers register either a full set (`@iconify-json/<name>/icons.json`)
- * or a hand-crafted single-icon `IconifyJSON` for the icons they actually use.
+ * No sets are registered by default: icon-set JSON blobs don't tree-shake, so
+ * the primitive stays vendor-neutral and consumers register a full set or a
+ * hand-crafted single-icon `IconifyJSON`.
  */
 const sets = new Map<string, IconifyJSON>()
 
 /**
- * Memoizes resolved SVG strings keyed on `name|size|color`. Resolution is pure
- * for a given registered set, and a list of repeated icons (e.g. a `check` per
- * row) would otherwise re-run `parseName` + `iconToSVG` + the `currentColor`
- * regex for every instance. Cleared on `registerIconSet` so a name that
- * resolved to `null` before its set was registered re-resolves afterwards.
+ * Memoizes resolved SVG strings keyed on `name|size|color` — a list of repeated
+ * icons would otherwise re-run `parseName` + `iconToSVG` per instance. Cleared
+ * on `registerIconSet` so names that resolved to `null` re-resolve.
  */
 const svgCache = new Map<string, string | null>()
 
@@ -32,15 +27,6 @@ const svgCache = new Map<string, string | null>()
  * @example
  * import mdi from '@iconify-json/mdi/icons.json'
  * registerIconSet('mdi', mdi)
- *
- * @example
- * // Hand-crafted single-icon set (avoids shipping the full vendor JSON):
- * registerIconSet('lucide', {
- *   prefix: 'lucide',
- *   width: 24,
- *   height: 24,
- *   icons: { check: { body: '<path d="M20 6L9 17l-5-5" .../>' } },
- * })
  */
 export function registerIconSet(prefix: string, data: IconifyJSON): void {
   sets.set(prefix, data)
@@ -51,11 +37,9 @@ export function registerIconSet(prefix: string, data: IconifyJSON): void {
 
 /**
  * `color` is spliced verbatim into SVG markup where `currentColor` sits inside
- * attribute values (`fill="currentColor"`), so a value containing `"` or `<`
- * could break out of the attribute and inject elements into the XML that
- * Lynx's `<svg content>` (and the web `x-svg` element) parses. Allow only the
- * characters CSS color syntaxes need — named colors, `#hex`, `rgb()`/`hsl()`
- * including modern space/`/`-alpha forms — and ignore anything else.
+ * attribute values, so a value containing `"` or `<` could break out and inject
+ * elements into the XML Lynx's `<svg content>` parses. Allow only the characters
+ * CSS color syntaxes need and ignore anything else.
  */
 const SAFE_COLOR_RE = /^[\w#(),.%/ -]+$/
 
@@ -67,14 +51,9 @@ export interface ResolveIconOptions {
 }
 
 /**
- * Parse an icon name into `[prefix, name]`.
- *
- * Accepts the Tailwind/UnoCSS form `i-lucide-folder`, the Iconify form
- * `lucide:folder` / `simple-icons:bytedance`, and the bare `lucide-folder`.
- * Colon takes precedence over dash so hyphenated prefixes (`simple-icons`)
- * round-trip correctly; the `i-` / bare dash forms fall back to splitting on
- * the first dash and so only support alphanumeric prefixes — hyphenated
- * prefixes like `simple-icons` must use the colon form.
+ * Parse an icon name into `[prefix, name]` — accepts `i-lucide-folder`,
+ * `lucide:folder` / `simple-icons:bytedance`, and bare `lucide-folder`. Colon
+ * takes precedence over dash, so hyphenated prefixes must use the colon form.
  */
 function parseName(name: string): [string, string] | null {
   const cleaned = name.replace(/^i-/, '')

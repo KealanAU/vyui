@@ -24,10 +24,7 @@ import type { PrimitiveProps } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
 
 export interface AspectRatioRootProps extends PrimitiveProps {
-  /**
-   * The desired ratio. Eg: 16/9
-   * @defaultValue 1
-   */
+  /** The desired ratio. Eg: 16/9 @defaultValue 1 */
   ratio?: number
 }
 </script>

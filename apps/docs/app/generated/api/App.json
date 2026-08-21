@@ -17,7 +17,7 @@
       "name": "safeArea",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Provide app-wide safe-area insets to the whole tree (`useSafeArea()`).\n`false` opts the app out with zeros (e.g. a fullscreen surface drawing its\nown chrome). Omit to use the container's reported insets as-is. A subtree\ncan still override with its own `provideSafeAreaInsets`."
+      "description": "Provide app-wide safe-area insets to the whole tree (`useSafeArea()`).\n`false` opts the app out with zeros; omit to use the container's reported\ninsets as-is. A subtree can still override with `provideSafeAreaInsets`."
     },
     {
       "name": "ui",

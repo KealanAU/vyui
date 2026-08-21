@@ -1,44 +1,28 @@
 <script lang="ts">
 import theme from '../theme/island'
 import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
-// NB: `IslandSize` is intentionally NOT imported here. Vue SFC compiles
-// the two `<script>` blocks into one module, and importing the same name
-// in both blocks raises TS2300 "Duplicate identifier". We inline the union
-// in the prop interface below and keep the canonical `IslandSize` import
-// in the setup block (which uses it at runtime via a cast).
+// `IslandSize` is intentionally NOT imported here: the two `<script>` blocks
+// compile into one module, so importing the same name in both raises TS2300.
+// The union is inlined below; the canonical import lives in the setup block.
 
 type IslandTV = ThemeTV<typeof theme>
 type IslandVariants = VariantProps<IslandTV>
 
 /**
- * Linear-inspired island container. A floating (or inline) pill that hosts a
- * horizontal row of items and (optionally) an expandable panel underneath.
+ * Linear-inspired island container. A floating (or inline) pill hosting a
+ * horizontal row of items and, optionally, an expandable panel underneath.
  *
- * Three independent state axes — drive whichever the caller needs:
+ * Three independent state axes, each with a v-model:
+ *  1. `open` — panel expansion; extra rows go in the `#expanded` slot.
+ *  2. `mode` — which row mode is active. Free-form strings: `'default'`
+ *     renders the default slot, any other value renders `<template #[mode]>`,
+ *     falling back to the default slot when no such slot exists.
+ *  3. `value` — selected "tab" value; `<VyIslandButton value="inbox">`
+ *     auto-highlights and updates the parent on tap.
  *
- *  1. **`open` (v-model:open)** — panel expansion. Render extra rows in the
- *     `#expanded` slot; they appear when `open === true`. Caller toggles via
- *     a `<VyIslandButton expand>` (declarative) or `setOpen` (imperative).
- *  2. **`mode` (v-model:mode)** — which "row mode" is active. Mode names are
- *     **free-form strings** — pick whatever describes your layout pattern
- *     (`'fullisland'`, `'compose'`, `'filter'`, `'reply'`, …). `'default'`
- *     renders the default slot; any other value renders the matching
- *     `<template #[modeName]>` slot, so the row morphs to whatever content
- *     the caller defines. Switch with `<VyIslandButton mode="x">` (writes
- *     the ref) or imperatively via `setMode('x')`. Falls back to the default
- *     slot if no slot exists for the current mode name.
- *  3. **`value` (v-model:value)** — currently-selected "tab" value. Buttons
- *     with `<VyIslandButton value="inbox">` auto-highlight + auto-update the
- *     parent's value on tap. Removes the need for caller-side
- *     `:active="x === 'inbox'"` plumbing.
- *
- * Sizing flows from the wrapper down: set `size` once on `<VyIsland>` and
- * child `<VyIslandButton>`s pick it up via context. Override per-button by
- * passing an explicit `size` prop on the child.
- *
- * Placement: `position` covers `top` / `bottom` centered + `inline`. For
- * fine-grained placement (corners, offsets, side-by-side islands), use
- * `inline` and a surrounding flex layout, or pass `class` overrides.
+ * `size` set once on `<VyIsland>` flows to child buttons via context. For
+ * placement beyond `top` / `bottom` / `inline`, use `inline` inside your own
+ * layout.
  */
 export interface IslandProps {
   /** Controlled expanded state — bind with `v-model:open`. */
@@ -46,27 +30,21 @@ export interface IslandProps {
   /** Initial expanded state when uncontrolled. @defaultValue `false` */
   defaultOpen?: boolean
   /**
-   * Active row mode — bind with `v-model:mode`. Free-form string. `'default'`
-   * renders the default slot; any other value renders the matching
-   * `<template #[mode]>` slot. Caller invents the names — common patterns:
-   * `'fullisland'` (takeover), `'compose'`, `'filter'`, `'reply'`, …
+   * Active row mode — bind with `v-model:mode`. Free-form string: `'default'`
+   * renders the default slot, any other value the matching `<template #[mode]>`.
    */
   mode?: string
   /** Initial mode when uncontrolled. @defaultValue `'default'` */
   defaultMode?: string
-  /**
-   * Selected tab value — bind with `v-model:value`. Children with a `value`
-   * prop auto-highlight when this matches them.
-   */
+  /** Selected tab value — bind with `v-model:value`. Children with a `value`
+   *  prop auto-highlight when this matches them. */
   value?: string | number | null
   /** Initial value when uncontrolled. */
   defaultValue?: string | number | null
   /**
-   * Which viewport edge to float against — only relevant when the island is
-   * floating (`layer !== 'inline'`). Works on Lynx via an inline `style`, so a
-   * lone `<VyIsland>` hovers with no wrapper. Also sets the panel growth
-   * direction (panel grows away from the edge).
-   * @defaultValue `'bottom'`
+   * Which viewport edge to float against, when `layer !== 'inline'`. Works via
+   * an inline `style`, so a lone `<VyIsland>` hovers with no wrapper. Also sets
+   * the panel growth direction. @defaultValue `'bottom'`
    */
   position?: IslandVariants['position']
   /**
@@ -88,15 +66,9 @@ export interface IslandProps {
    * @defaultValue `'floating'`
    */
   expandStyle?: IslandVariants['expandStyle']
-  /**
-   * Sizing variant — inherited by children via context.
-   * @defaultValue `'md'`
-   */
+  /** Sizing variant — inherited by children via context. @defaultValue `'md'` */
   size?: 'sm' | 'md' | 'lg' | 'xl'
-  /**
-   * Element this container renders as.
-   * @defaultValue `'view'`
-   */
+  /** Element this container renders as. @defaultValue `'view'` */
   as?: string
   class?: ClassValue
   ui?: Partial<Record<keyof IslandTV['slots'], ClassValue>>
@@ -148,19 +120,15 @@ const props = withDefaults(defineProps<IslandProps>(), {
 const emit = defineEmits<IslandEmits>()
 const slots = defineSlots<IslandSlots>()
 
-// Local uncontrolled state — used as a fallback when the caller didn't bind
-// the matching `v-model:*`. Without these, an uncontrolled island would emit
-// `update:open` etc. into the void and `resolvedX` would never change.
-// Cannot use Vue's `defineModel` here because vue-lynx 0.4.0 lacks the
-// `mergeModels` runtime export, so we hand-roll the controlled/uncontrolled
-// split. See [[feedback_vue_lynx_mergemodels]].
+// Local uncontrolled state, used when the caller didn't bind the matching
+// `v-model:*`. Hand-rolled rather than `defineModel` because vue-lynx 0.4.0
+// lacks the `mergeModels` runtime export.
 const localOpen = ref(props.defaultOpen)
 const localMode = ref(props.defaultMode)
 const localValue = ref<string | number | null>(props.defaultValue)
 
-// Resolved state — controlled prop wins (caller bound a v-model), else the
-// local ref tracks state for uncontrolled mode. Writers update both the
-// local ref AND emit so either binding style stays in sync.
+// Resolved state — controlled prop wins, else the local ref. Writers update
+// both the local ref AND emit so either binding style stays in sync.
 const resolvedOpen = computed(() => props.open ?? localOpen.value)
 const resolvedMode = computed(() => props.mode ?? localMode.value)
 const resolvedValue = computed(() => (props.value !== undefined ? props.value : localValue.value))
@@ -184,7 +152,6 @@ function setValue(v: string | number | null) {
   emit('update:value', v)
 }
 
-// Buttons + slot consumers read state via this single object.
 provideIslandContext({
   open: resolvedOpen,
   mode: resolvedMode,
@@ -195,18 +162,16 @@ provideIslandContext({
   setValue,
 })
 
-// Row slot routing — `mode` selects which slot renders for the row.
-// Falls back to `default` if the named slot doesn't exist so a mode flip
-// never produces empty content.
+// Row slot routing — falls back to `default` if the named slot doesn't exist,
+// so a mode flip never produces empty content.
 const activeRowSlot = computed(() => {
   const name = resolvedMode.value
   if (name === 'default' || !slots[name]) return 'default'
   return name
 })
 
-// Count the *renderable* children of a slot — skips comment nodes (e.g. a
-// `v-if` that's false) and whitespace-only text so a single real button still
-// counts as one. Recurses into fragments (a `v-for` or grouped children).
+// Count the *renderable* children of a slot — skips comment nodes (a false
+// `v-if`) and whitespace text, recursing into fragments.
 function countRenderable(nodes: VNode[] | undefined): number {
   let n = 0
   for (const node of nodes ?? []) {
@@ -233,11 +198,9 @@ const isOpen = computed(() => hasExpanded.value && resolvedOpen.value)
 const panelAbove = computed(() => props.position !== 'top')
 
 // Lynx ignores tailwind `fixed`, so floating islands are pinned via an inline
-// `style` (which Lynx respects) — a lone island floats with no wrapper. The
-// strip spans full-width; inline `alignItems` centers the pill within it.
-// `layer="inline"` returns no style so a parent layout owns placement; `base`
-// drops the island to a low z so modals/drawers cover it. Any caller-passed
-// `style` merges over this via attr fallthrough.
+// `style` — a lone island floats with no wrapper. `layer="inline"` returns no
+// style so a parent layout owns placement; `base` drops to a low z. A
+// caller-passed `style` merges over this via attr fallthrough.
 const positionStyle = computed(() => {
   if (props.layer === 'inline') return undefined
   const zIndex = props.layer === 'base' ? 10 : 50
@@ -256,9 +219,8 @@ const slotProps = computed(() => ({
   setValue,
 }))
 
-// `open` and `expandStyle` are theme variants so the `attached` mode can
-// collapse the panel + row into a single chromed surface only while the
-// panel is visible (closed islands always keep the rounded-full row pill).
+// `open` and `expandStyle` are theme variants so `attached` collapses panel +
+// row into one chromed surface only while the panel is visible.
 const { ui } = useStyledComponent('island', theme, () => ({
   position: props.position,
   size: resolvedSize.value,

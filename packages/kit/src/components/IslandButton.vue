@@ -1,69 +1,49 @@
 <script lang="ts">
 import theme from '../theme/islandButton'
 import type { ClassValue, ThemeTV } from '../composables/useStyledComponent'
-// NB: `IslandSize` from `./islandContext` is intentionally NOT imported here.
-// The setup block below imports it; importing in both blocks raises TS2300
-// "Duplicate identifier" because Vue's SFC compiler merges both `<script>`
-// blocks into one module. The prop interface here uses `IslandButtonVariants['size']`
-// (derived from the theme) which is structurally compatible with `IslandSize`.
+// `IslandSize` is intentionally NOT imported here — the setup block imports it,
+// and importing in both blocks raises TS2300 (the SFC compiler merges them).
+// `IslandButtonVariants['size']` is structurally compatible.
 
 type IslandButtonTV = ThemeTV<typeof theme>
 
 /**
  * Opinionated button for use inside `<VyIsland>`. Ghost / pill styling.
  *
- * Declarative behaviors (pick any combination; tap fires them in order
- * before emitting the bubble-up `tap` event):
+ * Declarative behaviors, fired in order on tap before the bubble-up `tap`:
+ *  - `value` — registers this button as a "tab": auto-highlights when the
+ *    parent island's `value` matches, and tap sets it.
+ *  - `mode` — tap switches the parent's `mode` to this name.
+ *  - `expand` — tap toggles the parent's `open`.
+ *  - `reset` — tap resets the parent's `mode` to `'default'`.
  *
- *  - **`value`** — registers this button as a "tab". Auto-highlights when
- *    the parent island's `value` matches; tap sets the parent's value to
- *    this. Replaces the manual `:active="x === 'inbox'"` boilerplate.
- *  - **`mode`** — tap switches the parent's `mode` to this name (e.g.
- *    `mode="search"` morphs the island row to the `#search` slot).
- *  - **`expand`** — tap toggles the parent's `open` (panel expand /
- *    collapse).
- *  - **`reset`** — tap resets the parent's `mode` to `'default'` (use this
- *    on a close/cancel button inside a mode slot).
- *
- * Sizing inherits from the parent `<VyIsland>` via context. Pass an
- * explicit `size` prop to opt out.
- *
- * Standalone use (no parent island) works too — the declarative behaviors
- * just no-op when there's no context, and `size` falls back to its own
- * default.
+ * Sizing inherits from the parent `<VyIsland>` via context. Standalone use
+ * works too: the behaviors no-op with no context.
  */
 export interface IslandButtonProps {
   /** Iconify name shown leading the label (or alone, for icon-only). */
   icon?: string
   /** Optional text label. When set, the button morphs to a label-pill. */
   label?: string
-  /**
-   * Explicit active state. Auto-overridden when `value` matches the parent
-   * island's `value`.
-   */
+  /** Explicit active state. Auto-overridden when `value` matches the parent
+   *  island's `value`. */
   active?: boolean
   /** Disable interaction + drop visual emphasis. */
   disabled?: boolean
-  /**
-   * Tab value — registers this button against the parent island's
-   * `v-model:value`. Sets active automatically when the values match.
-   */
+  /** Tab value — registers this button against the parent island's
+   *  `v-model:value`, going active when the values match. */
   value?: string | number
   /**
-   * Mode name — free-form string. Tap switches the parent island's mode to
-   * this. Pair with a `<template #[mode]>` slot on the island defining what
-   * the row becomes. Common pattern names: `'fullisland'` (full takeover),
-   * `'compose'`, `'filter'`, `'reply'`, … any string works.
+   * Mode name — free-form string. Tap switches the parent island's mode to it;
+   * pair with a `<template #[mode]>` slot defining what the row becomes.
    */
   mode?: string
   /** Tap toggles the parent island's `open` state. */
   expand?: boolean
   /** Tap resets the parent island's mode to `'default'`. */
   reset?: boolean
-  /**
-   * Sizing override. When omitted, the button inherits the parent
-   * `<VyIsland>`'s `size`. Falls back to `md` standalone.
-   */
+  /** Sizing override. Inherits the parent `<VyIsland>`'s `size` when omitted,
+   *  falling back to `md` standalone. */
   size?: 'sm' | 'md' | 'lg' | 'xl'
   class?: ClassValue
   ui?: Partial<Record<keyof IslandButtonTV['slots'], ClassValue>>
@@ -98,26 +78,21 @@ const props = withDefaults(defineProps<IslandButtonProps>(), {
 const emit = defineEmits<IslandButtonEmits>()
 const slots = defineSlots<IslandButtonSlots>()
 
-// Pass `null` so `injectIslandContext` returns null rather than throwing
-// when this button is used outside an `<VyIsland>` parent — declarative
-// behaviors just no-op in standalone mode.
+// `null` so `injectIslandContext` returns null rather than throwing outside an
+// `<VyIsland>` — the declarative behaviors no-op in standalone mode.
 const island = injectIslandContext(null)
 
 // Icon-only mode: no label text + no default slot content. Drives the
 // `iconOnly` variant which collapses the button to a square pill.
 const iconOnly = computed(() => !props.label && !slots.default)
 
-// Effective size — explicit prop wins, otherwise inherit from the parent
-// island, otherwise fall back to the theme default (`md`).
 const effectiveSize = computed<IslandSize | undefined>(
   () => props.size ?? island?.size.value,
 )
 
-// Icon pixel size per island size. The core `<VyIcon>` bakes width/height as
-// an inline style (overriding any `size-*` utility class), so the glyph size
-// has to be passed as the numeric `size` prop — not via the theme's
-// `leadingIcon` class. Values mirror the `size-*` classes in `islandButton.ts`
-// (sm→16, md→20, lg→24, xl→28) for a ~40–45% icon-to-button ratio.
+// Icon pixel size per island size. The core `<VyIcon>` bakes width/height as an
+// inline style (overriding any `size-*` class), so the glyph size must be passed
+// as the numeric `size` prop. Values mirror `islandButton.ts`.
 const ICON_PX = { sm: 16, md: 20, lg: 24, xl: 28 } as const
 const iconPx = computed(() => ICON_PX[(effectiveSize.value ?? 'md') as IslandSize])
 
@@ -138,13 +113,11 @@ const { ui } = useStyledComponent('islandButton', theme, () => ({
 const appConfig = useAppConfig()
 
 // Lynx's `<svg>` rasterizes the XML and can't inherit `currentColor`, so the
-// `text-*` utility the theme puts on the `leadingIcon` slot never reaches the
-// glyph (unlike the `<text>` label, which it colors fine). Mirror the
-// Button/Input/Alert pattern: read the foreground utility back off the
-// resolved slot class — including any consumer `ui.leadingIcon` override and
-// the active-state shade — and bake it into the icon `:color`. Returns
-// `undefined` for non-palette colors (e.g. arbitrary `text-[#abc]`) so the
-// icon keeps its `currentColor` default rather than guessing.
+// theme's `text-*` on the `leadingIcon` slot never reaches the glyph. As in
+// Button/Input/Alert: read the foreground utility back off the resolved slot
+// class — consumer overrides and active-state shade included — and bake it into
+// the icon `:color`. Non-palette colors return `undefined` so the icon keeps
+// `currentColor`.
 const iconColor = computed(() => {
   const cls = String(ui.value.leadingIcon({ class: props.ui?.leadingIcon }))
   if (/\btext-white\b/.test(cls)) return 'white'

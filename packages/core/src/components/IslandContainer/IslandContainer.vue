@@ -3,27 +3,18 @@
 import type { AsTag } from '@/components/Primitive'
 
 /**
- * Generic visual + layout wrapper for "island" UI — pill / panel surfaces
- * with a soft border, glassy background, and elevation. Intentionally
- * unopinionated about placement; the parent positions it via the `class` prop.
+ * Generic visual + layout wrapper for "island" UI — pill / panel surfaces with a
+ * soft border, glassy background, and elevation. Intentionally unopinionated
+ * about placement; the parent positions it via the `class` prop.
  *
- * Lynx note: `as` defaults to `view` (Lynx layout tag), not `div`. Pass any
- * Lynx tag (`view`, `scroll-view`, `overlay`, …) or a Vue component to
- * change the semantic shell.
+ * `as` defaults to `view` (a Lynx layout tag), not `div`.
  */
 export interface IslandContainerProps {
-  /**
-   * Element this container renders as. Defaults to `view` (Lynx layout tag).
-   * Use a different tag/component when you need different semantic intent
-   * (e.g. wrap in a custom navigation component).
-   * @defaultValue `'view'`
-   */
+  /** Element this container renders as — any Lynx tag or Vue component.
+   *  @defaultValue `'view'` */
   as?: AsTag
-  /**
-   * Extra utility classes — merged onto the baseline via `tailwind-merge`.
-   * Caller classes win on conflict (e.g. pass `rounded-none` to drop the
-   * default radius, or `bg-black/60 text-white` for a dark island).
-   */
+  /** Extra utility classes, merged onto the baseline via `tailwind-merge`, so
+   *  caller classes win on conflict. */
   class?: string | string[]
 }
 </script>
@@ -41,9 +32,8 @@ defineSlots<{
 }>()
 
 // Baseline island aesthetic. Position is intentionally absent — the parent
-// supplies it via `class` (e.g. `fixed top-2 left-2`, `sticky bottom-0`,
-// inline inside a flex row). `tailwind-merge` lets callers override any
-// individual baseline token (radius, padding, surface, border, shadow).
+// supplies it via `class`, and `tailwind-merge` lets callers override any
+// individual baseline token.
 const BASE
   = 'flex flex-row items-center gap-2 px-4 py-2 '
     + 'rounded-2xl bg-white/70 backdrop-blur-xl '

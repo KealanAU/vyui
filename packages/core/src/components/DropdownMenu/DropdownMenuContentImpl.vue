@@ -41,10 +41,8 @@ const { onInteractOutside } = useDismissableLayer({
 
 // `DropdownMenuContent` wraps this Impl in `<Presence>` and captures its
 // provides through the overlay portal, so `PresenceContextKey` resolves here
-// even though we render outside the original tree. Wiring the animation
-// handlers + a leave keyframe is what stops the ~400ms `MAX_WAIT_FRAMES`
-// linger on close (Presence sat in `Leaving` waiting for an `animationstart`
-// that never fired) and gives the menu a real scale/fade on open.
+// even though we render outside the original tree. Wiring the animation handlers
+// + a leave keyframe is what stops the ~400ms `MAX_WAIT_FRAMES` linger on close.
 const presence = inject(PresenceContextKey, null)
 
 const presenceState = computed<PresenceState>(() =>
@@ -52,8 +50,7 @@ const presenceState = computed<PresenceState>(() =>
 )
 
 // `transition: true` opts into the `ui-entering` / `ui-leaving` classes the
-// keyframes below hook; `className` carries the stable hook the CSS targets
-// (the kit surface classes arrive separately via `$attrs`).
+// keyframes below hook; `className` carries the stable hook the CSS targets.
 const presenceClass = computed(() =>
   presenceClassVariants({
     state: presenceState.value,
@@ -103,18 +100,14 @@ function stopTap(event: any) {
 </template>
 
 <style>
-/* Animation hook only — the menu's surface (bg / border / radius / shadow /
-   padding) comes from the kit `ui.content` classes via `$attrs`. We add just
-   the transform-origin + the resting hidden state so the entrance plays from
-   the anchored (top) edge. Open/close are driven by the Presence state machine
-   toggling `ui-entering` / `ui-leaving`; `@animationend` advances it so the
-   menu unmounts the instant the slide-out finishes (no MAX_WAIT_FRAMES wait). */
+/* Animation hook only — the menu's surface comes from the kit `ui.content`
+   classes via `$attrs`. Just the transform-origin + resting hidden state, so the
+   entrance plays from the anchored edge; Presence toggles `ui-entering` /
+   `ui-leaving` and `@animationend` advances it. */
 .vyui-dropdown-content {
   transform-origin: top center;
   /* Hidden at rest so the freshly-mounted menu doesn't flash before the
-     entrance keyframe runs (Presence holds `ui-closed` for a few frames while
-     layout settles). `ui-open` + the keyframes' `both` fill take over from
-     here. */
+     entrance keyframe runs (Presence holds `ui-closed` for a few frames). */
   opacity: 0;
   transform: scale(0.96);
 }

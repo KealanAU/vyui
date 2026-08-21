@@ -10,7 +10,7 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+      "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     },
     {
       "name": "collapsible",
@@ -23,7 +23,7 @@
       "name": "defaultValue",
       "type": "T | undefined",
       "required": false,
-      "description": "The default active value of the item(s).\n\nUse when you do not need to control the state of the item(s)."
+      "description": "The default active value of the item(s), for uncontrolled use."
     },
     {
       "name": "dir",
@@ -42,7 +42,7 @@
       "name": "modelValue",
       "type": "T | undefined",
       "required": false,
-      "description": "The controlled value of the active item(s).\n\nUse this when you need to control the state of the items. Can be bound with `v-model`"
+      "description": "The controlled value of the active item(s). Can be bound with `v-model`."
     },
     {
       "name": "orientation",
@@ -55,7 +55,7 @@
       "name": "type",
       "type": "SingleOrMultipleType | undefined",
       "required": false,
-      "description": "Determines whether a \"single\" or \"multiple\" items can be selected at a time.\n\nThis prop will overwrite the inferred type from `modelValue` and `defaultValue`."
+      "description": "Whether a \"single\" or \"multiple\" items can be selected at a time. Overwrites\nthe type inferred from `modelValue` and `defaultValue`."
     },
     {
       "name": "unmountOnHide",

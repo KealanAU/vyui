@@ -5,18 +5,17 @@ import type { PrimitiveProps } from '@/components/Primitive'
 /**
  * Preventable outside-interaction events — see `useDismissableLayer`.
  *
- * reka-ui's `PopoverContentImpl` also emits `openAutoFocus` / `closeAutoFocus`.
- * Those are dropped on Lynx: there is no focus-trap and no programmatic focus
- * model, so `FocusScope` is not rendered and the auto-focus events never fire.
+ * reka-ui's `PopoverContentImpl` also emits `openAutoFocus` / `closeAutoFocus`;
+ * those are dropped on Lynx, which has no focus-trap or programmatic focus
+ * model, so `FocusScope` is not rendered and they never fire.
  */
 export type PopoverContentImplEmits = DismissableLayerEmits
 
 export interface PopoverContentImplProps extends PrimitiveProps {
   /**
    * Style applied to the full-screen backdrop wrapper. The default
-   * `OverlayBackdrop` flex-centers its child; pass alignment + padding here
-   * to dock the popover next to its trigger instead. Mirrors the
-   * `DialogContentImpl.backdropStyle` escape hatch.
+   * `OverlayBackdrop` flex-centers its child; pass alignment + padding here to
+   * dock the popover next to its trigger instead.
    */
   backdropStyle?: Record<string, any>
 }
@@ -38,23 +37,20 @@ defineEmits<PopoverContentImplEmits>()
 const { forwardRef } = useForwardExpose()
 const rootContext = injectPopoverRootContext()
 
-// Modal dialog semantics: a valid `dialog` role (via role-description) plus an
-// a11y focus trap so the overlay is announced as a self-contained modal.
+// Modal dialog semantics: a valid `dialog` role plus an a11y focus trap.
 const a11y = useA11y(() => ({
   role: 'dialog',
   exclusiveFocus: true,
 }))
 
 /**
- * A tap inside the content must not bubble to the backdrop view (which
- * dismisses the popover). reka-ui gets this for free from `DismissableLayer`;
- * on Lynx we stop propagation explicitly with `@tap.stop`.
+ * A tap inside the content must not bubble to the backdrop view (which dismisses
+ * the popover): reka-ui gets this from `DismissableLayer`, on Lynx it is an
+ * explicit `@tap.stop`.
  *
- * Lynx adaptations vs. reka-ui's `PopoverContentImpl`:
- *   - no `FocusScope` / `useFocusGuards` (no focus model on Lynx)
- *   - no `PopperContent` / `@floating-ui` (anchor positioning dropped — the
- *     content is centred by the OverlayRoot portal)
- *   - native Lynx a11y (`useA11y` role:'dialog') instead of ARIA `role`/`aria-labelledby`
+ * Other Lynx adaptations vs. reka-ui: no `FocusScope` / `useFocusGuards`, no
+ * `PopperContent` / `@floating-ui` (the content is centred by the OverlayRoot
+ * portal), and native `useA11y` instead of ARIA attributes.
  */
 </script>
 

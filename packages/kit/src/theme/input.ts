@@ -1,21 +1,16 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/input.ts`. Uses semantic color names
-// (`border-primary-500`) which Tailwind resolves via CSS variables defined in
-// the consuming app — see `apps/examples/kit-demo/src/index.css`.
+// Ported from nuxt/ui v3.0.2 `src/theme/input.ts`. Semantic color names resolve
+// via CSS variables defined in the consuming app.
 //
-// Lynx adaptation: `ring-*` → `border-*` + a flat arbitrary `box-shadow`
-// focus ring (no ringWidth plugin in `@lynx-js/tailwind-preset` — see
-// compoundVariants), `inline-flex` → `flex` (Lynx strips
-// inline-flex), and — most importantly — leading / trailing slots are
-// **inline siblings** of the underlying `<input>` rather than absolutely-
-// positioned overlays. Lynx's layout engine doesn't reliably overlay
-// `position: absolute` children on top of a sibling `<input>` (the icons
-// stack visually instead of sitting inside the rounded border), so we put
-// border + background on `root` and let the input live transparent between
-// the two icon wrappers.
+// Lynx adaptation: `ring-*` → `border-*` plus a flat arbitrary `box-shadow`
+// focus ring (no ringWidth plugin in `@lynx-js/tailwind-preset`), `inline-flex`
+// → `flex`, and — most importantly — leading / trailing slots are **inline
+// siblings** of the `<input>` rather than absolutely-positioned overlays: Lynx's
+// layout engine doesn't reliably overlay `position: absolute` children on a
+// sibling `<input>`, so border + background live on `root` and the input sits
+// transparent between the two icon wrappers.
 //
 // Inline `as const` on literal values is required so tailwind-variants can
-// narrow `compoundVariants` entries to the variant union types — matches the
-// convention used by `./switch` and `./button`.
+// narrow `compoundVariants` entries to the variant union types.
 
 import type { Color } from './colors'
 
@@ -24,9 +19,8 @@ export default (colors: Color[]) => ({
     // Border + bg + radius live on root; base stays transparent so the icon
     // wrappers (siblings) sit *inside* the rounded chrome.
     root: 'flex flex-row items-center w-full rounded-md transition-colors',
-    // Typed-text color sits on `base` (the <input>), not `root`: CSS
-    // inheritance is OFF in the Lynx build (`enableCSSInheritance: false`), so a
-    // `text-*` on the root <view> never reaches the input element.
+    // Typed-text color sits on `base` (the <input>), not `root`: CSS inheritance
+    // is OFF in the Lynx build, so a root `text-*` never reaches the input.
     base: 'flex-1 min-w-0 bg-transparent text-highlighted placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
     leading: 'flex flex-row items-center shrink-0',
     leadingIcon: 'shrink-0 text-dimmed',
@@ -61,8 +55,6 @@ export default (colors: Color[]) => ({
         trailingIcon: 'size-7'
       }
     },
-    // Surface only (bg/border) on `root`; typed-text color lives on `base`
-    // (the <input>) — see the `slots.base` note re `enableCSSInheritance: false`.
     variant: {
       outline: { root: 'bg-default border border-default' },
       soft: { root: 'bg-muted active:bg-elevated disabled:bg-muted' },
@@ -78,13 +70,11 @@ export default (colors: Color[]) => ({
   },
   compoundVariants: [
     // Resting border is neutral; the colored border + shadow ring paints while
-    // focused (tracked in JS by `Input.vue` — Lynx has no `:focus-within` and
-    // the chrome lives on `root`, not the `<input>`) or statically via
-    // `highlight`. The ring is a flat arbitrary box-shadow: the Lynx preset
-    // has no `ring*` / `boxShadowColor` plugins, but its `shadow-*` emits a
-    // plain `box-shadow` (no `--tw-shadow` var composition), and
-    // `--ui-color-*-200` holds a concrete value, so the single var() level
-    // survives Lynx's one-level var() resolution. Template-literal class —
+    // focused (tracked in JS by `Input.vue` — Lynx has no `:focus-within`) or
+    // statically via `highlight`. The ring is a flat arbitrary box-shadow: the
+    // Lynx preset has no `ring*` plugins, but `shadow-*` emits a plain
+    // `box-shadow` and `--ui-color-*-200` holds a concrete value, so the single
+    // var() level survives Lynx's one-level resolution. Template-literal class —
     // safelisted in `../tailwind.js` (keep the two in sync).
     ...colors.map(c => ({
       color: c,

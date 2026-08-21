@@ -82,7 +82,6 @@ watch(
   { immediate: true, deep: true },
 )
 
-// When the dropdown closes, optionally reset the search term display.
 watch(
   () => rootContext.open.value,
   (isOpen) => {

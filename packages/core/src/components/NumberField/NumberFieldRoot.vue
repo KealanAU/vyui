@@ -56,9 +56,9 @@ export const [injectNumberFieldRootContext, provideNumberFieldRootContext]
   = createContext<NumberFieldRootContext>('NumberFieldRoot')
 
 /**
- * Parse a raw string into a number. Returns `null` for empty / non-numeric
- * input (a lone `-`, `.`, or `-.` while typing also yields `null` until a
- * digit lands). Accepts an optional leading sign and a single decimal point.
+ * Parse a raw string into a number: `null` for empty / non-numeric input (a lone
+ * `-`, `.`, or `-.` while typing also yields `null`). Accepts an optional
+ * leading sign and a single decimal point.
  */
 function parseNumber(raw: string): number | null {
   const trimmed = raw.trim()
@@ -118,8 +118,7 @@ const decimalCount = computed(() =>
 
 function clampSnap(value: number): number {
   let next = clamp(value, min.value, max.value)
-  // `snapValueToStep` needs finite bounds; pass `undefined` for unbounded
-  // sides so it snaps to the step grid without forcing a bound.
+  // `snapValueToStep` needs finite bounds; pass `undefined` for unbounded sides.
   next = snapValueToStep(
     next,
     Number.isFinite(min.value) ? min.value : undefined,
@@ -165,7 +164,7 @@ function step_(direction: 1 | -1, multiplier = 1) {
   if (disabled.value || readonly.value)
     return
   // Stepping from an empty field starts at the nearest bound to 0, or 0 when
-  // unbounded — matches typical numeric-stepper behavior.
+  // unbounded.
   const base = modelValue.value
     ?? clamp(0, min.value, max.value)
   commit(clampSnap(base + direction * step.value * multiplier))

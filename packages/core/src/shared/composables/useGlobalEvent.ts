@@ -2,14 +2,11 @@
  * useGlobalEvent — subscribe to a Lynx `GlobalEventEmitter` event from a Vue
  * component, with automatic cleanup on unmount.
  *
- * `GlobalEventEmitter` is the background-thread channel for native → JS
- * events: Lynx's own (`keyboardstatuschanged`, `exposure`, `disexposure`) and
- * anything the host app sends via `sendGlobalEvent`. The documented entry
- * point is `lynx.getJSModule('GlobalEventEmitter').addListener(...)` — there
- * is no `lynx.addEventListener` on the background thread.
- *
- * On web / jsdom the `lynx` global is absent and the composable degrades to a
- * no-op, so callers are safe to mount in vitest without mocks.
+ * `GlobalEventEmitter` is the background-thread channel for native → JS events:
+ * Lynx's own and anything the host sends via `sendGlobalEvent`. The documented
+ * entry point is `lynx.getJSModule('GlobalEventEmitter').addListener(...)` —
+ * there is no `lynx.addEventListener` on the background thread. On web / jsdom
+ * the `lynx` global is absent and this degrades to a no-op.
  */
 
 import type { GlobalEventEmitter } from '@lynx-js/types'
@@ -17,18 +14,16 @@ import { onMounted, onUnmounted } from 'vue'
 
 export interface UseGlobalEventOptions {
   /**
-   * Subscribe synchronously during `setup()` instead of in `onMounted`. Use
-   * when the event can fire before mount (e.g. `exposure` for a view in the
-   * initial layout). Cleanup still runs in `onUnmounted` either way.
+   * Subscribe synchronously during `setup()` instead of in `onMounted`, for
+   * events that can fire before mount. Cleanup still runs in `onUnmounted`.
    * @defaultValue false
    */
   immediate?: boolean
 }
 
 /**
- * Subscribe to a named `GlobalEventEmitter` event. Listeners receive the
- * event's variadic args verbatim — cast to the expected payload at the call
- * site. Call during `setup()`.
+ * Subscribe to a named `GlobalEventEmitter` event. Listeners receive the event's
+ * variadic args verbatim — cast at the call site. Call during `setup()`.
  */
 export function useGlobalEvent(
   name: string,

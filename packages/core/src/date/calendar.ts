@@ -17,39 +17,25 @@ export type WeekDayFormat = 'narrow' | 'short' | 'long'
 export type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
 export type CreateSelectProps = {
-  /**
-   * The date object representing the date (usually the first day of the month/year).
-   */
+  /** The date object representing the date (usually the first day of the month/year). */
   dateObj: DateValue
 }
 
 export type CreateMonthProps = {
-  /**
-   * The date object representing the month's date (usually the first day of the month).
-   */
+  /** The date object representing the month's date (usually the first day of the month). */
   dateObj: DateValue
 
-  /**
-   * The day of the week to start the calendar on (0 for Sunday, 1 for Monday, etc.).
-   */
+  /** The day of the week to start the calendar on (0 for Sunday, 1 for Monday, etc.). */
   weekStartsOn: WeekStartsOn
 
-  /**
-   * Whether to always render 6 weeks in the calendar, even if the month doesn't
-   * span 6 weeks.
-   */
+  /** Always render 6 weeks, even when the month doesn't span 6. */
   fixedWeeks: boolean
 
-  /**
-   * The locale to use when creating the calendar month.
-   */
+  /** The locale to use when creating the calendar month. */
   locale: string
 }
 
-/**
- * Retrieves an array of date values representing the days between
- * the provided start and end dates.
- */
+/** Date values for the days between the provided start and end dates. */
 export function getDaysBetween(start: DateValue, end: DateValue) {
   const days: DateValue[] = []
   let dCurrent = start.add({ days: 1 })
@@ -190,19 +176,14 @@ export function createMonths(props: SetMonthProps) {
   return months
 }
 
-/**
- * Creates a 3x4 grid of months for a given year.
- */
+/** Creates a 3x4 grid of months for a given year. */
 export function createMonthGrid(props: CreateSelectProps): Grid<DateValue> {
   const { dateObj } = props
   const months = createYear({ dateObj })
   return { value: dateObj, cells: months, rows: chunk(months, 4) }
 }
 
-/**
- * Creates a 3x4 grid of years (decade-aligned).
- * The grid starts from the decade that contains the given date.
- */
+/** Creates a 3x4 grid of years, starting from the decade containing `date`. */
 export function createYearGrid(props: CreateSelectProps & { yearsPerPage?: number, decadeAligned?: boolean }): Grid<DateValue> {
   const { dateObj, yearsPerPage = 12, decadeAligned = true } = props
 
@@ -251,24 +232,18 @@ export function createDateRange({ start, end }: DateRange): DateValue[] {
   return dates
 }
 
-/**
- * It's better to use `getWeekStart` from `@internationalized/date`,
- * but sadly it is not yet exported from the package.
- * And the `Intl.Locale` API is not supported well enough yet.
- */
+/** `getWeekStart` from `@internationalized/date` would be better, but it isn't
+ *  exported and `Intl.Locale` support is too thin. */
 export function getWeekStartsOn(locale: string): WeekStartsOn {
   // Jan 6, 2025 is a Monday (ISO day = 1)
   const monday = new CalendarDate(2025, 1, 6)
   const dayOfWeek = getDayOfWeek(monday, locale)
-  // dayOfWeek tells us Monday's position in the locale's week (0-indexed)
-  // If Monday is position 0 → week starts Monday (1)
-  // If Monday is position 1 → week starts Sunday (0)
+  // dayOfWeek is Monday's position in the locale's week (0-indexed): position 0
+  // → week starts Monday (1), position 1 → week starts Sunday (0).
   return (1 - dayOfWeek + 7) % 7 as WeekStartsOn
 }
 
-/**
- * Returns the locale-specific week number
- */
+/** Returns the locale-specific week number */
 export function getWeekNumber(date: DateValue, locale: string = 'en-US', firstDayOfWeek?: DayOfWeek): number {
   const jan1 = new CalendarDate(date.year, 1, 1)
 

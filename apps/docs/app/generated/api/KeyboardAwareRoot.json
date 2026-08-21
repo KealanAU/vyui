@@ -5,7 +5,7 @@
       "type": "number | undefined",
       "required": false,
       "default": "0",
-      "description": "Combined height of the Android status bar + bottom navigation bar in px.\nOnly used on the fallback path when the root viewport can't be measured:\nit corrects the screen-height margin math for `boundingClientRect` not\nincluding the status bar on Android."
+      "description": "Combined height of the Android status bar + bottom navigation bar in px.\nOnly used when the root viewport can't be measured: `boundingClientRect`\ndoes not include the status bar on Android."
     },
     {
       "name": "as",
@@ -18,21 +18,21 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+      "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     },
     {
       "name": "forceAttach",
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "When `true`, the responder will keep translating upward even after the\nfocused trigger is already above the keyboard. Useful for content that\nshould \"stick\" to the keyboard's top edge."
+      "description": "Keep translating upward even once the focused trigger is above the\nkeyboard, so content \"sticks\" to the keyboard's top edge."
     },
     {
       "name": "offset",
       "type": "number | undefined",
       "required": false,
       "default": "0",
-      "description": "Extra clearance in px kept between the focused field and the top of the\nkeyboard. A `KeyboardAwareTrigger` with an explicit `offset` of its own\noverrides this for the region it wraps."
+      "description": "Extra clearance in px between the focused field and the keyboard. A\n`KeyboardAwareTrigger` with its own `offset` overrides this."
     }
   ],
   "events": [

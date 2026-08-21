@@ -19,47 +19,33 @@ export interface ToastProps {
   color?: ToastVariants['color']
   orientation?: ToastVariants['orientation']
   /**
-   * Sonner-style stacking. When `true`, toasts collapse into an overlapping
-   * pile (front toast fully visible, the rest peeking out scaled-down behind
-   * it) and fan out under each other when the stack is expanded — tap any
-   * toast to toggle. Off by default: toasts render as a plain gapped column.
-   *
-   * Requires the surrounding `<ToastProvider>` (it owns the shared stack
-   * order/expanded state) and a `<ToastViewport>` anchored to match `stackFrom`.
+   * Sonner-style stacking: toasts collapse into an overlapping pile and fan out
+   * when expanded — tap any toast to toggle. Requires the surrounding
+   * `<ToastProvider>` and a `<ToastViewport>` anchored to match `stackFrom`.
    */
   stacked?: boolean
-  /**
-   * Which edge the stack is pinned to — must match the `ToastViewport`
-   * `position`. `top` fans toasts downward, `bottom` fans them upward.
-   * Only used when `stacked`. Defaults to `bottom` (Sonner's default).
-   */
+  /** Which edge the stack is pinned to — must match the `ToastViewport`
+   *  `position`. `top` fans downward, `bottom` upward. Only used when `stacked`. */
   stackFrom?: 'top' | 'bottom'
   /**
-   * Show a thin countdown bar along the bottom edge that drains as the
-   * auto-dismiss timer runs. Tracks `ToastRoot`'s `progress`, so it pauses
-   * while the stack is expanded and is hidden when auto-dismiss is off
-   * (`duration: 0`).
+   * Show a thin countdown bar that drains as the auto-dismiss timer runs.
+   * Tracks `ToastRoot`'s `progress`, so it pauses while the stack is expanded
+   * and is hidden when auto-dismiss is off.
    *
-   * Pass `true` for the default (bar inherits the toast `color`), or an object
-   * to override just the bar color independently. `color` can be a fixed color
-   * (`{ color: 'success' }`) or a function of the remaining fraction (`1` → `0`)
-   * so the bar recolors as it drains, e.g.
-   * `{ color: p => p > 0.5 ? 'success' : p > 0.25 ? 'warning' : 'error' }`.
+   * `true` inherits the toast `color`; an object overrides just the bar color,
+   * either fixed (`{ color: 'success' }`) or a function of the remaining
+   * fraction (`1` → `0`) so the bar recolors as it drains.
    */
   progress?: boolean | { color?: ToastVariants['color'] | ((progress: number) => ToastVariants['color']) }
   /** Enable swipe-to-dismiss (fling the toast away to close it). */
   swipe?: boolean
-  /**
-   * Directions a swipe may dismiss in. `horizontal` (default) flings either
-   * way; `left` / `right` constrain it. Only used when `swipe`.
-   */
+  /** Directions a swipe may dismiss in. `horizontal` (default) flings either
+   *  way; `left` / `right` constrain it. Only used when `swipe`. */
   swipeDirection?: 'horizontal' | 'left' | 'right'
   /** Action buttons rendered after the body. */
   actions?: ButtonProps[]
-  /**
-   * Show a close button. Pass `true` to render the default, or partial
-   * `ButtonProps` to customize it. Pass `false` to hide.
-   */
+  /** Show a close button. `true` renders the default, partial `ButtonProps`
+   *  customize it, `false` hides it. */
   close?: boolean | Partial<ButtonProps>
   /** Iconify name for the close button. Defaults to `appConfig.ui.icons.close`. */
   closeIcon?: string
@@ -116,11 +102,10 @@ const resolvedCloseIcon = computed(() => props.closeIcon || appConfig.ui.icons?.
 // into the icon fill at render time (same pattern as Button/Input).
 const iconColor = computed(() => resolveColorHex(appConfig, props.color ?? 'primary', ICON_FG_SHADE))
 
-// --- Sonner-style stacking geometry -------------------------------------
-// Each toast self-positions from the shared stack data the core `ToastRoot`
-// exposes (index from the front, the combined height of the toasts ahead of
-// it, expanded state). We keep the transforms here in the styled layer —
-// `@vyui/core` deliberately ships the geometry, not the motion.
+// --- Sonner-style stacking geometry -----------------------------------------
+// Each toast self-positions from the shared stack data core's `ToastRoot`
+// exposes. The transforms stay in the styled layer — `@vyui/core` ships the
+// geometry, not the motion.
 const STACK = {
   /** Vertical peek (px) of each toast behind the front one while collapsed. */
   collapsePeek: 16,
@@ -145,9 +130,7 @@ function stackStyle(s: StackSlotProps): Record<string, any> | undefined {
 
   const dir = props.stackFrom === 'top' ? 1 : -1
   const offset = s.expanded
-    // Fanned out: shift past the real height of the toasts in front + a gap.
     ? s.heightBefore + s.index * STACK.expandGap
-    // Collapsed: every toast peeks a fixed amount behind the front one.
     : s.index * STACK.collapsePeek
   const scale = s.expanded ? 1 : Math.max(1 - s.index * STACK.scaleStep, 0)
   const visible = s.expanded || s.index < STACK.maxVisible
@@ -157,25 +140,21 @@ function stackStyle(s: StackSlotProps): Record<string, any> | undefined {
     [props.stackFrom]: '0px',
     // Center horizontally with `left: 50%` + `translateX(-50%)`: Lynx doesn't
     // honor `margin: auto` for absolutely-positioned elements, and pinning
-    // `left/right: 0` over-constrains the toast's own width. This keeps each
-    // toast at the full default width, centered like the unstacked column.
+    // `left/right: 0` over-constrains the toast's own width.
     left: '50%',
     transform: `translateX(-50%) translateY(${dir * offset}px) scale(${scale})`,
     transformOrigin: `${props.stackFrom} center`,
     opacity: visible ? 1 : 0,
-    // Front toast (index 0) paints on top of the pile.
     zIndex: s.count - s.index,
     transition: 'transform 0.35s ease, opacity 0.35s ease',
   }
 }
 
-// Progress bar color: defaults to the toast color (the `color` variant already
-// bakes `bg-${c}-500` into `ui.progress`); when `progress` is an object with a
-// `color`, emit that `bg-*-500` so tailwind-merge overrides the variant's. The
-// `color` can be a function of the live remaining fraction, so the bar recolors
-// as it drains — we re-resolve it per tick from the slot's `progress` value.
-// The classes are safe for Lynx JIT because the color variant already emits
-// every `bg-${c}-500` in the theme source.
+// Progress bar color: defaults to the toast color (the `color` variant bakes
+// `bg-${c}-500` into `ui.progress`); an object `color` emits its own `bg-*-500`
+// for tailwind-merge to override with. A function color is re-resolved per tick
+// from the slot's `progress`. Safe for Lynx JIT — the color variant already
+// emits every `bg-${c}-500` in the theme source.
 function progressColorClass(value: number): string | undefined {
   if (typeof props.progress !== 'object')
     return undefined
@@ -204,8 +183,7 @@ const closeButtonProps = computed<Partial<ButtonProps>>(() => {
     @update:open="$emit('update:open', $event)"
   >
     <!-- Outer shell (ToastRoot's `as-child` root): owns the stacking transform.
-         `as-child` is required so this style can read the slot data ToastRoot
-         exposes — slot props aren't in scope on ToastRoot's own attributes.
+         `as-child` is required so this style can read ToastRoot's slot data.
          The visual card is a separate inner layer so swipe (MT `transform`)
          and stacking (BG `transform`) never fight over one element. -->
     <view
@@ -274,8 +252,7 @@ const closeButtonProps = computed<Partial<ButtonProps>>(() => {
     </slot>
 
     <!-- Countdown bar: scaleX from the left edge keeps the full-width
-         `inset-x-0` box from fighting an explicit width. Hidden when
-         auto-dismiss is off. -->
+         `inset-x-0` box from fighting an explicit width. -->
     <view
       v-if="progress && toastDuration > 0"
       :class="ui.progress({ class: [props.ui?.progress, progressColorClass(progressValue)] })"

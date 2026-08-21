@@ -4,7 +4,7 @@
       "name": "actionWidth",
       "type": "number",
       "required": true,
-      "description": "Width of the revealed action panel in px. Forwarded to the core\n`SwipeAction` primitive — required for the threshold math."
+      "description": "Width of the revealed action panel in px. Forwarded to the core primitive\n— required for the threshold math."
     },
     {
       "name": "defaultOpen",
@@ -37,13 +37,13 @@
       "type": "\"left\" | \"right\" | undefined",
       "required": false,
       "default": "\"right\"",
-      "description": "Which side reveals the actions. Drives styling only — the core\nprimitive currently always reveals from the trailing (right) edge."
+      "description": "Which side reveals the actions. Styling only — the core primitive always\nreveals from the trailing (right) edge."
     },
     {
       "name": "threshold",
       "type": "number | undefined",
       "required": false,
-      "description": "Fraction of `actionWidth` the user must drag past to snap open. 0–1.\nMaps to the core `snapThreshold` prop."
+      "description": "Fraction of `actionWidth` the user must drag past to snap open. 0–1. Maps\nto the core `snapThreshold` prop."
     },
     {
       "name": "ui",

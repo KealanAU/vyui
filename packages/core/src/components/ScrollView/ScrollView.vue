@@ -1,29 +1,21 @@
 <!-- Copyright 2026 The Lynx Authors. All rights reserved.
      Licensed under the Apache License Version 2.0.
 
-     Apache 2.0 licensed, adapted from lynx-family/lynx-ui (Apache 2.0).
-     Wraps Lynx's native `<scroll-view>` for mobile-tier scrolling with a
-     custom main-thread bounce/overscroll system ported from
-     `packages/lynx-ui-scroll-view` (`hooks/useBounce.tsx`,
-     `ScrollViewWithBouncesHook.tsx`, `ScrollViewBasic.tsx`).
+     Adapted from lynx-family/lynx-ui (Apache 2.0), `packages/lynx-ui-scroll-view`.
+     Wraps Lynx's native `<scroll-view>` with a custom main-thread
+     bounce/overscroll system.
 
-     The bounce gesture + animation run entirely on the main thread via
-     inline `'main thread'` worklets. They are inlined here (not pulled from
-     a composable) because they close over MT refs bound to this SFC's own
-     elements and component state — only the *pure* maths lives in
-     `@/shared/composables/useBounce`, which the worklets call by value. A
-     `.ts` module can hold worklets of its own (see `useAnimate.ts`); what
-     does not resolve is a cross-FILE worklet→worklet call. Helpers are defined
-     ABOVE their callers: MT worklets become `const`, so a forward
-     worklet→worklet reference throws at setup.
+     The bounce worklets are inlined here rather than pulled from a composable
+     because they close over MT refs bound to this SFC's own elements; only the
+     pure maths lives in `@/shared/composables/useBounce`, called by value.
+     Helpers are defined ABOVE their callers — MT worklets become `const`, so a
+     forward worklet→worklet reference throws at setup.
 
-     Pull-to-refresh is **not** supported on this component. Lynx's iOS
-     runtime does not register a `refresh-header` UI as a child of
-     `<scroll-view>` (crashes with `LynxCreateUIException: refresh-header ui
-     not found`), and the `<refresh>` wrapper element used by `<list>` is
-     not registered as a generic standalone element either. Consumers that
-     need virtualized PTR should use `FeedList`. The bounce items below are
-     NOT pull-to-refresh — they are overscroll indicators only. -->
+     Pull-to-refresh is **not** supported here: Lynx's iOS runtime does not
+     register a `refresh-header` UI as a child of `<scroll-view>`, and the
+     `<refresh>` wrapper `<list>` uses is not a standalone element either. Use
+     `FeedList` for virtualized PTR. The bounce items below are overscroll
+     indicators only. -->
 <script lang="ts">
 import type {
   BounceableBasicProps,
@@ -34,10 +26,7 @@ import type {
 export type { BounceableBasicProps, ScrollToBouncesInfo, SingleSidedBounce }
 
 export interface ScrollViewProps {
-  /**
-   * Scroll direction.
-   * @defaultValue `'vertical'`
-   */
+  /** Scroll direction. @defaultValue `'vertical'` */
   scrollOrientation?: 'vertical' | 'horizontal'
   /**
    * Enable native bounce on iOS / Harmony / PC. Ignored when
@@ -47,15 +36,9 @@ export interface ScrollViewProps {
   bounces?: boolean
   /** Disable scrolling. */
   disabled?: boolean
-  /**
-   * Distance (px) from the upper edge that fires `scrollToUpper`.
-   * @defaultValue `0`
-   */
+  /** Distance (px) from the upper edge that fires `scrollToUpper`. @defaultValue `0` */
   upperThreshold?: number
-  /**
-   * Distance (px) from the lower edge that fires `scrollToLower`.
-   * @defaultValue `0`
-   */
+  /** Distance (px) from the lower edge that fires `scrollToLower`. @defaultValue `0` */
   lowerThreshold?: number
   /** Show the native scroll bar. */
   scrollBarEnable?: boolean
@@ -66,7 +49,6 @@ export interface ScrollViewProps {
    */
   id?: string
 
-  // ── Custom main-thread bounce (parity with lynx-ui BounceableBasicProps) ──
 
   /**
    * Turn on the custom main-thread bounce/overscroll system. When `false`
@@ -93,24 +75,15 @@ export interface ScrollViewProps {
    * @defaultValue `0`
    */
   endBounceTriggerDistance?: number
-  /**
-   * Allow bouncing even when the content is smaller than the viewport.
-   * @defaultValue `true`
-   */
+  /** Allow bouncing even when the content is smaller than the viewport. @defaultValue `true` */
   alwaysBouncing?: boolean
-  /**
-   * Which edge(s) may bounce.
-   * @defaultValue `'both'`
-   */
+  /** Which edge(s) may bounce. @defaultValue `'both'` */
   singleSidedBounce?: SingleSidedBounce
   /** Size hint (px) used by the bounce maths before the first layout pass. */
   estimatedHeight?: number
   /** Horizontal size hint (px) used before first layout. */
   estimatedWidth?: number
-  /**
-   * Mirror horizontal bounce direction for RTL layouts.
-   * @defaultValue `false`
-   */
+  /** Mirror horizontal bounce direction for RTL layouts. @defaultValue `false` */
   enableRTL?: boolean
 }
 
@@ -157,8 +130,7 @@ const props = withDefaults(defineProps<ScrollViewProps>(), {
 })
 
 // Mobile-first guidance: touch UX prefers one-axis scroll. `horizontal` stays
-// supported (Tabs / Carousel will need it) but is flagged as a non-default
-// affordance so callers don't pick it accidentally on phone surfaces.
+// supported but is flagged as a non-default affordance.
 if (__DEV__ && props.scrollOrientation === 'horizontal') {
   console.warn(
     '[vyui/ScrollView] `scrollOrientation="horizontal"` is a non-default mobile affordance. '
@@ -197,9 +169,7 @@ const bounceActive = computed(
     && !props.disabled,
 )
 
-// ────────────────────────────────────────────────────────────────────────
 // Main-thread bounce state. Mirrors lynx-ui's `useBounce` refs 1:1.
-// ────────────────────────────────────────────────────────────────────────
 
 const rubberC = useMainThreadRef(BOUNCE_CONSTANTS.rubberC)
 const flingDeceleratingRate = useMainThreadRef(BOUNCE_CONSTANTS.flingDeceleratingRate)
@@ -213,10 +183,9 @@ const enableBounceEventInFlingRef = useMainThreadRef<boolean>(props.enableBounce
 const startBounceTriggerDistanceRef = useMainThreadRef<number>(props.startBounceTriggerDistance)
 const endBounceTriggerDistanceRef = useMainThreadRef<number>(props.endBounceTriggerDistance)
 
-// Element handles for the nodes the bounce moves. These are `main-thread-ref`s
-// rather than lynx-ui's `lynx.querySelector('#id')`: that API exists only on
-// the native main thread — web-core's MT `lynx` object has no `querySelector`,
-// so every selector call threw and took the whole bounce worklet with it.
+// Element handles for the nodes the bounce moves. `main-thread-ref`s rather
+// than lynx-ui's `lynx.querySelector('#id')`: that API exists only on the
+// native main thread, so on web-core every selector call threw.
 const containerElRef = useMainThreadRef<any>(null)
 const upperElRef = useMainThreadRef<any>(null)
 const lowerElRef = useMainThreadRef<any>(null)
@@ -230,7 +199,6 @@ const bouncingTouchStartPosition = useMainThreadRef<any>(0)
 const scrollVelocity = useMainThreadRef<number>(0)
 const prevScroll = useMainThreadRef<any>(null)
 
-// Current bounce position { bouncingOffset, velocity, timeStamp }.
 const bouncingPositionInfo = useMainThreadRef<any>({})
 
 function readEstimatedHeight(): number {
@@ -248,25 +216,20 @@ const widthRef = useMainThreadRef<number>(props.estimatedWidth ?? readEstimatedW
 const toUpper = useMainThreadRef<boolean>(false)
 const toLower = useMainThreadRef<boolean>(false)
 
-// Timestamp of the last real touch. Touch browsers replay a tap as a
-// compatibility mousedown/mouseup pair after touchend; the mouse handlers
-// ignore events inside this window so a tap doesn't run the bounce twice.
+// Timestamp of the last real touch: touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair, which mouse handlers ignore.
 const lastTouchTsRef = useMainThreadRef<number>(0)
 
-// Animation-loop guards.
 const touchEndFrameEnableFlag = useMainThreadRef<boolean>(false)
 const touchingEndBouncingBackEnableFlag = useMainThreadRef<boolean>(false)
 const flingEndWithBouncingEnableFlag = useMainThreadRef<boolean>(false)
 
-// ── BG callback for scrollToBounces. Plain (non-worklet) — runs on BG. ──
 function _emitScrollToBounces(info: ScrollToBouncesInfo) {
   if (props.enableBounces) emits('scrollToBounces', info)
 }
 
-// ────────────────────────────────────────────────────────────────────────
 // MT worklets. Helpers MUST appear above their callers (MT fns are `const`;
 // forward worklet→worklet references throw at setup).
-// ────────────────────────────────────────────────────────────────────────
 
 function _mtIsVertical() {
   'main thread'
@@ -382,7 +345,6 @@ function _mtBouncingSetStyle(offset: number) {
   'main thread'
   if (isNaN(Number(offset))) return
 
-  // Track velocity from offset/time deltas.
   if (_mtIsEmpty(bouncingPositionInfo.current)) {
     bouncingPositionInfo.current = { velocity: 0 }
   } else {
@@ -395,7 +357,6 @@ function _mtBouncingSetStyle(offset: number) {
   bouncingPositionInfo.current.bouncingOffset = offset
   bouncingPositionInfo.current.timeStamp = Date.now()
 
-  // When the bounce settles, resync the touch origin.
   if (offset === 0 && prevTouch.current !== null) {
     startTouch.current = prevTouch.current
     bouncingTouchStartPosition.current = 0
@@ -591,12 +552,11 @@ function _mtTouchRelease() {
 }
 
 // Desktop web: Lynx web dispatches raw mouse events and never synthesizes
-// touch from them, so a touch-only bounce is inert under a cursor. Rather than
-// refactor the bounce maths off `event.touches` (it stores and re-reads whole
-// touch arrays in five places), the mouse wrappers hand the touch worklets the
-// one shape they consume. Coordinates arrive top-level on a mouse event
-// (`detail` is the DOM click-count number). No mouseleave binding — it doesn't
-// bubble, so per-element delivery is unreliable on the Lynx dispatch path.
+// touch from them, so the mouse wrappers hand the touch worklets the one shape
+// they consume rather than refactoring the bounce maths off `event.touches`.
+// Coordinates arrive top-level (`detail` is the click-count number). No
+// mouseleave binding — it doesn't bubble, so per-element delivery is unreliable
+// on the Lynx dispatch path.
 function _mtMouseDown(e: { pageX: number, pageY: number, buttons?: number }) {
   'main thread'
   // Swallow the compatibility mousedown a touch browser replays after a tap.
@@ -610,9 +570,8 @@ function _mtMouseDown(e: { pageX: number, pageY: number, buttons?: number }) {
 function _mtMouseMove(e: { pageX: number, pageY: number, buttons?: number }) {
   'main thread'
   // Only an EXPLICIT buttons value with the primary bit clear counts as
-  // released (recovers the mouseup lost outside the <lynx-view>). A missing
-  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
-  // it, and ending on those lets go mid-drag.
+  // released (recovers the mouseup lost outside the <lynx-view>); a missing
+  // `buttons` is treated as still-pressed.
   if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
     _mtTouchEnd()
     return
@@ -655,7 +614,6 @@ function _mtUpperExposure() {
     return
   }
   if (prevTouch.current !== null) {
-    // Reached the edge during a drag.
     startBouncingTouch.current = prevTouch.current
     startTouchBouncingDelta.current = bouncingPositionInfo.current?.bouncingOffset ?? 0
   } else if (
@@ -710,9 +668,8 @@ function onScrollEnd(event: unknown): void {
   emits('scrollEnd', event)
 }
 
-// Native bounce only when the custom MT bounce is OFF. When the custom bounce
-// runs it owns the overscroll and disables the native one (matches lynx-ui's
-// `bounces={false}` on the inner scroll-view).
+// Native bounce only when the custom MT bounce is OFF — when it runs it owns
+// the overscroll (matches lynx-ui's `bounces={false}` on the inner view).
 const nativeBounces = computed(() => (bounceActive.value ? false : props.bounces))
 
 // Exposure-probe inline style — a 1ppx strip pinned at each edge so Lynx fires
@@ -723,7 +680,6 @@ const exposureStyle = computed(() =>
     : 'display:flex; overflow:hidden; height:100%; width:1ppx;',
 )
 
-// Bounce wrappers sit just outside the content edges and move with it.
 const upperWrapperStyle = computed(() =>
   isVertical.value
     ? 'position:absolute; bottom:100%; width:100%; height:max-content;'
@@ -739,9 +695,8 @@ defineExpose({ id: containerId })
 </script>
 
 <template>
-  <!-- Bounce active: wrap in a clipping container so overscrolled bounce
-       items don't paint outside the scroll viewport. Mirrors lynx-ui's
-       `ScrollViewWithBouncesHook`. -->
+  <!-- Bounce active: clipping container so overscrolled bounce items don't
+       paint outside the scroll viewport. -->
   <view
     v-if="bounceActive"
     class="vyui-scroll-view-wrapper"

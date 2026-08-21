@@ -18,14 +18,12 @@ export {
 export { createTv, tv } from './utils/tv'
 
 // Bake a semantic color to a literal hex for Lynx `<svg>` icons — Lynx
-// rasterizes SVG, so `text-*` classes / `currentColor` never reach the glyph;
-// pass the result to the Icon `color` prop. Shade is the caller's mode
-// awareness (accent tier: 500 light / 400 dark — see `useColorMode().isDark`).
+// rasterizes SVG, so `text-*` classes / `currentColor` never reach the glyph.
+// Shade is the caller's mode awareness (accent tier: 500 light / 400 dark).
 export { resolveColorHex } from './utils/resolveColor'
 
 // Semantic color set. `VyuiColorRegistry` is the augmentation point for true
-// parity: `declare module '@vyui/kit' { interface VyuiColorRegistry { … } }`
-// adds colors to every component's `color` prop type. See `theme/colors.ts`.
+// parity — see `theme/colors.ts`.
 export {
   ALL_COLORS,
   COLORS,
@@ -36,15 +34,13 @@ export {
 } from './theme/colors'
 
 // Components are exported under a single canonical `Vy*` name — the same name
-// the `VyUI` plugin registers globally (see components/registry.ts). Do NOT add
-// bare aliases (`export { default as Button }`): two names per component is a
-// drift hazard for docs/examples and gives consumers no signal which is
-// canonical. Types keep their upstream names (`AspectRatioProps`, `IconProps`).
+// the `VyUI` plugin registers globally. Do NOT add bare aliases: two names per
+// component is a drift hazard and gives consumers no signal which is canonical.
 export { default as VyAccordion } from './components/Accordion.vue'
 export { default as VyAlert } from './components/Alert.vue'
 export { default as VyApp } from './components/App.vue'
-// AspectRatio/Icon are pure core primitives (nothing to theme); re-exported here
-// under their `Vy*` name so they sit alongside the other kit components.
+// AspectRatio/Icon are pure core primitives, re-exported under their `Vy*` name
+// so they sit alongside the other kit components.
 export { AspectRatio as VyAspectRatio, type AspectRatioProps } from '@vyui/core'
 export { default as VyAvatar } from './components/Avatar.vue'
 export { default as VyAvatarGroup } from './components/AvatarGroup.vue'

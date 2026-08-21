@@ -17,10 +17,9 @@ export interface TabsItem {
   value?: string | number
   disabled?: boolean
   /**
-   * Per-tab override of the root `unmountOnHide`. Set `true` under a
-   * keep-alive root for a panel whose subtree writes styles from main-thread
-   * worklets (`setStyleProperty` / `animate(fill: 'forwards')`) — those nodes
-   * can keep painting through the kept-alive `display: none` on device.
+   * Per-tab override of the root `unmountOnHide`. Set `true` under a keep-alive
+   * root for a panel whose subtree writes styles from main-thread worklets —
+   * those nodes keep painting through a kept-alive `display: none` on device.
    */
   unmountOnHide?: boolean
   [key: string]: any
@@ -32,11 +31,8 @@ export interface TabsProps {
   variant?: TabsVariants['variant']
   size?: TabsVariants['size']
   orientation?: 'horizontal' | 'vertical'
-  /**
-   * Layout inside each trigger. `inline` puts the icon next to the label;
-   * `stacked` puts the icon above. Stacked is the right call when many
-   * triggers crowd a narrow list (e.g. 6 pills on a 360-wide phone).
-   */
+  /** Layout inside each trigger: `inline` puts the icon next to the label,
+   *  `stacked` above it — the right call when triggers crowd a narrow list. */
   direction?: TabsVariants['direction']
   /** Controlled active tab value. */
   modelValue?: string | number
@@ -44,16 +40,11 @@ export interface TabsProps {
   defaultValue?: string | number
   /** When `false`, the content region is not rendered. */
   content?: boolean
-  /**
-   * Whether inactive tab content should unmount. When `false`, a panel mounts
-   * on its first visit and stays mounted (hidden) after — revisits become a
-   * style flip instead of a full remount.
-   */
+  /** Whether inactive tab content should unmount. When `false`, a panel mounts
+   *  on first visit and stays mounted, making revisits a style flip. */
   unmountOnHide?: boolean
-  /**
-   * Land the trigger/indicator update one flush before the content swap so
-   * the tab bar responds instantly even when the incoming panel is heavy.
-   */
+  /** Land the trigger/indicator update one flush before the content swap so the
+   *  tab bar responds instantly even when the incoming panel is heavy. */
   deferContent?: boolean
   class?: ClassValue
   ui?: Partial<Record<keyof TabsTV['slots'], ClassValue>>
@@ -111,9 +102,8 @@ const { ui } = useStyledComponent('tabs', theme, () => ({
 }))
 
 // Slot classes are identical for every trigger/panel, so resolve each ONCE per
-// variant change instead of per element per render — a tab switch re-renders
-// this whole template (the scoped-slot `activeValue` changes), and on Lynx's
-// interpreter the tailwind-variants slot calls are the expensive part.
+// variant change rather than per element per render — a tab switch re-renders
+// this template, and the tailwind-variants slot calls are the expensive part.
 const classes = computed(() => ({
   root: ui.value.root({ class: [props.class, props.ui?.root] }),
   list: ui.value.list({ class: props.ui?.list }),
@@ -128,12 +118,10 @@ const resolveValue = (item: TabsItem, index: number) =>
   item.value !== undefined ? item.value : String(index)
 
 // Lynx SVG can't inherit currentColor, and the active/inactive `group-ui-*`
-// classes on `leadingIcon` never reach the rasterized glyph — bake the fill
-// per trigger instead (same pattern as Button/Input). `activeValue` comes
-// from TabsRoot's scoped slot: the same ref `TabsTrigger` compares against
-// (strict equality), so it also tracks uncontrolled tabs. `isDark` is threaded
-// so the baked neutral fill (inactive `text-muted`) tracks the mode. Fallbacks
-// mirror the theme's `defaultVariants` (`primary` / `pill`).
+// classes on `leadingIcon` never reach the rasterized glyph — bake the fill per
+// trigger (same pattern as Button/Input). `activeValue` comes from TabsRoot's
+// scoped slot, the same ref `TabsTrigger` compares against, so it tracks
+// uncontrolled tabs too; `isDark` keeps the baked neutral fill mode-aware.
 const { isDark } = useColorMode()
 const triggerIconColor = (item: TabsItem, index: number, activeValue: string | number | undefined) => {
   const fg = iconFg(props.color ?? 'primary', props.variant ?? 'pill', resolveValue(item, index) === activeValue, isDark.value)

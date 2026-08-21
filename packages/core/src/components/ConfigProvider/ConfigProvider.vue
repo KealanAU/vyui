@@ -12,15 +12,11 @@ export const [injectConfigProviderContext, provideConfigProviderContext]
   = createContext<ConfigProviderContextValue>('ConfigProvider')
 
 export interface ConfigProviderProps {
-  /**
-   * The global reading direction of your application. This will be inherited by all primitives.
-   * @defaultValue 'ltr'
-   */
+  /** The global reading direction of your application. This will be inherited by all primitives.
+   *  @defaultValue 'ltr' */
   dir?: Direction
-  /**
-   * The global locale of your application. This will be inherited by all primitives.
-   * @defaultValue 'en'
-   */
+  /** The global locale of your application. This will be inherited by all primitives.
+   *  @defaultValue 'en' */
   locale?: string
 }
 </script>

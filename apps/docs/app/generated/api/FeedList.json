@@ -51,7 +51,7 @@
       "name": "itemSnap",
       "type": "boolean | { factor: number; offset: number; } | undefined",
       "required": false,
-      "description": "Snap each item to a rest position after scrolling (native `item-snap`).\n`true` = full-screen paging (snap each item to the top); pass an object for\na custom `{ factor, offset }`. `listType: 'single'` only."
+      "description": "Snap each item to a rest position after scrolling (native `item-snap`).\n`true` = full-screen paging; pass `{ factor, offset }` to customise.\n`listType: 'single'` only."
     },
     {
       "name": "listType",

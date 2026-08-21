@@ -1,24 +1,13 @@
 /**
- * `DateFormatter` — the formatter vyui's date/time components construct
- * instead of `@internationalized/date`'s `DateFormatter`.
+ * `DateFormatter` — the formatter vyui's date/time components construct instead
+ * of `@internationalized/date`'s, whose `Intl.DateTimeFormat` wrapper assumes a
+ * complete host `Intl` and so crashes on PrimJS.
  *
- * `@internationalized/date`'s `DateFormatter` wraps `Intl.DateTimeFormat` and
- * performs extra locale / hour-cycle negotiation that assumes a complete host
- * `Intl`. Lynx's PrimJS engine ships an incomplete `Intl`, so that wrapper
- * crashes the date/time components on native.
- *
- * This is the stopgap wrapper. On first construction it picks an
- * implementation once:
- * - a genuinely working host `Intl.DateTimeFormat` (browsers, Lynx web — and
- *   Lynx native too once `installIntlPolyfill()` has swapped it for
- *   `BasicDateFormatter`), or
- * - `BasicDateFormatter` directly, as a fallback if the host `Intl` is still
- *   broken at that point.
- *
- * The probe runs lazily — the first `new DateFormatter()` happens at
- * component setup, after the app entry has called `installIntlPolyfill()`.
- *
- * Swap the whole `shared/intl/` folder for a real i18n library later.
+ * On first construction it picks an implementation once: a genuinely working
+ * host `Intl.DateTimeFormat` (browsers, Lynx web — and native too, once
+ * `installIntlPolyfill()` has swapped it for `BasicDateFormatter`), else
+ * `BasicDateFormatter` directly. The probe runs lazily, so it sees the polyfill
+ * the app entry installed.
  */
 
 import { BasicDateFormatter } from './basic-date-formatter'
@@ -58,8 +47,7 @@ function DateFormatterImpl(this: any, locale?: string | string[], options?: any)
 }
 
 /**
- * Drop-in for `@internationalized/date`'s `DateFormatter` — same surface
- * (`format`, `formatToParts`, `formatRange`, `formatRangeToParts`,
- * `resolvedOptions`), typed as {@link BasicDateFormatter}.
+ * Drop-in for `@internationalized/date`'s `DateFormatter` — same surface, typed
+ * as {@link BasicDateFormatter}.
  */
 export const DateFormatter = DateFormatterImpl as unknown as typeof BasicDateFormatter

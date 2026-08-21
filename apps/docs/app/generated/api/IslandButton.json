@@ -37,7 +37,7 @@
       "name": "mode",
       "type": "string | undefined",
       "required": false,
-      "description": "Mode name — free-form string. Tap switches the parent island's mode to\nthis. Pair with a `<template #[mode]>` slot on the island defining what\nthe row becomes. Common pattern names: `'fullisland'` (full takeover),\n`'compose'`, `'filter'`, `'reply'`, … any string works."
+      "description": "Mode name — free-form string. Tap switches the parent island's mode to it;\npair with a `<template #[mode]>` slot defining what the row becomes."
     },
     {
       "name": "reset",
@@ -50,7 +50,7 @@
       "name": "size",
       "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false,
-      "description": "Sizing override. When omitted, the button inherits the parent\n`<VyIsland>`'s `size`. Falls back to `md` standalone."
+      "description": "Sizing override. Inherits the parent `<VyIsland>`'s `size` when omitted,\nfalling back to `md` standalone."
     },
     {
       "name": "ui",
@@ -61,7 +61,7 @@
       "name": "value",
       "type": "string | number | undefined",
       "required": false,
-      "description": "Tab value — registers this button against the parent island's\n`v-model:value`. Sets active automatically when the values match."
+      "description": "Tab value — registers this button against the parent island's\n`v-model:value`, going active when the values match."
     }
   ],
   "events": [

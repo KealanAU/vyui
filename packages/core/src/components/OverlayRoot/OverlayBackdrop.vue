@@ -13,19 +13,17 @@ import { computed, useAttrs } from 'vue'
 import type { VyStyle } from '@/shared/types'
 
 /**
- * Full-screen wrapper for any overlay registered through the OverlayRoot
- * portal. Centers its single child and (optionally) dims the screen.
+ * Full-screen wrapper for any overlay registered through the OverlayRoot portal.
+ * Centers its single child and (optionally) dims the screen.
  *
- * Why this exists: `OverlayRoot` renders portalled entries directly (no shared
- * absolute wrapper — see the comment in `OverlayRoot.vue` for why a wrapper
- * would swallow touches in empty regions). That makes every modal overlay
- * responsible for its own full-screen sizing — `width/height: 100%` is not
- * enough because the entry is laid out as a flex sibling of the app content.
- * Centralising the `position: fixed` rectangle here keeps the contract in one
- * place: any future modal overlay just wraps its content in `<OverlayBackdrop>`.
+ * `OverlayRoot` renders portalled entries directly, with no shared absolute
+ * wrapper (see `OverlayRoot.vue` for why one would swallow touches in empty
+ * regions), so every modal overlay owns its full-screen sizing —
+ * `width/height: 100%` is not enough when the entry is laid out as a flex
+ * sibling of the app content. Centralising the `position: fixed` rectangle here
+ * keeps that contract in one place.
  *
- * Fall-through `@tap` is the dismissal hook (Dialog/Popover modal); AlertDialog
- * deliberately omits it.
+ * Fall-through `@tap` is the dismissal hook; AlertDialog deliberately omits it.
  */
 const props = defineProps<OverlayBackdropProps>()
 defineOptions({ inheritAttrs: true })
@@ -33,17 +31,13 @@ defineOptions({ inheritAttrs: true })
 const attrs = useAttrs()
 
 // Default to flex-centering the single child so overlays without their own
-// `position: fixed` + anchor coords (Popover, DropdownMenu,
-// Select/Combobox content panels) land in the middle of the screen instead of
-// docking to the top-left. Callers that need a different dock (Drawer's
-// bottom sheet, Dialog if it ever wants a custom anchor) override via
-// `backdropStyle` or `style` — both spread after the defaults below.
+// anchor coords land in the middle of the screen rather than the top-left.
+// Callers needing a different dock override via `backdropStyle` or `style`.
 const mergedStyle = computed<VyStyle>(() => ({
   position: 'fixed',
-  // Lynx web gives every element `position: relative`, so `z-index: auto`
-  // overlays paint in DOM order — an `OverlayRoot` mounted as the first child
-  // of the app root (VyApp's default) lands *behind* the app content. Matches
-  // the Sheet backdrop's 1000; ToastViewport sits above at 1100.
+// Lynx web gives every element `position: relative`, so `z-index: auto` overlays
+// paint in DOM order and an `OverlayRoot` mounted first would land behind the
+// app content. Matches the Sheet backdrop's 1000; ToastViewport sits at 1100.
   zIndex: 1000,
   top: 0,
   left: 0,

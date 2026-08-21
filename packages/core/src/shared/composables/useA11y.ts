@@ -1,41 +1,21 @@
 /**
- * useA11y — central accessibility layer for Vy UI primitives.
+ * useA11y — central accessibility layer for Vy UI primitives. Turns a semantic
+ * descriptor (`{ role, state, label, … }`) into the native Lynx
+ * `accessibility-*` props to spread onto a `Primitive`.
  *
- * Turns a small semantic descriptor (`{ role, state, label, … }`) into the
- * native Lynx `accessibility-*` props to spread onto a `Primitive`:
- *
- * ```ts
- * const a11y = useA11y(() => ({
- *   role: 'checkbox',
- *   state: checked.value ? 'checked' : 'unchecked',
- *   disabled: disabled.value,
- *   label: attrs['accessibility-label'] as string,
- * }))
- * // <Primitive v-bind="a11y" />
- * ```
- *
- * Why a single helper:
- *  - Lynx's native a11y is NOT ARIA-shaped — state is announced through the
- *    `accessibility-value` string, traits come from a fixed 15-value enum, and
- *    there is no structured checked/expanded attribute. Centralising the
- *    mapping keeps every component consistent and correct against
- *    `@lynx-js/types`.
- *  - Lynx does NO native↔ARIA bridging (verified against lynx-stack web
- *    packages): `accessibility-*` props are inert on the Lynx Web target and
- *    web `aria-*` is inert on native. So web ARIA can be layered in later, in
- *    ONE place (`appendWebA11y`), as a no-op-on-native addition — without
- *    touching every component again.
- *
- * See docs/plans/lynx-compat.md.
+ * Lynx's native a11y is NOT ARIA-shaped — state is announced through the
+ * `accessibility-value` string and traits come from a fixed 15-value enum — and
+ * Lynx does NO native↔ARIA bridging: `accessibility-*` is inert on the Lynx Web
+ * target and web `aria-*` is inert on native. Centralising the mapping keeps
+ * components consistent and leaves web ARIA to be layered into ONE place
+ * (`appendWebA11y`) later. See docs/plans/lynx-compat.md.
  */
 
 import type { ComputedRef, MaybeRefOrGetter } from 'vue'
 import { computed, toValue } from 'vue'
 
-/**
- * The complete `accessibility-traits` enum accepted by Lynx
- * (`@lynx-js/types` → `props.d.ts`). Only ONE value may be set per element.
- */
+/** The complete `accessibility-traits` enum accepted by Lynx. Only ONE value
+ *  may be set per element. */
 export type A11yTrait =
   | 'text' | 'image' | 'button' | 'link' | 'header' | 'search'
   | 'selected' | 'playable' | 'keyboard' | 'summary' | 'disabled'
@@ -54,23 +34,18 @@ export interface A11yDescriptor {
   /** Announced label → `accessibility-label`. */
   label?: string
   /**
-   * Interactive state announced via `accessibility-value`. Pass a ready-made
-   * word such as `'checked' | 'unchecked' | 'mixed' | 'expanded' | 'collapsed'
-   * | 'selected' | 'on' | 'off' | 'pressed'`. Falsy values are omitted.
+   * Interactive state announced via `accessibility-value` — a ready-made word
+   * such as `'checked'`, `'expanded'`, `'pressed'`. Falsy values are omitted.
    */
   state?: string | false | null
   /**
-   * Selection state for tabs/options. `true` announces `'selected'` via
-   * `accessibility-value`; `false`/`undefined` announces nothing (an
-   * unselected item should carry no annotation, not the word "unselected").
-   * Keeps the role trait intact — unlike a `selected` trait, which Lynx's
-   * one-trait limit would force to replace `tab`/`button`.
+   * Selection state for tabs/options. `true` announces `'selected'`;
+   * `false`/`undefined` announces nothing. Keeps the role trait intact, unlike
+   * a `selected` trait, which Lynx's one-trait limit would force to replace it.
    */
   selected?: boolean
-  /**
-   * Range value for slider/progress → `accessibility-value`. `text` wins;
-   * otherwise composed as `"{now} of {max}"`.
-   */
+  /** Range value for slider/progress → `accessibility-value`. `text` wins;
+   *  otherwise composed as `"{now} of {max}"`. */
   value?: { now?: number | null, max?: number, text?: string }
   /** When `true`, the trait becomes `'disabled'` (Lynx allows a single trait). */
   disabled?: boolean
@@ -79,9 +54,9 @@ export interface A11yDescriptor {
   /** Trap a11y focus to this subtree — for modal overlays (dialog/sheet/popover). */
   exclusiveFocus?: boolean
   /**
-   * Whether the node is exposed as a single focusable a11y element. Defaults
-   * to `true` when the descriptor carries a role/label/state (`<view>` is not
-   * a focus node by default on Lynx). Pass `false` to opt a node out.
+   * Whether the node is exposed as a single focusable a11y element. Defaults to
+   * `true` when the descriptor carries a role/label/state (`<view>` is not a
+   * focus node by default on Lynx).
    */
   element?: boolean
 }
@@ -103,17 +78,17 @@ interface RoleMapping {
   roleDescription?: string
   heading?: boolean
   /**
-   * Grouping/landmark roles (dialog, menu) that wrap focusable children.
-   * They must NOT become a single `accessibility-element`, which would
-   * collapse the subtree into one focus node and hide the children.
+   * Grouping/landmark roles (dialog, menu) that wrap focusable children. They
+   * must NOT become a single `accessibility-element`, which would collapse the
+   * subtree into one focus node.
    */
   container?: boolean
 }
 
 /**
- * role → native trait. Lynx has no `dialog`/`alert`/`menu`/`checkbox` traits,
- * so those fall back to a valid trait and carry the word in
- * `accessibility-role-description` (Android) for extra signal.
+ * role → native trait. Lynx has no `dialog`/`alert`/`menu`/`checkbox` traits, so
+ * those fall back to a valid trait and carry the word in
+ * `accessibility-role-description` (Android).
  */
 const ROLE_MAP: Record<A11yRole, RoleMapping> = {
   button: { trait: 'button' },
@@ -178,9 +153,8 @@ function buildNative(d: A11yDescriptor): A11yProps {
   if (value != null)
     props['accessibility-value'] = value
 
-  // Expose as a focusable node when it carries semantics, unless told
-  // otherwise. Container roles (dialog/menu) stay non-element so their
-  // focusable children remain reachable.
+  // Expose as a focusable node when it carries semantics. Container roles stay
+  // non-element so their focusable children remain reachable.
   const element = d.element
     ?? (!map?.container && (d.role != null || d.label != null || value != null))
   if (element)
@@ -193,22 +167,16 @@ function buildNative(d: A11yDescriptor): A11yProps {
 }
 
 /**
- * Web ARIA layer — intentionally a no-op today.
- *
- * Lynx does no native↔ARIA bridging, so `accessibility-*` props are inert on
- * the Lynx Web target. When web support is prioritised, map `descriptor` →
- * `role`/`aria-*` here and merge into `props`; on native this stays a no-op
- * (web attrs are simply ignored by the native renderer). See
- * docs/plans/lynx-compat.md.
+ * Web ARIA layer — a no-op today: Lynx does no native↔ARIA bridging, so
+ * `accessibility-*` is inert on the Lynx Web target. Map `descriptor` →
+ * `role`/`aria-*` here when web support is prioritised; native ignores them.
  */
 function appendWebA11y(props: A11yProps, _descriptor: A11yDescriptor): A11yProps {
   return props
 }
 
-/**
- * Returns a computed bag of native Lynx `accessibility-*` props for the given
- * semantic descriptor. Spread onto a `Primitive` with `v-bind`.
- */
+/** Computed bag of native Lynx `accessibility-*` props for a semantic
+ *  descriptor. Spread onto a `Primitive` with `v-bind`. */
 export function useA11y(source: MaybeRefOrGetter<A11yDescriptor>): ComputedRef<A11yProps> {
   return computed(() => {
     const descriptor = toValue(source)

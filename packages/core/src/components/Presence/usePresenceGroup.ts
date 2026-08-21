@@ -5,25 +5,10 @@
 // Ported from `lynx-family/lynx-ui`
 // `packages/lynx-ui-presence/src/usePresenceGroup.tsx`.
 //
-// Coordinates a group of `<Presence>` children — only fires the group-level
-// `onOpen` / `onClose` once *all* members finish their respective animations
-// and exposes a single combined `mountView` flag for the parent to gate the
-// outer container with.
-//
-// Call-site shape:
-//
-//   const group = usePresenceGroup({
-//     show: () => open.value,
-//     forceMount: () => false,
-//     children: [BackdropNode, ContentNode],
-//   })
-//   // template
-//   <view v-if="group.mountView.value">
-//     <component :is="group.renderChildren()" />
-//   </view>
-//
-// The `children` array carries the slot bodies — each entry becomes the
-// `default` slot of one inner `<Presence>`. Pass either VNodes or render
+// Coordinates a group of `<Presence>` children: the group-level `onOpen` /
+// `onClose` fire only once *all* members finish their animations, and a single
+// combined `mountView` flag gates the outer container. Each `children` entry
+// becomes the `default` slot of one inner `<Presence>` — pass VNodes or render
 // functions that accept the {@link PresenceAnimationStatus} payload.
 
 import type { Ref, VNode } from 'vue'
@@ -62,17 +47,15 @@ export interface UsePresenceGroupOptions {
 export interface UsePresenceGroupReturn {
   /** Function that produces the wrapped children VNodes for the parent's template. */
   renderChildren: () => VNode[]
-  /**
-   * Whether the parent container should be mounted. Stays true until every
-   * child has settled in {@link PresenceState.Left}.
-   */
+  /** Whether the parent container should be mounted. Stays true until every
+   *  child has settled in {@link PresenceState.Left}. */
   mountView: Ref<boolean>
 }
 
 /**
  * Combine member states into the group's state. Exported for overlays that
  * coordinate their layers with manually-controlled `<Presence>` wrappers
- * (Dialog's backdrop + panel) instead of `usePresenceGroup`'s render path.
+ * instead of `usePresenceGroup`'s render path.
  */
 export function combineGroupState(states: PresenceState[]): PresenceState {
   // `DelayedEntering` wins over `Entering` so the parent can keep
@@ -96,15 +79,11 @@ export function combineGroupState(states: PresenceState[]): PresenceState {
 }
 
 /**
- * Wrap a group of nodes in coordinated `<Presence>` wrappers — the
- * group-level `onOpen` / `onClose` fire only after every child has finished
- * its enter / leave animation.
+ * Wrap a group of nodes in coordinated `<Presence>` wrappers — the group-level
+ * `onOpen` / `onClose` fire only after every child has finished its animation.
  *
- * Vue counterpart to the lynx-ui `usePresenceGroup`. The React version
- * returned `renderChildren` as a memoised `ReactNode`; we return a function
- * instead because Vue's reactivity model handles re-runs through the parent
- * template's render path — call `group.renderChildren()` inside the parent
- * `setup`'s return function (or via `<component :is>`).
+ * `renderChildren` is a function rather than the React version's memoised node:
+ * call it inside the parent `setup`'s return function (or via `<component :is>`).
  */
 export const usePresenceGroup = (
   opts: UsePresenceGroupOptions,
@@ -124,8 +103,8 @@ export const usePresenceGroup = (
   const mountedCount = ref<number>(0)
   const mountView = ref<boolean>(show.value)
 
-  // One entry per child; controlled state lets the group inspect every
-  // member's transition without having to subscribe through inject.
+  // Controlled state lets the group inspect every member's transition without
+  // subscribing through inject.
   const stateGroup = ref<PresenceState[]>(
     Array.from({ length: childrenSize }, () => PresenceState.Left),
   )
@@ -155,8 +134,8 @@ export const usePresenceGroup = (
     }
   }
 
-  // Mirror the lynx-ui behaviour: re-mount the outer view as soon as `show`
-  // flips back to true, even if some children are still mid-leaving.
+  // Mirror lynx-ui: re-mount the outer view as soon as `show` flips back to
+  // true, even if some children are still mid-leaving.
   watch(show, (next) => {
     if (next) mountView.value = true
   })
@@ -170,10 +149,8 @@ export const usePresenceGroup = (
       const slot = () => {
         if (typeof child === 'function') {
           const out = child(
-            // Resolved status is exposed by the inner Presence; we don't have
-            // a clean ref here to forward, so the function-style child gets
-            // a permissive empty status — consumers that need the live
-            // status should use the VNode form or read it via inject.
+            // The function-style child gets a permissive empty status — there
+            // is no clean ref to the inner Presence's resolved status here.
             {},
           )
           if (!out) return []
@@ -184,8 +161,6 @@ export const usePresenceGroup = (
       return h(
         Presence,
         {
-          // Use the per-index show flag (all identical for now, but kept
-          // structured this way so future per-child gating is one-liner).
           show: presenceShows.value[index],
           forceMount: forceMount?.value ?? false,
           state: stateGroup.value[index],

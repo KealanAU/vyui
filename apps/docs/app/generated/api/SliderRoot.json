@@ -11,14 +11,14 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+      "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     },
     {
       "name": "defaultValue",
       "type": "number | number[] | undefined",
       "required": false,
       "default": "[0]",
-      "description": "The value of the slider when initially rendered. Single thumb may be\neither a `number` (e.g. `50`) or `[50]`; multi-thumb is `number[]`.\nThe slider emits `update:modelValue` (and `valueCommit`) in whichever\nshape the input arrived in — pass `50`, get `50` back."
+      "description": "The value of the slider when initially rendered. Single thumb may be a\n`number` (e.g. `50`) or `[50]`; multi-thumb is `number[]`. Emits in\nwhichever shape the input arrived in — pass `50`, get `50` back."
     },
     {
       "name": "dir",
@@ -98,7 +98,7 @@
       "type": "ThumbAlignment | undefined",
       "required": false,
       "default": "\"contain\"",
-      "description": "The alignment of the slider thumb.\n- `contain`: thumbs will be contained within the bounds of the track.\n- `overflow`: thumbs will not be bound by the track. No extra offset will\n  be added."
+      "description": "The alignment of the slider thumb. `contain` keeps thumbs within the\ntrack's bounds; `overflow` adds no offset."
     }
   ],
   "events": [

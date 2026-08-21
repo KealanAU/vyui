@@ -1,23 +1,16 @@
 /**
- * DropdownMenu theme — adapted from nuxt/ui v3.0.2 `theme/dropdown-menu.ts`
- * for Vue-Lynx. Dark rides the semantic tokens; `dark:*`, `focus:*`, `focus-visible:*`, and
- * `transition-shadow` classes are dropped. Hover/active states keep
- * `data-[state=...]`, `ui-highlighted`, `ui-disabled`.
+ * DropdownMenu theme — adapted from nuxt/ui v3.0.2 `theme/dropdown-menu.ts` for
+ * Vue-Lynx. Dark rides the semantic tokens; `dark:*` / `focus*` are dropped and
+ * hover/active states keep `data-[state=...]`, `ui-highlighted`, `ui-disabled`.
  * `shadow-lg shadow-black/10` matches `IslandContainer` so floating surfaces
  * share one elevation language.
- *
- * Semantic colors resolve to tailwind palettes via CSS variables, see
- * `packages/kit/src/theme/colors.ts` and the consuming app's CSS layer.
  */
 import type { Color } from './colors'
 
 // Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
-// XML, so the `text-*` classes on the icon slots (including the
-// `group-ui-highlighted:` shifts) never reach the glyph —
-// `DropdownMenuItems.vue` bakes the resting fill via the Icon `color` prop
-// (resolved with `resolveColorHex`). The highlighted/open shade shift is
-// class-only and doesn't reach the icon. Keep in sync with the `active`
-// variant + the per-color compoundVariants below.
+// XML, so the `text-*` classes on the icon slots never reach the glyph —
+// `DropdownMenuItems.vue` bakes the resting fill via the Icon `color` prop. Keep
+// in sync with the `active` variant + the per-color compoundVariants below.
 export function iconFg(color?: string): { semantic: string, shade: number } {
   return color ? { semantic: color, shade: 500 } : { semantic: 'neutral', shade: 500 }
 }
@@ -39,11 +32,10 @@ export default (colors: Color[]) => ({
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
-    // `enableCSSInheritance: false`: foreground text color set on the `item`
-    // <view> (CoreDropdownMenuItem) does NOT reach the nested `itemLabel`
-    // <text>. The label color rides on `itemLabel` (the `item` carries the
-    // `group` class, so its `data-[…]` state drives `group-data-[…]:` here);
-    // only the `bg-*` surface stays on `item`.
+    // `enableCSSInheritance: false`: a foreground color on the `item` <view>
+    // does NOT reach the nested `itemLabel` <text>, so the label color rides on
+    // `itemLabel` (the `item` carries `group`, driving `group-data-[…]:` here)
+    // and only the `bg-*` surface stays on `item`.
     active: {
       true: {
         item: 'bg-elevated',
@@ -85,10 +77,8 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
-    // Foreground (`text-*`) rides on `itemLabel`/`itemLeadingIcon`, surface
-    // (`bg-*`) on `item` — see the `active` variant note (`enableCSSInheritance`
-    // is off). State selectors become `group-data-[…]:` on the label since the
-    // `item` <view> owns the `group` + `data-[…]` state.
+    // Foreground rides on `itemLabel`/`itemLeadingIcon`, surface on `item` — see
+    // the `active` variant note.
     ...colors.map(color => ({
       color,
       active: false as const,

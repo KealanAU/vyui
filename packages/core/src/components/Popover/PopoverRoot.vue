@@ -8,9 +8,7 @@ export interface PopoverRootProps {
    * Use when you do not need to control its open state.
    */
   defaultOpen?: boolean
-  /**
-   * The controlled open state of the popover. Can be bound with `v-model`.
-   */
+  /** The controlled open state of the popover. Can be bound with `v-model`. */
   open?: boolean
   /**
    * The modality of the popover. When `true` the content registers as a modal

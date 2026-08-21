@@ -1,22 +1,18 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/input-menu.ts` (which extends
-// `input.ts`) and adapted for Vue-Lynx: dark rides the semantic tokens, Tailwind
-// tokens replace `--ui-*` CSS vars, `focus*` / `shadow*` / `dark:*` /
-// `transition-shadow` classes are dropped, and the result is flattened into a
-// single tv config. Tags-input slots from upstream are omitted — core lacks
-// a TagsInput primitive, so `multiple` mode renders without tag chips.
-//
-// Lynx adaptation mirrors `./input.ts`: leading / trailing wrappers are
-// inline flex siblings of the search input, not `absolute` overlays.
+// Ported from nuxt/ui v3.0.2 `src/theme/input-menu.ts` and adapted for Vue-Lynx:
+// dark rides the semantic tokens, `focus*` / `shadow*` / `dark:*` are dropped,
+// and the result is flattened into a single tv config. Tags-input slots are
+// omitted — core lacks a TagsInput primitive, so `multiple` renders without
+// chips. Leading / trailing wrappers are inline flex siblings of the search
+// input, not `absolute` overlays (as in `./input.ts`).
 
 import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center w-full',
-    // `base` is the trigger <view> — surface only. The trigger value <text> and
-    // search <input> carry their own text colors (set in Combobox.vue): CSS
-    // inheritance is OFF in the Lynx build (`enableCSSInheritance: false`), so a
-    // `text-*` on the trigger <view> never reaches those children.
+    // `base` is the trigger <view> — surface only. The value <text> and search
+    // <input> carry their own colors (set in Combobox.vue): CSS inheritance is
+    // OFF in the Lynx build, so a trigger `text-*` never reaches them.
     base: 'relative w-full rounded-md flex flex-row items-center disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
     input: 'flex-1 min-w-0 bg-transparent outline-none placeholder:text-dimmed disabled:cursor-not-allowed disabled:opacity-75',
     arrow: 'fill-default',
@@ -31,10 +27,8 @@ export default (colors: Color[]) => ({
     empty: 'py-2 text-center text-sm text-muted',
     label: 'font-semibold text-highlighted',
     separator: '-mx-1 my-1 h-px bg-accented',
-    // `item` is the row <view> — surface/layout only. Item label color lives on
-    // `itemLabel` (the row's <text>): CSS inheritance is OFF in the Lynx build
-    // (`enableCSSInheritance: false`), so a `text-*` on the row <view> never
-    // reaches the label <text>.
+    // `item` is the row <view> — surface/layout only. The label color lives on
+    // `itemLabel`, which a `text-*` on the row would never reach.
     item: 'group relative w-full flex flex-row items-center select-none rounded-md ui-disabled:cursor-not-allowed ui-disabled:opacity-75 transition-colors px-3 py-2.5',
     itemLeadingIcon: 'shrink-0 transition-colors',
     itemLeadingAvatar: 'shrink-0',

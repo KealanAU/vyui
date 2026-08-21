@@ -11,7 +11,7 @@
       "name": "estimatedStyle",
       "type": "CSSProperties",
       "required": true,
-      "description": "Inline styles applied to the placeholder before the component mounts.\nMust include `width` and `height` so layout doesn't jump on mount."
+      "description": "Inline styles for the placeholder before the component mounts. Must\ninclude `width` and `height` so layout doesn't jump on mount."
     },
     {
       "name": "left",
@@ -24,7 +24,7 @@
       "name": "pid",
       "type": "string",
       "required": true,
-      "description": "Per-instance identifier within the scene. Combined with `scene` to pick\nthe right element out of the exposure event stream."
+      "description": "Per-instance identifier within the scene, used with `scene` to pick this\nelement out of the exposure event stream."
     },
     {
       "name": "right",
@@ -37,7 +37,7 @@
       "name": "scene",
       "type": "string",
       "required": true,
-      "description": "Logical scene name. Lynx fires `exposure` / `disexposure` events when an\nelement with `exposure-scene` enters / leaves the viewport. Components\nsharing a scene can be referenced together."
+      "description": "Logical scene name. Lynx fires `exposure` / `disexposure` when an element\nwith `exposure-scene` enters / leaves the viewport."
     },
     {
       "name": "top",
@@ -51,7 +51,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Unmount the children on `disexposure` (off-screen) and re-mount on next\n`exposure`. The placeholder view stays mounted to preserve scroll\nposition. Defaults to `false` — once mounted, children stay mounted."
+      "description": "Unmount the children on `disexposure` and re-mount on the next `exposure`;\nthe placeholder stays mounted to preserve scroll position."
     }
   ],
   "events": [

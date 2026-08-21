@@ -1,20 +1,14 @@
 <!-- vyui original. Swipe-to-dismiss layer for a toast, modeled on the MT
-     worklet plumbing in `SwipeAction.vue` (Apache 2.0) and the Swiper/Sheet
-     pattern in this repo.
+     worklet plumbing in `SwipeAction.vue` (Apache 2.0).
 
-     Why a separate element (not on the toast root): a stacked/Sonner toast
-     already carries a reactive `transform` (translate + scale) on its root.
-     A swipe must drive `transform` on the MAIN thread, and the single
-     `transform` property can't be owned by both the BG reactive style and an
-     MT worklet at once — they clobber each other. So the card visual sits on
-     THIS inner layer, which the worklet translates, while the stacking
-     transform stays on the outer shell the consumer renders. -->
+     A separate element rather than the toast root: a stacked toast already
+     carries a reactive `transform` on its root, and the single `transform`
+     property can't be owned by both the BG reactive style and an MT worklet.
+     The card visual sits on THIS inner layer, which the worklet translates. -->
 <script lang="ts">
 export interface ToastSwipeProps {
-  /**
-   * Which drag directions dismiss the toast. `horizontal` (default) lets the
-   * user fling either way; `left` / `right` constrain it to one side.
-   */
+  /** Which drag directions dismiss the toast. `horizontal` (default) lets the
+   *  user fling either way; `left` / `right` constrain it to one side. */
   direction?: 'horizontal' | 'left' | 'right'
   /** Fraction of the toast width a drag must pass (without a flick) to dismiss. */
   threshold?: number
@@ -32,9 +26,8 @@ export type ToastSwipeEmits = {
 }
 
 /**
- * Pure release decision the release worklet runs — kept module-level so the
- * dismiss math is unit-testable without rendering (worklets don't run under
- * vitest). Mirrors the inline body of `_dragEnd`.
+ * Pure release decision the release worklet runs — module-level so the dismiss
+ * math is unit-testable (worklets don't run under vitest). Mirrors `_dragEnd`.
  */
 export function decideDismiss(opts: {
   endX: number
@@ -74,7 +67,6 @@ const emits = defineEmits<ToastSwipeEmits>()
 
 defineSlots<{ default?: () => any }>()
 
-// A swipe past threshold dismisses the surrounding toast.
 const toast = injectToastRootContext()
 
 const rowRef = useMainThreadRef<any>(null)
@@ -82,15 +74,13 @@ const currentXRef = useMainThreadRef<number>(0)
 const touchStartXRef = useMainThreadRef<number>(0)
 const startXRef = useMainThreadRef<number>(0)
 const isDraggingRef = useMainThreadRef<boolean>(false)
-// Measured toast width — seeds the fraction-based dismiss threshold and the
-// fling distance. 0 until the first layout, so before then only a flick
-// (velocity) can dismiss.
+// Measured toast width — seeds the fraction-based dismiss threshold. 0 until
+// the first layout, so before then only a flick can dismiss.
 const widthRef = useMainThreadRef<number>(0)
 
-// MT mirrors of BG config. Seeded through the constructor (the only reliable
-// BG→MT transfer in vue-lynx@0.4.0 — a later `.current` write from BG is
-// dropped). These props are fixed per toast instance, so no runtime sync is
-// needed; the worklets read them MT-locally.
+// MT mirrors of BG config, seeded through the constructor (the only reliable
+// BG→MT transfer in vue-lynx@0.4.0). Fixed per toast instance, so no runtime
+// sync is needed.
 const directionRef = useMainThreadRef<string>(props.direction)
 const thresholdRef = useMainThreadRef<number>(props.threshold)
 const velocityThresholdRef = useMainThreadRef<number>(props.velocityThreshold)
@@ -101,27 +91,23 @@ const positionQueueRef = useMainThreadRef<number[]>([])
 const timeQueueRef = useMainThreadRef<number[]>([])
 
 // Handle of the in-flight snap/fling animation. A fill-forwards animation
-// outranks inline style in the cascade, so it must be cancelled before the
-// next drag's transform writes (mirrors SwipeAction's `snapAnimRef`).
+// outranks inline style, so it must be cancelled before the next drag's writes.
 const snapAnimRef = useMainThreadRef<any>(null)
 
-// Timestamp of the last real touch. Touch browsers replay a tap as a
-// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
-// events inside this window so a tap doesn't double-run the gesture.
+// Timestamp of the last real touch: touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair, which mouse handlers ignore.
 const lastTouchTsRef = useMainThreadRef<number>(0)
 
-// IMPORTANT — worklet ordering: the worklet transform rewrites each
-// `'main thread'` function into a `const` binding, so a worklet may only
-// reference helper worklets DEFINED ABOVE it (a forward reference throws
-// "lexical variable is not initialized" at registration). Keep helpers
-// (`_setWidth`, `_apply`, `_opacityFor`, `_pruneQueue`, `_getVelocity`) above
-// their callers; only the BG callback `_emitDismiss` may sit below (it's a
-// plain function, hoisted, dispatched via `runOnBackground`).
+// IMPORTANT — worklet ordering: the transform rewrites each `'main thread'`
+// function into a `const`, so a worklet may only reference helpers DEFINED
+// ABOVE it (a forward reference throws "lexical variable is not initialized").
+// Only the BG callback `_emitDismiss` may sit below — it's a plain hoisted
+// function dispatched via `runOnBackground`.
 
 function _setWidth(v: number) { 'main thread'; widthRef.current = v }
 
-// BG layout handler → push measured width to the MT ref (width is dynamic, so
-// unlike the static config it must hop after mount, not via the constructor).
+// BG layout handler → push measured width to the MT ref (dynamic, so it must
+// hop after mount rather than ride the constructor).
 function onRowLayout(e: { detail?: { width?: number } } | undefined) {
   const w = e?.detail?.width
   if (typeof w === 'number' && w > 0) runOnMainThread(_setWidth as any)(w)
@@ -139,7 +125,6 @@ function _apply(x: number, opacity: number) {
 }
 
 // Opacity ramps from 1 (centered) toward 0.2 as the card nears its own width.
-// Defined ABOVE `_animateTo` / `_onTouchMove` so those worklets can call it.
 function _opacityFor(x: number) {
   'main thread'
   const w = widthRef.current
@@ -161,9 +146,8 @@ function _animateTo(targetX: number, targetOpacity: number) {
   currentXRef.current = targetX
   if (typeof el.current?.animate === 'function') {
     // Write the end state inline BEFORE animating: Lynx web's animation PAPI
-    // reads Lynx-style timing keys (fillMode/timingFunction) and silently
-    // drops WAAPI fill/easing, so a web settle would otherwise finish
-    // fill-less and snap back to the stale drag transform. Both spellings are
+    // reads Lynx-style timing keys and silently drops WAAPI fill/easing, so a
+    // web settle would finish fill-less and snap back. Both spellings are
     // passed; the inline value is what the element rests on either way.
     _apply(targetX, targetOpacity)
     // Keep the handle: a fill-forwards animation outranks inline style in the
@@ -213,10 +197,9 @@ function _getVelocity() {
 function _dragStart(clientX: number) {
   'main thread'
   if (disabledRef.current) return
-  // Cancel any in-flight snap-back animation: a `fill: 'forwards'` animation
-  // beats inline style, so leaving it running would mask this drag's
-  // `setStyleProperty` writes. Re-assert the current state so the card doesn't
-  // jump to its pre-animation position.
+  // Cancel any in-flight snap-back animation — a `fill: 'forwards'` animation
+  // beats inline style and would mask this drag's writes. Re-assert the current
+  // state so the card doesn't jump to its pre-animation position.
   const anim = snapAnimRef.current
   if (anim && typeof anim.cancel === 'function') {
     anim.cancel()
@@ -265,7 +248,6 @@ function _dragEnd() {
   const dragged = w > 0 && Math.abs(endX) >= thresholdRef.current * w
 
   if (allowed && (flicked || dragged)) {
-    // Fling off-screen in the drag's direction, fade out, then dismiss.
     const sign = endX === 0 ? (velocity < 0 ? -1 : 1) : (endX < 0 ? -1 : 1)
     const flingTo = sign * (w > 0 ? w * 1.2 : 500)
     _animateTo(flingTo, 0)
@@ -273,7 +255,6 @@ function _dragEnd() {
     return
   }
 
-  // Snap back to rest.
   _animateTo(0, 1)
 }
 
@@ -298,10 +279,9 @@ function _onTouchEnd() {
 }
 
 // Desktop web: Lynx web dispatches raw mouse events and never synthesizes
-// touch from them, so the same gesture core is bound to mouse. Coordinates
-// arrive top-level (mouse `detail` is the DOM click-count number, not
-// `{x, y}`). No mouseleave binding — it doesn't bubble, so per-element
-// delivery is unreliable on the Lynx dispatch path.
+// touch from them. Coordinates arrive top-level (mouse `detail` is the
+// click-count number). No mouseleave binding — it doesn't bubble, so
+// per-element delivery is unreliable on the Lynx dispatch path.
 function _onMouseDown(e: { clientX: number, buttons?: number }) {
   'main thread'
   // Swallow the compatibility mousedown a touch browser replays after a tap.
@@ -315,9 +295,8 @@ function _onMouseDown(e: { clientX: number, buttons?: number }) {
 function _onMouseMove(e: { clientX: number, buttons?: number }) {
   'main thread'
   // Only an EXPLICIT buttons value with the primary bit clear counts as
-  // released (recovers the mouseup lost outside the <lynx-view>). A missing
-  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
-  // it, and ending on those lets the drag go mid-gesture.
+  // released (recovers the mouseup lost outside the <lynx-view>); a missing
+  // `buttons` is treated as still-pressed.
   if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
     _dragEnd()
     return

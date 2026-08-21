@@ -85,7 +85,6 @@ export default (colors: Color[]) => ({
         class: variantClass(color, variant),
       })),
     ),
-    // square sizing (icon-only badges drop horizontal padding for an even box)
     { size: 'sm' as const, square: true, class: { base: 'p-1' } },
     { size: 'md' as const, square: true, class: { base: 'p-1' } },
     { size: 'lg' as const, square: true, class: { base: 'p-1' } },

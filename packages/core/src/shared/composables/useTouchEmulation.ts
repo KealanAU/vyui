@@ -2,48 +2,20 @@
  * useTouchEmulation — bridge Lynx native touch + PC mouse into a single set of
  * `onTouch*` callbacks.
  *
- * Why this exists
- * ---------------
- * Lynx components fire `bindtouchstart/move/end/cancel` on touch devices and
- * `bindmousedown/move/up` on PC. Every interaction primitive (Draggable,
- * Sortable, Swiper) needs to wire both sets and produce a uniform stream of
- * touch events. This composable owns that translation in one place.
- *
- * Returns a `ComputedRef<UseTouchEmulationReturn>` of flat `bind*` handlers
- * that you spread onto a Lynx view via `v-bind="touchHandlers"`. Mouse events
- * are translated into synthetic `TouchEvent` shapes (`touches[0]` /
- * `changedTouches[0]` plus `detail.x/y`) so callers don't have to branch on
- * input type.
- *
- * Every callback is optional — only the keys whose callback was supplied
- * appear in the result.
+ * Lynx fires `bindtouchstart/move/end/cancel` on touch devices and
+ * `bindmousedown/move/up` on PC. This owns that translation: it returns a
+ * `ComputedRef` of flat `bind*` handlers to spread via `v-bind`, with mouse
+ * events shaped into synthetic `TouchEvent`s (`touches[0]` /
+ * `changedTouches[0]` plus `detail.x/y`). Every callback is optional — only
+ * supplied keys appear in the result.
  *
  * Background thread only. The upstream React hook also emits `main-thread-*`
- * worklet handlers; that half is deliberately not ported. Every MT gesture
- * surface here (ScrollView, Swiper, ToastSwipe, Slider, …) binds
- * `:main-thread-bind*` directly in its SFC with the worklets inlined there —
- * don't re-add an MT variant to this composable.
+ * worklet handlers; that half is deliberately not ported — every MT gesture
+ * surface here binds `:main-thread-bind*` directly in its SFC with the worklets
+ * inlined. Don't re-add an MT variant to this composable.
  *
- * Ported from `@lynx-js/react-use`'s `useTouchEmulation` (React + `useMemo`)
- * to Vue 3 (`computed`). Vue tracks callback identity automatically, so there
- * is no dependency array.
- *
- * The `'background only'` string directives at the top of each handler are
- * vue-lynx worklet hints — preserved verbatim from the upstream React port
- * (vue-lynx uses the same convention as ReactLynx).
- *
- * Usage
- * -----
- * ```ts
- * const touchHandlers = useTouchEmulation({
- *   onTouchStart: (e) => { ... },
- *   onTouchMove: (e) => { ... },
- *   onTouchEnd: (e) => { ... },
- * })
- * ```
- * ```vue
- * <view v-bind="touchHandlers" />
- * ```
+ * Ported from `@lynx-js/react-use`'s `useTouchEmulation`; the
+ * `'background only'` directives are vue-lynx worklet hints kept verbatim.
  */
 
 import type { MouseEvent, TouchEvent } from '@lynx-js/types'
@@ -103,7 +75,6 @@ function toTouchEvent(event: TouchEvent | MouseEvent, type: TouchEventType): Tou
  *
  * @param options - up to 4 optional callbacks; only the supplied ones produce
  *   `bind*` keys in the returned object.
- * @returns a `ComputedRef` of handlers ready to spread via `v-bind`.
  */
 export function useTouchEmulation(
   options: UseTouchEmulationOptions,

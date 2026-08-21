@@ -10,20 +10,20 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+      "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     },
     {
       "name": "forceMount",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Used to force mounting when more control is needed. Useful when\ncontrolling animation with Vue animation libraries."
+      "description": "Force mounting when more control is needed — e.g. driving animation from a\nVue animation library."
     },
     {
       "name": "unmountOnHide",
       "type": "boolean | undefined",
       "required": false,
       "default": "undefined",
-      "description": "Per-panel override of the root's `unmountOnHide`. Set `true` on a panel\nwhose subtree writes styles from main-thread worklets (`setStyleProperty`,\n`animate(…, fill: 'forwards')`): those writes land on the native style\nobject outside the background thread's diffing, and such nodes have been\nseen to keep painting through the kept-alive hide on device."
+      "description": "Per-panel override of the root's `unmountOnHide`. Set `true` on a panel\nwhose subtree writes styles from main-thread worklets: those writes land on\nthe native style object outside the background thread's diffing, and such\nnodes keep painting through the kept-alive hide on device."
     },
     {
       "name": "value",

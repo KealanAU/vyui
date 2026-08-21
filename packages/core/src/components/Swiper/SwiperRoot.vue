@@ -15,46 +15,33 @@ export interface SwiperRootProps {
   disabled?: boolean
   /**
    * Navigate circularly: dragging/autoplay past the last item wraps to the
-   * first (and vice-versa) SEAMLESSLY — edge slides are cloned so motion
-   * continues across the seam instead of snap-rewinding. When false, the
-   * track clamps at the ends.
+   * first SEAMLESSLY — edge slides are cloned so motion continues across the
+   * seam. When false, the track clamps at the ends.
    */
   loop?: boolean
   /** Alias for `loop` — matches lynx-ui's `circular` naming. `loop` wins. */
   circular?: boolean
-  /**
-   * Only consume gestures that are predominantly horizontal (±45°). A
-   * vertical drag is released to the host scroll surface. Mirrors lynx-ui's
-   * `experimentalHorizontalSwipeOnly`.
-   */
+  /** Only consume gestures that are predominantly horizontal (±45°); a vertical
+   *  drag is released to the host scroll surface. Mirrors lynx-ui's
+   *  `experimentalHorizontalSwipeOnly`. */
   axisLock?: boolean
   /** Auto-advance through items on an interval. Pauses while dragging. */
   autoplay?: boolean
   /** Autoplay step interval in ms (time an item is shown before advancing). */
   interval?: number
-  /**
-   * Gap between adjacent items, px. The snap unit becomes
-   * `itemWidth + spaceBetween`. Mirrors lynx-ui `modeConfig.spaceBetween`.
-   */
+  /** Gap between adjacent items, px — the snap unit becomes
+   *  `itemWidth + spaceBetween`. Mirrors lynx-ui `modeConfig.spaceBetween`. */
   spaceBetween?: number
-  /**
-   * Layout mode. `'normal'` (default) is the standard paged carousel honoring
-   * `align`. `'carousel'` is an alias kept for forward-compat; treated as
-   * normal. Mirrors lynx-ui `mode`.
-   */
+  /** Layout mode. `'normal'` (default) is the standard paged carousel;
+   *  `'carousel'` is a forward-compat alias treated as normal. */
   mode?: 'normal' | 'carousel'
-  /**
-   * Active-item alignment within the viewport when it is wider than an item.
-   * `'start'` (default) | `'center'` | `'end'`. Requires `containerWidth`.
-   * Mirrors lynx-ui `modeConfig.align`.
-   */
+  /** Active-item alignment when the viewport is wider than an item: `'start'`
+   *  (default) | `'center'` | `'end'`. Requires `containerWidth`. */
   align?: 'start' | 'center' | 'end'
   /** Viewport width, px — needed for `align: center/end` and the end clamp. */
   containerWidth?: number
-  /**
-   * Explicit `[startLimit, endLimit]` non-loop offset clamp (px past each
-   * edge the track may rest). Mirrors lynx-ui `offsetLimit`.
-   */
+  /** Explicit `[startLimit, endLimit]` non-loop offset clamp, px past each edge
+   *  the track may rest. Mirrors lynx-ui `offsetLimit`. */
   offsetLimit?: [number, number]
   /** Right-to-left layout. A forward swipe moves visually rightward. */
   rtl?: boolean
@@ -105,14 +92,12 @@ const loop = computed(() => props.loop || props.circular)
 
 // Snap unit (item + gap) — the period one clone copy spans.
 const fullSize = computed(() => props.itemWidth + props.spaceBetween)
-// One full content period across all real items.
 const totalWidth = computed(() => fullSize.value * props.itemCount)
 
-// First-screen track style (only used before the MT takes over transforms —
-// mirrors lynx-ui `useFirstScreenStyle`). In loop mode the track holds three
-// copies of the slot (prev | main | next), is widened to fit them, and is
-// pulled left by one period so the MAIN copy's item 0 sits at translateX(0).
-// The duplicated edges are what make the seam crossing seamless.
+// First-screen track style, used before the MT takes over transforms. In loop
+// mode the track holds three copies of the slot (prev | main | next), widened to
+// fit and pulled left by one period so the MAIN copy's item 0 sits at
+// translateX(0) — the duplicated edges are what make the seam seamless.
 const trackStyle = computed(() => {
   const base: Record<string, string | number> = {
     display: 'flex',
@@ -126,9 +111,8 @@ const trackStyle = computed(() => {
   return base
 })
 
-// All drag plumbing (MT refs, velocity, snap animation, axis lock, autoplay,
-// MT↔BG hops, seam rebasing) lives in the shared controller; this component
-// just wires its config + the track.
+// All drag plumbing lives in the shared controller; this component wires its
+// config + the track.
 const {
   containerRef,
   onTouchStart,
@@ -214,8 +198,8 @@ provideSwiperRootContext({
         <slot />
       </view>
     </view>
-    <!-- Overlay content (e.g. indicators) lives outside the track so the
-         track's drag transform doesn't drag it along — it stays fixed. -->
+    <!-- Overlay content (e.g. indicators) lives outside the track so the drag
+         transform doesn't move it. -->
     <slot name="overlay" />
   </view>
 </template>

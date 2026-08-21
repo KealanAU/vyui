@@ -1,11 +1,8 @@
 /**
  * RadioGroup theme — adapted from nuxt/ui v3.0.2 `theme/radio-group.ts` for
- * Vue-Lynx. Semantic color names resolve via the consuming app's CSS variables
- * (see `apps/examples/kit-demo/src/index.css`). Dark-mode / focus-visible /
- * shadow utilities are dropped (light-only, no DOM focus rings in Lynx).
- *
- * Per-color × per-checked compound variants paint the indicator (filled dot)
- * directly with semantic Tailwind classes (`bg-primary-500`).
+ * Vue-Lynx. Dark rides the semantic tokens; focus-visible / shadow utilities are
+ * dropped. Per-color × per-checked compound variants paint the indicator dot
+ * directly with semantic Tailwind classes.
  */
 import type { Color } from './colors'
 
@@ -16,7 +13,7 @@ export default (colors: Color[]) => ({
     fieldset: 'flex min-w-0 max-w-full',
     legend: 'mb-1 block font-medium text-highlighted',
     // `gap-2` spaces the control from the label — Lynx ignores logical inline
-    // margins (`ms-*`), so the old `ms-2` collapsed them. Matches Checkbox.
+    // margins (`ms-*`). Matches Checkbox.
     item: 'flex flex-row items-start min-w-0 gap-2',
     base: 'shrink-0 flex flex-row items-center justify-center rounded-full bg-default border border-accented transition-colors',
     indicator: 'flex flex-row items-center justify-center rounded-full bg-white',
@@ -95,9 +92,8 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
-    // checked → outer ring becomes primary border, base fills primary, inner
-    // dot stays white so the macOS-style 3-layer look (outline / fill / dot)
-    // reads correctly. `border-2` thickens the outline so it remains visible
+    // checked → outer ring becomes primary border, base fills primary, inner dot
+    // stays white for the 3-layer look. `border-2` keeps the outline visible
     // alongside the colored fill.
     ...colors.map(color => ({
       color,

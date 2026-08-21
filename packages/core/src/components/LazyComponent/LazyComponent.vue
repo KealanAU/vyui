@@ -8,20 +8,15 @@ import type { CSSProperties } from 'vue'
 
 export interface LazyComponentProps {
   /**
-   * Logical scene name. Lynx fires `exposure` / `disexposure` events when an
-   * element with `exposure-scene` enters / leaves the viewport. Components
-   * sharing a scene can be referenced together.
+   * Logical scene name. Lynx fires `exposure` / `disexposure` when an element
+   * with `exposure-scene` enters / leaves the viewport.
    */
   scene: string
-  /**
-   * Per-instance identifier within the scene. Combined with `scene` to pick
-   * the right element out of the exposure event stream.
-   */
+  /** Per-instance identifier within the scene, used with `scene` to pick this
+   *  element out of the exposure event stream. */
   pid: string
-  /**
-   * Inline styles applied to the placeholder before the component mounts.
-   * Must include `width` and `height` so layout doesn't jump on mount.
-   */
+  /** Inline styles for the placeholder before the component mounts. Must
+   *  include `width` and `height` so layout doesn't jump on mount. */
   estimatedStyle: CSSProperties
   /** Top margin past the viewport that still counts as visible. */
   top?: string
@@ -32,9 +27,9 @@ export interface LazyComponentProps {
   /** Right margin past the viewport that still counts as visible. */
   right?: string
   /**
-   * Unmount the children on `disexposure` (off-screen) and re-mount on next
-   * `exposure`. The placeholder view stays mounted to preserve scroll
-   * position. Defaults to `false` — once mounted, children stay mounted.
+   * Unmount the children on `disexposure` and re-mount on the next `exposure`;
+   * the placeholder stays mounted to preserve scroll position.
+   * @defaultValue `false`
    */
   unmountOnExit?: boolean
 }
@@ -76,9 +71,8 @@ function onLayoutChange(event: any) {
   }
 }
 
-// Lynx exposure attrs aren't in `@lynx-js/types`'s `<view>` element typing —
-// bind them through a kebab-case record so TS doesn't try to narrow each one
-// against the known intrinsic prop set.
+// Lynx exposure attrs aren't in `@lynx-js/types`'s `<view>` typing — bind them
+// through a kebab-case record so TS doesn't narrow against the intrinsic set.
 const exposureAttrs = computed<Record<string, unknown>>(() => ({
   'id': 'component',
   'flatten': false,
@@ -121,8 +115,6 @@ const onDisexposure = (...args: unknown[]) => {
 
 // `immediate`: register synchronously in setup so the listener is in place
 // before Lynx can fire the first exposure event for the placeholder view.
-// lynx-ui does the same via `useMemo`, which runs at render-time, not
-// mount-time.
 useGlobalEvent('exposure', onExposure, { immediate: true })
 useGlobalEvent('disexposure', onDisexposure, { immediate: true })
 </script>

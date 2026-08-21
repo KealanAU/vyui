@@ -59,16 +59,12 @@ export function snapValueToStep(value: number, min: number | undefined, max: num
   return snappedValue
 }
 
-/**
- * Returns the number of decimal places in a value (e.g. `1.25` → `2`).
- */
+/** Returns the number of decimal places in a value (e.g. `1.25` → `2`). */
 export function getDecimalCount(value: number) {
   return (String(value).split('.')[1] || '').length
 }
 
-/**
- * Rounds a value to a fixed number of decimal places, avoiding floating-point drift.
- */
+/** Rounds a value to a fixed number of decimal places, avoiding floating-point drift. */
 export function roundValue(value: number, decimalCount: number) {
   const rounder = 10 ** decimalCount
   return Math.round(value * rounder) / rounder

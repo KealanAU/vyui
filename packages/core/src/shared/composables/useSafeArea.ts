@@ -1,18 +1,17 @@
 /**
  * useSafeArea — normalized device safe-area insets for Lynx containers.
  *
- * Lynx has no `env(safe-area-inset-*)`; each container injects insets as
- * global props under its own names:
- *  - Sparkling: `topHeight` / `bottomHeight` (plus an `os` prop)
- *  - Lynx Explorer: `safeAreaTop` / `safeAreaBottom`
+ * Lynx has no `env(safe-area-inset-*)`; each container injects insets as global
+ * props under its own names (Sparkling: `topHeight` / `bottomHeight`; Lynx
+ * Explorer: `safeAreaTop` / `safeAreaBottom`).
  *
- * Ported from the vue-lynx `elk` example's `safe-area.ts`, OS gating
- * included: Android containers inset the LynxView natively, so their global
- * props normalize to zero rather than double-padding.
+ * Ported from the vue-lynx `elk` example's `safe-area.ts`, OS gating included:
+ * Android containers inset the LynxView natively, so their global props
+ * normalize to zero rather than double-padding.
  *
  * Values are logical px, snapshotted once — global props don't change over a
- * page's lifetime. On web / jsdom there is no `lynx` global and the insets
- * are zero, so consumers can apply them unconditionally.
+ * page's lifetime. On web / jsdom the insets are zero, so consumers can apply
+ * them unconditionally.
  */
 
 import { createContext } from '../createContext.js'
@@ -66,9 +65,8 @@ const [injectSafeAreaInsets, provideSafeAreaInsets]
 export { provideSafeAreaInsets }
 
 /**
- * Safe-area insets for the current component tree. An ancestor that knows
- * better (a custom container, or an app opting a subtree out with zeros) can
- * override via `provideSafeAreaInsets`; otherwise this falls back to the
+ * Safe-area insets for the current component tree. An ancestor that knows better
+ * can override via `provideSafeAreaInsets`; otherwise this falls back to the
  * container's global props. Call during `setup()`.
  */
 export function useSafeArea(): SafeAreaInsets {

@@ -56,7 +56,6 @@ export function useCollection<ItemData = {}>(options: { key?: string, isProvider
     inheritAttrs: false,
     props: {
       value: {
-        // It accepts any value
         validator: () => true,
       },
     },

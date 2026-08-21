@@ -2,14 +2,12 @@
   Adapted from lynx-family/lynx-ui (Apache-2.0) —
   packages/lynx-ui-input/src/TextArea.tsx.
 
-  Multi-line text input that wraps Lynx's `<textarea>` element. Shares the
-  imperative API + event mapping documented on `Input.vue`; the extra props
-  here are the multi-line ones: `lineSpacing`, `bounces`, `maxLines`.
+  Multi-line text input wrapping Lynx's `<textarea>`. Shares the imperative API
+  and event mapping documented on `Input.vue`; the extra props here are the
+  multi-line ones: `lineSpacing`, `bounces`, `maxLines`.
 
-  Naming note: lynx-ui exports `TextArea` (PascalCase, two words). We export
-  `Textarea` (matching the JSX intrinsic) so it composes cleanly with
-  Reka-style conventions across the rest of vyui. Both spellings are
-  preserved on the public types.
+  lynx-ui exports `TextArea`; vyui exports `Textarea` (matching the JSX
+  intrinsic). Both spellings are preserved on the public types.
 -->
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
@@ -28,9 +26,7 @@ export interface TextareaProps extends PrimitiveProps {
   disabled?: boolean
   /**
    * Maximum number of characters allowed. Unset by default, leaving the
-   * platform's own limit in place: iOS and Android are unlimited, while
-   * Harmony applies the documented Lynx default of 140. Pass an explicit
-   * value to enforce a limit, or to get identical behavior on every platform.
+   * platform's own limit in place (unlimited on iOS/Android, 140 on Harmony).
    */
   maxLength?: number
   /** Maximum number of visible lines before scrolling kicks in. Defaults to
@@ -49,17 +45,11 @@ export interface TextareaProps extends PrimitiveProps {
   confirmType?: InputConfirmType
   /** When `false`, focus will not raise the software keyboard. */
   showSoftInputOnFocus?: boolean
-  /**
-   * Native keyboard avoidance (Lynx `avoid-keyboard`) — see `Input.vue`'s
-   * prop of the same name: shifts the whole LynxView by the overlap, exact
-   * native math; do NOT combine with a `KeyboardAwareRoot`.
-   */
+  /** Native keyboard avoidance (Lynx `avoid-keyboard`) — see `Input.vue`'s prop
+   *  of the same name; do NOT combine with a `KeyboardAwareRoot`. */
   avoidKeyboard?: boolean
-  /**
-   * Extra clearance in px above the keyboard when `avoidKeyboard` shifts
-   * the view. Normalized to a px string on the wire — Android's native
-   * setter only parses string values.
-   */
+  /** Extra clearance in px above the keyboard when `avoidKeyboard` shifts the
+   *  view. Normalized to a px string — Android's setter only parses strings. */
   avoidKeyboardSpacing?: number
 }
 
@@ -80,10 +70,8 @@ export type TextareaEmits = {
   'confirm': [value: string]
   'selectionChange': [selectionStart: number, selectionEnd: number]
   /**
-   * Software-keyboard show/hide while focused. Normalized from Lynx's raw
-   * `{ show, keyBoardHeight, safeAreaBottom }` element event — see `Input.vue`
-   * for why this element event (not the global emitter) is the keyboard signal
-   * under vue-lynx.
+   * Software-keyboard show/hide while focused, normalized from Lynx's raw
+   * element event — see `Input.vue` for why this, not the global emitter.
    */
   'keyboard': [info: { visible: boolean, height: number, safeAreaBottom: number }]
 }
@@ -207,11 +195,9 @@ async function clear(): Promise<void> {
     emit('update:modelValue', '')
 }
 
-// `renderValue` is what `:value` binds to in the template. We decouple it
-// from `props.modelValue` so that when the user types, the prop updates via
-// v-model without re-pushing the whole (growing) string back through
-// vue-lynx's `patchProp → SET_PROP` op. Programmatic updates still flow
-// through because they don't match `lastNativeValue`.
+// `renderValue` is what `:value` binds to. Decoupled from `props.modelValue` so
+// typing doesn't re-push the whole growing string through vue-lynx's
+// `patchProp → SET_PROP` op.
 const renderValue = ref(props.modelValue ?? '')
 let lastNativeValue: string | undefined
 watch(() => props.modelValue, (next) => {
@@ -278,10 +264,9 @@ function handleSelection(event: any) {
   emit('selectionChange', detail.selectionStart ?? 0, detail.selectionEnd ?? 0)
 }
 
-// Normalize Lynx's raw `{ show, keyBoardHeight, safeAreaBottom }` keyboard
-// payload — see `Input.vue`'s `keyboard` emit for the rationale. Also piped
-// up the KeyboardAware chain (the only keyboard signal that reaches
-// `KeyboardAwareRoot` on device).
+// Normalize Lynx's raw keyboard payload — see `Input.vue`'s `keyboard` emit.
+// Also piped up the KeyboardAware chain, the only signal that reaches
+// `KeyboardAwareRoot` on device.
 function handleKeyboard(event: any) {
   const d = event?.detail ?? {}
   const info = {

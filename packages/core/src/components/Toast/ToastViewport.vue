@@ -3,10 +3,9 @@
 import type { PrimitiveProps } from '@/components/Primitive'
 
 /**
- * Where the toast stack is anchored. The vertical edge (`top` / `bottom`) and
- * horizontal alignment (`left` / `center` / `right`) are *structural* — they
- * decide layout, so they belong on the primitive. Exact pixel offsets, gaps,
- * widths and enter/exit motion stay the consumer's job via `:style`.
+ * Where the toast stack is anchored. The vertical edge and horizontal alignment
+ * are *structural* — they decide layout, so they belong on the primitive. Pixel
+ * offsets, gaps, widths and motion stay the consumer's job via `:style`.
  */
 export type ToastViewportPosition =
   | 'top'
@@ -31,11 +30,9 @@ import { useId } from '@/shared'
 import { useSafeArea } from '@/shared/composables'
 
 // reka-ui wraps the viewport in a `<Teleport>` to escape the document flow.
-// Lynx has no Teleport — and an inline `position: fixed` viewport stays
-// trapped inside (and clipped by) any `overflow: hidden` / `scroll-view`
-// ancestor, so the toast never reaches the screen edge. Instead the stack is
-// painted through the `overlayStore` portal that the app-root `<OverlayRoot>`
-// renders — the same mechanism every other overlay uses.
+// Lynx has no Teleport, and an inline `position: fixed` viewport stays trapped
+// inside any `overflow: hidden` ancestor, so the stack is painted through the
+// `overlayStore` portal instead — the same mechanism every other overlay uses.
 defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<ToastViewportProps>(), {
@@ -48,9 +45,8 @@ const slots = useSlots()
 // node — it is the only thing painted.
 const attrs = useAttrs()
 const id = useId()
-// `provides` is an internal instance field; re-provided by OverlayRoot so the
-// `ToastProvider` context still resolves for `ToastRoot`s rendered in the
-// portal.
+// `provides` is an internal instance field, re-provided by OverlayRoot so
+// `ToastProvider`'s context resolves for portalled `ToastRoot`s.
 const capturedProvides = (getCurrentInstance() as
   | { provides?: Record<any, any> }
   | null)?.provides
@@ -69,8 +65,7 @@ function viewportStyle(): Record<string, any> {
   const [edgeRaw, alignRaw] = props.position.split('-')
   const edge = edgeRaw === 'top' ? 'top' : 'bottom'
   const align = alignRaw ?? 'center'
-  // A content-sized strip pinned to one edge — it only covers the toasts
-  // themselves, so taps elsewhere fall through to the app behind it.
+  // A content-sized strip pinned to one edge, so taps elsewhere fall through.
   return {
     position: 'fixed',
     // Above the 1000 every overlay backdrop paints at, so a toast raised while
@@ -87,7 +82,7 @@ function viewportStyle(): Record<string, any> {
 
 function renderFn() {
   // Pass the *resolved* slot vnodes — a plain element ignores a slots object,
-  // so a function child (`() => slots.default()`) would render nothing.
+  // so a function child would render nothing.
   return h(
     props.as,
     {

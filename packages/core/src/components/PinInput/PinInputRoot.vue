@@ -110,10 +110,9 @@ function updateModelValueAt(index: number, value: string) {
 }
 
 /**
- * Spread a multi-character string (a paste, or fast typing) across cells
- * starting at `startIndex`, one character per cell. Extra characters past
- * the last cell are dropped. Focus lands on the cell after the last one
- * filled, or the final cell if the value reached the end.
+ * Spread a multi-character string (a paste, or fast typing) across cells from
+ * `startIndex`, one character per cell, dropping any overflow. Focus lands on
+ * the cell after the last one filled.
  */
 function updateModelValueRange(startIndex: number, value: string) {
   const chars = (isNumericMode.value ? value.replace(/\D/g, '') : value).split('')

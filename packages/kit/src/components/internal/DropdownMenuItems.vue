@@ -1,10 +1,8 @@
 <script lang="ts">
 /**
- * Internal — renders the items list for `VyDropdownMenu`. Per-item slots are
+ * Internal — renders the items list for `VyDropdownMenu`, with per-item slots
  * forwarded from the parent via `useSlots()` and indexed by the item's `slot`
- * field.
- *
- * Not exported from the package — its only consumer is `DropdownMenu.vue`.
+ * field. Not exported from the package.
  */
 import type { ClassValue } from '../../composables/useStyledComponent'
 import type {
@@ -63,10 +61,9 @@ const slots = useSlots()
 
 const appConfig = useAppConfig()
 
-// Lynx SVG can't inherit currentColor — bake the item's resting foreground
-// into the icon fill at render time (same pattern as Button/Input). The
-// `group-ui-highlighted:` shade shift stays class-only (it can't reach the
-// rasterized glyph), so the icon keeps its resting color while pressed.
+// Lynx SVG can't inherit currentColor — bake the item's resting foreground into
+// the icon fill (same pattern as Button/Input). The `group-ui-highlighted:` shade
+// shift stays class-only, so the icon keeps its resting color while pressed.
 const itemIconColor = (color?: DropdownMenuItem['color']) => {
   const fg = iconFg(color)
   return resolveColorHex(appConfig, fg.semantic, fg.shade)
@@ -101,9 +98,8 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
       v-else-if="row.kind === 'label'"
       :class="ui.label({ class: uiOverrides?.label })"
     >
-      <!-- `enableCSSInheritance: false`: the `label` slot's `text-highlighted`
-           sits on the wrapping <view>, so the heading color must land on this
-           <text> directly. -->
+      <!-- `enableCSSInheritance: false`: the `label` slot's color sits on the
+           wrapping <view>, so it must land on this <text> directly. -->
       <text :class="ui.itemLabel({ class: ['text-highlighted', uiOverrides?.itemLabel] })">{{ getLabel(row.item) }}</text>
     </DropdownMenuLabel>
 
