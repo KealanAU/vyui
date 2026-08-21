@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/dropdownMenu'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { AvatarProps } from './Avatar.vue'
 
 export type DropdownMenuTV = ThemeTV<typeof theme>
@@ -31,9 +31,7 @@ export interface DropdownMenuItem {
   /** Custom slot key. When set, the item is rendered via `#{slot}-*` slots. */
   slot?: string
   /** Per-item class merged onto the item base. */
-  class?: any
-  /** Nested submenu items. Currently rendered as a flat group — sub-menu primitive integration is TODO. */
-  children?: DropdownMenuItem[] | DropdownMenuItem[][]
+  class?: ClassValue
   /** Fired when the item is selected. */
   onSelect?: (e: Event) => void
   /** For `checkbox` items — fired with the new checked state. */
@@ -83,14 +81,12 @@ export interface DropdownMenuProps {
   labelKey?: string
   /** Key on each item used as the rendered description. @defaultValue `'description'` */
   descriptionKey?: string
-  /** Iconify name for the trailing chevron on items with children. Defaults to `appConfig.ui.icons.chevronRight`. */
-  childrenIcon?: string
   /** Iconify name for checked checkbox items. Defaults to `appConfig.ui.icons.check`. */
   checkedIcon?: string
   /** Iconify name for the loading spinner. Defaults to `appConfig.ui.icons.loading`. */
   loadingIcon?: string
-  class?: any
-  ui?: Partial<Record<keyof DropdownMenuTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof DropdownMenuTV['slots'], ClassValue>>
 }
 
 export interface DropdownMenuEmits {
@@ -167,7 +163,6 @@ defineSlots<DropdownMenuSlots>()
 
 const appConfig = useAppConfig()
 
-const resolvedChildrenIcon = computed(() => props.childrenIcon || appConfig.ui.icons?.chevronRight || 'i-lucide-chevron-right')
 const resolvedCheckedIcon = computed(() => props.checkedIcon || appConfig.ui.icons?.check || 'i-lucide-check')
 const resolvedLoadingIcon = computed(() => props.loadingIcon || appConfig.ui.icons?.loading || 'i-lucide-loader-circle')
 
@@ -292,7 +287,6 @@ const backdropStyle = computed<Record<string, any> | undefined>(() => {
           :ui-overrides="props.ui"
           :label-key="labelKey"
           :description-key="descriptionKey"
-          :children-icon="resolvedChildrenIcon"
           :checked-icon="resolvedCheckedIcon"
           :loading-icon="resolvedLoadingIcon"
         >

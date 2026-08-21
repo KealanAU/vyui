@@ -22,8 +22,6 @@ export function iconFg(color?: string): { semantic: string, shade: number } {
   return color ? { semantic: color, shade: 500 } : { semantic: 'neutral', shade: 500 }
 }
 
-export const TRAILING_ICON_FG = { semantic: 'neutral', shade: 400 } as const
-
 export default (colors: Color[]) => ({
   slots: {
     content: 'min-w-32 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-1rem)] bg-default rounded-lg border border-default shadow-lg shadow-black/10 divide-y divide-default overflow-y-auto',
@@ -35,7 +33,6 @@ export default (colors: Color[]) => ({
     itemLeadingAvatar: 'shrink-0',
     itemLeadingAvatarSize: '',
     itemTrailing: 'ms-auto flex flex-row gap-1.5 items-center',
-    itemTrailingIcon: `shrink-0 text-${TRAILING_ICON_FG.semantic}-${TRAILING_ICON_FG.shade}`,
     itemWrapper: 'flex-1 flex flex-col text-start min-w-0',
     itemLabel: 'truncate',
     itemDescription: 'truncate text-xs text-muted',
@@ -69,25 +66,21 @@ export default (colors: Color[]) => ({
         label: 'p-1.5 text-sm gap-1.5',
         item: 'p-1.5 text-sm gap-1.5',
         itemLeadingIcon: 'size-5',
-        itemTrailingIcon: 'size-5',
       },
       md: {
         label: 'p-2 text-sm gap-2',
         item: 'p-2 text-sm gap-2',
         itemLeadingIcon: 'size-5',
-        itemTrailingIcon: 'size-5',
       },
       lg: {
         label: 'p-2 text-base gap-2',
         item: 'p-2 text-base gap-2',
         itemLeadingIcon: 'size-6',
-        itemTrailingIcon: 'size-6',
       },
       xl: {
         label: 'p-2.5 text-lg gap-2.5',
         item: 'p-2.5 text-lg gap-2.5',
         itemLeadingIcon: 'size-7',
-        itemTrailingIcon: 'size-7',
       },
     },
   },
