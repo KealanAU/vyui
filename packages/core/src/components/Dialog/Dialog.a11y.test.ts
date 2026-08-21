@@ -44,6 +44,13 @@ describe('Dialog a11y', () => {
     expect(content.getAttribute('accessibility-traits')).not.toBe('dialog')
   })
 
+  it('leaves the screen reachable when the dialog is non-modal', async () => {
+    const { container } = render(Dialog, { rootProps: { modal: false } })
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    expect(q(container, 'content')!.getAttribute('accessibility-exclusive-focus')).toBeNull()
+  })
+
   it('exposes the close button as a focusable button labelled "Close"', async () => {
     const { container } = render(Dialog)
     fireEvent.tap(q(container, 'trigger')!)

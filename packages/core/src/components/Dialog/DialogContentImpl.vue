@@ -74,12 +74,12 @@ const { onInteractOutside } = useDismissableLayer({
   onDismiss: () => rootContext.onOpenChange(false),
 })
 
-// Modal dialog semantics for the panel: a valid `dialog` role (via
-// role-description) plus an a11y focus trap so the overlay is announced as a
-// self-contained modal.
+// A valid `dialog` role (via role-description). `exclusiveFocus` is Lynx's
+// focus containment — the only real modality lever here — so it follows the
+// root's `modal` flag: a non-modal dialog leaves siblings reachable.
 const a11y = useA11y(() => ({
   role: 'dialog',
-  exclusiveFocus: true,
+  exclusiveFocus: rootContext.modal.value,
 }))
 
 // DialogContent owns the per-layer Presence state and provides it through

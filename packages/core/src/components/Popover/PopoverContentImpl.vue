@@ -37,10 +37,11 @@ defineEmits<PopoverContentImplEmits>()
 const { forwardRef } = useForwardExpose()
 const rootContext = injectPopoverRootContext()
 
-// Modal dialog semantics: a valid `dialog` role plus an a11y focus trap.
+// A valid `dialog` role. `exclusiveFocus` is Lynx's focus containment and
+// follows the root's `modal` flag, which defaults to false for popovers.
 const a11y = useA11y(() => ({
   role: 'dialog',
-  exclusiveFocus: true,
+  exclusiveFocus: rootContext.modal.value,
 }))
 
 /**

@@ -32,7 +32,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Modality. When `true`, taps outside are blocked from reaching the app.\nSheet mode is always modal (the backdrop intercepts taps)."
+      "description": "Modality. When `true`, taps outside are blocked from reaching the app and\nassistive tech is confined to the popover. Sheet mode is always modal (the\nbackdrop intercepts taps)."
     },
     {
       "name": "modelValue",

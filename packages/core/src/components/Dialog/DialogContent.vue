@@ -21,7 +21,6 @@ import { computed, provide, ref, watch } from 'vue'
 import { PresenceState, combineGroupState } from '@/components/Presence'
 import { useEmitAsProps, useForwardExpose } from '@/shared'
 import DialogContentModal from './DialogContentModal.vue'
-import DialogContentNonModal from './DialogContentNonModal.vue'
 import { injectDialogRootContext } from './DialogRoot.vue'
 import {
   DialogContentPresenceKey,
@@ -106,19 +105,10 @@ const shouldMount = computed(
 
 <template>
   <DialogContentModal
-    v-if="rootContext.modal.value"
     :ref="forwardRef"
     :present="shouldMount"
     v-bind="{ ...props, ...emitsAsProps, ...$attrs }"
   >
     <slot />
   </DialogContentModal>
-  <DialogContentNonModal
-    v-else
-    :ref="forwardRef"
-    :present="shouldMount"
-    v-bind="{ ...props, ...emitsAsProps, ...$attrs }"
-  >
-    <slot />
-  </DialogContentNonModal>
 </template>

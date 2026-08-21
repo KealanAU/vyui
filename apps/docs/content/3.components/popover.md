@@ -275,11 +275,11 @@ The default content surface is a white, vertically scrollable panel constrained 
 
 ## Accessibility
 
-The built-in trigger is exposed as a native button and announces `collapsed` or `expanded`. The content is exposed as a dialog container with exclusive accessibility focus in both presentation modes. The sheet and anchored overlay keep their children individually reachable.
+The built-in trigger is exposed as a native button and announces `collapsed` or `expanded`. The content is exposed as a dialog container in both presentation modes. Sheet presentation always requests exclusive accessibility focus; anchored presentation requests it only when `modal` is `true`, so by default the rest of the screen stays reachable. Both overlays keep their own children individually reachable.
 
 Give icon-only trigger content an `accessibility-label`. Add a visible heading near the start of the content, and provide an explicit close action whenever outside or drag dismissal is disabled. A custom `anchor` slot is not automatically given button semantics; its interactive child must provide them.
 
-Lynx currently has no DOM-style focus scope or programmatic focus restoration. The core uses native exclusive-focus semantics instead. The modal and non-modal anchor variants are structurally separate, but scroll locking and hiding background siblings are currently no-ops on Lynx.
+Lynx currently has no DOM-style focus scope or programmatic focus restoration. The core uses native exclusive-focus semantics instead, driven by `modal`. The DOM scroll locking and background-sibling hiding that reka-ui applies have no Lynx equivalent.
 
 ## Platform notes
 

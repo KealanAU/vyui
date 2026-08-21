@@ -44,8 +44,9 @@ export interface PopoverProps {
    *  @defaultValue `{ side: 'bottom', sideOffset: 8 }` */
   content?: PopoverContentSettings
   /**
-   * Modality. When `true`, taps outside are blocked from reaching the app.
-   * Sheet mode is always modal (the backdrop intercepts taps).
+   * Modality. When `true`, taps outside are blocked from reaching the app and
+   * assistive tech is confined to the popover. Sheet mode is always modal (the
+   * backdrop intercepts taps).
    * @defaultValue false
    */
   modal?: boolean

@@ -1,6 +1,6 @@
 ---
 title: Dialog
-description: Headless modal and non-modal dialog primitive covering trigger, portal, overlay, and content with full focus and dismiss behavior.
+description: Headless modal and non-modal dialog primitive covering trigger, portal, overlay, and content with full dismiss behavior.
 navigation:
   icon: i-lucide-app-window
 package: core
@@ -79,7 +79,7 @@ const open = ref(false)
 
 ## Features and behavior
 
-- `modal` defaults to `true`; interaction with content behind the overlay is blocked. Set `modal="false"` for a non-modal dialog that leaves the rest of the page interactive.
+- `modal` defaults to `true`; interaction with content behind the overlay is blocked and assistive tech is confined to the dialog. Set `modal="false"` for a non-modal dialog that leaves the rest of the page interactive and reachable.
 - `open` / `v-model:open` controls visibility; `defaultOpen` seeds uncontrolled state.
 - `DialogContent` traps focus while open and restores it to the trigger on close.
 - `DialogClose` and pressing dismiss/back close the dialog and emit `update:open`.

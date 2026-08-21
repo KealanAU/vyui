@@ -12,7 +12,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "The modality of the popover. When `true` the content registers as a modal\noverlay (scroll-lock / hide-others would apply on the DOM). On Lynx those\nare no-ops, but the flag still selects `PopoverContentModal` vs\n`PopoverContentNonModal`."
+      "description": "The modality of the popover. On Lynx this drives `exclusiveFocus` on the\ncontent: when `true` assistive tech is confined to the popover, when\n`false` the rest of the screen stays reachable. The DOM scroll-lock /\nhide-others reka-ui applies have no Lynx equivalent."
     },
     {
       "name": "open",

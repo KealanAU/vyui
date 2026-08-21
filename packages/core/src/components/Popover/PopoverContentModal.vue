@@ -9,10 +9,9 @@ import PopoverContentImpl from './PopoverContentImpl.vue'
 import { injectPopoverRootContext } from './PopoverRoot.vue'
 
 /**
- * Modal variant. reka-ui would scroll-lock the body and hide siblings from
- * assistive tech; both are no-ops on Lynx, so this differs from the non-modal
- * variant only in intent — kept separate to mirror reka-ui's structure and to
- * host modal-specific behaviour if Lynx gains it.
+ * Registers the content into `overlayStore` for `OverlayRoot` to paint. reka-ui
+ * splits this into modal / non-modal variants; on Lynx the two were identical,
+ * so modality lives on `PopoverContentImpl`'s `exclusiveFocus` instead.
  */
 
 defineOptions({ inheritAttrs: false })

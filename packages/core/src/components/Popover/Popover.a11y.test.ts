@@ -31,7 +31,7 @@ describe('Popover a11y', () => {
     expect(trigger.getAttribute('accessibility-value')).toBe('expanded')
   })
 
-  it('announces the content as a dialog with exclusive focus', async () => {
+  it('announces the content as a dialog, reachable while non-modal', async () => {
     const { container } = render(Popover)
     fireEvent.tap(q(container, 'trigger')!)
     await waitForUpdate()
@@ -39,9 +39,17 @@ describe('Popover a11y', () => {
     expect(content).not.toBeNull()
     expect(content.getAttribute('accessibility-role-description')).toBe('dialog')
     expect(content.getAttribute('accessibility-traits')).toBe('none')
-    expect(content.getAttribute('accessibility-exclusive-focus')).toBe('true')
     // `dialog` is not a valid Lynx trait — it must only live in role-description.
     expect(content.getAttribute('accessibility-traits')).not.toBe('dialog')
+    // `modal` defaults to false, so the rest of the screen stays reachable.
+    expect(content.getAttribute('accessibility-exclusive-focus')).toBeNull()
+  })
+
+  it('confines assistive tech to the content when modal', async () => {
+    const { container } = render(Popover, { rootProps: { modal: true } })
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    expect(q(container, 'content')!.getAttribute('accessibility-exclusive-focus')).toBe('true')
   })
 
   it('exposes the close button as a focusable button labelled "Close"', async () => {

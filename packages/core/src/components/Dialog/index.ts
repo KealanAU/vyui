@@ -16,9 +16,6 @@ export {
   default as DialogContentModal,
 } from './DialogContentModal.vue'
 export {
-  default as DialogContentNonModal,
-} from './DialogContentNonModal.vue'
-export {
   default as DialogDescription,
   type DialogDescriptionProps,
 } from './DialogDescription.vue'

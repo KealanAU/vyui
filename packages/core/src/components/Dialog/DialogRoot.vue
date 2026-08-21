@@ -8,8 +8,9 @@ export interface DialogRootProps {
   open?: boolean
   /** The open state of the dialog when it is initially rendered. Use when you do not need to control its open state. */
   defaultOpen?: boolean
-  /** The modality of the dialog. When `true`, interaction with outside
-   *  elements is disabled. */
+  /** The modality of the dialog. When `true`, `DialogOverlay` paints its
+   *  tap-blocking backdrop and the content confines assistive tech via
+   *  `exclusiveFocus`. @defaultValue true */
   modal?: boolean
 }
 

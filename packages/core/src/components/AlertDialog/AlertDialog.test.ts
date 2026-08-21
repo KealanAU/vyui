@@ -113,10 +113,8 @@ describe('alertDialog', () => {
   })
 
   it('exposes only the modal content variant, no NonModal', async () => {
-    // Negative: passing modal:false to a Dialog story would render a NonModal
-    // variant; AlertDialog has only AlertDialogContentModal. We assert by
-    // confirming the AlertDialog story exposes no modal prop and the
-    // exported module includes only the modal variant.
+    // AlertDialogRoot has no `modal` prop at all — an alert dialog is always
+    // modal — so there is no non-modal path to export.
     const mod = await import('../../index')
     expect((mod as any).AlertDialogContentModal).toBeDefined()
     expect((mod as any).AlertDialogContentNonModal).toBeUndefined()

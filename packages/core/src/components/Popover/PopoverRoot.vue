@@ -11,10 +11,10 @@ export interface PopoverRootProps {
   /** The controlled open state of the popover. Can be bound with `v-model`. */
   open?: boolean
   /**
-   * The modality of the popover. When `true` the content registers as a modal
-   * overlay (scroll-lock / hide-others would apply on the DOM). On Lynx those
-   * are no-ops, but the flag still selects `PopoverContentModal` vs
-   * `PopoverContentNonModal`.
+   * The modality of the popover. On Lynx this drives `exclusiveFocus` on the
+   * content: when `true` assistive tech is confined to the popover, when
+   * `false` the rest of the screen stays reachable. The DOM scroll-lock /
+   * hide-others reka-ui applies have no Lynx equivalent.
    *
    * @defaultValue false
    */

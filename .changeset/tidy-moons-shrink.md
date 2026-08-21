@@ -1,6 +1,6 @@
 ---
-"@vyui/kit": patch
-"@vyui/core": patch
+"@vyui/kit": minor
+"@vyui/core": minor
 ---
 
 Drop the props that existed only for reka-ui / Nuxt UI parity and were
