@@ -78,7 +78,6 @@ export {
   useForwardProps,
   useForwardPropsEmits,
   useId,
-  useLocale,
 } from './shared'
 export {
   type AcceptableValue,
