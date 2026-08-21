@@ -1,0 +1,3 @@
+# Generated output; tracked because the docs build consumes it, collapsed in review.
+apps/docs/app/generated/** linguist-generated=true -diff
+apps/docs/public/r/**      linguist-generated=true -diff
