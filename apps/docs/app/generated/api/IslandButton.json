@@ -48,13 +48,13 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false,
       "description": "Sizing override. When omitted, the button inherits the parent\n`<VyIsland>`'s `size`. Falls back to `md` standalone."
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"base\" | \"leadingIcon\" | \"label\", any>> | undefined",
+      "type": "Partial<Record<\"leadingIcon\" | \"label\" | \"base\", ClassNameValue>> | undefined",
       "required": false
     },
     {

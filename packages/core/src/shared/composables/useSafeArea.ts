@@ -52,7 +52,7 @@ export function getSafeAreaInsetsFromGlobalProps(
 export function getSafeAreaInsets(): SafeAreaInsets {
   try {
     return getSafeAreaInsetsFromGlobalProps(
-      (globalThis as any).lynx?.__globalProps,
+      globalThis.lynx?.__globalProps as Record<string, unknown> | undefined,
     )
   }
   catch {

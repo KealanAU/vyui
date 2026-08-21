@@ -70,7 +70,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"content\" | \"body\" | \"overlay\" | \"handle\" | \"footer\" | \"viewport\" | \"morph\" | \"bodyScroll\", any>> | undefined",
+      "type": "Partial<Record<\"content\" | \"body\" | \"footer\" | \"handle\" | \"viewport\" | \"overlay\" | \"morph\" | \"bodyScroll\", ClassNameValue>> | undefined",
       "required": false
     },
     {

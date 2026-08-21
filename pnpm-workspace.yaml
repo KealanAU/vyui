@@ -42,3 +42,51 @@ minimumReleaseAgeExclude:
   # patches/ until upstream #287 ships — see
   # docs/upstream/vue-lynx-mt-worklet-import-issue.md addendum.
   - vue-lynx@0.5.1
+# One version per dependency for the whole workspace. Referenced as
+# `"name": "catalog:"` from devDependencies everywhere and from the
+# dependencies of the private apps; the published dependencies and
+# peerDependencies of core/kit/cli stay literal so the npm contract is
+# readable in the manifest.
+#
+# `vue` is the load-bearing one: kit and core drifting to 3.5.17 vs 3.5.34
+# installs two @vue/runtime-core copies, which crashes cross-package slot
+# rendering and is why kit has no mount tests. A pnpm.overrides pin fixed
+# that once (4995499) and was later dropped — a catalog cannot drift back.
+catalog:
+  vue: 3.5.34
+  '@vue/compiler-sfc': 3.5.34
+  '@vue/test-utils': ^2.4.6
+  '@vue/tsconfig': ^0.7.0
+  '@vitejs/plugin-vue': ^6.0.7
+  # vue-tsc and vue-component-meta ship the same @vue/language-core; drift
+  # installs two copies of it.
+  vue-tsc: ^3.3.2
+  vue-component-meta: ^3.3.2
+
+  vue-lynx: ^0.5.1
+  '@lynx-js/types': ^3.8.0
+  '@lynx-js/react': ^0.116.5
+  '@lynx-js/testing-environment': ^0.2.1
+  '@lynx-js/rspeedy': ^0.13.5
+  '@lynx-js/qrcode-rsbuild-plugin': ^0.4.7
+  '@lynx-js/tailwind-preset': ^0.4.0
+  '@rsbuild/plugin-vue': ^1.2.6
+  rsbuild-plugin-tailwindcss: ^0.2.4
+
+  typescript: ^5.9.0
+  eslint: ^10.5.0
+  vite: ^7.3.3
+  vitest: ^3.2.4
+  jsdom: ^26.1.0
+  '@types/node': ^24.0.0
+  '@testing-library/dom': ^10.4.1
+
+  # The Lynx apps are Tailwind v3; the docs app is on v4 and keeps its own pin.
+  tailwindcss: ^3.4.17
+  postcss: ^8.4.49
+  autoprefixer: ^10.4.20
+
+  '@iconify-json/lucide': ^1.2.108
+  '@iconify-json/icon-park-outline': ^1.2.0
+  '@iconify-json/icon-park-solid': ^1.2.4
+  '@iconify-json/tabler': ^1.2.35

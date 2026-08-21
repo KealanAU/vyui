@@ -13,8 +13,6 @@ export { useFocus } from './useFocus.js'
 export { useDismissableLayer } from './useDismissableLayer.js'
 export type { DismissableLayerEmits, DismissableLayerEvent, UseDismissableLayerOptions } from './useDismissableLayer.js'
 
-export { getDragPoint, isMouseReleased } from './dragGesture.js'
-export type { DragPoint } from './dragGesture.js'
 
 export { useAnimate } from './useAnimate.js'
 export type { SlideDirection } from './useAnimate.js'

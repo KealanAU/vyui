@@ -77,7 +77,7 @@
     },
     {
       "name": "swipeDirection",
-      "type": "\"left\" | \"right\" | \"horizontal\" | undefined",
+      "type": "\"horizontal\" | \"left\" | \"right\" | undefined",
       "required": false,
       "default": "\"horizontal\"",
       "description": "Directions a swipe may dismiss in. `horizontal` (default) flings either\nway; `left` / `right` constrain it. Only used when `swipe`."
@@ -90,7 +90,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"description\" | \"root\" | \"title\" | \"icon\" | \"close\" | \"wrapper\" | \"actions\" | \"avatar\" | \"progress\" | \"avatarSize\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"title\" | \"description\" | \"icon\" | \"close\" | \"wrapper\" | \"actions\" | \"avatar\" | \"progress\" | \"avatarSize\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

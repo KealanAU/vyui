@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/avatar'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { ChipProps } from './Chip.vue'
 
 type AvatarTV = ThemeTV<typeof theme>
@@ -24,8 +24,8 @@ export interface AvatarProps {
    * avatar's `overflow-hidden` root.
    */
   chip?: boolean | ChipProps
-  class?: any
-  ui?: Partial<Record<keyof AvatarTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof AvatarTV['slots'], ClassValue>>
 }
 
 export interface AvatarSlots {

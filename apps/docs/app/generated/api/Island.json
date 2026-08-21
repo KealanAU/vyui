@@ -61,13 +61,13 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false,
       "description": "Sizing variant — inherited by children via context."
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"row\" | \"panel\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"row\" | \"panel\", ClassNameValue>> | undefined",
       "required": false
     },
     {

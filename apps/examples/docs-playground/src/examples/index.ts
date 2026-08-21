@@ -78,6 +78,7 @@ import ToastExample from './toast/ToastExample.vue'
 import ToastProgressColor from './toast/ToastProgressColor.vue'
 import ToggleGroupExample from './toggle-group/ToggleGroupExample.vue'
 import ToggleGroupMultiple from './toggle-group/ToggleGroupMultiple.vue'
+import ToggleGroupSelectBox from './toggle-group/ToggleGroupSelectBox.vue'
 import ToggleDisabled from './toggle/ToggleDisabled.vue'
 import ToggleExample from './toggle/ToggleExample.vue'
 import ToggleText from './toggle/ToggleText.vue'
@@ -160,6 +161,7 @@ export const examples: Record<string, Component> = {
   'toast-progress-color': ToastProgressColor,
   'toggle-group-example': ToggleGroupExample,
   'toggle-group-multiple': ToggleGroupMultiple,
+  'toggle-group-select-box': ToggleGroupSelectBox,
   'toggle-disabled': ToggleDisabled,
   'toggle-example': ToggleExample,
   'toggle-text': ToggleText,

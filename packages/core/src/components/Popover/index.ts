@@ -27,6 +27,7 @@ export {
   type PopoverPortalProps,
 } from './PopoverPortal.vue'
 export {
+  type PopoverRootContext,
   injectPopoverRootContext,
   default as PopoverRoot,
   type PopoverRootEmits,

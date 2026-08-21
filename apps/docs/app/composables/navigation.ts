@@ -6,7 +6,7 @@ import type { ContentNavigationItem } from '@nuxt/content'
  * transform did not reliably reach the provided ref).
  */
 export function stripNavIcons(items: ContentNavigationItem[] = []): ContentNavigationItem[] {
-  return items.map(({ icon, ...rest }) => ({
+  return items.map(({ icon: _icon, ...rest }) => ({
     ...rest,
     ...(rest.children ? { children: stripNavIcons(rest.children) } : {}),
   }))

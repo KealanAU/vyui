@@ -1,8 +1,9 @@
 <script lang="ts">
+import type { ClassValue } from '../composables/useStyledComponent'
 import theme from '../theme/placeholder'
 
 export interface PlaceholderProps {
-  class?: any
+  class?: ClassValue
 }
 </script>
 

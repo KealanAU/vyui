@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/slider'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type SliderTV = ThemeTV<typeof theme>
 type SliderVariants = VariantProps<SliderTV>
@@ -27,8 +27,8 @@ export interface SliderProps {
   size?: SliderVariants['size']
   /** Forwarded to the underlying core control. */
   name?: string
-  class?: any
-  ui?: Partial<Record<keyof SliderTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof SliderTV['slots'], ClassValue>>
 }
 
 export interface SliderEmits {

@@ -7,11 +7,11 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "devDependencies": {
-    "@lynx-js/types": "^3.8.0",
+    "@lynx-js/types": "catalog:",
     "@vyui/core": "workspace:*",
-    "typescript": "^5.0.0",
-    "vue": "3.5.17",
-    "vue-lynx": "^0.5.1",
-    "vue-tsc": "3.2.6"
+    "typescript": "catalog:",
+    "vue": "catalog:",
+    "vue-lynx": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/island'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 // NB: `IslandSize` is intentionally NOT imported here. Vue SFC compiles
 // the two `<script>` blocks into one module, and importing the same name
 // in both blocks raises TS2300 "Duplicate identifier". We inline the union
@@ -98,8 +98,8 @@ export interface IslandProps {
    * @defaultValue `'view'`
    */
   as?: string
-  class?: any
-  ui?: Partial<Record<keyof IslandTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof IslandTV['slots'], ClassValue>>
 }
 
 export interface IslandEmits {
@@ -134,7 +134,7 @@ export interface IslandSlots {
 </script>
 
 <script setup lang="ts">
-import { Comment, computed, Fragment, ref, Text, toRef, useSlots, type VNode } from 'vue'
+import { Comment, computed, Fragment, ref, Text, type VNode } from 'vue'
 import { useStyledComponent } from '../composables/useStyledComponent'
 import { provideIslandContext, type IslandSize } from './islandContext'
 

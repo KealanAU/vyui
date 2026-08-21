@@ -44,12 +44,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"description\" | \"root\" | \"item\" | \"header\" | \"trigger\" | \"content\" | \"title\" | \"separator\" | \"icon\" | \"wrapper\" | \"indicator\" | \"container\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"item\" | \"header\" | \"trigger\" | \"content\" | \"title\" | \"description\" | \"icon\" | \"wrapper\" | \"indicator\" | \"separator\" | \"container\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

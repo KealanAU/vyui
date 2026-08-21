@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/checkbox'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type CheckboxTV = ThemeTV<typeof theme>
 type CheckboxVariants = VariantProps<CheckboxTV>
@@ -27,8 +27,8 @@ export interface CheckboxProps {
   id?: string
   /** Forwarded to the underlying CheckboxRoot. */
   required?: boolean
-  class?: any
-  ui?: Partial<Record<keyof CheckboxTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof CheckboxTV['slots'], ClassValue>>
 }
 
 export interface CheckboxEmits {

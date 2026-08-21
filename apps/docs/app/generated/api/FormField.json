@@ -51,12 +51,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"label\" | \"error\" | \"description\" | \"hint\" | \"help\" | \"wrapper\" | \"labelWrapper\" | \"container\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"label\" | \"description\" | \"error\" | \"wrapper\" | \"hint\" | \"help\" | \"labelWrapper\" | \"container\", ClassNameValue>> | undefined",
       "required": false
     },
     {

@@ -117,7 +117,9 @@ const props = defineProps<${n}Props>()
 
 function testTs(n: string): string {
   return `import { describe, expect, it } from 'vitest'
+import { render } from '@vyui/testing-utils'
 import * as Exports from '.'
+import Story from './story/_${n}.vue'
 
 describe('${n}', () => {
   it('exports ${n}Root', () => {
@@ -125,9 +127,9 @@ describe('${n}', () => {
     expect(Exports.${n}).toBeDefined()
   })
 
-  // TODO: blocked on MTS test infra — re-enable once render harness is wired
-  it.skip('renders correctly', () => {
-    // placeholder: render(<${n}Story />) and assert DOM contract
+  it('renders', () => {
+    const { container } = render(Story)
+    expect(container.innerHTML).not.toBe('')
   })
 })
 `

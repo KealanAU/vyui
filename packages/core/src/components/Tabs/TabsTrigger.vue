@@ -16,7 +16,7 @@ import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useA11y } from '@/shared/composables'
 import { injectTabsRootContext } from './TabsRoot.vue'
-import { makeContentId, makeTriggerId } from './utils'
+import { makeTriggerId } from './utils'
 
 const props = withDefaults(defineProps<TabsTriggerProps>(), {
   disabled: false,
@@ -27,7 +27,6 @@ const { forwardRef, currentElement } = useForwardExpose()
 const rootContext = injectTabsRootContext()
 
 const triggerId = computed(() => makeTriggerId(rootContext.baseId, props.value))
-const contentId = computed(() => rootContext.contentIds.value.has(props.value) ? makeContentId(rootContext.baseId, props.value) : undefined)
 
 const isSelected = computed(() => props.value === rootContext.modelValue.value)
 

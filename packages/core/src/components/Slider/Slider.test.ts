@@ -302,7 +302,7 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
     expect(sfc).toMatch(/hit-slop="\d+px"/)
     expect(sfc).toMatch(/:consume-slide-event="\[\[0, 360\]\]"/)
     expect(sfc).toMatch(/v-if="mtBound && isWeb\(\)"/)
-    expect(body(sfc, 'isWeb')).toMatch(/SystemInfo\?\.platform === 'web'/)
+    expect(body(sfc, 'isWeb')).toMatch(/SystemInfo\?\.platform\b[^\n]*=== 'web'/)
     expect(body(sfc, '_onMouseDown')).toMatch(/_setShield\(true\)/)
     // Lowered AHEAD of the early return: a press that never became a drag
     // (disabled, zero extent) would otherwise leave the shield over the page.

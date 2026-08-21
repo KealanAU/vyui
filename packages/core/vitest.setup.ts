@@ -64,6 +64,6 @@ beforeAll(() => {
   window.HTMLElement.prototype.scrollIntoView = vi.fn()
 
   const originalGetComputedStyle = window.getComputedStyle
-  window.getComputedStyle = (elt: Element, pseudoElt?: string | null) =>
+  window.getComputedStyle = (elt: Element, _pseudoElt?: string | null) =>
     originalGetComputedStyle(elt)
 })

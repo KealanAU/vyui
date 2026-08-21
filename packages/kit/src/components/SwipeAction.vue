@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/swipeAction'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type SwipeActionTV = ThemeTV<typeof theme>
 type SwipeActionVariants = VariantProps<SwipeActionTV>
@@ -32,8 +32,8 @@ export interface SwipeActionProps {
    * primitive currently always reveals from the trailing (right) edge.
    */
   side?: SwipeActionVariants['side']
-  class?: any
-  ui?: Partial<Record<keyof SwipeActionTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof SwipeActionTV['slots'], ClassValue>>
 }
 
 export interface SwipeActionEmits {

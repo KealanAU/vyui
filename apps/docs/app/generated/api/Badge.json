@@ -37,7 +37,7 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
@@ -60,7 +60,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"trailingIcon\" | \"base\" | \"leadingIcon\" | \"label\", any>> | undefined",
+      "type": "Partial<Record<\"trailingIcon\" | \"leadingIcon\" | \"label\" | \"base\", ClassNameValue>> | undefined",
       "required": false
     },
     {

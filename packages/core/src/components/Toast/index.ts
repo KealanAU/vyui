@@ -6,6 +6,7 @@ export {
   type ToastProviderProps,
 } from './ToastProvider.vue'
 export {
+  type ToastRootContext,
   injectToastRootContext,
   default as ToastRoot,
   type ToastRootEmits,

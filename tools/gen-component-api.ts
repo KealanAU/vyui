@@ -13,7 +13,7 @@
  *   tsx tools/gen-component-api.ts            # all kit + core components
  *   tsx tools/gen-component-api.ts Accordion  # filter by SFC basename
  */
-import { mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createChecker } from 'vue-component-meta'
@@ -67,6 +67,11 @@ const sources = [
 const kitDir = sources.find(s => s.name === 'kit')?.dir
 const kitNames = kitDir ? new Set(vueFilesIn(kitDir).map(file => file.split('/').pop()!.replace(/\.vue$/, ''))) : new Set<string>()
 
+// Every SFC the run considered, whether or not its write succeeded. Drives the
+// prune below; a component that threw stays in the set so a transient
+// vue-component-meta failure leaves its page stale rather than deleting it.
+const expected = new Set<string>()
+
 for (const source of sources) {
   if (!statSync(source.tsconfig, { throwIfNoEntry: false })) {
     console.warn(`[gen-api] no tsconfig for ${source.name}, skipping`)
@@ -76,6 +81,7 @@ for (const source of sources) {
   for (const file of vueFilesIn(source.dir)) {
     const name = file.split('/').pop()!.replace(/\.vue$/, '')
     if (source.name === 'core' && kitNames.has(name)) continue
+    expected.add(name)
     if (only.length && !only.includes(name)) continue
     try {
       const meta = checker.getComponentMeta(file)
@@ -85,5 +91,16 @@ for (const source of sources) {
     catch (err) {
       console.warn(`[gen-api] skipped ${source.name}/${name}: ${(err as Error).message}`)
     }
+  }
+}
+
+// Deleted/renamed components would otherwise leave their JSON behind forever
+// (SliderImpl.json outlived core 0.2.7 this way). Full runs only — a filtered
+// run has no view of the components it never looked at.
+if (!only.length) {
+  for (const entry of readdirSync(outDir)) {
+    if (!entry.endsWith('.json') || expected.has(entry.replace(/\.json$/, ''))) continue
+    rmSync(resolve(outDir, entry))
+    console.log(`[gen-api] pruned ${entry}`)
   }
 }

@@ -9,9 +9,11 @@
 
      The bounce gesture + animation run entirely on the main thread via
      inline `'main thread'` worklets. They are inlined here (not pulled from
-     a composable) because vue-lynx's worklet loader does not register MT
-     functions that live in workspace `.ts` modules — only the *pure* maths
-     lives in `@/shared/composables/useBounce`. Worklet helpers are defined
+     a composable) because they close over MT refs bound to this SFC's own
+     elements and component state — only the *pure* maths lives in
+     `@/shared/composables/useBounce`, which the worklets call by value. A
+     `.ts` module can hold worklets of its own (see `useAnimate.ts`); what
+     does not resolve is a cross-FILE worklet→worklet call. Helpers are defined
      ABOVE their callers: MT worklets become `const`, so a forward
      worklet→worklet reference throws at setup.
 
@@ -273,13 +275,13 @@ function _mtIsVertical() {
 
 function _mtThreshold() {
   'main thread'
-  const sys: any = (globalThis as any).SystemInfo
+  const sys = globalThis.SystemInfo
   return 1.0 / Number(sys?.pixelRatio ?? 1)
 }
 
 function _mtIsAndroid() {
   'main thread'
-  const sys: any = (globalThis as any).SystemInfo
+  const sys = globalThis.SystemInfo
   return sys?.platform === 'Android'
 }
 

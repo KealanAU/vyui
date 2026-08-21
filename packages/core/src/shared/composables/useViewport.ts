@@ -17,7 +17,7 @@ export interface ViewportSize {
 }
 
 export function getViewportSize(): ViewportSize | null {
-  const sys: any = (globalThis as any).SystemInfo
+  const sys = globalThis.SystemInfo
   if (
     typeof sys?.pixelWidth === 'number'
     && typeof sys?.pixelHeight === 'number'

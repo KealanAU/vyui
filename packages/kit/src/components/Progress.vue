@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/progress'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type ProgressTV = ThemeTV<typeof theme>
 type ProgressVariants = VariantProps<ProgressTV>
@@ -20,8 +20,8 @@ export interface ProgressProps {
   orientation?: ProgressVariants['orientation']
   /** @defaultValue 'carousel' */
   animation?: ProgressVariants['animation']
-  class?: any
-  ui?: Partial<Record<keyof ProgressTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ProgressTV['slots'], ClassValue>>
 }
 
 export interface ProgressEmits {

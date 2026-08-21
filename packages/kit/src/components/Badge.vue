@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/badge'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { AvatarProps } from './Avatar.vue'
 
 type BadgeTV = ThemeTV<typeof theme>
@@ -32,8 +32,8 @@ export interface BadgeProps {
   avatar?: AvatarProps
   /** Text label. Overridden by the default slot if provided. */
   label?: string | number
-  class?: any
-  ui?: Partial<Record<keyof BadgeTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof BadgeTV['slots'], ClassValue>>
 }
 
 export interface BadgeSlots {

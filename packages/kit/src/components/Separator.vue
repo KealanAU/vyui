@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/separator'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type SeparatorTV = ThemeTV<typeof theme>
 type SeparatorVariants = VariantProps<SeparatorTV>
@@ -17,8 +17,8 @@ export interface SeparatorProps {
   orientation?: SeparatorVariants['orientation']
   /** Forwarded to the underlying Separator primitive — strips a11y attrs. */
   decorative?: boolean
-  class?: any
-  ui?: Partial<Record<keyof SeparatorTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof SeparatorTV['slots'], ClassValue>>
 }
 
 export interface SeparatorSlots {

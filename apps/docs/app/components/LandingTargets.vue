@@ -150,7 +150,7 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 size="xs"
                 aria-label="Back to the devices"
-                @click="showCode = false"
+                @click="() => { showCode = false }"
               />
             </div>
             <!-- eslint-disable-next-line vue/no-v-html -- trusted build-time Shiki output -->

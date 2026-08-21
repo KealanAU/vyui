@@ -6,7 +6,7 @@ import type { PrimitiveProps } from '@/components/Primitive'
 import { useCollection } from '@/components/Collection'
 import { createContext, useDirection, useForwardExpose } from '@/shared'
 
-type ThumbAlignment = 'contain' | 'overflow'
+export type ThumbAlignment = 'contain' | 'overflow'
 
 export interface SliderRootProps extends PrimitiveProps, FormFieldProps {
   /**

@@ -27,7 +27,7 @@ export default {
     header: 'flex flex-row items-center gap-1.5 px-4 py-3 min-h-12',
     wrapper: 'flex flex-col',
     body: 'flex-1 min-h-0 overflow-y-auto p-4',
-    footer: 'flex flex-row flex-wrap items-center gap-1.5 px-4 py-3',
+    footer: 'w-full flex flex-row flex-wrap items-center gap-1.5 px-4 py-3',
     title: 'text-highlighted font-semibold',
     description: 'mt-1 text-muted text-sm',
     close: 'absolute top-4 end-4',

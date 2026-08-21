@@ -71,36 +71,8 @@ export function useHeader() {
     target: '_blank',
   }])
 
-  const docsLinks = computed<NavigationMenuItem[]>(() => [{
-    label: 'Get Started',
-    icon: 'i-lucide-square-play',
-    to: '/getting-started',
-    active: route.path === '/getting-started' || route.path.startsWith('/getting-started/'),
-  }, {
-    label: '@vyui/core',
-    icon: 'i-lucide-box',
-    to: '/packages/core',
-    active: route.path === '/packages/core',
-  }, {
-    label: '@vyui/kit',
-    icon: 'i-lucide-layers',
-    to: '/packages/kit',
-    active: route.path === '/packages/kit',
-  }, {
-    label: 'Theming',
-    icon: 'i-lucide-palette',
-    to: '/theming',
-    active: route.path === '/theming' || route.path.startsWith('/theming/'),
-  }, {
-    label: 'Roadmap',
-    icon: 'i-lucide-map',
-    to: '/getting-started/roadmap',
-    active: route.path === '/getting-started/roadmap',
-  }])
-
   return {
     desktopLinks,
     mobileLinks,
-    docsLinks,
   }
 }

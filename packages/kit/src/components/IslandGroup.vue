@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/islandGroup'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type IslandGroupTV = ThemeTV<typeof theme>
 type IslandGroupVariants = VariantProps<IslandGroupTV>
@@ -65,8 +65,8 @@ export interface IslandGroupProps {
    * @defaultValue `'md'`
    */
   size?: IslandGroupVariants['size']
-  class?: any
-  ui?: Partial<Record<keyof IslandGroupTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof IslandGroupTV['slots'], ClassValue>>
 }
 
 export interface IslandGroupSlots {

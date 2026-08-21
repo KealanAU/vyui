@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/stepper'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type StepperTV = ThemeTV<typeof theme>
 type StepperVariants = VariantProps<StepperTV>
@@ -31,8 +31,8 @@ export interface StepperProps {
   size?: StepperVariants['size']
   /** Disable every step at once. */
   disabled?: boolean
-  class?: any
-  ui?: Partial<Record<keyof StepperTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof StepperTV['slots'], ClassValue>>
 }
 
 export interface StepperEmits {

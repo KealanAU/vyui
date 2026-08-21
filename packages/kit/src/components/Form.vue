@@ -1,10 +1,12 @@
 <script lang="ts">
+import type { ClassValue } from '../composables/useStyledComponent'
+
 export interface FormProps {
   /** Initial values, keyed by field name. Used by `reset()`. */
   defaultValues?: Record<string, unknown>
   /** When `true`, every nested field is disabled. */
   disabled?: boolean
-  class?: any
+  class?: ClassValue
 }
 
 export interface FormEmits {
@@ -30,6 +32,7 @@ export interface FormExposed {
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { cnBase } from 'tailwind-variants'
 import { FormRoot, type FormRootExposed } from '@vyui/core'
 
 defineProps<FormProps>()
@@ -58,7 +61,7 @@ defineExpose<FormExposed>({ submit, reset })
     @update:values="emit('update:values', $event)"
   >
     <template #default="slotProps">
-      <view :class="$props.class">
+      <view :class="cnBase($props.class)">
         <slot v-bind="slotProps" />
       </view>
     </template>

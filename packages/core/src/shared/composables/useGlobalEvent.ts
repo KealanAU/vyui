@@ -12,6 +12,7 @@
  * no-op, so callers are safe to mount in vitest without mocks.
  */
 
+import type { GlobalEventEmitter } from '@lynx-js/types'
 import { onMounted, onUnmounted } from 'vue'
 
 export interface UseGlobalEventOptions {
@@ -34,14 +35,14 @@ export function useGlobalEvent(
   listener: (...args: unknown[]) => void,
   options?: UseGlobalEventOptions,
 ): void {
-  const lynxGlobal: any = (globalThis as any).lynx
+  const lynxGlobal = globalThis.lynx
   if (!lynxGlobal || typeof lynxGlobal.getJSModule !== 'function')
     return
 
-  let emitter: any
+  let emitter: GlobalEventEmitter | undefined
   const subscribe = (): void => {
     try {
-      emitter = lynxGlobal.getJSModule('GlobalEventEmitter')
+      emitter = lynxGlobal.getJSModule<GlobalEventEmitter>('GlobalEventEmitter')
       emitter?.addListener?.(name, listener)
     }
     catch {

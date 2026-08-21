@@ -12,7 +12,11 @@ export default tseslint.config(
       '**/dist/**',
       '**/node_modules/**',
       '**/.nuxt/**',
+      '**/.output/**',
+      'apps/docs/public/**', // vendored @lynx-js/web-core bundles, served verbatim
+      '**/.data/**',
       '**/.rspeedy/**',
+      '**/.pnpm-store/**',
       '**/*.d.ts',
       '**/*.story.vue',
       '**/story/**',
@@ -40,6 +44,7 @@ export default tseslint.config(
       },
     },
     rules: {
+      'no-undef': 'off', // Nuxt auto-imports are invisible here; vue-tsc is the real check
       'no-redeclare': 'off', // type + value of the same name; tsc catches real ones
       'vue/valid-template-root': 'off', // portal/renderless components have empty templates
       'vue/no-dupe-keys': 'off', // script-setup renames a prop and derives a ref of the same name
@@ -54,13 +59,13 @@ export default tseslint.config(
       'vue/multiline-html-element-content-newline': 'off',
       'vue/max-attributes-per-line': 'off',
       'vue/html-indent': 'off',
+      'vue/no-multi-spaces': 'off',
       'vue/attributes-order': 'off',
       'vue/order-in-components': 'off',
       'no-irregular-whitespace': ['error', { skipComments: true }], // deliberate U+200B in a doc comment
       'prefer-const': ['error', { destructuring: 'all' }],
-      // Dead-code backlog: warn-only for now so it doesn't block CI.
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
       ],
     },

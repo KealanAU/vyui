@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/calendar'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type CalendarTV = ThemeTV<typeof theme>
 type CalendarVariants = VariantProps<CalendarTV>
@@ -39,8 +39,8 @@ export interface CalendarProps {
   caveatDescription?: string
   color?: CalendarVariants['color']
   size?: CalendarVariants['size']
-  class?: any
-  ui?: Partial<Record<keyof CalendarTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof CalendarTV['slots'], ClassValue>>
 }
 
 export interface CalendarSlots {

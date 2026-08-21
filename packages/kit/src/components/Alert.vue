@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme, { iconFg } from '../theme/alert'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type AlertTV = ThemeTV<typeof theme>
 type AlertVariants = VariantProps<AlertTV>
@@ -20,8 +20,8 @@ export interface AlertProps {
   close?: boolean
   /** Iconify name for the close button. Defaults to `appConfig.ui.icons.close`. */
   closeIcon?: string
-  class?: any
-  ui?: Partial<Record<keyof AlertTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof AlertTV['slots'], ClassValue>>
 }
 
 export interface AlertSlots {
@@ -48,7 +48,7 @@ const props = withDefaults(defineProps<AlertProps>(), {
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
 }>()
-const slots = defineSlots<AlertSlots>()
+defineSlots<AlertSlots>()
 const _slots = useSlots()
 
 const appConfig = useAppConfig()
@@ -123,7 +123,7 @@ const onClose = () => emit('update:open', false)
       <slot name="close" :icon-color="iconColor">
         <view
           v-if="close"
-          bindtap="onClose"
+          @tap="onClose"
           :class="ui.close({ class: props.ui?.close })"
         >
           <VyIcon :name="resolvedCloseIcon" :color="iconColor" :class="ui.icon({ class: props.ui?.icon })" />

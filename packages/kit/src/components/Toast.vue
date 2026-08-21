@@ -2,7 +2,7 @@
 import theme, { ICON_FG_SHADE } from '../theme/toast'
 import type { ButtonProps } from './Button.vue'
 import type { AvatarProps } from './Avatar.vue'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type ToastTV = ThemeTV<typeof theme>
 type ToastVariants = VariantProps<ToastTV>
@@ -63,8 +63,8 @@ export interface ToastProps {
   close?: boolean | Partial<ButtonProps>
   /** Iconify name for the close button. Defaults to `appConfig.ui.icons.close`. */
   closeIcon?: string
-  class?: any
-  ui?: Partial<Record<keyof ToastTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ToastTV['slots'], ClassValue>>
 }
 
 export interface ToastEmits {

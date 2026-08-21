@@ -6,7 +6,7 @@ export interface OverlayRootProps {
 
 <script setup lang="ts">
 import { defineComponent, provide, type PropType } from 'vue'
-import { overlayEntries, type OverlayRenderFn, type OverlayEntry } from './overlayStore'
+import { overlayEntries, type OverlayEntry } from './overlayStore'
 
 withDefaults(defineProps<OverlayRootProps>(), {
   id: 'overlay-root',
@@ -58,8 +58,8 @@ const ContextBridge = defineComponent({
     against the app-root `position: relative` view either way.
   -->
   <ContextBridge
-    v-for="entry in overlayEntries"
-    :key="entry.id"
-    :entry="entry"
+    v-for="overlayEntry in overlayEntries"
+    :key="overlayEntry.id"
+    :entry="overlayEntry"
   />
 </template>

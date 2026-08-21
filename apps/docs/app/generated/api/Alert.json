@@ -44,7 +44,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"description\" | \"root\" | \"title\" | \"icon\" | \"close\" | \"wrapper\" | \"actions\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"title\" | \"description\" | \"icon\" | \"close\" | \"wrapper\" | \"actions\", ClassNameValue>> | undefined",
       "required": false
     },
     {

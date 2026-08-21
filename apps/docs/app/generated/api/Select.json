@@ -62,7 +62,7 @@
     },
     {
       "name": "presentation",
-      "type": "\"anchor\" | \"sheet\" | undefined",
+      "type": "\"sheet\" | \"anchor\" | undefined",
       "required": false,
       "default": "\"sheet\"",
       "description": "Presentation mode — kept for API parity with `VyPopover` /\n`VyDropdownMenu`. Currently only `'sheet'` is wired (native picker UX\nfor touch). An `'anchor'` (tablet popper) variant is tracked separately\nand falls back to `'sheet'` when requested today."
@@ -81,7 +81,7 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
@@ -99,7 +99,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"trailingIcon\" | \"base\" | \"root\" | \"item\" | \"content\" | \"leadingIcon\" | \"label\" | \"handle\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemLabel\" | \"itemTrailingIcon\" | \"separator\" | \"leading\" | \"trailing\" | \"leadingAvatar\" | \"value\" | \"placeholder\" | \"arrow\" | \"sheetHeader\" | \"sheetTitle\" | \"viewport\" | \"group\" | \"empty\" | \"itemTrailing\", any>> | undefined",
+      "type": "Partial<Record<\"trailingIcon\" | \"root\" | \"item\" | \"content\" | \"leadingIcon\" | \"label\" | \"base\" | \"leading\" | \"trailing\" | \"leadingAvatar\" | \"value\" | \"placeholder\" | \"handle\" | \"arrow\" | \"sheetHeader\" | \"sheetTitle\" | \"viewport\" | \"group\" | \"empty\" | \"separator\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemTrailing\" | \"itemTrailingIcon\" | \"itemLabel\", ClassNameValue>> | undefined",
       "required": false
     },
     {

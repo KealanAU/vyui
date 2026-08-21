@@ -1,7 +1,7 @@
 <script lang="ts">
 import theme from '../theme/tray'
 import type { SheetDirection } from '@vyui/core'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type TrayTV = ThemeTV<typeof theme>
 type TrayVariants = VariantProps<TrayTV>
@@ -65,8 +65,8 @@ export interface TrayProps {
    * `KeyboardAwareTrigger` wrapping needed. @defaultValue `false`
    */
   keyboardAware?: boolean | 'lift' | 'scroll'
-  class?: any
-  ui?: Partial<Record<keyof TrayTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof TrayTV['slots'], ClassValue>>
 }
 
 export interface TrayEmits {

@@ -16,9 +16,6 @@
 /** Gospel: `const/index.ts` — slop before axis lock engages. */
 export const GESTURE_THRESHOLD = 8
 
-/** Gospel: `const/index.ts` — drag below this is a tap, not a swipe. */
-export const TAP_THRESHOLD = 8
-
 /** Gospel: `useOffset.ts:469` — flick threshold. */
 export const VELOCITY_THRESHOLD_DEFAULT = 300
 

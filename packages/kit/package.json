@@ -47,7 +47,7 @@
     "test": "vitest run",
     "test-watch": "vitest",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "eslint src"
+    "lint": "eslint ."
   },
   "exports": {
     ".": {
@@ -284,19 +284,19 @@
     "tailwind-variants": "^0.3.1"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "@vitejs/plugin-vue": "^6.0.7",
-    "@vue/test-utils": "^2.4.6",
-    "@vue/tsconfig": "^0.7.0",
+    "@types/node": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vue/test-utils": "catalog:",
+    "@vue/tsconfig": "catalog:",
     "@vyui/shared-build-config": "workspace:*",
     "@vyui/testing-utils": "workspace:*",
-    "eslint": "^10.5.0",
-    "jsdom": "^26.1.0",
-    "tailwindcss": "^3.4.0",
-    "vite": "^7.3.3",
-    "vitest": "^3.2.4",
-    "vue": "3.5.17",
-    "vue-lynx": "^0.5.1",
-    "vue-tsc": "3.2.6"
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "tailwindcss": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "vue": "catalog:",
+    "vue-lynx": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

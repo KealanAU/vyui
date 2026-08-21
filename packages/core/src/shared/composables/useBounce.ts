@@ -6,11 +6,12 @@
 // `packages/lynx-ui-scroll-view/src/hooks/useBounce.tsx` (Apache-2.0).
 //
 // Adapted for vyui:
-//   - The upstream hook returns `main-thread:bind*` handler worklets. In
-//     vue-lynx, `'main thread'` functions that live in a `.ts` workspace
-//     module are NOT registered by the worklet loader (see MEMORY:
-//     island-morph-native-animation). So the gesture/animation worklets MUST
-//     be inlined in `ScrollView.vue` — they cannot live here.
+//   - The upstream hook returns `main-thread:bind*` handler worklets (the
+//     ReactLynx spelling; vue-lynx binds `main-thread-bind*`). Ours stay
+//     inlined in `ScrollView.vue` because they close over MT refs bound to
+//     that SFC's own elements and its component state. A `.ts` module CAN
+//     hold `'main thread'` worklets — `useAnimate.ts` ships eight — so this
+//     is an ownership boundary, not a loader limit.
 //   - What lives here instead: the public prop/event surface (types,
 //     constants, defaults) and the *pure* helper math the SFC worklets call
 //     by value. Keeping the maths here makes it unit-testable without an MT

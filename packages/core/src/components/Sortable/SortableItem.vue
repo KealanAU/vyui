@@ -57,7 +57,7 @@ const rowStyle = computed(() => {
     height: `${ctx.itemHeight.value}px`,
     flexShrink: 0,
   }
-  if ((globalThis as any).SystemInfo?.platform === 'web')
+  if ((globalThis.SystemInfo?.platform as string) === 'web')
     style.zIndex = isDragging.value ? 1 : 0
   return style
 })

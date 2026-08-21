@@ -136,32 +136,21 @@ function send() {
     </template>
 
     <template #footer>
-      <!-- Mirror NewIssueDrawer's working pattern: VyInput sits alone in a
-           `flex-1` cell so `w-full` resolves the same way it does in a
-           flex-col body — the cell IS its block context. The send button
-           is a sibling (not in the trailing slot), shrink-0 by default,
-           keeping VyInput's internal flex chain clean. `confirmType`
-           defaults to `send` so the iOS return key is already labelled. -->
       <view class="flex flex-row items-center w-full py-2 border-t border-slate-100 bg-white">
         <view class="flex-1">
-          <!-- HACK: forced 28rem width for the demo video; Lynx flex isn't
-               sizing the input correctly in this footer context. Revisit
-               and remove once the upstream layout fix lands. -->
           <VyInput
             ref="inputRef"
             v-model="input"
             variant="none"
             placeholder="Ask anything…"
-            class="w-[28rem] bg-transparent"
+            class="w-full bg-transparent"
             :ui="{ root: 'px-2 gap-1' }"
             @confirm="send"
           />
         </view>
-        <!-- `square` forces uniform `p-2` padding so the ghost send icon
-             reads as an even box. The upstream auto-square for icon-only
-             buttons handles this generally but ships from the prebuilt
-             dist — explicit `square` keeps the demo correct on a stale
-             @vyui/kit build. -->
+        <!-- Explicit `square` keeps the icon box even on a stale prebuilt
+             @vyui/kit dist, where the auto-square for icon-only buttons
+             may not be present yet. -->
         <VyButton
           variant="ghost"
           icon="icon-park-outline:send"

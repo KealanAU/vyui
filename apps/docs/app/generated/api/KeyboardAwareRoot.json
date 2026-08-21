@@ -5,7 +5,7 @@
       "type": "number | undefined",
       "required": false,
       "default": "0",
-      "description": "Combined height of the Android status bar + bottom navigation bar in px.\nUsed to correct `boundingClientRect` (which does not include the status\nbar on Android) when computing how far to move the responder."
+      "description": "Combined height of the Android status bar + bottom navigation bar in px.\nOnly used on the fallback path when the root viewport can't be measured:\nit corrects the screen-height margin math for `boundingClientRect` not\nincluding the status bar on Android."
     },
     {
       "name": "as",
@@ -32,7 +32,7 @@
       "type": "number | undefined",
       "required": false,
       "default": "0",
-      "description": "Extra clearance in px kept between a self-registered input and the top\nof the keyboard. Regions wrapped in a `KeyboardAwareTrigger` use the\ntrigger's own `offset` instead."
+      "description": "Extra clearance in px kept between the focused field and the top of the\nkeyboard. A `KeyboardAwareTrigger` with an explicit `offset` of its own\noverrides this for the region it wraps."
     }
   ],
   "events": [

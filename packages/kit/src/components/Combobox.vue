@@ -11,7 +11,7 @@
  */
 import theme from '../theme/combobox'
 import type { SheetDirection } from '@vyui/core'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type ComboboxTV = ThemeTV<typeof theme>
 type ComboboxVariants = VariantProps<ComboboxTV>
@@ -87,8 +87,8 @@ export interface ComboboxProps {
   valueKey?: string
   /** When `items` are objects, which field to use as the label. */
   labelKey?: string
-  class?: any
-  ui?: Partial<Record<keyof ComboboxTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ComboboxTV['slots'], ClassValue>>
 }
 
 export interface ComboboxEmits {

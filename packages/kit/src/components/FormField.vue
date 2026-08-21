@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/formField'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { FormFieldValidator } from '@vyui/core'
 
 type FormFieldTV = ThemeTV<typeof theme>
@@ -29,8 +29,8 @@ export interface FormFieldProps {
   /** Marks the field as required — appends a red asterisk to the label. */
   required?: boolean
   size?: FormFieldVariants['size']
-  class?: any
-  ui?: Partial<Record<keyof FormFieldTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof FormFieldTV['slots'], ClassValue>>
 }
 
 export interface FormFieldSlots {

@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/avatarGroup'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type AvatarGroupTV = ThemeTV<typeof theme>
 type AvatarGroupVariants = VariantProps<AvatarGroupTV>
@@ -10,8 +10,8 @@ export interface AvatarGroupProps {
   color?: AvatarGroupVariants['color']
   /** Maximum visible avatars before collapsing into a `+N` overflow chip. */
   max?: number | string
-  class?: any
-  ui?: Partial<Record<keyof AvatarGroupTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof AvatarGroupTV['slots'], ClassValue>>
 }
 
 export interface AvatarGroupSlots {

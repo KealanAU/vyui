@@ -70,7 +70,7 @@ export async function anthropicChat(opts: ProviderChatOptions): Promise<{ conten
   }
   catch (err) {
     if ((err as Error)?.name === 'AbortError') throw new ProviderAbortError()
-    throw new Error('Couldn\'t reach Anthropic. Check your connection and API key.')
+    throw new Error('Couldn\'t reach Anthropic. Check your connection and API key.', { cause: err })
   }
 
   if (!res.ok) {
@@ -84,7 +84,7 @@ export async function anthropicChat(opts: ProviderChatOptions): Promise<{ conten
   }
   catch (err) {
     if ((err as Error)?.name === 'AbortError') throw new ProviderAbortError()
-    throw new Error('Anthropic sent a response this runtime could not read.')
+    throw new Error('Anthropic sent a response this runtime could not read.', { cause: err })
   }
 
   if (data?.error?.message) throw new Error(data.error.message)
@@ -122,7 +122,7 @@ export async function openaiChat(opts: ProviderChatOptions): Promise<{ content: 
   }
   catch (err) {
     if ((err as Error)?.name === 'AbortError') throw new ProviderAbortError()
-    throw new Error('Couldn\'t reach OpenAI. Check your connection and API key.')
+    throw new Error('Couldn\'t reach OpenAI. Check your connection and API key.', { cause: err })
   }
 
   if (!res.ok) {
@@ -136,7 +136,7 @@ export async function openaiChat(opts: ProviderChatOptions): Promise<{ content: 
   }
   catch (err) {
     if ((err as Error)?.name === 'AbortError') throw new ProviderAbortError()
-    throw new Error('OpenAI sent a response this runtime could not read.')
+    throw new Error('OpenAI sent a response this runtime could not read.', { cause: err })
   }
 
   if (data?.error?.message) throw new Error(data.error.message)

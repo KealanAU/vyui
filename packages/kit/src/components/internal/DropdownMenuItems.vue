@@ -6,6 +6,7 @@
  *
  * Not exported from the package — its only consumer is `DropdownMenu.vue`.
  */
+import type { ClassValue } from '../../composables/useStyledComponent'
 import type {
   DropdownMenuItem,
   DropdownMenuItemSlotProps,
@@ -22,17 +23,16 @@ export interface MenuRow {
 export interface DropdownMenuItemsProps {
   rows: MenuRow[]
   ui: ReturnType<DropdownMenuTV>
-  uiOverrides?: Partial<Record<keyof DropdownMenuTV['slots'], any>>
+  uiOverrides?: Partial<Record<keyof DropdownMenuTV['slots'], ClassValue>>
   labelKey?: string
   descriptionKey?: string
-  childrenIcon: string
   checkedIcon: string
   loadingIcon: string
 }
 </script>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { useSlots } from 'vue'
 import {
   DropdownMenuItem as CoreDropdownMenuItem,
   DropdownMenuCheckboxItem,
@@ -40,7 +40,7 @@ import {
   DropdownMenuSeparator,
   Icon as VyIcon,
 } from '@vyui/core'
-import { iconFg, TRAILING_ICON_FG } from '../../theme/dropdownMenu'
+import { iconFg } from '../../theme/dropdownMenu'
 import { useAppConfig } from '../../composables/useAppConfig'
 import { resolveColorHex } from '../../utils/resolveColor'
 import VyAvatar from '../Avatar.vue'
@@ -71,7 +71,6 @@ const itemIconColor = (color?: DropdownMenuItem['color']) => {
   const fg = iconFg(color)
   return resolveColorHex(appConfig, fg.semantic, fg.shade)
 }
-const trailingIconColor = computed(() => resolveColorHex(appConfig, TRAILING_ICON_FG.semantic, TRAILING_ICON_FG.shade))
 
 function getLabel(item: DropdownMenuItem | undefined): string | undefined {
   if (!item) return undefined
@@ -223,7 +222,7 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
           <text v-else-if="getDescription(row.item)" :class="ui.itemDescription({ class: uiOverrides?.itemDescription })">{{ getDescription(row.item) }}</text>
         </view>
 
-        <view v-if="row.item?.children?.length || getItemSlot(row.item, 'trailing') || slots['item-trailing']" :class="ui.itemTrailing({ class: uiOverrides?.itemTrailing })">
+        <view v-if="getItemSlot(row.item, 'trailing') || slots['item-trailing']" :class="ui.itemTrailing({ class: uiOverrides?.itemTrailing })">
           <component
             v-if="getItemSlot(row.item, 'trailing')"
             :is="getItemSlot(row.item, 'trailing')"
@@ -239,12 +238,6 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
             :active="false"
             :index="row.index"
             :ui="ui"
-          />
-          <VyIcon
-            v-else-if="row.item?.children?.length"
-            :name="childrenIcon"
-            :color="trailingIconColor"
-            :class="ui.itemTrailingIcon({ class: uiOverrides?.itemTrailingIcon })"
           />
         </view>
       </template>

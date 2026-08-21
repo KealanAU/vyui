@@ -94,7 +94,7 @@ async function measure(ref: KeyboardAwareNodeRef | null) {
  * scrollview mode. Quietly no-ops on web.
  */
 function scrollToById(id: string, offset: number, smooth: boolean): void {
-  const lynxGlobal: any = (globalThis as any).lynx
+  const lynxGlobal = globalThis.lynx
   if (!lynxGlobal?.createSelectorQuery)
     return
   try {
@@ -166,7 +166,7 @@ const scrollInfo = ref<{
 } | null>(null)
 
 function readSystemInfo() {
-  const sys: any = (globalThis as any).SystemInfo
+  const sys = globalThis.SystemInfo
   return {
     pixelHeight: sys?.pixelHeight ?? 0,
     pixelRatio: sys?.pixelRatio ?? 1,
@@ -183,7 +183,7 @@ function readSystemInfo() {
  * much. Resolves 0 when the root query is unavailable (web / jsdom).
  */
 function measureViewportHeight(): Promise<number> {
-  const lynxGlobal: any = (globalThis as any).lynx
+  const lynxGlobal = globalThis.lynx
   if (typeof lynxGlobal?.createSelectorQuery !== 'function')
     return Promise.resolve(0)
   return new Promise((resolve) => {

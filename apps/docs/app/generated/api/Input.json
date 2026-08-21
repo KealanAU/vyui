@@ -131,7 +131,7 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
@@ -155,12 +155,12 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"leadingIcon\" | \"trailingIcon\" | \"leading\" | \"trailing\" | \"base\" | \"leadingAvatar\", any>> | undefined",
+      "type": "Partial<Record<\"trailingIcon\" | \"root\" | \"leadingIcon\" | \"base\" | \"leading\" | \"trailing\" | \"leadingAvatar\", ClassNameValue>> | undefined",
       "required": false
     },
     {
       "name": "variant",
-      "type": "\"outline\" | \"soft\" | \"subtle\" | \"ghost\" | \"none\" | undefined",
+      "type": "\"outline\" | \"subtle\" | \"soft\" | \"ghost\" | \"none\" | undefined",
       "required": false
     }
   ],

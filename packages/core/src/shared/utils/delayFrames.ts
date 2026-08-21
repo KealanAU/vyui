@@ -16,7 +16,7 @@ function getRAF(): RAFScheduler {
     return requestAnimationFrame
   }
   // Lynx < 3.0 — `lynx.requestAnimationFrame` is the only scheduler.
-  const lynxGlobal = (globalThis as any).lynx as
+  const lynxGlobal = globalThis.lynx as unknown as
     | { requestAnimationFrame?: RAFScheduler }
     | undefined
   if (typeof lynxGlobal?.requestAnimationFrame === 'function') {

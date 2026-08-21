@@ -7,12 +7,6 @@
       "description": "Iconify name for checked checkbox items. Defaults to `appConfig.ui.icons.check`."
     },
     {
-      "name": "childrenIcon",
-      "type": "string | undefined",
-      "required": false,
-      "description": "Iconify name for the trailing chevron on items with children. Defaults to `appConfig.ui.icons.chevronRight`."
-    },
-    {
       "name": "content",
       "type": "DropdownMenuContentSettings | undefined",
       "required": false,
@@ -73,12 +67,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"item\" | \"content\" | \"label\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemLabel\" | \"itemTrailingIcon\" | \"separator\" | \"group\" | \"itemTrailing\" | \"itemLeadingAvatarSize\" | \"itemWrapper\" | \"itemDescription\", any>> | undefined",
+      "type": "Partial<Record<\"item\" | \"content\" | \"label\" | \"group\" | \"separator\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemTrailing\" | \"itemLabel\" | \"itemLeadingAvatarSize\" | \"itemWrapper\" | \"itemDescription\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

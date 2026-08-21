@@ -46,71 +46,8 @@ import ToggleGroup from './ToggleGroup.vue'
 import Tray from './Tray.vue'
 import TrayView from './TrayView.vue'
 
-/**
- * Canonical wrapper pattern — every styled component agent copies this shape.
- * Ported from nuxt/ui v3.0.2 component layout, adapted for our injection model
- * (no `#imports` virtual modules; theme comes from `useAppConfig`).
- *
- * ```vue
- * <script lang="ts">
- * import { tv, type VariantProps } from 'tailwind-variants'
- * import theme from '../theme/button'
- * import type { AppConfig } from '../types'
- *
- * // Resolve a per-app `tv` factory by merging the package default theme with
- * // user overrides pulled from `appConfig.ui.button`.
- * export const buildButton = (appConfig: AppConfig) => {
- *   const overrides = (appConfig.ui as any).button as Partial<typeof theme> | undefined
- *   return tv({ extend: tv(theme), ...(overrides || {}) })
- * }
- *
- * type ButtonVariants = VariantProps<ReturnType<typeof buildButton>>
- *
- * export interface ButtonProps {
- *   color?: ButtonVariants['color']
- *   variant?: ButtonVariants['variant']
- *   size?: ButtonVariants['size']
- *   disabled?: boolean
- *   class?: any
- *   ui?: Partial<Record<keyof ReturnType<typeof buildButton>['slots'], any>>
- * }
- *
- * export interface ButtonSlots {
- *   default(props?: {}): any
- *   leading(props?: {}): any
- *   trailing(props?: {}): any
- * }
- * </script>
- *
- * <script setup lang="ts">
- * import { computed } from 'vue'
- * import { Button as CoreButton } from '@vyui/core'
- * import { useAppConfig } from '../composables/useAppConfig'
- *
- * const props = withDefaults(defineProps<ButtonProps>(), { })
- * defineSlots<ButtonSlots>()
- *
- * const appConfig = useAppConfig()
- * const ui = computed(() => buildButton(appConfig)({
- *   color: props.color,
- *   variant: props.variant,
- *   size: props.size,
- * }))
- * </script>
- *
- * <template>
- *   <CoreButton
- *     :disabled="disabled"
- *     :class="ui.base({ class: [props.class, props.ui?.base] })"
- *   >
- *     <slot />
- *   </CoreButton>
- * </template>
- * ```
- *
- * After authoring the wrapper, append it to `REGISTRY` below — the `VyUI`
- * plugin's `install()` loops over this map and calls `app.component(name, comp)`.
- */
+// New wrapper? Copy Button.vue (theme + `ThemeTV`/`useStyledComponent`), then add
+// it here — the VyUI plugin's `install()` loops this map into `app.component()`.
 // `satisfies` (not a `: Record<string, Component>` annotation) keeps each key's
 // concrete component type in `typeof REGISTRY` while still checking the shape.
 export const REGISTRY = {

@@ -64,7 +64,7 @@
     },
     {
       "name": "size",
-      "type": "\"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"xs\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
@@ -93,12 +93,12 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"leadingIcon\" | \"trailingIcon\" | \"label\" | \"base\" | \"leadingAvatar\" | \"leadingAvatarSize\", any>> | undefined",
+      "type": "Partial<Record<\"trailingIcon\" | \"leadingIcon\" | \"label\" | \"base\" | \"leadingAvatar\" | \"leadingAvatarSize\", ClassNameValue>> | undefined",
       "required": false
     },
     {
       "name": "variant",
-      "type": "\"solid\" | \"outline\" | \"soft\" | \"subtle\" | \"ghost\" | \"link\" | undefined",
+      "type": "\"solid\" | \"outline\" | \"subtle\" | \"soft\" | \"ghost\" | \"link\" | undefined",
       "required": false
     }
   ],

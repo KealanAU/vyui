@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/sortable'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type SortableTV = ThemeTV<typeof theme>
 type SortableVariants = VariantProps<SortableTV>
@@ -18,8 +18,8 @@ export interface SortableProps<T = unknown> {
    */
   longPressMs?: number
   size?: SortableVariants['size']
-  class?: any
-  ui?: Partial<Record<keyof SortableTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof SortableTV['slots'], ClassValue>>
 }
 
 export interface SortableEmits<T = unknown> {

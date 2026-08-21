@@ -99,7 +99,7 @@ describe('List — scrollIntoId must survive a selector-less host', () => {
   // instead of throwing, or an SSR / web render crashes on the first ref call.
   it('feature-checks createSelectorQuery before every ref-driven scroll', async () => {
     const fn = body(await readSfc('List.vue'), 'invoke')
-    expect(fn).toMatch(/if \(!g\?\.lynx\?\.createSelectorQuery\) \{\s*\n\s*resolve\(undefined\)/)
+    expect(fn).toMatch(/if \(!globalThis\.lynx\?\.createSelectorQuery\) \{\s*\n\s*resolve\(undefined\)/)
     expect(fn).toMatch(/\.select\(`#\$\{listId\.value\}`\)/)
     expect(fn).toMatch(/\.exec\(\)/)
   })

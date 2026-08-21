@@ -1,7 +1,7 @@
 // Adapted from reka-ui (MIT) — https://github.com/unovue/reka-ui
 import { describe, expect, it } from 'vitest'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
-import Switch from './_Switch.vue'
+import Switch from './story/_Switch.vue'
 
 describe('Switch', () => {
   it('renders the thumb', () => {

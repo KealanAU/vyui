@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme, { iconFg } from '../theme/toggleGroup'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type ToggleGroupTV = ThemeTV<typeof theme>
 type ToggleGroupVariants = VariantProps<ToggleGroupTV>
@@ -31,8 +31,8 @@ export interface ToggleGroupProps {
   variant?: ToggleGroupVariants['variant']
   size?: ToggleGroupVariants['size']
   orientation?: ToggleGroupVariants['orientation']
-  class?: any
-  ui?: Partial<Record<keyof ToggleGroupTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ToggleGroupTV['slots'], ClassValue>>
 }
 
 export interface ToggleGroupEmits {

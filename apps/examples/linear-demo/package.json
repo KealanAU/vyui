@@ -10,22 +10,22 @@
   "dependencies": {
     "@vyui/core": "workspace:*",
     "@vyui/kit": "workspace:*",
-    "vue-lynx": "^0.5.1"
+    "vue-lynx": "catalog:"
   },
   "devDependencies": {
-    "@iconify-json/icon-park-outline": "^1.2.0",
-    "@iconify-json/lucide": "^1.2.108",
-    "@iconify-json/tabler": "^1.2.35",
-    "@lynx-js/qrcode-rsbuild-plugin": "^0.4.7",
-    "@lynx-js/rspeedy": "^0.13.5",
-    "@lynx-js/tailwind-preset": "^0.4.0",
-    "@lynx-js/types": "^3.8.0",
-    "@rsbuild/plugin-vue": "^1.2.6",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "rsbuild-plugin-tailwindcss": "^0.2.4",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.0.0",
-    "vue": "3.5.17"
+    "@iconify-json/icon-park-outline": "catalog:",
+    "@iconify-json/lucide": "catalog:",
+    "@iconify-json/tabler": "catalog:",
+    "@lynx-js/qrcode-rsbuild-plugin": "catalog:",
+    "@lynx-js/rspeedy": "catalog:",
+    "@lynx-js/tailwind-preset": "catalog:",
+    "@lynx-js/types": "catalog:",
+    "@rsbuild/plugin-vue": "catalog:",
+    "autoprefixer": "catalog:",
+    "postcss": "catalog:",
+    "rsbuild-plugin-tailwindcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vue": "catalog:"
   }
 }

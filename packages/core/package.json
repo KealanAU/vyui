@@ -46,7 +46,7 @@
     "test": "vitest run",
     "test-watch": "vitest",
     "test-update": "vitest -u",
-    "lint": "eslint src"
+    "lint": "eslint ."
   },
   "files": [
     "dist",
@@ -59,10 +59,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./internal": {
-      "types": "./dist/internal.d.ts",
-      "import": "./dist/internal.js"
     },
     "./date": {
       "types": "./dist/date/index.d.ts",
@@ -98,29 +94,26 @@
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
-    "@iconify/vue": "^5.0.1",
-    "@lynx-js/react": "^0.116.5",
-    "@lynx-js/testing-environment": "^0.2.1",
-    "@lynx-js/types": "^3.8.0",
-    "@testing-library/dom": "^10.4.1",
+    "@lynx-js/react": "catalog:",
+    "@lynx-js/testing-environment": "catalog:",
+    "@lynx-js/types": "catalog:",
+    "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/vue": "^8.1.0",
-    "@types/node": "^24.0.0",
-    "@vitejs/plugin-vue": "^6.0.7",
-    "@vue/compiler-sfc": "^3.5.17",
-    "@vue/test-utils": "^2.4.6",
-    "@vue/tsconfig": "^0.7.0",
+    "@types/node": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vue/test-utils": "catalog:",
+    "@vue/tsconfig": "catalog:",
     "@vyui/shared-build-config": "workspace:*",
     "@vyui/testing-utils": "workspace:*",
-    "eslint": "^10.5.0",
-    "jsdom": "^26.1.0",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
     "tsc-alias": "^1.8.17",
-    "vitest": "^3.2.4",
+    "vitest": "catalog:",
     "vitest-axe": "0.1.0",
     "vitest-canvas-mock": "^0.3.3",
-    "vite": "^7.3.3",
-    "vue": "3.5.34",
-    "vue-lynx": "^0.5.1",
-    "vue-tsc": "3.2.6"
+    "vite": "catalog:",
+    "vue": "catalog:",
+    "vue-lynx": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

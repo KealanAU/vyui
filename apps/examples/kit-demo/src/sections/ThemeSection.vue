@@ -45,7 +45,8 @@ const setActiveColor = (value: string) => { activeColor.value = value as Semanti
 // (not `defineProps`) so the section uses only `defineModel` — mixing
 // `defineProps` + `defineModel` makes the compiler emit `mergeModels`, which
 // the vue-lynx runtime shim doesn't provide. Mutating entries propagates to App
-// via the shared reference.
+// via the shared reference — so App binds it one-way (`:color-palettes`); a
+// `v-model` there would try to reassign its `const reactive`.
 const colorPalettes = defineModel<Record<string, string>>('colorPalettes', { required: true })
 const neutralPalette = defineModel<string>('neutralPalette', { required: true })
 const radius = defineModel<number>('radius', { required: true })

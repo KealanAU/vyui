@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/swiper'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type SwiperTV = ThemeTV<typeof theme>
 type SwiperVariants = VariantProps<SwiperTV>
@@ -35,8 +35,8 @@ export interface SwiperProps {
   size?: SwiperVariants['size']
   /** Show the fixed dot indicator strip. Opt-in. */
   showIndicators?: boolean
-  class?: any
-  ui?: Partial<Record<keyof SwiperTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof SwiperTV['slots'], ClassValue>>
 }
 
 export interface SwiperEmits {

@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/select'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { SheetDirection } from '@vyui/core'
 
 type SelectTV = ThemeTV<typeof theme>
@@ -69,8 +69,8 @@ export interface SelectProps {
   valueKey?: string
   /** When `items` are objects, which field to use as the label. */
   labelKey?: string
-  class?: any
-  ui?: Partial<Record<keyof SelectTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof SelectTV['slots'], ClassValue>>
 }
 
 export interface SelectEmits {

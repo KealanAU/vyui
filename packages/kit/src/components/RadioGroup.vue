@@ -2,7 +2,7 @@
 import { tv } from 'tailwind-variants'
 import theme from '../theme/radioGroup'
 import { resolveColors } from '../theme/colors'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type RadioGroupTV = ThemeTV<typeof theme>
 type RadioGroupVariants = VariantProps<RadioGroupTV>
@@ -37,8 +37,8 @@ export interface RadioGroupProps {
   color?: RadioGroupVariants['color']
   size?: RadioGroupVariants['size']
   orientation?: RadioGroupVariants['orientation']
-  class?: any
-  ui?: Partial<Record<keyof RadioGroupTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof RadioGroupTV['slots'], ClassValue>>
 }
 
 export interface RadioGroupEmits {

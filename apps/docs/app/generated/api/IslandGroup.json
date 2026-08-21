@@ -27,13 +27,13 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false,
       "description": "Gap between member islands (and outer edge padding for `start`/`end`/\n`between` alignment)."
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\", any>> | undefined",
+      "type": "Partial<Record<\"root\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

@@ -60,12 +60,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"base\" | \"description\" | \"root\" | \"item\" | \"label\" | \"wrapper\" | \"indicator\" | \"container\" | \"legend\" | \"fieldset\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"item\" | \"label\" | \"description\" | \"base\" | \"wrapper\" | \"indicator\" | \"container\" | \"legend\" | \"fieldset\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

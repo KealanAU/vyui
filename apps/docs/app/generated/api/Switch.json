@@ -73,12 +73,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"base\" | \"description\" | \"root\" | \"label\" | \"icon\" | \"wrapper\" | \"thumb\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"label\" | \"description\" | \"icon\" | \"base\" | \"wrapper\" | \"thumb\", ClassNameValue>> | undefined",
       "required": false
     },
     {
