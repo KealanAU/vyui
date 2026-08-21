@@ -170,7 +170,6 @@ Set `close="false"` to hide the built-in close button.
 ### Current API limitations
 
 - `overlay="false"` removes the dimming class, but the full-screen transparent backdrop still renders, blocks interaction behind the modal, and dismisses on tap.
-- `portal` is retained for API parity, but changing it has no effect. Dialog content is always registered with the Lynx `OverlayRoot`.
 - In uncontrolled mode, the `close()` slot helper only emits updates and does not directly change the core dialog's internal state. Prefer controlled state when using the helper. The built-in close control and backdrop still close uncontrolled dialogs.
 - The `open` value exposed to the default trigger slot is derived from controlled props; it does not reflect `defaultOpen` changes in uncontrolled mode.
 
@@ -185,7 +184,6 @@ Set `close="false"` to hide the built-in close button.
 | `description` | `string` | `undefined` | Built-in supporting text, replaced by the `description` or `header` slot. |
 | `overlay` | `boolean` | `true` | Applies the dimmed backdrop styling. A transparent dismissal layer remains when false. |
 | `transition` | `boolean` | `true` | Applies the kit fade and zoom animation marker classes. |
-| `portal` | `boolean` | `true` | API-parity prop; currently does not change Lynx overlay registration. |
 | `close` | `boolean \| Partial<ButtonProps>` | `true` | Shows the built-in close button and optionally forwards button props. |
 | `closeIcon` | `string` | App icon / `i-lucide-x` | Iconify name for the built-in close button. |
 | `dismissible` | `boolean` | `true` | When `false`, backdrop taps are blocked and emit `close:prevent` instead of closing. |
@@ -248,7 +246,7 @@ The native panel is treated as an accessibility container rather than one combin
 - Modal content is painted through the app-root `OverlayRoot`; `DialogPortal` itself is a transparent pass-through on Lynx.
 - Outside interaction is a native tap on the full-screen backdrop rather than a DOM pointer event.
 - The default transition uses Presence lifecycle classes and Lynx animation bindings, with a 250ms enter and 200ms leave.
-- Core dialog focus callbacks and DOM-style focus trapping are API-parity no-ops on Lynx.
+- Lynx has no DOM focus model, so the core dialog implements neither focus callbacks nor focus trapping.
 - The default theme uses the `bg-default` surface and `border-default` border tokens, so it adapts automatically under dark mode (see [Theming → Dark Mode](/theming/dark-mode)).
 - Use `<VyDrawer :snap-points="[1]">` instead of a full-screen modal.
 

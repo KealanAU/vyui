@@ -23,7 +23,7 @@
       "name": "avoidKeyboard",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Native keyboard avoidance (Lynx `avoid-keyboard`) — see `VyInput`'s prop\nof the same name. Do NOT combine with a `VyKeyboardAwareRoot`."
+      "description": "Native keyboard avoidance (Lynx `avoid-keyboard`) — see `VyInput`'s prop of\nthe same name. Do NOT combine with a `VyKeyboardAwareRoot`."
     },
     {
       "name": "avoidKeyboardSpacing",
@@ -51,7 +51,7 @@
       "name": "icon",
       "type": "string | undefined",
       "required": false,
-      "description": "Iconify shorthand. Routed to the trailing side when `trailing` is true,\notherwise to the leading side. Explicit `leadingIcon` / `trailingIcon`\nalways win."
+      "description": "Iconify shorthand, routed to the trailing side when `trailing` is set and\nthe leading side otherwise. Explicit `leadingIcon` / `trailingIcon` win."
     },
     {
       "name": "id",

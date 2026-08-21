@@ -53,7 +53,6 @@ function handleSelect() {
 }
 
 onMounted(() => {
-  // label will be set by SelectItemText via onItemTextRegister
   rootContext.onItemRegister(props.value, itemText.value)
 })
 

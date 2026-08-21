@@ -1,6 +1,6 @@
 ---
 title: Dialog
-description: Headless modal and non-modal dialog primitive covering trigger, portal, overlay, and content with full focus and dismiss behavior.
+description: Headless modal and non-modal dialog primitive covering trigger, portal, overlay, and content with full dismiss behavior.
 navigation:
   icon: i-lucide-app-window
 package: core
@@ -13,7 +13,7 @@ links:
 
 ## Overview
 
-`Dialog` is a headless `@vyui/core` primitive for an overlay window layered above the page. It ships behavior only: open/close state, portalling, overlay, focus management, and dismissal, and it leaves all markup and styling to you. The styled [`Modal`](/components/modal) component in `@vyui/kit` is built on top of it.
+`Dialog` is a headless `@vyui/core` primitive for an overlay window layered above the page. It ships behavior only: open/close state, portalling, overlay, and dismissal, and it leaves all markup and styling to you. The styled [`Modal`](/components/modal) component in `@vyui/kit` is built on top of it.
 
 ::callout{icon="i-lucide-box"}
 This is a layer of `@vyui/core`. If you want a drop-in styled dialog, reach for `VyModal` in `@vyui/kit` instead and only compose these primitives when you need full control.
@@ -79,7 +79,7 @@ const open = ref(false)
 
 ## Features and behavior
 
-- `modal` defaults to `true`; interaction with content behind the overlay is blocked. Set `modal="false"` for a non-modal dialog that leaves the rest of the page interactive.
+- `modal` defaults to `true`; interaction with content behind the overlay is blocked and assistive tech is confined to the dialog. Set `modal="false"` for a non-modal dialog that leaves the rest of the page interactive and reachable.
 - `open` / `v-model:open` controls visibility; `defaultOpen` seeds uncontrolled state.
 - `DialogContent` traps focus while open and restores it to the trigger on close.
 - `DialogClose` and pressing dismiss/back close the dialog and emit `update:open`.
@@ -120,9 +120,9 @@ const open = ref(false)
 
 ## Accessibility
 
-- `DialogContent` exposes native Lynx dialog semantics and manages a focus trap; always include a `DialogTitle` so the dialog is announced.
+- `DialogContent` exposes native Lynx dialog semantics; always include a `DialogTitle` so the dialog is announced.
 - `DialogDescription` is associated with the content as its accessible description.
-- Closing returns focus to the element that opened the dialog.
+- Lynx has no DOM focus model, so the primitive does not trap focus or restore it to the trigger on close.
 
 ## Related components
 

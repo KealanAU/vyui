@@ -12,7 +12,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Hug content instead of sizing the panel to `snapPoints × viewport`.\nForwarded to `SheetContentImpl`. Used by the styled `Tray`."
+      "description": "Hug content instead of sizing the panel to `snapPoints × viewport`.\nForwarded to `SheetContentImpl`; used by the styled `Tray`."
     }
   ],
   "events": [],

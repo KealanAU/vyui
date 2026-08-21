@@ -24,13 +24,13 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Land the trigger/indicator update one flush before the content swap so\nthe tab bar responds instantly even when the incoming panel is heavy."
+      "description": "Land the trigger/indicator update one flush before the content swap so the\ntab bar responds instantly even when the incoming panel is heavy."
     },
     {
       "name": "direction",
       "type": "\"inline\" | \"stacked\" | undefined",
       "required": false,
-      "description": "Layout inside each trigger. `inline` puts the icon next to the label;\n`stacked` puts the icon above. Stacked is the right call when many\ntriggers crowd a narrow list (e.g. 6 pills on a 360-wide phone)."
+      "description": "Layout inside each trigger: `inline` puts the icon next to the label,\n`stacked` above it — the right call when triggers crowd a narrow list."
     },
     {
       "name": "items",
@@ -64,7 +64,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "Whether inactive tab content should unmount. When `false`, a panel mounts\non its first visit and stays mounted (hidden) after — revisits become a\nstyle flip instead of a full remount."
+      "description": "Whether inactive tab content should unmount. When `false`, a panel mounts\non first visit and stays mounted, making revisits a style flip."
     },
     {
       "name": "variant",

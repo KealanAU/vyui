@@ -2,52 +2,44 @@
   Adapted from lynx-family/lynx-ui (Apache-2.0) —
   packages/lynx-ui-input/src/KeyboardAwareRoot.tsx.
 
-  Owns the keyboard state: tracks which trigger is currently focused, and
-  either translates the responder upward (`view` mode) or grows the
-  responder's bottom spacer + scrolls the scrollview (`scroll-view` mode) to
-  keep the focused trigger above the on-screen keyboard.
+  Owns the keyboard state: tracks which trigger is focused, and either
+  translates the responder upward (`view` mode) or grows its bottom spacer and
+  scrolls the scrollview (`scroll-view` mode) to keep the trigger clear of the
+  on-screen keyboard.
 
-  Keyboard signal: the primary source is the focused input's per-element
-  `@keyboard` event, piped up via `onAwareTriggerKeyboardChanged` — the
-  global `keyboardstatuschanged` subscription (`useGlobalKeyboard`) is kept
-  as a fallback but never fires under vue-lynx (the event is not delivered
-  to the background runtime; see `Input.vue`).
-
-  Web / jsdom: there is no platform keyboard event, so `keyboardHeightInPx`
-  stays at 0 — the responder remains at rest. The provider wiring still
-  works, which is what the test suite verifies.
+  Keyboard signal: the focused input's per-element `@keyboard` event, piped up
+  via `onAwareTriggerKeyboardChanged`. The global `keyboardstatuschanged`
+  subscription is kept as a fallback but never fires under vue-lynx (see
+  `Input.vue`). On web / jsdom there is no platform keyboard event, so
+  `keyboardHeightInPx` stays 0 and the responder remains at rest.
 -->
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
 
 export interface KeyboardAwareRootProps extends PrimitiveProps {
   /**
-   * When `true`, the responder will keep translating upward even after the
-   * focused trigger is already above the keyboard. Useful for content that
-   * should "stick" to the keyboard's top edge.
+   * Keep translating upward even once the focused trigger is above the
+   * keyboard, so content "sticks" to the keyboard's top edge.
    */
   forceAttach?: boolean
   /**
-   * Extra clearance in px kept between the focused field and the top of the
-   * keyboard. A `KeyboardAwareTrigger` with an explicit `offset` of its own
-   * overrides this for the region it wraps.
+   * Extra clearance in px between the focused field and the keyboard. A
+   * `KeyboardAwareTrigger` with its own `offset` overrides this.
    */
   offset?: number
   /**
    * Combined height of the Android status bar + bottom navigation bar in px.
-   * Only used on the fallback path when the root viewport can't be measured:
-   * it corrects the screen-height margin math for `boundingClientRect` not
-   * including the status bar on Android.
+   * Only used when the root viewport can't be measured: `boundingClientRect`
+   * does not include the status bar on Android.
    */
   androidStatusBarPlusBottomBarHeight?: number
 }
 
 export type KeyboardAwareRootEmits = {
   /**
-   * Fires whenever the tracked keyboard height changes (px; `0` = hidden).
-   * Lets wrappers react to keyboard visibility without their own listener —
-   * e.g. `VyTray` freezes its height morph while the keyboard is up so the
-   * scroll responder's growing spacer doesn't feed back into the morph.
+   * Fires whenever the tracked keyboard height changes (px; `0` = hidden), so
+   * wrappers can react without their own listener — e.g. `VyTray` freezes its
+   * height morph while the keyboard is up.
    */
   keyboardHeightChange: [heightInPx: number]
 }
@@ -62,9 +54,7 @@ import { provideKeyboardAwareRootContext } from './keyboardAwareContext'
 import { useGlobalKeyboard } from './composables/useGlobalKeyboard'
 
 /**
- * Inlined `setNativeProps` helper — vyui's worktree does not re-export the
- * upstream `setNativePropsByRef` from `@/shared`, so we implement the
- * Lynx-side bit here. On web / jsdom the underlying element has no
+ * Inlined `setNativeProps` helper. On web / jsdom the underlying element has no
  * `setNativeProps`, so the call quietly no-ops.
  */
 function setNativeProps(ref: KeyboardAwareNodeRef | null, props: Record<string, any>): void {
@@ -81,18 +71,13 @@ function setNativeProps(ref: KeyboardAwareNodeRef | null, props: Record<string, 
   }
 }
 
-/**
- * Resolve the rect of a node either on Lynx (via `useElementRect`'s native
- * `invoke('boundingClientRect')`) or on web (via `getBoundingClientRect`).
- */
+/** Rect of a node on Lynx (`invoke('boundingClientRect')`) or web
+ *  (`getBoundingClientRect`). */
 async function measure(ref: KeyboardAwareNodeRef | null) {
   return useElementRect(ref?.current ?? null)
 }
 
-/**
- * Lynx-side `scrollTo` by element id — invoked when the responder runs in
- * scrollview mode. Quietly no-ops on web.
- */
+/** Lynx-side `scrollTo` by element id, for scrollview mode. No-op on web. */
 function scrollToById(id: string, offset: number, smooth: boolean): void {
   const lynxGlobal = globalThis.lynx
   if (!lynxGlobal?.createSelectorQuery)
@@ -124,8 +109,7 @@ const emit = defineEmits<KeyboardAwareRootEmits>()
 /**
  * Distance from `bottom` (a viewport-relative rect edge) to the keyboard's
  * resting edge. Prefers the measured viewport height; falls back to the
- * upstream screen-height math (with the Android status-bar correction) when
- * the root query is unavailable.
+ * screen-height math (with the Android status-bar correction).
  */
 // ponytail: assumes the LynxView's bottom edge sits at the screen bottom
 // (true in Explorer and Sparkling); a bottom-inset container would need the
@@ -144,11 +128,9 @@ const keyboardHeightInPx = ref(0)
 const previousResponderTranslateY = ref(0)
 const firstTimeFocused = ref(true)
 
-/** The trigger ref that is currently focused — `null` when none. Shallow so
- *  the stored object keeps its identity: blur/keyboard paths compare it `===`
- *  against the reporting trigger's ref, and a deep `ref` would wrap plain
- *  objects (e.g. an input's self-registration ref) in a reactive proxy that
- *  never matches. */
+/** The trigger ref that is currently focused — `null` when none. Shallow so the
+ *  stored object keeps its identity: blur/keyboard paths compare it `===`
+ *  against the reporting trigger's ref. */
 const focusedRef = shallowRef<KeyboardAwareNodeRef | null>(null)
 /** Focus-time offset captured from the focusing trigger. */
 const focusedOffset = ref(0)
@@ -177,10 +159,9 @@ function readSystemInfo() {
 /**
  * Height of the LynxView viewport in logical px, measured from the root node.
  * `boundingClientRect` coords are viewport-relative but `SystemInfo.pixelHeight`
- * is the whole screen — under containers whose LynxView doesn't fill the screen
- * (Lynx Explorer's header, embedded views) the screen-based margin is inflated
- * by the chrome above the view, and the lift comes up short by exactly that
- * much. Resolves 0 when the root query is unavailable (web / jsdom).
+ * is the whole screen, so under a LynxView that doesn't fill the screen the
+ * screen-based margin is inflated by the chrome above it. Resolves 0 when the
+ * root query is unavailable (web / jsdom).
  */
 function measureViewportHeight(): Promise<number> {
   const lynxGlobal = globalThis.lynx
@@ -226,9 +207,8 @@ function keyboardAwareResponderScrollInfoCollected(
       }
     })
     .catch(() => {
-      // On web / jsdom rect resolves to zeros via `useElementRect`'s
-      // fallback — scroll-info stays unset, and the `transform` path is the
-      // harmless default.
+      // On web / jsdom rect resolves to zeros — scroll-info stays unset and
+      // the `transform` path is the harmless default.
     })
 }
 
@@ -277,8 +257,8 @@ function scrollToTarget(
     return
   Promise.all([measure(focused), measure(responderRef)])
     .then(([focusedRect, responderRect]) => {
-      // Same offset-sign divergence as the transform path: scrolling FURTHER
-      // is what buys clearance, so the offset adds to the scroll target.
+      // Scrolling FURTHER is what buys clearance, so the offset adds to the
+      // scroll target.
       scrollToById(
         scrollviewId,
         keyboardHeightInPx.value
@@ -301,10 +281,9 @@ function doAdjustResponderTransform(
       const marginBetweenInputBottomAndScreenBottom
         = await marginToViewportBottom(rect.bottom)
 
-      // Deliberate divergence from the React port: upstream ADDS the offset,
-      // which reduces the lift (positive offset pushes the trigger INTO the
-      // keyboard). Both vyui props document offset as extra clearance above
-      // the keyboard, so it must increase the lift — subtract it.
+      // Deliberate divergence from the React port, which ADDS the offset and
+      // so reduces the lift. Both vyui props document offset as extra clearance
+      // above the keyboard, so it must increase the lift — subtract it.
       let translateY = marginBetweenInputBottomAndScreenBottom
         - keyboardHeightInPx.value
         + previousResponderTranslateY.value
@@ -329,8 +308,6 @@ function adjustResponderPosition() {
     || !responderRef.current
     || !focused
   ) {
-    // Reset path — either no keyboard or nothing focused. Collapse the
-    // scrollview spacer or zero out the transform, depending on mode.
     if (scrollInfo.value) {
       setNativeProps(scrollInfo.value.dummyRef, {
         height: '0px',
@@ -378,7 +355,6 @@ useGlobalKeyboard((status, keyboardHeight) => {
   keyboardHeightInPx.value = status === 'on' ? keyboardHeight : 0
 })
 
-// Mirror the React port's "react to either height or focus changes" effect.
 watch([keyboardHeightInPx, focusedRef], () => {
   adjustResponderPosition()
 })
@@ -387,7 +363,6 @@ watch(keyboardHeightInPx, (h) => {
   emit('keyboardHeightChange', h)
 })
 
-// Ensure the first paint settles the responder transform to its rest state.
 onMounted(() => {
   adjustResponderPosition()
 })
@@ -402,9 +377,8 @@ provideKeyboardAwareRootContext({
 })
 
 /**
- * Test seam: when running in jsdom there is no Lynx keyboard event, so tests
- * need to force-feed a status to verify the wiring. Exposed methods are not
- * part of the public component contract.
+ * Test seam: jsdom has no Lynx keyboard event, so tests force-feed a status.
+ * Not part of the public component contract.
  */
 defineExpose({
   /** @internal Test seam — forces a `keyboardstatuschanged` payload. */

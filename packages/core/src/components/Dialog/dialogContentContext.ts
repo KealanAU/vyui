@@ -2,16 +2,15 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 //
-// Bridges DialogContent (group orchestrator) to DialogContentImpl (the
-// painted backdrop + panel). DialogContent owns the per-child Presence
-// state slots ([backdropState, panelState]) and the setters; the impl reads
-// them so each layer can drive its own `<Presence>` in controlled mode.
+// Bridges DialogContent (group orchestrator) to DialogContentImpl (the painted
+// backdrop + panel): DialogContent owns the per-child Presence state slots and
+// setters, and the impl reads them so each layer drives its own `<Presence>` in
+// controlled mode.
 //
-// Why a dedicated context (and not the root context): the impl mounts via
-// the OverlayRoot portal, but the group orchestration lives inside the
-// DialogContent's setup tree. Provides captured on DialogContent flow
-// through `registerOverlay(..., capturedProvides)` and are re-injected at
-// paint time — so this context survives the portal hop.
+// A dedicated context rather than the root one because the impl mounts via the
+// OverlayRoot portal while the group orchestration lives in DialogContent's
+// setup tree — provides captured there flow through `registerOverlay` and are
+// re-injected at paint time, so this context survives the portal hop.
 
 import type { InjectionKey, Ref } from 'vue'
 import type { PresenceState } from '@/components/Presence'

@@ -1,45 +1,31 @@
 /**
- * Snap-and-drag math for edge-anchored overlays (`Sheet` and its kit
- * wrappers). Pure, unit-tested spec functions: Sheet's BG side calls
- * them directly; its MT worklets keep inline copies of the release
- * math (SWC's worklet transform can't follow imports from a regular
- * module — see `SheetContentImpl.vue`).
+ * Snap-and-drag math for edge-anchored overlays (`Sheet` and its kit wrappers).
+ * Pure, unit-tested spec functions: Sheet's BG side calls them directly, while
+ * its MT worklets keep inline copies of the release math (SWC's worklet
+ * transform can't follow imports — see `SheetContentImpl.vue`).
  *
- * ## Coordinate system
- *
- * All positions are expressed in **px along the drag axis, measured
- * from the sheet's fully-open state**. `0` = sheet at its anchored
- * edge (fully visible). `travel` = sheet pushed entirely off-screen.
- * Direction (top/bottom/left/right) only affects how that axis maps
- * to screen pixels — the math here is direction-agnostic once you
- * give it `travel`.
- *
- * ## Velocity convention
- *
- * `px/s`, positive = toward close.
+ * All positions are px along the drag axis measured from the fully-open state:
+ * `0` = anchored edge (fully visible), `travel` = entirely off-screen. Velocity
+ * is px/s, positive = toward close.
  */
 
 import { clamp } from '../clamp.js'
 
 export type SheetDirection = 'top' | 'bottom' | 'left' | 'right'
 
-/**
- * A snap point. Either a fraction of the sheet's full travel that is
- * **visible** (`0`–`1`, where `1` = fully open), or a literal pixel
- * height/width as a string (`'320px'`).
- */
+/** A snap point: a fraction of full travel that is **visible** (`0`–`1`, `1` =
+ *  fully open), or a literal pixel height/width as a string (`'320px'`). */
 export type SheetSnap = number | string
 
-// --- Pure helpers --------------------------------------------------------
 
 export function directionAxis(direction: SheetDirection): 'x' | 'y' {
   return direction === 'left' || direction === 'right' ? 'x' : 'y'
 }
 
 /**
- * Sign multiplier that turns a raw axis delta into "distance toward closed."
- * For `bottom` and `right` drawers, dragging in the positive axis direction
- * closes; for `top` and `left`, dragging in the negative direction closes.
+ * Sign multiplier that turns a raw axis delta into "distance toward closed":
+ * `bottom`/`right` close in the positive axis direction, `top`/`left` in the
+ * negative.
  */
 export function directionCloseSign(direction: SheetDirection): 1 | -1 {
   return direction === 'bottom' || direction === 'right' ? 1 : -1
@@ -48,13 +34,10 @@ export function directionCloseSign(direction: SheetDirection): 1 | -1 {
 /**
  * Resolve a single snap point to a position in px-from-open.
  *
- * - Number `n` (`0`–`1`) → `(1 - n) * travel`. `n = 1` means fully open
- *   (position 0); `n = 0` means fully closed (position `travel`).
- * - String `'Npx'` → `travel - N`. The sheet shows `N` pixels measured
- *   from its anchored edge.
+ * - Number `n` (`0`–`1`) → `(1 - n) * travel`.
+ * - String `'Npx'` → `travel - N` (the sheet shows `N` px from its edge).
  *
- * Returns `0` for invalid input or non-positive `travel` — safe fallback
- * for layout-not-yet-measured paths.
+ * Returns `0` for invalid input or non-positive `travel`.
  */
 export function resolveSnapToPosition(sp: SheetSnap, travel: number): number {
   if (travel <= 0) return 0
@@ -66,10 +49,7 @@ export function resolveSnapToPosition(sp: SheetSnap, travel: number): number {
   return clamp(travel - px, 0, travel)
 }
 
-/**
- * Resolve, clamp, and sort an array of snaps to ascending positions
- * (`[0]` = most open, `[last]` = most closed).
- */
+/** Resolve, clamp, and sort snaps to ascending positions (`[0]` = most open). */
 export function resolveSnapPositions(
   snaps: readonly SheetSnap[],
   travel: number,
@@ -80,12 +60,9 @@ export function resolveSnapPositions(
 }
 
 /**
- * Map `SheetRoot`-style snap fractions (of **viewport** height, any order)
- * to px-from-open positions along the panel's travel. The panel is sized to
- * the largest snap (`travel = maxSnap × viewportHeight`), so the largest
- * fraction always maps to position `0` (fully open) and smaller fractions
- * to positive offsets. Returns ascending positions (`[0]` = most open),
- * ready for `pickRelease`.
+ * Map `SheetRoot`-style snap fractions (of **viewport** height, any order) to
+ * px-from-open positions. The panel is sized to the largest snap, so the
+ * largest fraction maps to position `0`. Returns ascending positions.
  */
 export function viewportSnapsToPositions(
   snaps: readonly number[],
@@ -104,21 +81,15 @@ export interface PickReleaseOptions {
   /** `enableDragToClose === false` disables dismiss regardless of position/velocity. */
   enableDragToClose: boolean
   /**
-   * Velocity (px/s, toward close) at which a fling triggers dismiss when
-   * past the most-closed snap. Set to `Infinity` to disable velocity-based
-   * dismiss.
+   * Velocity (px/s, toward close) at which a fling dismisses when past the
+   * most-closed snap. `Infinity` disables velocity-based dismiss.
    */
   dismissVelocity: number
-  /**
-   * Pixels past the most-closed snap at which a release dismisses, even
-   * with no velocity. Useful for mouse drags where flick velocity is rare.
-   */
+  /** Pixels past the most-closed snap at which a release dismisses with no
+   *  velocity. Useful for mouse drags, where flick velocity is rare. */
   dismissThreshold: number
-  /**
-   * Milliseconds of inertial coast applied to the release for snap
-   * selection. Higher values bias toward direction-of-fling targets.
-   * Defaults to `100`.
-   */
+  /** Milliseconds of inertial coast applied to the release for snap selection;
+   *  higher biases toward direction-of-fling targets. Defaults to `100`. */
   coastMs?: number
 }
 
@@ -132,21 +103,14 @@ export interface PickReleaseResult {
 }
 
 /**
- * Decide where to settle on release. Inputs are in normalized coordinates
- * (px-from-open) and px/s velocity. Returns the chosen snap (or dismiss).
- *
- * Algorithm:
+ * Decide where to settle on release, in px-from-open coordinates and px/s.
  *
  * 1. Project a short coast: `projected = position + velocity * coastMs/1000`.
- * 2. Dismiss if any of:
- *    - velocity > `dismissVelocity` (hard fling toward close)
- *    - projected past most-closed snap by `dismissThreshold` px
- *    - already past most-closed by ≥ 15 px AND not actively pulling back
- *      (mouse-friendly fallback — desktop drags rarely have fling velocity)
- * 3. Otherwise pick the snap nearest `projected`. The projection naturally
- *    implements a "flick advances one snap" behavior without a separate
- *    velocity-threshold rule — a real flick's coast carries it past the
- *    midpoint to the next snap.
+ * 2. Dismiss if velocity > `dismissVelocity`, or projected past the most-closed
+ *    snap by `dismissThreshold` px, or already past it by ≥ 15 px and not
+ *    pulling back (mouse-friendly: desktop drags rarely fling).
+ * 3. Otherwise pick the snap nearest `projected` — the projection is what makes
+ *    a flick advance one snap, with no separate velocity rule.
  */
 export function pickRelease(
   position: number,
@@ -173,9 +137,8 @@ export function pickRelease(
     && (
       velocity >= dismissVelocity
       || projected > mostClosed + dismissThreshold
-      // Pulling back is a negative velocity (toward open); `-50 px/s`
-      // is the "barely held back" threshold. Anything less negative
-      // and we treat the release as a deliberate dismiss.
+      // Pulling back is a negative velocity (toward open); `-50 px/s` is the
+      // "barely held back" threshold.
       || (distPastClosed > 15 && velocity > -50)
     )
 

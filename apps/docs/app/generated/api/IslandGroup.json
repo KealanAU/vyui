@@ -4,7 +4,7 @@
       "name": "align",
       "type": "\"center\" | \"start\" | \"end\" | \"between\" | undefined",
       "required": false,
-      "description": "Cross-axis alignment of the group when fixed-positioned.\n`'between'` pins the first / last child to the edges."
+      "description": "Cross-axis alignment when fixed-positioned; `'between'` pins the first /\nlast child to the edges."
     },
     {
       "name": "direction",
@@ -23,13 +23,13 @@
       "name": "position",
       "type": "\"top\" | \"bottom\" | undefined",
       "required": false,
-      "description": "Which viewport edge to float against — only relevant when the group is\nfloating (`layer !== 'inline'`). Centered along the cross axis by default\n(tweak with `align`). Works on Lynx via an inline `style`, so no\ncaller-side positioning workaround is needed."
+      "description": "Which viewport edge to float against, when `layer !== 'inline'`. Centered\nalong the cross axis by default (tweak with `align`), via an inline `style`."
     },
     {
       "name": "size",
       "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false,
-      "description": "Gap between member islands (and outer edge padding for `start`/`end`/\n`between` alignment)."
+      "description": "Gap between member islands, and outer edge padding for `start`/`end`/\n`between` alignment."
     },
     {
       "name": "ui",

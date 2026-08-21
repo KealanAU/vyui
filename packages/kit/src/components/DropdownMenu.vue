@@ -40,12 +40,9 @@ export interface DropdownMenuItem {
 }
 
 /**
- * Positioning settings — mirrors Nuxt UI's `content` prop bag so call sites
- * read cleanly: `<UDropdownMenu :content="{ side: 'bottom', align: 'start' }">`.
- * `sideOffset` is wired into the docking math; `side` / `align` choose the
- * dock edge; `alignOffset` shifts the menu along the cross-axis (horizontal
- * for top/bottom, vertical for left/right) — positive values move in the
- * positive axis direction (right / down) regardless of `align`.
+ * Positioning settings — mirrors Nuxt UI's `content` prop bag. `sideOffset`
+ * feeds the docking math, `side` / `align` choose the dock edge, and
+ * `alignOffset` shifts along the cross-axis (positive = right / down).
  */
 export interface DropdownMenuContentSettings {
   side?: 'top' | 'right' | 'bottom' | 'left'
@@ -70,10 +67,8 @@ export interface DropdownMenuProps {
   modal?: boolean
   size?: DropdownMenuVariants['size']
   /**
-   * Positioning settings — `side`, `align`, `sideOffset` control where the
-   * menu docks relative to its trigger. (Sheet-presentation pickers belong
-   * on `VySelect` / `VyCombobox` — DropdownMenu is the trigger-anchored
-   * action menu.)
+   * Positioning settings — `side`, `align`, `sideOffset` control where the menu
+   * docks relative to its trigger.
    * @defaultValue `{ side: 'bottom', sideOffset: 8, align: 'start' }`
    */
   content?: DropdownMenuContentSettings
@@ -93,11 +88,8 @@ export interface DropdownMenuEmits {
   (e: 'update:open', value: boolean): void
 }
 
-/**
- * Slot prop bag handed to the item slots — matches Nuxt UI's
- * `{ item, active, index, ui }` payload so per-item slot signatures port
- * straight across.
- */
+/** Slot prop bag handed to the item slots — matches Nuxt UI's
+ *  `{ item, active, index, ui }` payload. */
 export interface DropdownMenuItemSlotProps {
   item: DropdownMenuItem
   active: boolean
@@ -106,10 +98,8 @@ export interface DropdownMenuItemSlotProps {
 }
 
 export interface DropdownMenuSlots {
-  /**
-   * Trigger content. `DropdownMenuTrigger` toggles open state on tap; do NOT
-   * bind a `@tap` handler on the slotted child that also sets the open state.
-   */
+  /** Trigger content. `DropdownMenuTrigger` toggles open state on tap; do NOT
+   *  also bind a `@tap` handler that sets the open state. */
   default(props: { open: boolean }): any
   /** Custom rendering for every item (replaces all per-section defaults). */
   item(props: DropdownMenuItemSlotProps): any
@@ -126,9 +116,9 @@ export interface DropdownMenuSlots {
 }
 
 /**
- * Flat row shape we render into the menu. Normalising groups/items into a
- * single linear list lets us emit one child per `v-for` iteration — no
- * conditional sibling fragments — which keeps Vue-Lynx's patcher happy.
+ * Flat row shape rendered into the menu. Normalising groups/items into one
+ * linear list emits a single child per `v-for` iteration — no conditional
+ * sibling fragments, which is what Vue-Lynx's patcher expects.
  */
 interface MenuRow {
   key: string
@@ -170,12 +160,8 @@ const { ui } = useStyledComponent('dropdownMenu', theme, () => ({
   size: props.size,
 }))
 
-/**
- * Normalise `items` into a flat row list with group separators interleaved.
- * Each row renders as a single component so the menu content has no
- * conditional sibling fragments — every row in the loop produces exactly
- * one child node, which is what Lynx's patcher expects.
- */
+/** Normalise `items` into a flat row list with group separators interleaved, so
+ *  every row in the loop produces exactly one child node. */
 const rows = computed<MenuRow[]>(() => {
   if (!props.items?.length) return []
   const groups: DropdownMenuItem[][] = Array.isArray(props.items[0])
@@ -199,12 +185,10 @@ const resolvedOpen = computed(() => props.open)
 
 const onUpdateOpen = (value: boolean) => emit('update:open', value)
 
-// --- Trigger-anchored positioning -----------------------------------------
-// DropdownMenu is the trigger-anchored action menu — picker UX with a
-// drag-to-dismiss bottom sheet belongs on `VySelect` / `VyCombobox`.
-// We measure the trigger wrapper via `useElementRect` on open /
-// `@layoutchange`, then pass a `backdropStyle` that pushes the centered
-// overlay container's child to the dock edge via flex alignment + padding.
+// --- Trigger-anchored positioning -------------------------------------------
+// Measure the trigger wrapper via `useElementRect` on open / `@layoutchange`,
+// then pass a `backdropStyle` that pushes the centered overlay container's child
+// to the dock edge via flex alignment + padding.
 const triggerWrapRef = ref<any>(null)
 const triggerRect = ref<{ top: number, left: number, bottom: number, right: number, width: number, height: number } | null>(null)
 
@@ -239,11 +223,10 @@ const backdropStyle = computed<Record<string, any> | undefined>(() => {
   let alignItems = 'flex-start'
   let justifyContent: string = 'flex-start'
 
-  // `padding-{right,bottom}` are measured from the END of the wrapper, so
-  // they need `viewport - r.{right,bottom}` not just `r.{right,bottom}`.
-  // The wrapper fills the viewport (`OverlayBackdrop`), so `100%` resolves
-  // to the viewport dimension and `calc()` lets us subtract the rect's
-  // viewport-origin coords without piping screen size through props.
+  // `padding-{right,bottom}` are measured from the END of the wrapper, so they
+  // need `viewport - r.{right,bottom}`. The wrapper fills the viewport, so
+  // `100%` resolves to the viewport dimension and `calc()` can subtract the
+  // rect's viewport-origin coords without piping screen size through props.
   if (side === 'bottom') { padding.paddingTop = `${r.bottom + sideOffset}px`; alignItems = 'flex-start' }
   if (side === 'top')    { padding.paddingBottom = `calc(100% - ${r.top - sideOffset}px)`; alignItems = 'flex-end' }
   if (side === 'right')  { padding.paddingLeft = `${r.right + sideOffset}px`; alignItems = 'center'; justifyContent = 'flex-start' }

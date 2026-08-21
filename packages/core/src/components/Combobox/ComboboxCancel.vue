@@ -24,7 +24,6 @@ const a11y = useA11y(() => ({
 }))
 
 function handleTap() {
-  // Reset the search to show all options.
   rootContext.filterSearch.value = ''
 
   if (rootContext.resetModelValueOnClear.value)

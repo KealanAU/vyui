@@ -5,6 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@11.4.0",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "dev": "pnpm -r run dev",
     "build": "pnpm gen:api && pnpm -r --filter='./packages/*' build",
     "test": "pnpm -r run test",

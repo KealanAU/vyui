@@ -50,8 +50,8 @@ const submitting = ref(false)
 const errors = ref<Record<string, string | null>>({})
 const values = ref<Record<string, unknown>>({ ...(props.defaultValues ?? {}) })
 
-// Validators are kept out of the reactive `values` blob — they're stable
-// per-field and don't need to retrigger renders.
+// Validators are kept out of the reactive `values` blob — stable per-field, and
+// they don't need to retrigger renders.
 const validatorsByField = new Map<string, FormFieldValidator[]>()
 
 function registerField(
@@ -61,8 +61,7 @@ function registerField(
     validators?: FormFieldValidator[]
   },
 ) {
-  // Defer to the form's `defaultValues` first, then the field's own
-  // `defaultValue`, then `undefined`.
+  // Defer to the form's `defaultValues`, then the field's own `defaultValue`.
   if (!(name in values.value)) {
     const seeded = props.defaultValues?.[name] ?? options.defaultValue
     values.value = { ...values.value, [name]: seeded }
@@ -130,8 +129,8 @@ function submit() {
 
 function reset() {
   values.value = { ...(props.defaultValues ?? {}) }
-  // Re-seed any registered field that lacks an entry in defaultValues so the
-  // field's own `defaultValue` is retained after reset.
+  // Re-seed any registered field missing from defaultValues so its own
+  // `defaultValue` is retained after reset.
   for (const name of validatorsByField.keys()) {
     if (!(name in values.value))
       values.value = { ...values.value, [name]: undefined }

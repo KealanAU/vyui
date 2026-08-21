@@ -1,18 +1,12 @@
-<!-- Thin wrapper around Lynx's native `<list>` element. Mirrors the surface
-     of `@lynx-js/lynx-ui-list`: pass `<ListItem>` children (or raw
-     `<list-item>` if you need the kebab attrs), bind layout props, and call
-     the exposed ref methods to drive scroll.
-
-     Pull-to-refresh, load-more, and `<refresh-header>` composition live in
-     `FeedList`. This component is the bare primitive — no refresh wrapper,
-     no diff machinery. -->
+<!-- Thin wrapper around Lynx's native `<list>`. Mirrors the surface of
+     `@lynx-js/lynx-ui-list`: pass `<ListItem>` children (or raw `<list-item>`
+     for the kebab attrs), bind layout props, and call the exposed ref methods
+     to drive scroll. Pull-to-refresh, load-more, and `<refresh-header>`
+     composition live in `FeedList`. -->
 <script lang="ts">
 export interface ListProps {
-  /**
-   * Single column / grid / waterfall. `flow` and `waterfall` need
-   * `spanCount > 1`.
-   * @defaultValue `'single'`
-   */
+  /** Single column / grid / waterfall. `flow` and `waterfall` need
+   *  `spanCount > 1`. @defaultValue `'single'` */
   listType?: 'single' | 'flow' | 'waterfall'
   /** Columns (vertical) or rows (horizontal) for `flow` / `waterfall`. */
   spanCount?: number
@@ -40,10 +34,7 @@ export interface ListProps {
   upperThresholdItemCount?: number
   /** Throttle for the native `scroll` event (ms). @defaultValue `200` */
   scrollEventThrottle?: number
-  /**
-   * iOS bounces respect a parent ScrollView's gesture chain when `true`.
-   * @defaultValue `true`
-   */
+  /** iOS bounces respect a parent ScrollView's gesture chain when `true`. @defaultValue `true` */
   iosEnableSimultaneousTouch?: boolean
   /** @defaultValue `true` */
   iosScrollsToTop?: boolean
@@ -153,37 +144,30 @@ function getVisibleCells(): Promise<unknown> {
   return invoke('getVisibleCells')
 }
 
-// scrollIntoId (3-step MT pipeline).
-// `<list>` is virtualised — off-screen cells aren't rendered, so you can't
-// `boundingClientRect` a child by id until its cell exists. The 3-step
-// chain is:
+// scrollIntoId (3-step MT pipeline). `<list>` is virtualised — off-screen
+// cells aren't rendered, so a child can't be measured until its cell exists:
 //   1. `scrollToPosition(index)` materialises the cell.
-//   2. `boundingClientRect` of the child, relative to its `<list-item>`,
-//      gives us the child's offset inside the cell.
-//   3. `scrollToPosition(index, offset)` nudges the inner offset so the
-//      child lands at the requested edge of the viewport.
-// All three calls run on the main thread to avoid 3× MT/BG bridge hops on
-// the promise chain, and so we can read the MT-tracked list size sync.
+//   2. `boundingClientRect` of the child, relative to its `<list-item>`, gives
+//      the child's offset inside the cell.
+//   3. `scrollToPosition(index, offset)` nudges the inner offset so the child
+//      lands at the requested edge.
+// All three run on the main thread to avoid 3× bridge hops and to read the
+// MT-tracked list size synchronously.
 
 const listHeightMT = useMainThreadRef<number>(0)
 const listWidthMT = useMainThreadRef<number>(0)
 
-// Handle for the `<list>` itself, rather than re-selecting it by id from the
-// worklet. `lynx.querySelector` exists only on the NATIVE main thread —
-// web-core's MT `lynx` object has no selector API, so every call threw and took
-// the whole worklet down with it (same gap ScrollView documents above its own
-// element refs). A `main-thread-ref` is resolved by the runtime on both
-// platforms, so steps 1 and 3 below work on web too: web-elements' `<x-list>`
-// implements `scrollToPosition` as a real DOM method, which is what
-// `__InvokeUIMethod` dispatches to.
+// Handle for the `<list>` itself rather than re-selecting it by id from the
+// worklet: `lynx.querySelector` exists only on the NATIVE main thread, so on
+// web-core every call threw and took the worklet down. A `main-thread-ref`
+// resolves on both platforms, and web-elements' `<x-list>` implements
+// `scrollToPosition` as a real DOM method.
 const listElMT = useMainThreadRef<any>(null)
 
 // `runOnMainThread` must be called with the LITERAL identifier at the call
-// site — SWC's worklet transform pattern-matches on `runOnMainThread(fn)`
-// before wrapping `fn` and rewriting to dispatch via the MT runtime. Aliasing
-// (`const toMainThread = runOnMainThread`) defeats detection and the worklet
-// never registers; the runtime throws `cannot read property 'bind' of
-// undefined` on first invoke. Cast each `fn` argument inline instead.
+// site — SWC's worklet transform pattern-matches on `runOnMainThread(fn)`.
+// Aliasing defeats detection and the runtime throws `cannot read property
+// 'bind' of undefined` on first invoke. Cast each `fn` argument inline.
 
 function onListLayoutChangeMT(e: any): void {
   'main thread'
@@ -216,14 +200,11 @@ function scrollIntoIdMT(
   })
   if (!step1) return
   step1.then(() => {
-    // Step 2 — measure the target relative to its cell, not the screen.
-    //
-    // The target is an arbitrary consumer-owned child, so there is no ref for
-    // it and the global selector is the only way in. That API is native-only,
-    // and web's `boundingClientRect` ignores `relativeTo` regardless, so there
-    // is nothing meaningful to measure against there. Skipping leaves the
-    // step-1 landing — exactly what `alignTo: 'none'` already produces — and
-    // still honours `extraOffset` so a sticky-header nudge survives.
+    // Step 2 — measure the target relative to its cell, not the screen. The
+    // target is an arbitrary consumer-owned child, so the global selector is
+    // the only way in; that API is native-only, and web's
+    // `boundingClientRect` ignores `relativeTo` anyway. Skipping leaves the
+    // step-1 landing and still honours `extraOffset`.
     const g = globalThis as any
     if (typeof g?.lynx?.querySelector !== 'function') {
       if (extraOffset !== 0) {
@@ -263,10 +244,9 @@ function scrollIntoIdMT(
       else if (alignTo === 'middle') {
         offset = upper - (listSize - childSize) / 2
       }
-      // alignTo === 'none' → leave offset at 0; user gets the step-1 landing.
+      // alignTo === 'none' → leave offset at 0 (the step-1 landing).
       // Step 3 — re-scroll with the corrective offset. Negative because Lynx's
-      // `offset` is "how far past `position` to scroll" and we want to *expose*
-      // the child, not move it further into the cell.
+      // `offset` is "how far past `position` to scroll".
       void listEl.invoke('scrollToPosition', {
         position: index,
         offset: -offset + extraOffset,
@@ -280,17 +260,16 @@ function scrollIntoIdMT(
 
 /**
  * Scroll until the element with `id` is visible at the requested edge of the
- * viewport. Positional signature mirrors `@lynx-js/lynx-ui-list` 1:1.
- *
- * Caller must supply both ids and the row index because `<list>` is
- * virtualised — see the algorithm note above the MT worklet.
+ * viewport. Positional signature mirrors `@lynx-js/lynx-ui-list` 1:1. Both ids
+ * and the row index are required because `<list>` is virtualised — see the
+ * algorithm note above the MT worklet.
  *
  * @param animated   Smooth-scroll all three steps.
- * @param alignTo    Where to land the target child: `top` | `bottom` | `middle`. `none` skips the corrective step.
- * @param id         Id of the *target child element* inside the cell.
- * @param listItemId Id of the wrapping `<list-item>` — used as the `relativeTo` for the `boundingClientRect` measurement.
- * @param index      Row index of the cell. Required to materialise the cell before measurement.
- * @param offset     Extra px applied on top of the alignment offset. Useful for sticky headers.
+ * @param alignTo    `top` | `bottom` | `middle`; `none` skips the corrective step.
+ * @param id         Id of the target child element inside the cell.
+ * @param listItemId Id of the wrapping `<list-item>`, the measurement's `relativeTo`.
+ * @param index      Row index of the cell, to materialise it before measurement.
+ * @param offset     Extra px on top of the alignment offset.
  */
 function scrollIntoId(
   animated: boolean,

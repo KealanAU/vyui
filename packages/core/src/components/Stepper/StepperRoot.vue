@@ -17,19 +17,12 @@ export interface StepperRootContext {
 }
 
 export interface StepperRootProps extends PrimitiveProps {
-  /**
-   * The value of the step that should be active when initially rendered. Use when you do not need to control the state of the steps.
-   */
+  /** The value of the step active on first render, for uncontrolled use. */
   defaultValue?: number
-  /**
-   * The orientation the steps are laid out.
-   * Mainly so arrow navigation is done accordingly (left & right vs. up & down).
-   * @defaultValue horizontal
-   */
+  /** The orientation the steps are laid out, so arrow navigation follows the
+   *  right axis. @defaultValue horizontal */
   orientation?: DataOrientation
-  /**
-   * The reading direction of the stepper when applicable. <br> If omitted, inherits globally from `ConfigProvider` or assumes LTR (left-to-right) reading mode.
-   */
+  /** The reading direction, inherited from `ConfigProvider` or LTR when omitted. */
   dir?: Direction
   /** The controlled value of the step to activate. Can be bound as `v-model`. */
   modelValue?: number

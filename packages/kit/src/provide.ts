@@ -1,18 +1,7 @@
 import type { App } from 'vue'
 import { defu } from 'defu'
 import { APP_CONFIG_KEY, type AppConfig, type VyUIPluginOptions } from './types'
-import icons from './theme/icons'
-
-/**
- * Package-level defaults. User options are deep-merged on top via `defu`.
- */
-export const defaultConfig: AppConfig = {
-  ui: {
-    icons,
-    primary: 'green',
-    gray: 'slate',
-  },
-}
+import { defaultConfig } from './composables/useAppConfig'
 
 /**
  * Provide the merged `@vyui/kit` theme config WITHOUT registering any

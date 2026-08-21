@@ -2,22 +2,14 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 //
-// Ported from `lynx-family/lynx-ui`
-// `packages/lynx-ui-presence/src/Presence.tsx`. Vue/Lynx specifics:
+// Ported from `lynx-family/lynx-ui` `packages/lynx-ui-presence/src/Presence.tsx`.
+// `createContext` is replaced with provide/inject keyed by
+// {@link PresenceContextKey}; the optional `state` / `setPresenceState` props
+// enable a controlled mode (used by `usePresenceGroup`).
 //
-//   - `createContext` is replaced with provide/inject keyed by
-//     {@link PresenceContextKey}.
-//   - The optional `state` / `setPresenceState` props enable a controlled
-//     mode (parent owns the state machine — used by `usePresenceGroup`); when
-//     omitted the component manages an internal `ref<PresenceState>`.
-//   - The render function preserves the v1 contract: a single direct child
-//     VNode, plus the `present` slot prop name for back-compat with Dialog /
-//     AlertDialog / Sheet (those are migrated in Phase 2). New surface:
-//     `status` (PresenceAnimationStatus) and the `state` enum.
-//
-// This file deliberately uses `defineComponent` (not `<script setup>`) so the
-// render function can throw the same "invalid children" error v1 did, and so
-// we can `provide` the inject key from a single setup pass.
+// Uses `defineComponent` (not `<script setup>`) so the render function can throw
+// the same "invalid children" error v1 did, and so the inject key is provided
+// from a single setup pass.
 
 import type { InjectionKey, PropType, SlotsType, VNode } from 'vue'
 import {
@@ -38,55 +30,39 @@ import { usePresence } from './usePresence'
 import { PresenceState, resolveAnimationStatus } from './utils'
 
 /**
- * Vue `provide` key for the {@link PresenceContextType} payload that
- * `<Presence>` exposes to descendants. Phase-2 consumers (DialogContent,
- * DialogBackdrop, SheetContent, ...) `inject(PresenceContextKey)` to read
- * `controllers.state` for class generation and to wire `animationHandlers`
- * to their root `<view>` bindings.
+ * Vue `provide` key for the {@link PresenceContextType} payload `<Presence>`
+ * exposes to descendants, which read `controllers.state` for class generation
+ * and wire `animationHandlers` to their root `<view>` bindings.
  *
- * Registered through `Symbol.for(...)` so dual-`<script>` SFCs that get
- * loaded twice (rspack-vue-loader + builtin:swc-loader) still resolve to
- * the same injection key. See `shared/createContext.ts` for the rationale.
+ * Registered through `Symbol.for(...)` so dual-`<script>` SFCs loaded twice
+ * (rspack-vue-loader + builtin:swc-loader) still resolve to the same key.
  */
 export const PresenceContextKey: InjectionKey<PresenceContextType>
   = Symbol.for('vyui:PresenceContext')
 
-/**
- * Public props for `<Presence>`. `show` is the lynx-ui-style input; `present`
- * is kept as a back-compat alias because Phase-1 consumers (Dialog, Sheet,
- * Popover, Checkbox, etc.) still pass it. Phase 2 migrates them to `show`.
- */
+/** Public props for `<Presence>`. */
 export interface PresenceProps {
   /**
-   * Drives the lifecycle. `true` runs Entering → Entered (or
-   * DelayedEntering → Entering → Entered with `enable-delay`); `false` runs
-   * Leaving → Left.
+   * Drives the lifecycle. `true` runs Entering → Entered (or DelayedEntering →
+   * Entering → Entered with `enable-delay`); `false` runs Leaving → Left.
    */
   show?: boolean
   /**
-   * Back-compat alias for {@link show}. When both are supplied, `show` wins.
-   * @deprecated Pass `show` instead — `present` is kept for the v1 consumers
-   *   that haven't migrated yet.
-   */
-  present?: boolean
-  /**
-   * Force the element to render regardless of `show`. Useful when the caller
-   * drives mount/unmount on its own and only wants Presence for the
-   * lifecycle state.
+   * Force the element to render regardless of `show`, for callers that drive
+   * mount/unmount themselves and only want the lifecycle state.
    */
   forceMount?: boolean
   /**
-   * Controlled state. When provided, `<Presence>` becomes a thin wrapper that
-   * reads/writes through {@link setPresenceState} instead of owning its own
-   * `state` ref.
+   * Controlled state. When provided, `<Presence>` reads/writes through
+   * {@link setPresenceState} instead of owning its own `state` ref.
    */
   state?: PresenceState
   /** Setter for the controlled {@link state}. Required when `state` is set. */
   setPresenceState?: (state: PresenceState) => void
   /**
-   * Insert a `DelayedEntering` half-step before the entering animation so the
-   * layout settles first — avoids first-frame flicker for elements whose
-   * start frame depends on measured layout.
+   * Insert a `DelayedEntering` half-step before the entering animation so
+   * layout settles first — avoids first-frame flicker for elements whose start
+   * frame depends on measured layout.
    */
   enableDelay?: boolean
   /** Fires once the element has fully entered. */
@@ -99,13 +75,10 @@ export interface PresenceProps {
 
 /**
  * Slot props surfaced by the default slot:
- *
- *   - `present` — boolean back-compat shim. Stays `true` while the element is
- *     mounted (covers v1 `present` semantics).
- *   - `phase` — legacy four-phase enum kept so v1 templates that read
- *     `phase === 'exiting'` don't break. Derived from `state`.
+ *   - `present` — true while the element is mounted.
+ *   - `phase` — legacy four-phase enum derived from `state`.
  *   - `status` — the public {@link PresenceAnimationStatus} flags.
- *   - `state` — the raw {@link PresenceState} enum for advanced consumers.
+ *   - `state` — the raw {@link PresenceState} enum.
  */
 export interface PresenceSlotProps {
   present: boolean
@@ -129,25 +102,15 @@ function statePhase(state: PresenceState): PresenceSlotProps['phase'] {
 }
 
 /**
- * Lynx-safe `Presence` — drives a state machine off real
- * `bindanimation*` / `bindtransition*` events so consumers can wait for an
- * animation to truly finish before unmounting (with a 24-frame fallback for
- * elements that don't animate).
- *
- * Replaces the v1 `setTimeout`-based stub. The `enterDuration` / `exitDuration`
- * props are gone — the whole point of this port is to STOP using timers as
- * the source of truth. The slot prop `present` and the `forceMount` prop
- * stay so existing call sites (Dialog, Sheet, ...) keep working until they
- * migrate to the inject key in Phase 2.
+ * Lynx-safe `Presence` — drives a state machine off real `bindanimation*` /
+ * `bindtransition*` events so consumers can wait for an animation to truly
+ * finish before unmounting, with a 24-frame fallback for elements that don't
+ * animate.
  */
 const Presence = defineComponent({
   name: 'Presence',
   props: {
     show: {
-      type: Boolean,
-      default: undefined,
-    },
-    present: {
       type: Boolean,
       default: undefined,
     },
@@ -184,14 +147,7 @@ const Presence = defineComponent({
     default: (props: PresenceSlotProps) => any
   }>,
   setup(props, { slots, expose }) {
-    // `show` is the canonical input. `present` is a v1 alias — favour `show`
-    // when both are supplied so Phase-2 migrations can land alongside still-
-    // present v1 templates without a flag day.
-    const showRef = computed<boolean>(() => {
-      if (props.show !== undefined) return props.show
-      if (props.present !== undefined) return props.present
-      return false
-    })
+    const showRef = computed<boolean>(() => props.show ?? false)
 
     // Internal state machine — used when the caller doesn't drive `state`.
     // Defaults to Left so the initial `show -> handleShow` transition runs.
@@ -201,9 +157,8 @@ const Presence = defineComponent({
         props.state !== undefined ? props.state : internalState.value,
       set: (next) => {
         if (props.setPresenceState) {
-          // Controlled: bubble up; the parent re-feeds `state` on the next
-          // render. Don't touch the internal ref or we shadow the controlled
-          // value if the parent is slow to echo it back.
+          // Controlled: bubble up and let the parent re-feed `state`. Writing
+          // the internal ref here would shadow a slow-to-echo parent.
           props.setPresenceState(next)
           return
         }
@@ -238,7 +193,7 @@ const Presence = defineComponent({
     const phase = computed<PresenceSlotProps['phase']>(() =>
       statePhase(stateRef.value),
     )
-    // v1 `present` slot prop: stays true whenever the child is mounted.
+    // `present` slot prop: stays true whenever the child is mounted.
     const isPresent = computed<boolean>(() => presence.controllers.mount.value)
 
     expose({

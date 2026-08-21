@@ -4,33 +4,28 @@ import { createContext } from '@/shared'
 import type { NavigationStackEntry } from './useNavigationStack'
 
 export interface NavigationStackProps {
-  /**
-   * Reactive entries array — typically `stack.entries` from
-   * `useNavigationStack()`. The top entry's `key` decides which
-   * `<NavigationPage>` is visible.
-   */
+  /** Reactive entries array — typically `stack.entries` from
+   *  `useNavigationStack()`. The top entry's `key` decides which
+   *  `<NavigationPage>` is visible. */
   entries: NavigationStackEntry<any>[]
   /**
-   * Direction of the last navigation, used by `<NavigationPage>` to pick
-   * its enter/leave animation. `'forward'` = push, `'back'` = pop,
-   * `'replace'` / `'reset'` = no animation.
+   * Direction of the last navigation, used by `<NavigationPage>` to pick its
+   * enter/leave animation. `'replace'` / `'reset'` mean no animation.
    * @defaultValue 'forward'
    */
   direction?: 'forward' | 'back' | 'replace' | 'reset'
   /**
-   * Transition style. `'slide'` mirrors the iOS / Material push-pop slide;
-   * `'none'` is an instant swap. Slide animations are CSS-driven (see
-   * `NavigationPage.vue`) — apps can override per-page via slot content.
-   * @defaultValue 'slide'
+   * Transition style. `'slide'` mirrors the iOS / Material push-pop slide,
+   * `'none'` is an instant swap; slide animations are CSS-driven (see
+   * `NavigationPage.vue`). @defaultValue 'slide'
    */
   transition?: 'slide' | 'none'
 }
 
 /**
- * Context provided to descendant `<NavigationPage>` components so each page
- * can decide whether it's currently mounted and which animation phase to
- * play. Keeping this in one place avoids prop-drilling the stack state
- * through every page slot.
+ * Context provided to descendant `<NavigationPage>` components so each page can
+ * decide whether it's mounted and which animation phase to play, instead of
+ * prop-drilling the stack state through every page slot.
  */
 export interface NavigationStackContext {
   currentKey: Ref<string | undefined>
@@ -57,8 +52,8 @@ const currentKey = computed(() => {
   return last?.key
 })
 
-// Surface direction as a mutable ref so children can read it during their
-// own transition lifecycle without re-reading the prop on every tick.
+// Surface direction as a mutable ref so children can read it during their own
+// transition lifecycle.
 const directionRef = ref(direction.value)
 watch(direction, (next) => { directionRef.value = next })
 

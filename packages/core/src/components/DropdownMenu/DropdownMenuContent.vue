@@ -62,7 +62,7 @@ const PortalRegistration = defineComponent({
 </script>
 
 <template>
-  <Presence :present="forceMount || rootContext.open.value">
+  <Presence :show="forceMount || rootContext.open.value">
     <PortalRegistration />
   </Presence>
 </template>

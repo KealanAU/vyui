@@ -14,9 +14,7 @@ export function convertValueToPercentage(value: number, min: number, max: number
   return clamp(percentage, 0, 100)
 }
 
-/**
- * Returns a label for each thumb when there are two or more thumbs
- */
+/** Returns a label for each thumb when there are two or more thumbs */
 export function getLabel(index: number, totalValues: number) {
   if (totalValues > 2)
     return `Value ${index + 1} of ${totalValues}`
@@ -26,17 +24,6 @@ export function getLabel(index: number, totalValues: number) {
 
   else
     return undefined
-}
-
-/**
- * Offsets the thumb centre point while sliding to ensure it remains
- * within the bounds of the slider when reaching the edges
- */
-export function getThumbInBoundsOffset(width: number, left: number, direction: number) {
-  const halfWidth = width / 2
-  const halfPercent = 50
-  const offset = linearScale([0, halfPercent], [0, halfWidth])
-  return (halfWidth - offset(left) * direction) * direction
 }
 
 /**
@@ -69,16 +56,6 @@ export function hasMinStepsBetweenValues(values: number[], minStepsBetweenValues
     return actualMinStepsBetweenValues >= minStepsBetweenValues
   }
   return true
-}
-
-// https://github.com/tmcw-up-for-adoption/simple-linear-scale/blob/master/index.js
-function linearScale(input: readonly [number, number], output: readonly [number, number]) {
-  return (value: number) => {
-    if (input[0] === input[1] || output[0] === output[1])
-      return output[0]
-    const ratio = (output[1] - output[0]) / (input[1] - input[0])
-    return output[0] + ratio * (value - input[0])
-  }
 }
 
 type Side = 'top' | 'right' | 'bottom' | 'left'

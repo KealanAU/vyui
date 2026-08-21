@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, ref } from 'vue'
 
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { fireEvent, q, render, waitForUpdate } from '@vyui/testing-utils'
 
 import {
   FormField,
@@ -13,10 +13,6 @@ import {
   useFormField,
 } from '.'
 import FormStory from './story/_Form.vue'
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 describe('Form — exports', () => {
   it('exports the orchestration primitives', () => {

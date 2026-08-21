@@ -7,13 +7,9 @@
 import type { PresenceAnimationStatus } from './types'
 
 /**
- * The internal animation state machine for `Presence`.
- *
- * Values are stable integers so they can be compared cheaply and so the
- * numeric order roughly tracks the visual lifecycle (Initial → Entering →
- * Entered → Leaving → Left). `DelayedEntering` is a special intermediate
- * state used when `enableDelay` is set so layout settles before the
- * showAnimation starts.
+ * The internal animation state machine for `Presence`. Stable integers, ordered
+ * to track the visual lifecycle (Initial → Entering → Entered → Leaving →
+ * Left). `DelayedEntering` is the `enableDelay` intermediate.
  */
 export enum PresenceState {
   Initial = 0,
@@ -26,14 +22,10 @@ export enum PresenceState {
 }
 
 /**
- * `true` while the Presence state machine is mid-animation (Entering /
- * DelayedEntering / Leaving). Consumers (Dialog/AlertDialog triggers + close
- * buttons, Drawer actions, ...) use it to swallow taps during a running
- * animation so a fast double-tap can't re-trigger the open/close sequence
- * before it finishes.
- *
- * Ported from `lynx-family/lynx-ui`
- * `packages/lynx-ui-dialog/src/DialogButton.tsx`.
+ * `true` while the state machine is mid-animation (Entering / DelayedEntering /
+ * Leaving). Consumers use it to swallow taps during a running animation so a
+ * fast double-tap can't re-trigger the sequence. Ported from lynx-ui's
+ * `DialogButton.tsx`.
  */
 export function resolveBusyState(state: PresenceState): boolean {
   switch (state) {
@@ -48,12 +40,10 @@ export function resolveBusyState(state: PresenceState): boolean {
 
 /**
  * Translate the internal {@link PresenceState} into the public boolean flags
- * (`open` / `closed` / `entering` / `leaving` / `animating`) consumers use to
- * drive their CSS / inline animations.
+ * consumers use to drive their CSS / inline animations.
  *
- * `grouped: true` is for `usePresenceGroup` members — a group has to stay
- * `open` while any child is still leaving, and only flip `closed` once every
- * child has reached {@link PresenceState.Left}.
+ * `grouped: true` is for `usePresenceGroup` members — a group stays `open` while
+ * any child is still leaving, and flips `closed` only once all have Left.
  */
 export const resolveAnimationStatus: ({
   state,
@@ -85,11 +75,9 @@ export const resolveAnimationStatus: ({
     animating: state === PresenceState.Leaving
       || state === enteringStateWithDelay,
 
-    // Grouped open = entering / delayedEntering / entered / leaving.
-    // Normal  open = entering / delayedEntering / entered.
+    // Grouped open = entering / delayedEntering / entered / leaving; normal open
+    // stops at entered. Grouped closed = left; normal closed = leaving / left.
     open: grouped ? groupedOpen : isOpen,
-    // Grouped closed = left.
-    // Normal  closed = leaving / left.
     closed: grouped ? groupedClosed : isClose,
   }
 }
@@ -102,11 +90,8 @@ interface PresenceClassVariantsProps {
   grouped?: boolean
 }
 
-/**
- * Tiny inline `clsx`-style helper — vyui doesn't pull `clsx` as a dep so we
- * build the class string in place. Accepts plain strings and `{ class: bool }`
- * maps; falsy/empty values are stripped.
- */
+/** Tiny inline `clsx`-style helper — vyui doesn't pull `clsx` as a dep. Accepts
+ *  strings and `{ class: bool }` maps; falsy/empty values are stripped. */
 function cn(
   ...parts: Array<string | undefined | null | false | Record<string, unknown>>
 ): string {
@@ -125,17 +110,9 @@ function cn(
 }
 
 /**
- * Build the `class` string consumers should bind to their Presence-managed
- * element. Mirrors the lynx-ui contract:
- *
- *   - `ui-open`     — `status.open`
- *   - `ui-closed`   — `status.closed`
- *   - `ui-entering` — `status.entering`  (only with `transition: true`)
- *   - `ui-leaving`  — `status.leaving`   (only with `transition: true`)
- *   - `ui-animating`— `status.animating` (only with `transition: true`)
- *
- * Pass `transition: true` to opt the element into the full animating-state
- * classes; the default emits only the static `ui-open` / `ui-closed` pair.
+ * Build the `class` string consumers bind to their Presence-managed element:
+ * `ui-open` / `ui-closed` always, plus `ui-entering` / `ui-leaving` /
+ * `ui-animating` when `transition: true`.
  */
 export const presenceClassVariants = ({
   state,

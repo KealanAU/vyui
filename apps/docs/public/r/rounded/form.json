@@ -2,7 +2,8 @@
   "name": "form",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.10"
+    "@vyui/core@^0.2.10",
+    "tailwind-variants@^0.3.1"
   ],
   "registryDependencies": [],
   "files": [
@@ -10,7 +11,7 @@
       "path": "components/Form.vue",
       "target": "Form.vue",
       "type": "registry:ui",
-      "content": "<script lang=\"ts\">\nexport interface FormProps {\n  /** Initial values, keyed by field name. Used by `reset()`. */\n  defaultValues?: Record<string, unknown>\n  /** When `true`, every nested field is disabled. */\n  disabled?: boolean\n  class?: any\n}\n\nexport interface FormEmits {\n  (e: 'submit', values: Record<string, unknown>): void\n  (e: 'update:values', values: Record<string, unknown>): void\n}\n\nexport interface FormSlots {\n  default(props: {\n    values: Record<string, unknown>\n    errors: Record<string, string | null>\n    submitting: boolean\n  }): any\n}\n\nexport interface FormExposed {\n  /** Run sync validators and emit `submit` when clean. */\n  submit: () => void\n  /** Clear errors and restore field values to `defaultValues`. */\n  reset: () => void\n}\n</script>\n\n<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport { FormRoot, type FormRootExposed } from '@vyui/core'\n\ndefineProps<FormProps>()\nconst emit = defineEmits<FormEmits>()\ndefineSlots<FormSlots>()\n\nconst rootRef = ref<FormRootExposed | null>(null)\n\nfunction submit() {\n  rootRef.value?.submit()\n}\n\nfunction reset() {\n  rootRef.value?.reset()\n}\n\ndefineExpose<FormExposed>({ submit, reset })\n</script>\n\n<template>\n  <FormRoot\n    ref=\"rootRef\"\n    :default-values=\"defaultValues\"\n    :disabled=\"disabled\"\n    @submit=\"emit('submit', $event)\"\n    @update:values=\"emit('update:values', $event)\"\n  >\n    <template #default=\"slotProps\">\n      <view :class=\"$props.class\">\n        <slot v-bind=\"slotProps\" />\n      </view>\n    </template>\n  </FormRoot>\n</template>\n"
+      "content": "<script lang=\"ts\">\nimport type { ClassValue } from '@@vyui:composables/useStyledComponent'\n\nexport interface FormProps {\n  /** Initial values, keyed by field name. Used by `reset()`. */\n  defaultValues?: Record<string, unknown>\n  /** When `true`, every nested field is disabled. */\n  disabled?: boolean\n  class?: ClassValue\n}\n\nexport interface FormEmits {\n  (e: 'submit', values: Record<string, unknown>): void\n  (e: 'update:values', values: Record<string, unknown>): void\n}\n\nexport interface FormSlots {\n  default(props: {\n    values: Record<string, unknown>\n    errors: Record<string, string | null>\n    submitting: boolean\n  }): any\n}\n\nexport interface FormExposed {\n  /** Run sync validators and emit `submit` when clean. */\n  submit: () => void\n  /** Clear errors and restore field values to `defaultValues`. */\n  reset: () => void\n}\n</script>\n\n<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport { cnBase } from 'tailwind-variants'\nimport { FormRoot, type FormRootExposed } from '@vyui/core'\n\ndefineProps<FormProps>()\nconst emit = defineEmits<FormEmits>()\ndefineSlots<FormSlots>()\n\nconst rootRef = ref<FormRootExposed | null>(null)\n\nfunction submit() {\n  rootRef.value?.submit()\n}\n\nfunction reset() {\n  rootRef.value?.reset()\n}\n\ndefineExpose<FormExposed>({ submit, reset })\n</script>\n\n<template>\n  <FormRoot\n    ref=\"rootRef\"\n    :default-values=\"defaultValues\"\n    :disabled=\"disabled\"\n    @submit=\"emit('submit', $event)\"\n    @update:values=\"emit('update:values', $event)\"\n  >\n    <template #default=\"slotProps\">\n      <view :class=\"cnBase($props.class)\">\n        <slot v-bind=\"slotProps\" />\n      </view>\n    </template>\n  </FormRoot>\n</template>\n"
     }
   ]
 }

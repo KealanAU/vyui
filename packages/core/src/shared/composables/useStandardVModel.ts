@@ -3,10 +3,9 @@ import { getCurrentInstance, shallowRef, watch } from 'vue'
 import { useVModel } from '@vueuse/core'
 
 /**
- * Loose emit signature accepted by the helpers. Component-generated
- * `defineEmits` types vary (intersection of overloads keyed on literal event
- * names, payload-required, etc.) — accepting `(...args: any[]) => void`
- * lets the helper take any of them without requiring per-call-site casts.
+ * Loose emit signature accepted by the helpers — component-generated
+ * `defineEmits` types vary, and `(...args: any[]) => void` takes any of them
+ * without per-call-site casts.
  */
 type AnyEmit = (...args: any[]) => void
 
@@ -14,11 +13,10 @@ const toKebab = (s: string) => s.replace(/[A-Z]/g, c => `-${c.toLowerCase()}`)
 
 /**
  * Whether the parent supplied a given binding, read from the raw vnode props.
- * Vnode prop keys are kebab-cased under the vue-lynx renderer (e.g.
- * `model-value`, `snap-index`), so check both the camelCase name and its
- * kebab form. This cannot use `props[name] === undefined`: vue-lynx normalizes
- * unset boolean props to `false`, which would make every boolean read
- * "defined" and lock the component into controlled mode.
+ * Vnode prop keys are kebab-cased under the vue-lynx renderer, so both spellings
+ * are checked. This cannot use `props[name] === undefined`: vue-lynx normalizes
+ * unset boolean props to `false`, which would lock every boolean into
+ * controlled mode.
  */
 function isControlled(propName: string): boolean {
   const inst = getCurrentInstance()
@@ -30,16 +28,9 @@ function isControlled(propName: string): boolean {
 
 /**
  * Standard `v-model` setup used by every controlled-state component in
- * `@vyui/core`. Bridges Vue's parent-controlled `props.modelValue` + emit
- * pattern to a writable local Ref, automatically selecting `passive: false`
- * when the parent is controlling and `passive: true` when uncontrolled.
- *
- * Returns `Ref<T>` (not `Ref<T | null>`) — pass a sensible `defaultValue`
- * even when `modelValue` is undefined to keep downstream code unsmoothed.
- *
- * @example
- *   const open = useStandardVModel<boolean>(props, emits, props.defaultOpen ?? false)
- *   open.value = true  // emits `update:modelValue`
+ * `@vyui/core`. Bridges `props.modelValue` + emit to a writable local Ref,
+ * selecting `passive: false` when the parent is controlling and `passive: true`
+ * when uncontrolled. Returns `Ref<T>`, so pass a sensible `defaultValue`.
  */
 export function useStandardVModel<T>(
   props: { modelValue?: T | null | undefined, defaultValue?: T | undefined },
@@ -71,13 +62,10 @@ export function useStandardVModel<T>(
 }
 
 /**
- * Variant for `v-model:<name>` (open, snapIndex, etc. — not the default
- * modelValue). Same semantics, different prop+event name.
- *
- * The corresponding "default" prop is looked up using the conventional
- * `default${Capitalised}` name (e.g. `open` -> `defaultOpen`, `snapIndex` ->
- * `defaultSnapIndex`). If the call site uses a non-conventional default-prop
- * name, fall back to the base `useVModel` directly.
+ * Variant for `v-model:<name>` (open, snapIndex, …). Same semantics with a
+ * different prop+event name; the "default" prop is looked up by the
+ * conventional `default${Capitalised}` name. For a non-conventional default-prop
+ * name, use the base `useVModel` directly.
  */
 export function useStandardVModelOf<T>(
   props: Record<string, any>,
@@ -88,19 +76,16 @@ export function useStandardVModelOf<T>(
   const defaultPropName = `default${propName.charAt(0).toUpperCase()}${propName.slice(1)}`
   const defaultVal = (props[defaultPropName] ?? defaultValue) as T
 
-  // "Controlled" = the parent supplied the binding, detected from the raw
-  // vnode props (not `props[propName]`). vue-lynx normalizes unset boolean
-  // props to `false` rather than leaving them `undefined`, so a
-  // `props[propName] === undefined` check is never true for them and the
-  // component would be treated as permanently controlled — which pins the
-  // state and makes `default*` dead (SheetRoot `defaultOpen`, etc.).
+  // "Controlled" = the parent supplied the binding, detected from the raw vnode
+  // props: vue-lynx normalizes unset booleans to `false`, so a
+  // `props[propName] === undefined` check would pin the component to controlled
+  // and make `default*` dead.
   const controlled = isControlled(propName)
 
   if (!controlled) {
     // Uncontrolled: own the state in a local ref, seeded from `default*`.
-    // vueuse's `passive` path reads `props[propName]` for its seed, which is
-    // `false` for an unset boolean — so `default*` would never surface. Write
-    // the ref directly and mirror any late parent supply of the prop.
+    // vueuse's `passive` path seeds from `props[propName]`, which is `false` for
+    // an unset boolean, so `default*` would never surface.
     const state = shallowRef<T>(defaultVal)
     watch(
       () => props[propName],

@@ -2,21 +2,17 @@
   Adapted from lynx-family/lynx-ui (Apache-2.0) —
   packages/lynx-ui-input/src/KeyboardAwareTrigger.tsx.
 
-  Wraps content that should pull the surrounding `KeyboardAwareResponder` up
-  when its child input gains focus. Reads the root context, publishes a
-  trigger context for the input descendants, and reports `layoutchange`
-  events so the root can re-measure when the trigger resizes (e.g. an input
-  growing as the user types).
+  Wraps content that should pull the surrounding `KeyboardAwareResponder` up when
+  its child input gains focus: reads the root context, publishes a trigger
+  context for input descendants, and reports `layoutchange` so the root
+  re-measures when the trigger resizes.
 -->
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
 
 export interface KeyboardAwareTriggerProps extends PrimitiveProps {
-  /**
-   * Extra pixels to leave between the bottom of the trigger and the top of
-   * the keyboard once it has been pulled into view. When omitted, the
-   * surrounding `KeyboardAwareRoot`'s `offset` applies.
-   */
+  /** Extra pixels between the bottom of the trigger and the top of the keyboard
+   *  once pulled into view. When omitted, the root's `offset` applies. */
   offset?: number
 }
 </script>
@@ -31,9 +27,8 @@ import {
   provideKeyboardAwareTriggerContext,
 } from './keyboardAwareContext'
 
-// `offset` deliberately has NO default: an explicit 0 would override the
-// root's `offset` (the root only falls back to its own when the trigger
-// reports `undefined`).
+// `offset` deliberately has NO default: an explicit 0 would override the root's
+// `offset`, which only applies when the trigger reports `undefined`.
 const props = withDefaults(defineProps<KeyboardAwareTriggerProps>(), {
   as: 'view',
 })
@@ -78,9 +73,9 @@ function onInputKeyboard(info: KeyboardAwareKeyboardInfo) {
 }
 
 // Nested triggers: kit inputs render an internal field-level trigger, so a
-// consumer wrapping `VyInput` in their own trigger produces two. The OUTER
-// one carries the consumer's intent (their wrapper element + offset) — when
-// one exists, re-provide it untouched so this inner trigger is a pass-through.
+// consumer wrapping `VyInput` in their own produces two. The OUTER one carries
+// the consumer's intent, so re-provide it untouched and let this one pass
+// through.
 const outerTrigger = injectKeyboardAwareTriggerContext(null)
 
 provideKeyboardAwareTriggerContext(outerTrigger ?? {

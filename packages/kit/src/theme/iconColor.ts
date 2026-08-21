@@ -1,5 +1,4 @@
-// Bake-time icon-color resolution (shared by the button / tabs / toggleGroup
-// themes).
+// Bake-time icon-color resolution, shared by the component themes.
 //
 // Lynx rasterizes each `<svg>`, so a `text-*` class on an icon slot never
 // reaches the glyph — the fill is baked into the SVG via the Icon `color` prop
@@ -7,13 +6,9 @@
 // `{ semantic, shade }` descriptor for that resolver.
 //
 // Accent classes (`text-primary-600`) are mode-independent — the accent ramps
-// don't invert. Semantic TOKENS (`text-muted`, `text-default`, …) ARE
-// mode-dependent: they resolve to different neutral shades in light vs dark (the
-// neutral ramp itself is FIXED, so the mode difference is *which shade* — see
-// `style.css`). `'white'` covers `text-white` and the token ends that hit pure
-// white in the active mode. Callers pass the live `isDark` so the baked fill
-// tracks the mode the way the CSS token would (labels flip via CSS; icons can't,
-// so they flip here instead).
+// don't invert. Semantic TOKENS (`text-muted`, …) resolve to different neutral
+// shades in light vs dark, so callers pass the live `isDark` and the baked fill
+// tracks the mode the way the CSS token would.
 
 export type IconFg = { semantic: string, shade: number } | 'white'
 
@@ -31,9 +26,9 @@ const SEMANTIC_TOKEN: Record<string, { light: IconFg, dark: IconFg }> = {
 }
 
 /**
- * Resolve an icon fill from a foreground class SUFFIX (the token after `text-`,
- * e.g. `primary-600`, `muted`, `white`), mode-aware. Returns `'white'` for
- * `text-white`, unknown suffixes, and the token ends that are white in `isDark`.
+ * Resolve an icon fill from a foreground class SUFFIX (the token after `text-`),
+ * mode-aware. Returns `'white'` for `text-white`, unknown suffixes, and the
+ * token ends that are white in `isDark`.
  */
 export function iconFgFromToken(suffix: string | undefined, isDark: boolean): IconFg {
   if (!suffix || suffix === 'white')

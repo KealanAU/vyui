@@ -38,9 +38,6 @@ function render() {
     {
       ...props,
       ...attrs,
-      // AlertDialog is always modal; focus-trap is a no-op on Lynx but kept
-      // so the prop threads through exactly as in reka-ui.
-      trapFocus: rootContext.open.value,
       ref: forwardRef,
     },
     () => slots.default?.(),

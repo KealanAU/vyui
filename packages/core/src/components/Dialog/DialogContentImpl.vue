@@ -4,23 +4,13 @@ import type { PrimitiveProps } from '@/components/Primitive'
 
 // reka-ui's `DialogContentImpl` also emits `openAutoFocus` / `closeAutoFocus`.
 // Those are dropped on Lynx: there is no focus-trap and no programmatic focus
-// model, so the auto-focus events never fire (same call PopoverContentImpl
-// makes).
+// model, so they never fire (same call PopoverContentImpl makes).
 export type DialogContentImplEmits = DismissableLayerEmits
 
 export interface DialogContentImplProps extends PrimitiveProps {
-  /**
-   * Used to force mounting when more control is needed. Useful when
-   * controlling transition with Vue native transition or other animation
-   * libraries.
-   */
+  /** Force mounting when more control is needed — e.g. driving the transition
+   *  from a Vue native transition or another animation library. */
   forceMount?: boolean
-  /**
-   * When `true`, focus cannot escape the `Content`. No-op on Lynx because
-   * there is no DOM focus trap.
-   * @defaultValue false
-   */
-  trapFocus?: boolean
   /**
    * Style applied to the full-screen backdrop wrapper. No defaults — pass
    * `backgroundColor`, alignment, etc. here for the modal dim/centering.
@@ -28,21 +18,15 @@ export interface DialogContentImplProps extends PrimitiveProps {
   backdropStyle?: Record<string, any>
   /**
    * Class merged onto the full-screen backdrop wrapper (the `OverlayBackdrop`
-   * that centers the panel). Core ships no dim or animation of its own — the
-   * styled layer passes the dim colour + a marker class here so the backdrop
-   * fades in step with the panel. The element carries the Presence lifecycle
-   * classes (`ui-entering` / `ui-leaving` / `ui-open` / `ui-closed`) and the
-   * `bindanimation*` hooks, so the styled layer's keyframes (keyed off those
-   * classes) drive the Presence lifecycle just like the panel's.
+   * that centers the panel). Core ships no dim or animation of its own; the
+   * element carries the Presence lifecycle classes and `bindanimation*` hooks,
+   * so the styled layer's keyframes drive the lifecycle just like the panel's.
    */
   backdropClass?: string
   /**
-   * Opt the backdrop / panel into the animating-state classes
-   * (`ui-entering` / `ui-leaving` / `ui-animating` alongside the static
-   * `ui-open` / `ui-closed` pair). Off by default so callers that don't
-   * style transitions don't get extra classes; on for any caller wiring up
-   * keyframes.
-   * @defaultValue true
+   * Opt the backdrop / panel into the animating-state classes (`ui-entering` /
+   * `ui-leaving` / `ui-animating` alongside `ui-open` / `ui-closed`). Off for
+   * callers that don't style transitions. @defaultValue true
    */
   transition?: boolean
 }
@@ -82,31 +66,27 @@ rootContext.titleId ||= useId(undefined, 'vy-dialog-title')
 rootContext.descriptionId ||= useId(undefined, 'vy-dialog-description')
 
 // reka-ui's `DismissableLayer` listens for outside pointer events; on Lynx the
-// equivalent is a `tap` on the full-screen backdrop `<view>`. The tap surfaces
-// the preventable `interactOutside` / `pointerDownOutside` events — left
-// un-prevented they close the dialog. A tap on the inner content node is
-// stopped so it never reaches the backdrop.
+// equivalent is a `tap` on the full-screen backdrop `<view>`, surfacing the
+// preventable `interactOutside` / `pointerDownOutside` events. A tap on the
+// inner content node is stopped so it never reaches the backdrop.
 const { onInteractOutside } = useDismissableLayer({
   emit: emits,
   onDismiss: () => rootContext.onOpenChange(false),
 })
 
-// Modal dialog semantics for the panel: a valid `dialog` role (via
-// role-description) plus an a11y focus trap so the overlay is announced as a
-// self-contained modal.
+// A valid `dialog` role (via role-description). `exclusiveFocus` is Lynx's
+// focus containment — the only real modality lever here — so it follows the
+// root's `modal` flag: a non-modal dialog leaves siblings reachable.
 const a11y = useA11y(() => ({
   role: 'dialog',
-  exclusiveFocus: true,
+  exclusiveFocus: rootContext.modal.value,
 }))
 
-// ─────────────────────────────────────────────────────────────────────────
 // DialogContent owns the per-layer Presence state and provides it through
 // `DialogContentPresenceKey`. Painted through the OverlayRoot portal, the
-// captured-provides bridge re-applies that provide on this side so we can
-// inject it here too. When the bridge is absent (e.g. tests that mount the
-// impl directly), fall back to a no-op shape that defaults both layers to
-// Left — keeps the structure renderable without crashing on missing inject.
-// ─────────────────────────────────────────────────────────────────────────
+// captured-provides bridge re-applies that provide on this side. When the bridge
+// is absent (tests mounting the impl directly), fall back to a no-op shape that
+// defaults both layers to Left.
 const ctxFallback: DialogContentPresenceContext = {
   backdropState: { value: PresenceState.Left } as any,
   panelState: { value: PresenceState.Left } as any,
@@ -117,10 +97,9 @@ const ctxFallback: DialogContentPresenceContext = {
 }
 const contentCtx = inject(DialogContentPresenceKey, ctxFallback)
 
-// `BackdropLayer` consumes its closest `<Presence>` (the backdrop one) so we
-// can read the animation handlers + state for the OverlayBackdrop's root
-// `<view>`. Attrs flow through OverlayBackdrop's `inheritAttrs: true` to the
-// painted `<view>`, so `bindanimation*` lands where Lynx expects.
+// `BackdropLayer` consumes its closest `<Presence>` (the backdrop one) for the
+// OverlayBackdrop's root `<view>`. Attrs flow through OverlayBackdrop's
+// `inheritAttrs: true`, so `bindanimation*` lands where Lynx expects.
 const BackdropLayer = defineComponent({
   name: 'DialogBackdropLayer',
   props: {
@@ -153,11 +132,8 @@ const BackdropLayer = defineComponent({
         'data-state': dataState.value,
         'onTap': () => emit('tap'),
         // Lynx animation/transition lifecycle bindings — without these the
-        // Presence state machine never advances past Entering/Leaving on
-        // real Lynx, the entire point of the Phase-2 port. The kebab-cased
-        // attr names match what Lynx emits in production; we forward the
-        // event payload along even though the state machine only cares
-        // about which phase ended.
+        // Presence state machine never advances past Entering/Leaving on real
+        // Lynx. The kebab-cased attr names match what Lynx emits.
         'bindanimationstart': handlers?.handleKFStart,
         'bindanimationend': handlers?.handleKFEnd,
         'bindanimationcancel': handlers?.handleKFCancel,
@@ -170,17 +146,15 @@ const BackdropLayer = defineComponent({
   },
 })
 
-// `PanelLayer` does the same for the inner `<Primitive>` (the modal panel
-// that zooms in/out). Inject is local so it picks up the inner `<Presence>`,
-// not the outer backdrop one.
+// `PanelLayer` does the same for the inner `<Primitive>`. Inject is local so it
+// picks up the inner `<Presence>`, not the outer backdrop one.
 const PanelLayer = defineComponent({
   name: 'DialogPanelLayer',
   inheritAttrs: false,
   props: {
     as: {
       // Accept the full `AsTag | Component` union so callers can pass a
-      // component (e.g. an as-child wrapper) without TypeScript narrowing
-      // down to `string` and losing the option.
+      // component without TypeScript narrowing down to `string`.
       type: [String, Object, Function] as PropType<AsTag | object>,
       default: 'view',
     },
@@ -197,11 +171,10 @@ const PanelLayer = defineComponent({
       className: 'vyui-dialog-content',
       transition: props.transition,
     }))
-    // `mergeProps` (not object spread) so the inbound `$attrs` class — the kit
-    // panel class (`vy-modal-content …`) — is CONCATENATED with the Presence
-    // lifecycle classes instead of overwriting them. A plain `{ class, ...attrs }`
-    // lets `attrs.class` clobber `ui-open` / `ui-entering`, leaving the panel
-    // stuck at the `vy-modal-content { opacity: 0 }` base (dialog opens invisible).
+    // `mergeProps` (not object spread) so the inbound `$attrs` class is
+    // CONCATENATED with the Presence lifecycle classes: letting `attrs.class`
+    // clobber `ui-open` / `ui-entering` leaves the panel stuck at its
+    // `opacity: 0` base and the dialog opens invisible.
     return () => h(
       Primitive,
       mergeProps(
@@ -219,10 +192,8 @@ const PanelLayer = defineComponent({
           'bindtransitioncancel': handlers?.handleTransitionCancel,
           ...a11y.value,
           // tap.stop is wired on Primitive's root via the Vue event-modifier
-          // shim; emulate it here by attaching an explicit handler that
-          // doesn't bubble. The DismissableLayer's tap is on OverlayBackdrop;
-          // we deliberately leave the panel inert so a tap on it doesn't
-          // dismiss.
+          // shim; emulate it with a handler that doesn't bubble. The panel is
+          // deliberately inert so a tap on it doesn't dismiss.
           'onTap': (e: any) => e?.stopPropagation?.(),
         },
       ),
@@ -268,10 +239,8 @@ const PanelLayer = defineComponent({
 
 <!--
   Headless: core ships no animation of its own. `vyui-dialog-backdrop` /
-  `vyui-dialog-content` are stable hook classes carrying `data-state` +
-  `ui-entering` / `ui-leaving` + the `bindanimation*` lifecycle bindings; the
-  styled layer (`@vyui/kit`) supplies the keyframes — keyed off those lifecycle
-  classes — on the backdrop (`backdropClass`) and panel (`class`). With no
-  keyframes the panel simply mounts/unmounts — Presence's 24-frame fallback
-  covers it.
+  `vyui-dialog-content` are stable hook classes carrying `data-state`, the
+  lifecycle classes and the `bindanimation*` bindings; `@vyui/kit` supplies the
+  keyframes. With no keyframes the panel simply mounts/unmounts — Presence's
+  24-frame fallback covers it.
 -->

@@ -48,30 +48,25 @@ export interface TabsRootProps<T extends StringOrNumber = StringOrNumber> extend
    * The reading direction of the combobox when applicable. <br> If omitted, inherits globally from `ConfigProvider` or assumes LTR (left-to-right) reading mode.
    */
   dir?: Direction
-  /**
-   * Whether a tab is activated automatically (on focus) or manually (on click).
-   * @defaultValue automatic
-   */
+  /** Whether a tab is activated automatically (on focus) or manually (on click).
+   *  @defaultValue automatic */
   activationMode?: 'automatic' | 'manual'
   /** The controlled value of the tab to activate. Can be bind as `v-model`. */
   modelValue?: T
   /**
-   * When `true`, a content panel is unmounted whenever it is not the active
-   * tab. When `false`, a panel mounts the FIRST time its tab is selected and
-   * stays mounted (hidden via `display: none`) afterwards, making revisits a
-   * style flip instead of a full remount. Lazy-on-first-visit rather than
-   * all-mounted-upfront: on Lynx, mounting every panel at once would move the
-   * cost to first paint. Use `forceMount` on an individual `TabsContent` for
-   * the mount-upfront case.
+   * When `true`, a content panel is unmounted whenever it is not the active tab.
+   * When `false`, a panel mounts the FIRST time its tab is selected and stays
+   * mounted (hidden via `display: none`), making revisits a style flip. Lazy on
+   * first visit rather than all-mounted-upfront, which on Lynx would move the
+   * cost to first paint; use `forceMount` on a `TabsContent` for that case.
    *
    * @defaultValue `true`
    */
   unmountOnHide?: boolean
   /**
    * When `true`, the active-trigger state change and the content swap land in
-   * separate flushes: triggers/indicator update immediately, content follows
-   * one macrotask later. On Lynx this makes the tab bar respond instantly
-   * instead of waiting for the incoming panel's subtree to mount.
+   * separate flushes: triggers/indicator update immediately, content follows one
+   * macrotask later, so the tab bar responds instantly on Lynx.
    *
    * @defaultValue `false`
    */
@@ -120,9 +115,8 @@ const triggers = shallowRef<Map<StringOrNumber, any>>(new Map())
 const layoutTick = ref(0)
 
 // With `deferContent`, content follows the model one macrotask behind. A
-// microtask is not enough — Vue's own flush is a microtask, so the trigger
-// patch and the content patch would coalesce into the same main-thread
-// element-tree flush, which is exactly the latency this exists to split.
+// microtask is not enough — Vue's own flush is a microtask, so both patches
+// would coalesce into the same main-thread element-tree flush.
 const contentValue = shallowRef<StringOrNumber | undefined>(modelValue.value)
 let contentTimer: ReturnType<typeof setTimeout> | undefined
 watch(modelValue, (value) => {

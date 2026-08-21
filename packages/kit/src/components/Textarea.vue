@@ -13,11 +13,8 @@ export interface TextareaProps {
   loading?: boolean
   /** Iconify name for the spinner. Defaults to `appConfig.ui.icons.loading`. */
   loadingIcon?: string
-  /**
-   * Iconify shorthand. Routed to the trailing side when `trailing` is true,
-   * otherwise to the leading side. Explicit `leadingIcon` / `trailingIcon`
-   * always win.
-   */
+  /** Iconify shorthand, routed to the trailing side when `trailing` is set and
+   *  the leading side otherwise. Explicit `leadingIcon` / `trailingIcon` win. */
   icon?: string
   /** Force `icon` shorthand onto the leading side. */
   leading?: boolean
@@ -48,10 +45,8 @@ export interface TextareaProps {
   autofocus?: boolean
   /** Delay before applying `autofocus`, in milliseconds. */
   autofocusDelay?: number
-  /**
-   * Native keyboard avoidance (Lynx `avoid-keyboard`) — see `VyInput`'s prop
-   * of the same name. Do NOT combine with a `VyKeyboardAwareRoot`.
-   */
+  /** Native keyboard avoidance (Lynx `avoid-keyboard`) — see `VyInput`'s prop of
+   *  the same name. Do NOT combine with a `VyKeyboardAwareRoot`. */
   avoidKeyboard?: boolean
   /** Extra clearance in px above the keyboard when `avoidKeyboard` is set. */
   avoidKeyboardSpacing?: number
@@ -91,9 +86,8 @@ const textareaRef = ref<any>(null)
 
 const resolvedLoadingIcon = computed(() => props.loadingIcon || appConfig.ui.icons?.loading || 'i-lucide-loader-circle')
 
-// `icon` shorthand resolves to leading by default; flipped to trailing when
-// the `trailing` boolean is set. Explicit `leadingIcon` / `trailingIcon`
-// always win over the shorthand.
+// `icon` shorthand resolves to leading by default, trailing when the `trailing`
+// boolean is set. Explicit `leadingIcon` / `trailingIcon` always win.
 const resolvedLeadingIcon = computed(() => {
   if (props.leadingIcon) return props.leadingIcon
   if (props.icon && !props.trailing) return props.icon

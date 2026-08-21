@@ -20,9 +20,6 @@ export {
   default as PopoverContentModal,
 } from './PopoverContentModal.vue'
 export {
-  default as PopoverContentNonModal,
-} from './PopoverContentNonModal.vue'
-export {
   default as PopoverPortal,
   type PopoverPortalProps,
 } from './PopoverPortal.vue'

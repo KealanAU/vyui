@@ -2,10 +2,8 @@
 import type { AlertDialogOverlayImplProps } from './AlertDialogOverlayImpl.vue'
 
 export interface AlertDialogOverlayProps extends AlertDialogOverlayImplProps {
-  /**
-   * Used to force mounting when more control is needed. Useful when
-   * controlling animation with Vue animation libraries.
-   */
+  /** Force mounting when more control is needed — e.g. driving animation from a
+   *  Vue animation library. */
   forceMount?: boolean
 }
 </script>
@@ -38,17 +36,14 @@ const rootContext = injectAlertDialogRootContext()
 useForwardExpose()
 
 // --- Overlay-portal registration -------------------------------------------
-// The overlay backdrop paints through the same `overlayStore` portal as
-// `AlertDialogContent`, so it stacks correctly behind the content. It
-// registers before the content mounts so it sits underneath the panel.
+// The backdrop paints through the same `overlayStore` portal as
+// `AlertDialogContent` and registers before the content mounts, so it sits
+// underneath the panel.
 //
-// Phase-2: the lifetime of `<Presence>`'s slot child is the source of truth
-// for whether the overlay is painted. We render a tiny `Registrant` inside
-// the Presence default slot; its `onMounted` / `onUnmounted` are what call
-// `registerOverlay` / `unregisterOverlay`. Presence keeps the slot child
-// alive through the leaving animation (the state machine waits for
-// `bindanimation*` / `bindtransition*` to fire or for the 24-frame fallback)
-// so the painted backdrop stays on-screen for the exit animation.
+// The lifetime of `<Presence>`'s slot child is the source of truth for whether
+// the overlay is painted: a tiny `Registrant` rendered inside the default slot
+// calls `registerOverlay` / `unregisterOverlay` from its own mount hooks, and
+// Presence keeps it alive through the leaving animation.
 const attrs = useAttrs()
 const slots = useSlots()
 const id = useId()
@@ -64,11 +59,10 @@ function render() {
   )
 }
 
-// Intentionally inert: the Registrant child below owns register / unregister.
-// The `render` closure is re-created on every render of this component, so the
-// next `registerOverlay` call from the Registrant already picks up the latest
-// props — there's nothing to re-push here. Kept as a watch so the dependency
-// list documents what the painted node tracks.
+// Intentionally inert: the Registrant child owns register / unregister, and the
+// `render` closure is re-created each render, so the next `registerOverlay` call
+// already picks up the latest props. Kept as a watch so the dependency list
+// documents what the painted node tracks.
 watch(
   [
     () => ({ ...props }),
@@ -80,9 +74,8 @@ watch(
 
 onUnmounted(() => unregisterOverlay(id))
 
-// Inline registrant component — purely a side-effect container. Rendering it
-// inside `<Presence>` lets Presence drive register / unregister off its own
-// mount lifecycle.
+// Inline registrant component — purely a side-effect container, so Presence can
+// drive register / unregister off its mount lifecycle.
 const Registrant = defineComponent({
   name: 'AlertDialogOverlayRegistrant',
   setup() {

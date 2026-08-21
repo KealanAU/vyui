@@ -6,15 +6,11 @@ type SwipeActionTV = ThemeTV<typeof theme>
 type SwipeActionVariants = VariantProps<SwipeActionTV>
 
 export interface SwipeActionProps {
-  /**
-   * Width of the revealed action panel in px. Forwarded to the core
-   * `SwipeAction` primitive — required for the threshold math.
-   */
+  /** Width of the revealed action panel in px. Forwarded to the core primitive
+   *  — required for the threshold math. */
   actionWidth: number
-  /**
-   * Width of the row in px. Forwarded to the core primitive — required to
-   * compute the commit threshold.
-   */
+  /** Width of the row in px. Forwarded to the core primitive — required to
+   *  compute the commit threshold. */
   rowWidth: number
   /** Controlled open state. Bind with `v-model:open`. */
   open?: boolean
@@ -22,15 +18,11 @@ export interface SwipeActionProps {
   defaultOpen?: boolean
   /** Disable interaction. */
   disabled?: boolean
-  /**
-   * Fraction of `actionWidth` the user must drag past to snap open. 0–1.
-   * Maps to the core `snapThreshold` prop.
-   */
+  /** Fraction of `actionWidth` the user must drag past to snap open. 0–1. Maps
+   *  to the core `snapThreshold` prop. */
   threshold?: number
-  /**
-   * Which side reveals the actions. Drives styling only — the core
-   * primitive currently always reveals from the trailing (right) edge.
-   */
+  /** Which side reveals the actions. Styling only — the core primitive always
+   *  reveals from the trailing (right) edge. */
   side?: SwipeActionVariants['side']
   class?: ClassValue
   ui?: Partial<Record<keyof SwipeActionTV['slots'], ClassValue>>

@@ -23,9 +23,9 @@ rootContext.contentId ||= useId(undefined, 'vy-collapsible-content')
 
 const { forwardRef } = useForwardExpose()
 
-// When unmountOnHide is false the content stays in the tree across close, with
-// a `hidden=""` attribute (mirrors reka-ui's CSS-driven hidden). Otherwise the
-// content is removed entirely (v-if). `forceMount` overrides both.
+// With `unmountOnHide` false the content stays in the tree across close with a
+// `hidden=""` attribute (as in reka-ui); otherwise it is v-if'd out entirely.
+// `forceMount` overrides both.
 const isOpen = computed(() => rootContext.open.value)
 const isHidden = computed(() => !isOpen.value)
 const shouldMount = computed(
@@ -33,13 +33,12 @@ const shouldMount = computed(
 )
 
 // -- Height morph -------------------------------------------------------------
-// Animate open/close by tweening the outer container's height between 0 and the
-// content's natural height (the device-proven Lynx recipe from `Tray` — MT
-// `setStyleProperty('height')` is a no-op, so the height rides an inline px
-// value that the consumer's `transition-[height]` class interpolates; core
-// stays headless and ships neither the clip nor the timing). The inner wrapper
-// is never height-constrained, so its `@layoutchange` reports the natural
-// height even while the outer clips it to 0.
+// Tween the outer container's height between 0 and the content's natural height
+// (the device-proven Lynx recipe from `Tray`: MT `setStyleProperty('height')` is
+// a no-op, so the height rides an inline px value the consumer's
+// `transition-[height]` class interpolates). The inner wrapper is never
+// height-constrained, so its `@layoutchange` reports the natural height even
+// while the outer clips it to 0.
 const measuredHeight = ref<number | null>(null)
 
 function onContentLayout(event: { detail?: { height?: number } } | undefined) {
@@ -48,17 +47,13 @@ function onContentLayout(event: { detail?: { height?: number } } | undefined) {
     measuredHeight.value = Math.round(h)
 }
 
-// Disarmed for the first paint so a `defaultOpen` panel (or a CSS reload)
-// doesn't animate growing in from zero — only genuine toggles after mount
-// tween. Same one-tick arm idiom as `TabsIndicator`.
+// Disarmed for the first paint so a `defaultOpen` panel doesn't animate growing
+// in from zero. Same one-tick arm idiom as `TabsIndicator`.
 const armed = ref(false)
 onMounted(() => { nextTick(() => { armed.value = true }) })
 
-// A fresh open needs a committed `0` baseline before it can tween up: a
-// brand-new node (unmount mode) or one sitting at `height:0` (kept mounted) has
-// nothing to transition FROM if it paints straight at its natural height. So
-// render `0` for one tick when opening, then release to the measured height and
-// CSS interpolates 0 → natural.
+// A fresh open needs a committed `0` baseline before it can tween up, so render
+// `0` for one tick when opening, then release to the measured height.
 const growingFromZero = ref(false)
 watch(isOpen, (open) => {
   if (!open)
@@ -72,8 +67,7 @@ const contentStyle = computed(() => {
   // `transition-[height]` until armed; `undefined` drops it so the class wins.
   const transitionProperty = armed.value ? undefined : 'none'
   // Closed, or the one-frame open baseline → 0. Open + measured → a concrete px
-  // value (so both the grow and a later content-resize tween from it). Open
-  // before the first measure → auto (no explicit height): nothing animates in.
+  // value. Open before the first measure → auto: nothing animates in.
   if (!isOpen.value || growingFromZero.value)
     return { height: '0px', transitionProperty }
   if (measuredHeight.value == null)

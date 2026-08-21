@@ -52,13 +52,6 @@
       "description": "Render an overlay behind the modal."
     },
     {
-      "name": "portal",
-      "type": "boolean | undefined",
-      "required": false,
-      "default": "true",
-      "description": "Render the modal in a portal. The `@vyui/core` `DialogPortal` is a\ntransparent pass-through on Lynx (portaling is handled by `OverlayRoot`);\nthe prop is kept for API parity but always wraps content in `DialogPortal`\nto keep the render tree shape stable."
-    },
-    {
       "name": "title",
       "type": "string | undefined",
       "required": false,
@@ -95,12 +88,12 @@
     {
       "name": "default",
       "type": "{ open: boolean; }",
-      "description": "Trigger element — wrapped in `DialogTrigger`. `DialogTrigger` toggles\nopen state on tap; do NOT bind a `@tap` handler on the slotted child\nthat also sets the open state — it will race with the trigger and\ncause a double-toggle. Use `v-model:open` (or `v-model`) instead."
+      "description": "Trigger element — wrapped in `DialogTrigger`, which toggles open state on\ntap. Do NOT also bind a `@tap` handler that sets the open state; use\n`v-model:open` instead."
     },
     {
       "name": "content",
       "type": "{ close: () => void; }",
-      "description": "Full content override — replaces the default header/body/footer layout\n(including the close button, which lives in the header). Matches the\nNuxt UI Modal `#content` escape hatch."
+      "description": "Full content override — replaces the default header/body/footer layout,\nincluding the close button. Matches Nuxt UI's Modal `#content`."
     },
     {
       "name": "header",

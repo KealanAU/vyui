@@ -1,17 +1,10 @@
 <script lang="ts">
-export interface DialogPortalProps {
-  /**
-   * Inert on Lynx. Actual portaling is handled by `overlayStore` + the app-root `OverlayRoot`,
-   * so this selector is never read. No default is supplied — the prop is
-   * meaningless and supplying `'#overlay-root'` would falsely imply a DOM
-   * target.
-   */
-  to?: string
-}
+export interface DialogPortalProps {}
 </script>
 
 <script setup lang="ts">
-// Component is a transparent pass-through on Lynx; see prop doc above.
+// Transparent pass-through on Lynx: `overlayStore` + the app-root `OverlayRoot`
+// do the portaling.
 defineProps<DialogPortalProps>()
 </script>
 

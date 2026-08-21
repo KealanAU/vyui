@@ -5,7 +5,7 @@
       "type": "number | undefined",
       "required": false,
       "default": "48",
-      "description": "Edge band in px from the top/bottom of the root within which a drag\ntriggers autoscroll. Set to 0 to disable. Requires the root to be a\nscroll container (e.g. `scroll-view` / overflow scroll) for any effect."
+      "description": "Edge band in px from the top/bottom of the root within which a drag triggers\nautoscroll; 0 disables it. Requires the root to be a scroll container."
     },
     {
       "name": "autoScrollSpeed",

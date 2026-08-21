@@ -2,10 +2,8 @@ import type { MaybeRef } from 'vue'
 import { computed, unref } from 'vue'
 
 /**
- * Safely applies Unicode NFC normalization.
- *
- * Lynx's JS engine (PrimJS) does not implement `String.prototype.normalize`,
- * so we fall back to returning the string unchanged when it is unavailable.
+ * Safely applies Unicode NFC normalization — Lynx's PrimJS engine has no
+ * `String.prototype.normalize`, so the string comes back unchanged there.
  */
 function normalizeNFC(value: string): string {
   return typeof value.normalize === 'function' ? value.normalize('NFC') : value
@@ -14,9 +12,9 @@ function normalizeNFC(value: string): string {
 type Compare = (a: string, b: string) => number
 
 /**
- * Builds a comparison function. Prefers `Intl.Collator`, but Lynx's PrimJS
- * engine does not ship a working `Intl`, so we fall back to a plain
- * case-insensitive comparison when constructing the collator throws.
+ * Builds a comparison function. Prefers `Intl.Collator`, falling back to a plain
+ * case-insensitive comparison when constructing it throws (PrimJS ships no
+ * working `Intl`).
  */
 function createCompare(options: Intl.CollatorOptions | undefined): Compare {
   try {
@@ -35,20 +33,12 @@ function createCompare(options: Intl.CollatorOptions | undefined): Compare {
 }
 
 /**
- * Provides locale-aware string filtering functions.
- * Uses `Intl.Collator` for comparison when available to ensure proper Unicode
- * handling, and falls back to a case-insensitive comparison otherwise.
+ * Provides locale-aware string filtering functions, using `Intl.Collator` when
+ * available and a case-insensitive comparison otherwise.
  *
- * @param options - Optional collator options to customize comparison behavior.
- *   See [Intl.CollatorOptions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator/Collator#options) for details.
- * @returns An object with methods to check if a string starts with, ends with, or contains a substring.
- *
- * @example
- * const { startsWith, endsWith, contains } = useFilter();
- *
- * startsWith('hello', 'he'); // true
- * endsWith('hello', 'lo'); // true
- * contains('hello', 'ell'); // true
+ * @param options - Optional collator options.
+ * @returns Methods to check if a string starts with, ends with, or contains a
+ *   substring.
  */
 export function useFilter(options?: MaybeRef<Intl.CollatorOptions>) {
   const computedOptions = computed(() => unref(options))

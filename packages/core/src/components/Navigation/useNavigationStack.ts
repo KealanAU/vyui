@@ -1,20 +1,11 @@
 /**
  * useNavigationStack — reactive push/pop stack for screen-style navigation.
  *
- * Lynx ships no `<router-view>` equivalent and pages on iOS / Android stack
- * imperatively (UINavigationController.push, Fragment back stack). This
- * composable mirrors that model in a single ref of entries.
- *
- * Each entry has a `key` (looked up by the consuming `<NavigationStack>` /
- * `<NavigationPage>`) and optional `data` that the rendered page can read.
- *
- * ```ts
- * const stack = useNavigationStack(['home'])
- * stack.push('detail', { id: 42 })  // entries: ['home', 'detail']
- * stack.current.value                // -> { key: 'detail', data: { id: 42 } }
- * stack.pop()                       // back to ['home']
- * stack.replace('settings')         // swap the top entry without growing the stack
- * ```
+ * Lynx ships no `<router-view>` equivalent, and pages on iOS / Android stack
+ * imperatively (UINavigationController.push, Fragment back stack); this mirrors
+ * that model in a single ref of entries. Each entry has a `key` (looked up by
+ * the consuming `<NavigationStack>` / `<NavigationPage>`) and optional `data`
+ * the rendered page can read.
  */
 import { computed, ref, type Ref, type ComputedRef } from 'vue'
 

@@ -97,9 +97,7 @@ describe('SliderRoot rendering & a11y traits', () => {
 // direction of that pull depends on which edge anchors it — `right: X%` pins the
 // thumb's right edge, so it has to move the opposite way from a `left`-anchored
 // one. Horizontal missed the flip, leaving inverted/RTL sliders' thumbs sitting
-// half a thumb-width left of the fill. `getThumbInBoundsOffset` would have
-// absorbed it, but it is always 0 on Lynx native — `useSize` leans on
-// ResizeObserver / offsetWidth, neither of which exists there.
+// half a thumb-width left of the fill.
 describe('SliderThumb centring follows the anchoring edge', () => {
   const transformOf = (container: Element) =>
     container.querySelector('.vyui-slider-thumb')?.getAttribute('style') ?? ''

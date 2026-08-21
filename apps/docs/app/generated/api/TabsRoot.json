@@ -17,7 +17,7 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+      "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     },
     {
       "name": "defaultValue",
@@ -30,7 +30,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "When `true`, the active-trigger state change and the content swap land in\nseparate flushes: triggers/indicator update immediately, content follows\none macrotask later. On Lynx this makes the tab bar respond instantly\ninstead of waiting for the incoming panel's subtree to mount."
+      "description": "When `true`, the active-trigger state change and the content swap land in\nseparate flushes: triggers/indicator update immediately, content follows one\nmacrotask later, so the tab bar responds instantly on Lynx."
     },
     {
       "name": "dir",
@@ -56,7 +56,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "When `true`, a content panel is unmounted whenever it is not the active\ntab. When `false`, a panel mounts the FIRST time its tab is selected and\nstays mounted (hidden via `display: none`) afterwards, making revisits a\nstyle flip instead of a full remount. Lazy-on-first-visit rather than\nall-mounted-upfront: on Lynx, mounting every panel at once would move the\ncost to first paint. Use `forceMount` on an individual `TabsContent` for\nthe mount-upfront case."
+      "description": "When `true`, a content panel is unmounted whenever it is not the active tab.\nWhen `false`, a panel mounts the FIRST time its tab is selected and stays\nmounted (hidden via `display: none`), making revisits a style flip. Lazy on\nfirst visit rather than all-mounted-upfront, which on Lynx would move the\ncost to first paint; use `forceMount` on a `TabsContent` for that case."
     }
   ],
   "events": [

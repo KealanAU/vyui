@@ -67,13 +67,6 @@
       "description": "Trigger placeholder when no value is selected. Also used as the sheet title."
     },
     {
-      "name": "presentation",
-      "type": "\"sheet\" | \"anchor\" | undefined",
-      "required": false,
-      "default": "\"sheet\"",
-      "description": "Presentation mode — kept for API parity with `VyPopover` /\n`VyDropdownMenu`. Currently only `'sheet'` is wired (native picker UX);\n`'anchor'` falls back to sheet today."
-    },
-    {
       "name": "searchable",
       "type": "boolean | undefined",
       "required": false,
@@ -114,7 +107,7 @@
       "type": "number[] | undefined",
       "required": false,
       "default": "[0.9]",
-      "description": "Snap fractions forwarded to `SheetRoot`. Default `[0.9]` matches a\nnative search-picker — near-full height so the keyboard has room above\nthe search input."
+      "description": "Snap fractions forwarded to `SheetRoot`. `[0.9]` matches a native\nsearch-picker — near-full height so the keyboard has room above the search\ninput."
     },
     {
       "name": "trailingIcon",

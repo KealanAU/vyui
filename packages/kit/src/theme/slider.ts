@@ -50,7 +50,6 @@ export default (colors: Color[]) => ({
         thumb: `border-${color}-500`,
       },
     })),
-    // orientation x size -> track thickness
     { orientation: 'horizontal' as const, size: 'sm' as const, class: { track: 'h-[8px]' } },
     { orientation: 'horizontal' as const, size: 'md' as const, class: { track: 'h-[9px]' } },
     { orientation: 'horizontal' as const, size: 'lg' as const, class: { track: 'h-[10px]' } },

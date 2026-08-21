@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { fireEvent, q, render, waitForUpdate } from '@vyui/testing-utils'
 import { overlayEntries } from '@/components/OverlayRoot'
 import Dialog from './story/_Dialog.vue'
 
@@ -7,10 +7,6 @@ afterEach(() => {
   // Catch a leaked entry from any failed test.
   overlayEntries.value = []
 })
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 // Each rAF in jsdom is a `setTimeout(16)`. A handful of these are needed to
 // let `delayFrames` chains and the 24-frame fallback inside Presence settle

@@ -1,15 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { fireEvent, q, render, waitForUpdate } from '@vyui/testing-utils'
 import { overlayEntries } from '@/components/OverlayRoot'
 import Dialog from './story/_Dialog.vue'
 
 afterEach(() => {
   overlayEntries.value = []
 })
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 // Native Lynx a11y output (via useA11y). Behaviour lives in Dialog.test.ts;
 // this file covers the accessibility-* surface only.
@@ -42,6 +38,13 @@ describe('Dialog a11y', () => {
     expect(content.getAttribute('accessibility-exclusive-focus')).toBe('true')
     // `dialog` is not a valid Lynx trait — it must only live in role-description.
     expect(content.getAttribute('accessibility-traits')).not.toBe('dialog')
+  })
+
+  it('leaves the screen reachable when the dialog is non-modal', async () => {
+    const { container } = render(Dialog, { rootProps: { modal: false } })
+    fireEvent.tap(q(container, 'trigger')!)
+    await waitForUpdate()
+    expect(q(container, 'content')!.getAttribute('accessibility-exclusive-focus')).toBeNull()
   })
 
   it('exposes the close button as a focusable button labelled "Close"', async () => {

@@ -5,13 +5,13 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "When `false`, force-unmount even if this page matches the current\nstack key — useful for memory pressure or screen-specific reset."
+      "description": "When `false`, force-unmount even if this page matches the current stack key\n— for memory pressure or a screen-specific reset."
     },
     {
       "name": "pageKey",
       "type": "string",
       "required": true,
-      "description": "Stable identifier for this page. Must match the `key` of an entry in\nthe stack's `entries` for the page to mount."
+      "description": "Stable identifier for this page. Must match the `key` of a stack entry for\nthe page to mount."
     }
   ],
   "events": [],

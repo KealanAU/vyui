@@ -12,7 +12,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Hug content instead of sizing the panel to `snapPoints × viewport`. The\npanel takes its natural content height (a bottom sheet grows upward from\nthe edge). Drag/slide/backdrop are unaffected: the drag physics already\nread the panel's MEASURED extent via `@layoutchange`, and the slide\nkeyframes translate by `100%` of whatever that height resolves to. Used\nby the styled `Tray`, whose per-view height morph needs the panel to\nfollow its content rather than a fixed viewport fraction."
+      "description": "Hug content instead of sizing the panel to `snapPoints × viewport`, so the\npanel takes its natural content height. Used by the styled `Tray`."
     }
   ],
   "events": [],

@@ -45,7 +45,7 @@
       "name": "mode",
       "type": "string | undefined",
       "required": false,
-      "description": "Active row mode — bind with `v-model:mode`. Free-form string. `'default'`\nrenders the default slot; any other value renders the matching\n`<template #[mode]>` slot. Caller invents the names — common patterns:\n`'fullisland'` (takeover), `'compose'`, `'filter'`, `'reply'`, …"
+      "description": "Active row mode — bind with `v-model:mode`. Free-form string: `'default'`\nrenders the default slot, any other value the matching `<template #[mode]>`."
     },
     {
       "name": "open",
@@ -57,7 +57,7 @@
       "name": "position",
       "type": "\"top\" | \"bottom\" | undefined",
       "required": false,
-      "description": "Which viewport edge to float against — only relevant when the island is\nfloating (`layer !== 'inline'`). Works on Lynx via an inline `style`, so a\nlone `<VyIsland>` hovers with no wrapper. Also sets the panel growth\ndirection (panel grows away from the edge)."
+      "description": "Which viewport edge to float against, when `layer !== 'inline'`. Works via\nan inline `style`, so a lone `<VyIsland>` hovers with no wrapper. Also sets\nthe panel growth direction."
     },
     {
       "name": "size",

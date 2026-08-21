@@ -30,18 +30,15 @@ const triggerId = computed(() => makeTriggerId(rootContext.baseId, props.value))
 
 const isSelected = computed(() => props.value === rootContext.modelValue.value)
 
-// Register the underlying Lynx shadow element with TabsRoot so TabsIndicator
-// can measure it via `useElementRect` — replaces the DOM-only
+// Register the underlying Lynx shadow element with TabsRoot so TabsIndicator can
+// measure it via `useElementRect`, replacing the DOM-only
 // `querySelectorAll('[role="tab"]')` lookup.
 //
-// We defer the registration to a microtask after `onMounted` so the
-// `triggers` map mutation lands AFTER Vue's patch phase has fully committed.
-// Mutating a Map ref via `flush: 'post'` watcher during the same patch as
-// nested Tabs mount can trigger `TabsIndicator`'s reactive watch mid-patch,
-// producing `Cannot read property 'parent' of null` from `node-ops.parentNode`.
-//
-// Lynx's PrimJS engine doesn't expose `queueMicrotask`, so we hop the
-// microtask queue via `Promise.resolve().then(...)`.
+// Registration is deferred to a microtask after `onMounted` so the `triggers`
+// map mutation lands AFTER Vue's patch phase commits: mutating it mid-patch can
+// wake `TabsIndicator`'s watch and produce `Cannot read property 'parent' of
+// null` from `node-ops.parentNode`. PrimJS has no `queueMicrotask`, so the hop
+// goes through `Promise.resolve().then(...)`.
 onMounted(() => {
   Promise.resolve().then(() => {
     if (currentElement.value)

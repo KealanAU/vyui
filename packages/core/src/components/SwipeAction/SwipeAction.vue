@@ -16,28 +16,17 @@ export interface SwipeActionProps {
   open?: boolean
   /** Initial open state when uncontrolled. */
   defaultOpen?: boolean
-  /**
-   * Fraction of `actionWidth` the user must drag past (without velocity) to
-   * snap open. Range 0–1.
-   * @defaultValue `0.5`
-   */
+  /** Fraction of `actionWidth` the user must drag past (without velocity) to
+   *  snap open. Range 0–1. @defaultValue `0.5` */
   snapThreshold?: number
-  /**
-   * Fraction of `rowWidth` the user must drag past to fire `commit` instead
-   * of just snapping open. Range 0–1.
-   * @defaultValue `0.5`
-   */
+  /** Fraction of `rowWidth` the user must drag past to fire `commit` instead of
+   *  just snapping open. Range 0–1. @defaultValue `0.5` */
   commitThreshold?: number
-  /**
-   * Absolute velocity in px/s (leftward) above which a flick fires `commit`
-   * regardless of position.
-   * @defaultValue `1200`
-   */
+  /** Absolute velocity in px/s (leftward) above which a flick fires `commit`
+   *  regardless of position. @defaultValue `1200` */
   commitVelocity?: number
-  /**
-   * Absolute velocity in px/s for "snap to open" / "snap to closed" override.
-   * @defaultValue `400`
-   */
+  /** Absolute velocity in px/s for "snap to open" / "snap to closed" override.
+   *  @defaultValue `400` */
   velocityThreshold?: number
   /** Release animation duration in ms. */
   duration?: number
@@ -91,17 +80,14 @@ const touchStartYRef = useMainThreadRef<number>(0)
 const startXRef = useMainThreadRef<number>(0)
 const isDraggingRef = useMainThreadRef<boolean>(false)
 // Handle to the in-flight snap animation. A `fill: 'forwards'` Web Animation
-// outranks inline style in the cascade, so the row's `setStyleProperty` writes
-// during the NEXT drag are masked until this is cancelled — that was why a
-// slow-drag after an open/close animation appeared frozen on-device. Mirrors
-// Draggable's `resetAnimRef`.
+// outranks inline style in the cascade, so it must be cancelled before the next
+// drag's `setStyleProperty` writes. Mirrors Draggable's `resetAnimRef`.
 const snapAnimRef = useMainThreadRef<any>(null)
 // Axis lock: 0 = undecided, 1 = horizontal (own the gesture),
 // 2 = vertical (yield to list scroll). Resolved once per gesture after the
 // finger crosses GESTURE_THRESHOLD, then sticky until release.
 const axisLockRef = useMainThreadRef<0 | 1 | 2>(0)
 
-// MT mirrors of BG state.
 const actionWidthRef = useMainThreadRef<number>(props.actionWidth)
 const rowWidthRef = useMainThreadRef<number>(props.rowWidth)
 const snapThresholdRef = useMainThreadRef<number>(props.snapThreshold)
@@ -111,13 +97,11 @@ const velocityThresholdRef = useMainThreadRef<number>(props.velocityThreshold)
 const durationRef = useMainThreadRef<number>(props.duration)
 const disabledRef = useMainThreadRef<boolean>(props.disabled)
 
-// Velocity tracker.
 const positionQueueRef = useMainThreadRef<number[]>([])
 const timeQueueRef = useMainThreadRef<number[]>([])
 
-// Timestamp of the last real touch. Touch browsers replay a tap as a
-// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
-// events inside this window so a tap doesn't double-run the gesture.
+// Timestamp of the last real touch: touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair, which mouse handlers ignore.
 const lastTouchTsRef = useMainThreadRef<number>(0)
 
 watch(() => props.actionWidth, (v) => { actionWidthRef.current = v })
@@ -158,9 +142,8 @@ function _animateTo(targetX: number) {
   currentXRef.current = targetX
   if (typeof el.current?.animate === 'function') {
     // Write the end state inline BEFORE animating: Lynx web's animation PAPI
-    // reads Lynx-style timing keys (fillMode/timingFunction) and silently
-    // drops WAAPI fill/easing, so a web settle would otherwise finish
-    // fill-less and snap back to the stale drag transform. Both spellings are
+    // reads Lynx-style timing keys and silently drops WAAPI fill/easing, so a
+    // web settle would finish fill-less and snap back. Both spellings are
     // passed; the inline value is what the element rests on either way.
     _applyTransform(targetX)
     // Keep the handle: a fill-forwards animation outranks inline style in the
@@ -210,10 +193,9 @@ function _getVelocity() {
 function _dragStart(clientX: number, clientY: number) {
   'main thread'
   if (disabledRef.current) return
-  // Cancel any in-flight snap animation: a `fill: 'forwards'` animation beats
-  // inline style, so leaving it running would mask this drag's
-  // `setStyleProperty('transform')` writes. Re-assert the current transform so
-  // the row doesn't snap to its pre-animation position.
+  // Cancel any in-flight snap animation — a `fill: 'forwards'` animation beats
+  // inline style and would mask this drag's writes. Re-assert the current
+  // transform so the row doesn't snap to its pre-animation position.
   const anim = snapAnimRef.current
   if (anim && typeof anim.cancel === 'function') {
     anim.cancel()
@@ -237,11 +219,10 @@ function _dragMove(clientX: number, clientY: number) {
   const dx = x - touchStartXRef.current
   const dy = y - touchStartYRef.current
 
-  // Axis lock — mirrors physics.ts resolveAxisLock with the horizontal
-  // consume cone (±45°). Once the finger travels past the 8px slop we decide,
-  // once, whether this gesture is ours (horizontal) or belongs to a vertical
-  // list scroll. A vertical gesture is yielded for the rest of the touch so
-  // we never fight the surrounding scroller.
+  // Axis lock — mirrors physics.ts resolveAxisLock with the ±45° horizontal
+  // cone. Decided once past the slop, then sticky: a vertical gesture is
+  // yielded for the rest of the touch so we never fight the surrounding
+  // scroller.
   if (axisLockRef.current === 0) {
     const displacement = Math.sqrt(dx * dx + dy * dy)
     // GESTURE_THRESHOLD = 8 (physics.ts).
@@ -284,8 +265,7 @@ function _dragEnd() {
   const opening = -velocity // positive = leftward flick (revealing)
 
   // Velocity-aware decision — mirrors physics.ts decideSwipeAction. A hard
-  // leftward flick commits; a rightward flick always closes (even past the
-  // open threshold); otherwise position + soft-flick decide open vs close.
+  // leftward flick commits; a rightward flick always closes.
   if (opening >= commitVelocityRef.current || -endX >= commitAt) {
     _animateTo(-rw)
     runOnBackground(_emitCommit as any)()
@@ -329,10 +309,9 @@ function _onTouchEnd() {
 }
 
 // Desktop web: Lynx web dispatches raw mouse events and never synthesizes
-// touch from them, so the same gesture core is bound to mouse. Coordinates
-// arrive top-level (mouse `detail` is the DOM click-count number, not
-// `{x, y}`). No mouseleave binding — it doesn't bubble, so per-element
-// delivery is unreliable on the Lynx dispatch path.
+// touch from them. Coordinates arrive top-level (mouse `detail` is the
+// click-count number). No mouseleave binding — it doesn't bubble, so
+// per-element delivery is unreliable on the Lynx dispatch path.
 function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
   'main thread'
   // Swallow the compatibility mousedown a touch browser replays after a tap.
@@ -346,9 +325,8 @@ function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number })
 function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
   'main thread'
   // Only an EXPLICIT buttons value with the primary bit clear counts as
-  // released (recovers the mouseup lost outside the <lynx-view>). A missing
-  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
-  // it, and ending on those lets the drag go mid-gesture.
+  // released (recovers the mouseup lost outside the <lynx-view>); a missing
+  // `buttons` is treated as still-pressed.
   if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
     _dragEnd()
     return
@@ -432,9 +410,7 @@ const slotProps = computed(() => ({ open: open.value, close }))
         width: '100%',
         /* No `backgroundColor`: headless. The row must still be OPAQUE so the
            actions behind it don't show through, but that color is the
-           consumer's to pick — @vyui/kit's theme puts `bg-default` on this
-           slot, which an inline style here would silently outrank (white row
-           on a dark page). */
+           consumer's to pick — an inline style here would outrank the theme. */
       }"
     >
       <slot v-bind="slotProps" />

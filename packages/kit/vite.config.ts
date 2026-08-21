@@ -43,9 +43,8 @@ export default defineConfig({
         index: resolve(src, 'index.ts'),
         'theme/index': resolve(src, 'theme/index.ts'),
         // Plain `.js` (CJS-compatible ESM) consumed by the consumer's Tailwind
-        // via jiti — kept as their own entry files, not bundled.
+        // via jiti — kept as its own entry file, not bundled.
         tailwind: resolve(src, 'tailwind.js'),
-        config: resolve(src, 'config.js'),
       },
       formats: ['es'],
     },

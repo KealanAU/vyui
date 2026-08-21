@@ -3,23 +3,10 @@
 // LICENSE file in the root directory of this source tree.
 //
 // Ported 1:1 from `lynx-family/lynx-ui`
-// `packages/lynx-ui-presence/src/usePresence.tsx`. Vue/Lynx mapping:
-//
-//   React                 →  Vue
-//   --------------------     --------------------
-//   useState               → ref()
-//   useRef                 → plain `{ current }` (mutable, non-reactive)
-//   useEffect([state])     → watch(state, ...)
-//   useEffect([show, ...]) → watch([show, enableDelay], ..., { immediate: false })
-//   useEffect([])          → onMounted (initial-render flag only)
-//   showRef/stateRef       → (dropped) upstream mirrors these into refs because
-//                            a `useState` value is frozen into the closure of
-//                            the render that scheduled a callback. `show` and
-//                            `state` are Refs here, so `.value` is always live.
-//
-// The composable is invoked once per Presence instance in `setup()`. Reactive
-// inputs (`show`, `state`, `enableDelay`) are passed as Vue `Ref`s so the
-// watches inside fire on changes — matching the React effect semantics.
+// `packages/lynx-ui-presence/src/usePresence.tsx`. Upstream's showRef/stateRef
+// mirrors are dropped: `show` and `state` are Vue `Ref`s here, so `.value` is
+// always live. The composable is invoked once per Presence instance in
+// `setup()`; reactive inputs are passed as `Ref`s so the watches fire.
 
 import type { Ref } from 'vue'
 import { onMounted, ref, watch } from 'vue'
@@ -31,11 +18,8 @@ import type {
 } from './types'
 import { PresenceState } from './utils'
 
-/**
- * Reactive options accepted by {@link usePresence}. Mirrors `UsePresenceOptions`
- * but each driving field is a `Ref` — required so the composable can `watch`
- * them across the lifetime of the host component.
- */
+/** Reactive options accepted by {@link usePresence} — each driving field is a
+ *  `Ref` so the composable can `watch` it. */
 export interface UsePresenceRefOptions {
   show: Ref<boolean>
   state: Ref<PresenceState>
@@ -47,47 +31,35 @@ export interface UsePresenceRefOptions {
 }
 
 /**
- * The maximum number of frames `handleStateEntering`/`handleStateLeaving`
- * will wait for a real `bindanimationstart` / `bindtransitionstart` before
- * giving up and force-progressing the state machine. 24 frames ≈ 400ms at
- * 60fps — long enough to absorb a slow first paint, short enough that
- * elements without an animation don't hang in Entering/Leaving.
+ * Frames `handleStateEntering`/`handleStateLeaving` wait for a real
+ * `bindanimationstart` / `bindtransitionstart` before force-progressing the
+ * state machine. 24 frames ≈ 400ms at 60fps.
  */
 export const MAX_WAIT_FRAMES = 24
 
 /**
- * Absolute wall-clock ceiling on how long Entering/Leaving may stay
- * unresolved while an animation is (or claims to be) in flight. On web,
- * end/cancel events can be lost outright — a child unmounted mid-transition
- * never delivers its end, and DOM bubbling feeds child animation events into
- * these handlers in the first place — which would otherwise wedge the machine
- * forever (a stuck Leaving keeps the invisible backdrop mounted, eating every
- * tap under it). Wall-clock, not frames: rAF cadence varies wildly across
- * environments (jsdom chains near-instantly; 120Hz devices double-tick). 3s
- * is far above any real enter/leave animation, so it only fires on genuinely
- * lost events. Not in upstream lynx-ui as of 2026-07.
+ * Absolute wall-clock ceiling on how long Entering/Leaving may stay unresolved
+ * while an animation is (or claims to be) in flight. On web, end/cancel events
+ * can be lost outright — a child unmounted mid-transition never delivers its
+ * end — which wedges the machine forever (a stuck Leaving keeps the invisible
+ * backdrop mounted, eating every tap under it). Wall-clock, not frames: rAF
+ * cadence varies wildly across environments. Not in upstream lynx-ui.
  */
 export const MAX_STUCK_MS = 3000
 
 /**
  * The core animation state machine for `<Presence>`.
  *
- * Listens to `bindanimationstart` / `bindanimationend` / `bindanimationcancel`
- * (`handleKFStart` / `handleKFEnd` / `handleKFCancel`) and the corresponding
+ * Listens to `bindanimation{start,end,cancel}` and the corresponding
  * `bindtransition*` events (Lynx fires these natively on `<view>`). When one
- * of them resolves and no other animation is in flight, the state advances:
- *
- *   Entering / DelayedEntering → Entered
- *   Leaving                    → Left
- *
- * If no animation fires for {@link MAX_WAIT_FRAMES} frames after entering one
- * of those states, the state advances anyway so unanimated content doesn't
+ * resolves and no other animation is in flight, the state advances:
+ * Entering / DelayedEntering → Entered, Leaving → Left. If nothing fires for
+ * {@link MAX_WAIT_FRAMES}, it advances anyway so unanimated content doesn't
  * hang on screen.
  *
  * Race protection — `enteringLoopIdRef` / `leavingLoopIdRef` /
  * `showScheduleIdRef` are incremented on every relevant trigger; in-flight
- * `delayFrames` callbacks compare their captured id against the current one
- * and bail out when stale.
+ * `delayFrames` callbacks bail when their captured id is stale.
  */
 export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType {
   const {
@@ -108,9 +80,8 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
 
   trace(`init, show: ${show.value}, state: ${state.value}, enableDelay: ${getEnableDelay()}`)
 
-  // Mutable, non-reactive refs — `useRef` analogue. We deliberately do NOT
-  // use Vue `ref()` for these because they're write-during-event-handler
-  // values that should never trigger re-render.
+  // Mutable, non-reactive refs — `useRef` analogue. Written during event
+  // handlers, and must never trigger a re-render.
   const isTransitionAnimating = { current: false }
   const isKFAnimating = { current: false }
   // Tracks the very first render so onClose doesn't fire when the component
@@ -120,17 +91,14 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   // routes back through Entered without ever reaching Left (upstream parity).
   const hasNotifiedOpen = { current: false }
 
-  // The reactive output: whether the child should render.
   const mount = ref<boolean>(false)
 
-  // Loop-id refs guard against stale `delayFrames` callbacks racing the
-  // current animation cycle. Each handler that starts a new wait increments
-  // these; the callback exits early if the id has moved on.
+  // Loop-id refs guard against stale `delayFrames` callbacks racing the current
+  // animation cycle.
   const enteringLoopIdRef = { current: 0 }
   const leavingLoopIdRef = { current: 0 }
   const showScheduleIdRef = { current: 0 }
 
-  // ----- helpers ------------------------------------------------------------
 
   const notAnimating = () =>
     isKFAnimating.current === false && isTransitionAnimating.current === false
@@ -171,12 +139,11 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   // ----- animation event handlers ------------------------------------------
   // Plain callables — Lynx binds these as the `bindanimation*` /
   // `bindtransition*` listeners on the consumer's root `<view>`.
-
+  //
   // These deliberately do NOT bump the entering/leaving loop ids (upstream
-  // lynx-ui does). Bumping killed the frame watchdog the moment any animation
-  // started, leaving the machine trusting an end/cancel event that web can
-  // lose — see {@link MAX_STUCK_MS}. The watchdogs poll through animations
-  // instead.
+  // lynx-ui does): bumping killed the frame watchdog the moment any animation
+  // started, leaving the machine trusting an end/cancel event web can lose —
+  // see {@link MAX_STUCK_MS}.
   const handleKFStart = () => {
     isKFAnimating.current = true
     trace(`KF start, loopId: ${leavingLoopIdRef.current}`)
@@ -213,7 +180,6 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
     handleAnimationEnd()
   }
 
-  // ----- state-side effects -------------------------------------------------
 
   const handleStateEntered = () => {
     if (hasNotifiedOpen.current) return
@@ -224,10 +190,8 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   const handleStateLeft = () => {
     if (show.value) {
       // show flipped back on while we were leaving — remount instead of
-      // tearing down. Without this (upstream lynx-ui parity, drifted after
-      // the original port), a reopen that races Leaving → Left strands
-      // show=true with nothing mounted and the show watcher never re-fires:
-      // the trigger goes permanently dead.
+      // tearing down. Without this a reopen that races Leaving → Left strands
+      // show=true with nothing mounted and the trigger goes permanently dead.
       trace('skip mount=false because show=true (Left)')
       restartShow()
       return
@@ -241,12 +205,11 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   }
 
   /**
-   * Polls once per frame until `state` leaves `isCurrentState()`, then stops.
-   * Two ways out other than the normal end event:
-   *   - no animation ever starts → resolve after {@link MAX_WAIT_FRAMES}
-   *   - one starts but its end/cancel is lost → resolve after
-   *     {@link MAX_STUCK_MS}, clearing the wedged flags first
-   * Stale ticks self-terminate on the loop id, so nothing needs cancelling.
+   * Polls once per frame until `state` leaves `isCurrentState()`. Two ways out
+   * other than the normal end event: no animation ever starts (resolve after
+   * {@link MAX_WAIT_FRAMES}), or one starts but its end/cancel is lost (resolve
+   * after {@link MAX_STUCK_MS}, clearing the wedged flags first). Stale ticks
+   * self-terminate on the loop id.
    */
   const watchdog = (
     name: string,
@@ -304,7 +267,6 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
     )
   }
 
-  // ----- show/dismiss -------------------------------------------------------
 
   const handleShow = (scheduleId: number) => {
     trace('set mount=true')
@@ -333,16 +295,13 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   const handleDismiss = () => {
     const s = state.value
     if (s === getEnteringStateWithDelay()) {
-      // Mid-enter. Do NOT cut straight to Leaving: a leave keyframe starts
-      // from the element's UNDERLYING value (the fully-open rule), not from
-      // wherever the enter animation currently has it, so swapping the two
-      // mid-flight snaps the element to fully open and plays the exit from
-      // there — the "flashes up, then plays back" on a close that races the
-      // open (Sheet/Drawer is where it reads worst). Let the enter
-      // finish; `handleAnimationEnd` routes Entering → Leaving on its own
-      // because `show` is already false, and the entering watchdog (still
-      // live — we deliberately don't bump its loop id here) does the same
-      // when no animation fires or its end event is lost.
+      // Mid-enter. Do NOT cut straight to Leaving: a leave keyframe starts from
+      // the element's UNDERLYING value, not from wherever the enter animation
+      // currently has it, so swapping mid-flight snaps the element to fully open
+      // and plays the exit from there. Let the enter finish —
+      // `handleAnimationEnd` routes Entering → Leaving on its own because `show`
+      // is already false, and the entering watchdog does the same if no
+      // animation fires or its end event is lost.
       trace('show=false mid-enter -> defer Leaving until the enter resolves')
       return
     }
@@ -359,16 +318,13 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
       (s === PresenceState.Initial || s === PresenceState.Left)
       && mount.value
     ) {
-      // show flipped back to false before the entering schedule fired —
-      // there's nothing to animate out of, so unmount synchronously.
-      // (The bumped showScheduleIdRef in the show watcher invalidates the
-      // pending entering schedule so we don't race ourselves into a re-mount.)
+      // show flipped back to false before the entering schedule fired — nothing
+      // to animate out of, so unmount synchronously.
       trace(`show=false in ${s === PresenceState.Initial ? 'Initial' : 'Left'} -> set mount=false`)
       mount.value = false
     }
   }
 
-  // ----- watchers (React effects in Vue idiom) -----------------------------
 
   // useEffect([state]) — drive side effects off state transitions.
   watch(
@@ -383,9 +339,8 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
     { immediate: true, flush: 'sync' },
   )
 
-  // useEffect([show, enableDelay]) — react to the consumer flipping show.
-  // `immediate: false` skips the initial-mount fire so the React semantics
-  // (effects run AFTER the first render) are preserved.
+  // useEffect([show, enableDelay]). `immediate: false` skips the initial-mount
+  // fire so effects run AFTER the first render, as in React.
   watch(
     enableDelay ? [show, enableDelay] : [show],
     () => {
@@ -398,9 +353,8 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
     { immediate: false, flush: 'sync' },
   )
 
-  // Drive the initial show on mount (the React variant gets this from the
-  // first effect pass; in Vue we run it once explicitly so we match the
-  // `immediate: false` choice above).
+  // Drive the initial show on mount — run once explicitly to match the
+  // `immediate: false` choice above.
   onMounted(() => {
     showScheduleIdRef.current += 1
     const scheduleId = showScheduleIdRef.current

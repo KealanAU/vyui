@@ -8,10 +8,9 @@ export interface DialogRootProps {
   open?: boolean
   /** The open state of the dialog when it is initially rendered. Use when you do not need to control its open state. */
   defaultOpen?: boolean
-  /**
-   * The modality of the dialog. When set to `true`,
-   * interaction with outside elements will be disabled.
-   */
+  /** The modality of the dialog. When `true`, `DialogOverlay` paints its
+   *  tap-blocking backdrop and the content confines assistive tech via
+   *  `exclusiveFocus`. @defaultValue true */
   modal?: boolean
 }
 
@@ -26,25 +25,19 @@ export interface DialogRootContext {
   openModal: () => void
   onOpenChange: (value: boolean) => void
   onOpenToggle: () => void
-  /**
-   * Reference to the painted content node. `unknown`, not `HTMLElement` —
-   * there is no DOM on Lynx. Consumed by `DialogContentImpl`.
-   */
+  /** Reference to the painted content node. `unknown`, not `HTMLElement` —
+   *  there is no DOM on Lynx. Consumed by `DialogContentImpl`. */
   contentElement: Ref<unknown>
   /** Deterministic ids, mirroring reka-ui. Assigned lazily by the impl. */
   contentId: string
   titleId: string
   descriptionId: string
   /**
-   * Combined Presence state across the backdrop + content layers. Updated by
-   * `DialogContent`'s `usePresenceGroup`; consumed by `DialogTrigger` /
-   * `DialogClose` to ignore taps mid-animation (see `resolveBusyState` in
-   * `./utils`) and by any descendant that wants the live group state.
-   *
-   * Defaults to `Left` until the first `setGroupState` lands. Lives on the
-   * root context so triggers (which mount outside the `<Presence>` subtree
-   * and therefore can't `inject(PresenceContextKey)`) can still observe the
-   * animating state.
+   * Combined Presence state across the backdrop + content layers, updated by
+   * `DialogContent`'s `usePresenceGroup` and consumed by `DialogTrigger` /
+   * `DialogClose` to ignore taps mid-animation. Defaults to `Left` until the
+   * first `setGroupState`. Lives on the root context so triggers — which mount
+   * outside the `<Presence>` subtree — can still observe the animating state.
    */
   groupState: Ref<PresenceState>
   setGroupState: (state: PresenceState) => void
@@ -84,10 +77,9 @@ const { modal } = toRefs(props)
 
 const contentElement = ref<unknown>()
 
-// `groupState` is the parent-owned mirror of the `usePresenceGroup` combined
-// state used by `DialogContent`. We seed with the open-aware Entering /
-// Left so a `defaultOpen: true` mount renders the trigger in the
-// matching "busy entering" state until the group has settled.
+// `groupState` mirrors the `usePresenceGroup` combined state, seeded open-aware
+// so a `defaultOpen: true` mount renders the trigger "busy entering" until the
+// group settles.
 const groupState = ref<PresenceState>(
   open.value ? PresenceState.Entering : PresenceState.Left,
 )

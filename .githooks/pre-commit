@@ -1,0 +1,38 @@
+#!/bin/sh
+# Staged-scope checks, gated by area so only what you touched runs. Anything
+# slow (build, typecheck, test) belongs in CI — see .github/workflows/ci.yml.
+# Bypass with `git commit --no-verify`.
+set -e
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+touched() { printf '%s\n' "$staged" | grep -qE "$1"; }
+
+# --- everywhere -------------------------------------------------------------
+lint=$(printf '%s\n' "$staged" | grep -E '\.(js|mjs|ts|mts|vue)$' || true)
+if [ -n "$lint" ]; then
+  echo "pre-commit: eslint"
+  printf '%s\n' "$lint" | xargs pnpm exec eslint --no-warn-ignored
+fi
+
+# --- kit --------------------------------------------------------------------
+# The `exports` block is generated from the barrel; the two drift apart
+# silently and only the packaged build notices.
+if touched '^packages/kit/(src/index\.ts|package\.json|scripts/gen-subpath-entries\.mjs)$'; then
+  echo "pre-commit: kit subpath exports"
+  node packages/kit/scripts/gen-subpath-entries.mjs
+fi
+
+# --- docs -------------------------------------------------------------------
+# Every kit component needs a page; a new SFC or a moved page can break it.
+if touched '^(packages/kit/src/components/[^/]+\.vue|apps/docs/content/3\.components/)'; then
+  echo "pre-commit: docs coverage"
+  pnpm check:docs
+fi
+
+# --- core -------------------------------------------------------------------
+# No cheap core-only gate exists: its typecheck is the ~2min vue-tsc run, which
+# CI already does after the build (it needs core's emitted dist types). eslint
+# above is the whole story here.
+
+# --- apps/examples ----------------------------------------------------------
+# Demos have no `typecheck` script, so `pnpm -r typecheck` skips them entirely
+# — eslint above is the only automated gate they get.

@@ -22,15 +22,9 @@ export interface ComboboxRootProps<T = AcceptableValue> extends PrimitiveProps {
   open?: boolean
   /** The open state of the combobox when it is initially rendered. */
   defaultOpen?: boolean
-  /**
-   * Whether to reset the searchTerm when the Combobox value is selected.
-   * @defaultValue `true`
-   */
+  /** Whether to reset the searchTerm when the Combobox value is selected. @defaultValue `true` */
   resetSearchTermOnSelect?: boolean
-  /**
-   * Whether to reset the searchTerm when the Combobox is closed.
-   * @defaultValue `true`
-   */
+  /** Whether to reset the searchTerm when the Combobox is closed. @defaultValue `true` */
   resetSearchTermOnBlur?: boolean
   /** When `true`, disables the default filtering. */
   ignoreFilter?: boolean

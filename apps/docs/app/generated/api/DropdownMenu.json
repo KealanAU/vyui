@@ -11,7 +11,7 @@
       "type": "DropdownMenuContentSettings | undefined",
       "required": false,
       "default": "{ side: \"bottom\", sideOffset: 8, align: \"start\" }",
-      "description": "Positioning settings — `side`, `align`, `sideOffset` control where the\nmenu docks relative to its trigger. (Sheet-presentation pickers belong\non `VySelect` / `VyCombobox` — DropdownMenu is the trigger-anchored\naction menu.)"
+      "description": "Positioning settings — `side`, `align`, `sideOffset` control where the menu\ndocks relative to its trigger."
     },
     {
       "name": "defaultOpen",
@@ -86,7 +86,7 @@
     {
       "name": "default",
       "type": "{ open: boolean; }",
-      "description": "Trigger content. `DropdownMenuTrigger` toggles open state on tap; do NOT\nbind a `@tap` handler on the slotted child that also sets the open state."
+      "description": "Trigger content. `DropdownMenuTrigger` toggles open state on tap; do NOT\nalso bind a `@tap` handler that sets the open state."
     },
     {
       "name": "item",

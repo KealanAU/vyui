@@ -26,9 +26,8 @@ const { primitiveElement, currentElement } = usePrimitiveElement()
 const currentValue = computed(() => context.modelValue.value?.[props.index] ?? '')
 const disabled = computed(() => props.disabled || context.disabled.value)
 
-// Per-cell a11y label. The total count comes from the root's registry of
-// mounted input elements; until that registry is populated (first render),
-// fall back to a label without the total.
+// Per-cell a11y label. The total comes from the root's registry of mounted
+// inputs; until it is populated, fall back to a label without the total.
 const a11y = useA11y(() => {
   const count = context.inputElements.value.size
   return {
@@ -40,11 +39,10 @@ const a11y = useA11y(() => {
 })
 
 /**
- * Lynx `<input>` emits `input` with the value on `event.detail.value`.
- * The cell is `maxlength="1"`, so typing yields a single character: it fills
- * this cell and advances focus. A multi-character value can still arrive from
- * a fast-typed run or a programmatic insert — it is spread one char per cell
- * from here onward. Clipboard pastes are handled by `handlePaste`.
+ * Lynx `<input>` emits `input` with the value on `event.detail.value`. The cell
+ * is `maxlength="1"`, so typing yields a single character; a multi-character
+ * value from a fast-typed run or programmatic insert is spread one char per cell
+ * from here onward. Clipboard pastes go through `handlePaste`.
  */
 function handleInput(event: any) {
   let value: string = event?.detail?.value ?? event?.target?.value ?? ''
@@ -62,9 +60,9 @@ function handleInput(event: any) {
 }
 
 /**
- * Clipboard paste — spread the whole pasted string across cells from here on.
- * Reading from `clipboardData` (and preventing the default insert) keeps the
- * `maxlength="1"` cell from truncating the paste to its first character.
+ * Clipboard paste — spread the pasted string across cells from here on. Reading
+ * `clipboardData` (and preventing the default insert) keeps the `maxlength="1"`
+ * cell from truncating it to the first character.
  */
 function handlePaste(event: any) {
   const text: string = event?.clipboardData?.getData?.('text')

@@ -1,24 +1,5 @@
 {
-  "props": [
-    {
-      "name": "disabled",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Disable portalling. No-op on Lynx."
-    },
-    {
-      "name": "forceMount",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Used to force mounting. No-op on Lynx."
-    },
-    {
-      "name": "to",
-      "type": "string | undefined",
-      "required": false,
-      "description": "No-op on Lynx — content renders via OverlayRoot."
-    }
-  ],
+  "props": [],
   "events": [],
   "slots": [
     {

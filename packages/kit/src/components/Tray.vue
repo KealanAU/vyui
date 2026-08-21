@@ -43,26 +43,22 @@ export interface TrayProps {
   /** Show the drag handle at the top of the tray. @defaultValue `true` */
   handle?: boolean
   /**
-   * Height-morph + slide/settle duration in ms. Drives both the per-view
-   * height tween and the core sheet's open/close motion.
-   * @defaultValue `300`
+   * Height-morph + slide/settle duration in ms, driving both the per-view
+   * height tween and the core sheet's open/close motion. @defaultValue `300`
    */
   duration?: number
   /**
-   * Keyboard handling on Lynx (no-op on web/jsdom — there is no platform
-   * keyboard event). When enabled, the whole panel rises above the on-screen
-   * keyboard: the panel is bottom-anchored and content-hugging, so growing
-   * its bottom padding by the keyboard height pushes handle/body/footer up
-   * while the panel background fills behind the keyboard. (Padding, not
-   * `transform` — the sheet's MT drag worklets own the panel transform.)
+   * Keyboard handling on Lynx (no-op on web/jsdom). The panel is bottom-anchored
+   * and content-hugging, so growing its bottom padding by the keyboard height
+   * pushes handle/body/footer up while the background fills in behind the
+   * keyboard. (Padding, not `transform` — the sheet's MT drag worklets own the
+   * panel transform.)
    *  - `'lift'` — rise only. Best for short/medium trays.
    *  - `'scroll'` (or `true`) — rise, plus the body becomes a keyboard-aware
-   *    scroll region that keeps the focused input in view. It only scrolls
-   *    once its height is bounded — cap it via the `bodyScroll` ui slot
-   *    (e.g. `max-h-*`). Best for tall trays.
+   *    scroll region. It only scrolls once bounded — cap it via the `bodyScroll`
+   *    ui slot (e.g. `max-h-*`). Best for tall trays.
    *  - `false` — no keyboard handling.
-   * Inputs anywhere inside (body or footer) register themselves; no
-   * `KeyboardAwareTrigger` wrapping needed. @defaultValue `false`
+   * Inputs anywhere inside register themselves. @defaultValue `false`
    */
   keyboardAware?: boolean | 'lift' | 'scroll'
   class?: ClassValue
@@ -134,16 +130,13 @@ const emit = defineEmits<TrayEmits>()
 defineSlots<TraySlots>()
 
 // Hand-rolled controlled/uncontrolled split for `open` and `view` — vue-lynx
-// 0.4.0 lacks `defineModel`'s `mergeModels` runtime export (same reason
-// `Island` hand-rolls it). The controlled prop wins when bound; the local ref
-// tracks state otherwise, and writers update the local ref AND emit.
+// 0.4.0 lacks `defineModel`'s `mergeModels` runtime export (as in `Island`).
 const localOpen = ref(props.defaultOpen)
 const localView = ref(props.defaultView)
 
 const resolvedOpen = computed(() => (props.open !== undefined ? props.open : props.modelValue) ?? localOpen.value)
 const resolvedView = computed(() => props.view ?? localView.value)
 
-// Back-navigation history. `setView` pushes the current view; `goBack` pops.
 const stack = ref<string[]>([])
 const canGoBack = computed(() => stack.value.length > 0)
 
@@ -152,9 +145,8 @@ function setOpen(next: boolean) {
   emit('update:open', next)
   emit('update:modelValue', next)
   if (!next) {
-    // Reset navigation on close so a reopen starts clean at `defaultView`, and
-    // the height morph re-measures from the natural height rather than a stale
-    // px value carried over from the last session.
+    // Reset navigation on close so a reopen starts clean at `defaultView` and
+    // the height morph re-measures instead of reusing a stale px value.
     stack.value = []
     setViewInternal(props.defaultView)
     morphHeight.value = null
@@ -194,9 +186,9 @@ provideTrayContext({
   goBack,
 })
 
-// -- Keyboard awareness --------------------------------------------------------
-// `true` is an alias for `'scroll'` — the mode that suits most trays (the
-// panel rises either way; scroll additionally bounds the body).
+// -- Keyboard awareness ------------------------------------------------------
+// `true` aliases `'scroll'` — the panel rises either way; scroll additionally
+// bounds the body.
 const kaMode = computed<false | 'lift' | 'scroll'>(() =>
   props.keyboardAware === true ? 'scroll' : (props.keyboardAware || false),
 )
@@ -213,11 +205,9 @@ function onKeyboardHeight(heightInPx: number) {
 }
 
 // The rise: pad the panel's bottom by the keyboard height. The panel is
-// bottom-anchored and hugs content, so the padding extends it UPWARD —
-// handle/body/footer clear the keyboard while the panel background fills in
-// behind it. Padding rather than `transform`/`bottom` because the sheet's MT
-// drag worklets own the panel transform (BG style patches are replace-all and
-// would fight them), and padding needs no knowledge of the variant's inset.
+// bottom-anchored and hugs content, so the padding extends it UPWARD. Padding
+// rather than `transform`/`bottom` because the sheet's MT drag worklets own the
+// panel transform (BG style patches are replace-all and would fight them).
 const panelKeyboardStyle = computed(() => (kaMode.value
   ? {
       paddingBottom: `${keyboardHeight.value}px`,
@@ -226,15 +216,14 @@ const panelKeyboardStyle = computed(() => (kaMode.value
   : {}))
 
 // -- Height morph ------------------------------------------------------------
-// The panel hugs content (core `fitContent`); the `morph` container carries an
-// explicit px height that CSS-transitions between views. `null` before the
-// first measure = natural (auto) height, so the first paint doesn't animate
-// from zero. `viewport`'s @layoutchange feeds the measured natural height in.
+// The panel hugs content (core `fitContent`); `morph` carries an explicit px
+// height that CSS-transitions between views. `null` before the first measure =
+// natural height, so the first paint doesn't animate from zero.
 const morphHeight = ref<number | null>(null)
 
-// While the keyboard is up, the scroll responder grows a spacer inside the
-// viewport; that @layoutchange must not become a morph target or the tray
-// grows instead of scrolling — morph updates freeze until the keyboard closes.
+// While the keyboard is up the scroll responder grows a spacer inside the
+// viewport; that @layoutchange must not become a morph target, or the tray
+// grows instead of scrolling.
 function onViewportLayout(event: { detail?: { height?: number } } | undefined) {
   if (keyboardHeight.value > 0) return
   const h = event?.detail?.height
@@ -290,9 +279,7 @@ const { ui } = useStyledComponent('tray', theme, () => ({ variant: props.variant
       <SheetHandle v-if="handle" :class="ui.handle({ class: props.ui?.handle })" />
 
       <!-- One KeyboardAwareRoot spans body + footer so any input inside
-           self-registers and its @keyboard event drives `keyboardHeight`
-           (→ the panel's padding rise). Renders as a plain view when
-           keyboard awareness is off. -->
+           self-registers and drives `keyboardHeight`. -->
       <component
         :is="kaMode ? KeyboardAwareRoot : 'view'"
         v-on="kaMode ? { keyboardHeightChange: onKeyboardHeight } : {}"
@@ -303,9 +290,8 @@ const { ui } = useStyledComponent('tray', theme, () => ({ variant: props.variant
             @layoutchange="onViewportLayout"
           >
             <view :class="ui.body({ class: props.ui?.body })">
-              <!-- 'scroll': the body is a bounded scroll region the root
-                   scrolls to keep the focused input in view once the panel
-                   has risen. -->
+              <!-- 'scroll': a bounded scroll region the root scrolls to keep
+                   the focused input in view once the panel has risen. -->
               <KeyboardAwareResponder
                 v-if="kaMode === 'scroll'"
                 mode="scroll-view"
@@ -319,9 +305,8 @@ const { ui } = useStyledComponent('tray', theme, () => ({ variant: props.variant
           </view>
         </view>
 
-        <!-- Persistent footer: outside `morph`, so it never unmounts or
-             animates across view swaps. It rides the panel's padding rise —
-             no responder of its own. -->
+        <!-- Persistent footer: outside `morph`, so it never unmounts across
+             view swaps. It rides the panel's padding rise. -->
         <view v-if="!!$slots.footer" :class="ui.footer({ class: props.ui?.footer })">
           <slot name="footer" v-bind="slotProps" />
         </view>

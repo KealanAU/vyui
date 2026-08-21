@@ -17,7 +17,7 @@
       "type": "boolean | Partial<ButtonProps> | undefined",
       "required": false,
       "default": "true",
-      "description": "Show a close button. Pass `true` to render the default, or partial\n`ButtonProps` to customize it. Pass `false` to hide."
+      "description": "Show a close button. `true` renders the default, partial `ButtonProps`\ncustomize it, `false` hides it."
     },
     {
       "name": "closeIcon",
@@ -52,21 +52,21 @@
       "type": "boolean | { color?: keyof VyuiColorRegistry | ((progress: number) => keyof VyuiColorRegistry | undefined) | undefined; } | undefined",
       "required": false,
       "default": "false",
-      "description": "Show a thin countdown bar along the bottom edge that drains as the\nauto-dismiss timer runs. Tracks `ToastRoot`'s `progress`, so it pauses\nwhile the stack is expanded and is hidden when auto-dismiss is off\n(`duration: 0`).\n\nPass `true` for the default (bar inherits the toast `color`), or an object\nto override just the bar color independently. `color` can be a fixed color\n(`{ color: 'success' }`) or a function of the remaining fraction (`1` → `0`)\nso the bar recolors as it drains, e.g.\n`{ color: p => p > 0.5 ? 'success' : p > 0.25 ? 'warning' : 'error' }`."
+      "description": "Show a thin countdown bar that drains as the auto-dismiss timer runs.\nTracks `ToastRoot`'s `progress`, so it pauses while the stack is expanded\nand is hidden when auto-dismiss is off.\n\n`true` inherits the toast `color`; an object overrides just the bar color,\neither fixed (`{ color: 'success' }`) or a function of the remaining\nfraction (`1` → `0`) so the bar recolors as it drains."
     },
     {
       "name": "stacked",
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Sonner-style stacking. When `true`, toasts collapse into an overlapping\npile (front toast fully visible, the rest peeking out scaled-down behind\nit) and fan out under each other when the stack is expanded — tap any\ntoast to toggle. Off by default: toasts render as a plain gapped column.\n\nRequires the surrounding `<ToastProvider>` (it owns the shared stack\norder/expanded state) and a `<ToastViewport>` anchored to match `stackFrom`."
+      "description": "Sonner-style stacking: toasts collapse into an overlapping pile and fan out\nwhen expanded — tap any toast to toggle. Requires the surrounding\n`<ToastProvider>` and a `<ToastViewport>` anchored to match `stackFrom`."
     },
     {
       "name": "stackFrom",
       "type": "\"top\" | \"bottom\" | undefined",
       "required": false,
       "default": "\"bottom\"",
-      "description": "Which edge the stack is pinned to — must match the `ToastViewport`\n`position`. `top` fans toasts downward, `bottom` fans them upward.\nOnly used when `stacked`. Defaults to `bottom` (Sonner's default)."
+      "description": "Which edge the stack is pinned to — must match the `ToastViewport`\n`position`. `top` fans downward, `bottom` upward. Only used when `stacked`."
     },
     {
       "name": "swipe",

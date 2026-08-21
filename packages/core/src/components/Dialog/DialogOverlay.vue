@@ -25,7 +25,7 @@ const rootContext = injectDialogRootContext()
 useForwardExpose()
 
 // --- Overlay-portal registration -------------------------------------------
-// reka-ui wraps `DialogOverlayImpl` in `<Presence :present="...">` and lets
+// reka-ui wraps `DialogOverlayImpl` in `<Presence :show="...">` and lets
 // `<Teleport>` portal it. Lynx has neither: the backdrop paints through the
 // `overlayStore` portal painted by the app-root `<OverlayRoot>`, and the
 // `watch` below IS the Presence equivalent — it register/unregisters as the

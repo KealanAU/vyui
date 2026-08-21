@@ -27,25 +27,18 @@ export interface DraggableProps {
   bounds?: DraggableBounds
   /** Animate back to `(0, 0)` on release. */
   resetOnEnd?: boolean
-  /**
-   * Reset animation duration in ms. Only used when `resetOnEnd` is `true`.
-   * @defaultValue `220`
-   */
+  /** Reset animation duration in ms. Only used when `resetOnEnd` is `true`. @defaultValue `220` */
   duration?: number
   /** Emit `drag-move` on every touchmove. Off by default. */
   emitMove?: boolean
   /**
-   * Carry release velocity into a momentum coast: a flick keeps gliding and
-   * decelerates to rest (clamped to `bounds`) instead of stopping dead at the
-   * finger. Ignored when `resetOnEnd` is `true` (reset wins). Off by default.
-   * @defaultValue `false`
+   * Carry release velocity into a momentum coast: a flick glides and
+   * decelerates to rest (clamped to `bounds`). Ignored when `resetOnEnd` is
+   * `true`. @defaultValue `false`
    */
   momentum?: boolean
-  /**
-   * Deceleration rate for `momentum`. Higher = shorter fling. Projected
-   * coast distance is `velocity / decel`.
-   * @defaultValue `5`
-   */
+  /** Deceleration rate for `momentum`; higher = shorter fling. Coast distance
+   *  is `velocity / decel`. @defaultValue `5` */
   momentumDecel?: number
 }
 
@@ -100,13 +93,11 @@ defineSlots<{
   default?: (props: { dragging: boolean }) => any
 }>()
 
-// Neither `runOnMainThread` nor `runOnBackground` may be aliased. SWC's
-// worklet transform only rewrites the call site when it sees the literal
-// identifier; `const fn = runOnMainThread` defeats detection.
+// Neither `runOnMainThread` nor `runOnBackground` may be aliased: SWC's worklet
+// transform only rewrites the call site when it sees the literal identifier.
 
-// Bounds use safe-integer sentinels because `undefined` does not reliably
-// serialize across the worklet boundary, and Infinity is explicitly called
-// out as unsupported in lynx-ui's reference implementation.
+// Bounds use safe-integer sentinels — `undefined` does not reliably serialize
+// across the worklet boundary, and lynx-ui calls Infinity unsupported.
 const NO_MIN = Number.MIN_SAFE_INTEGER
 const NO_MAX = Number.MAX_SAFE_INTEGER
 
@@ -165,12 +156,10 @@ const tQueueRef = useMainThreadRef<number[]>([])
 // worklets (BG writes to MainThreadRef.current are silently dropped).
 const resetAnimRef = useMainThreadRef<any>(null)
 
-// Timestamp of the last real touch. Touch browsers replay a tap as a
-// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
-// events inside this window so a tap doesn't double-emit dragStart/dragEnd.
+// Timestamp of the last real touch: touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair, which mouse handlers ignore.
 const lastTouchTsRef = useMainThreadRef<number>(0)
 
-// BG-side mirror so the slot's `dragging` prop is reactive.
 const draggingState = ref(false)
 
 function _syncConfig(
@@ -201,8 +190,7 @@ function _syncConfig(
 }
 
 // BG-side assignments to `MainThreadRef.current` are silently dropped by
-// vue-lynx (only the constructor transfers a value BG→MT), so prop updates
-// must be shipped over as a setter-worklet dispatch.
+// vue-lynx, so prop updates ship over as a setter-worklet dispatch.
 watch(
   () => [
     props.axis,
@@ -249,9 +237,8 @@ function _animateTo(fromX: number, fromY: number, toX: number, toY: number) {
   currentYRef.current = toY
   if (typeof el?.animate === 'function') {
     // Write the end state inline BEFORE animating: Lynx web's animation PAPI
-    // reads Lynx-style timing keys (fillMode/timingFunction) and silently
-    // drops WAAPI fill/easing, so a web settle would otherwise finish
-    // fill-less and snap back to the stale drag transform. Both spellings are
+    // reads Lynx-style timing keys and silently drops WAAPI fill/easing, so a
+    // web settle would finish fill-less and snap back. Both spellings are
     // passed; the inline value is what the element rests on either way.
     _setTransform(toX, toY)
     // Keep the handle: a fill-forwards animation outranks inline style in the
@@ -316,11 +303,9 @@ function _dragStart(clientX: number, clientY: number) {
   if (disabledRef.current) return
 
   // Cancel any in-flight resetOnEnd animation: active animations beat inline
-  // style in the cascade, so leaving it running would mask this drag's
-  // `setStyleProperty('transform', …)` writes. Inline `animation: 'none'`
-  // (the Sheet's touchstart stomp) does NOT cancel programmatic `.animate()`
-  // animations — only the handle can. Re-assert the current transform so the
-  // element doesn't snap to the pre-animation position.
+  // style and would mask this drag's `setStyleProperty` writes. Inline
+  // `animation: 'none'` does NOT cancel a programmatic `.animate()` — only the
+  // handle can. Re-assert the transform so the element doesn't snap back.
   const anim = resetAnimRef.current
   if (anim && typeof anim.cancel === 'function') {
     anim.cancel()
@@ -388,9 +373,8 @@ function _dragEnd() {
     _animateTo(endX, endY, 0, 0)
   }
   else if (momentumRef.current) {
-    // Velocity-projected coast — project where the flick would settle under
-    // exponential friction (mirrors physics.ts projectMomentum: pos + v/decel)
-    // then clamp to bounds so a fling can't escape the valid range.
+    // Velocity-projected coast — mirrors physics.ts projectMomentum
+    // (pos + v/decel), clamped to bounds so a fling can't escape the range.
     const decel = momentumDecelRef.current
     let toX = endX
     let toY = endY
@@ -426,10 +410,9 @@ function _onTouchEnd() {
 }
 
 // Desktop web: Lynx web dispatches raw mouse events and never synthesizes
-// touch from them, so the same gesture core is bound to mouse. Coordinates
-// arrive top-level (mouse `detail` is the DOM click-count number, not
-// `{x, y}`). No mouseleave binding — it doesn't bubble, so per-element
-// delivery is unreliable on the Lynx dispatch path.
+// touch from them. Coordinates arrive top-level (mouse `detail` is the
+// click-count number). No mouseleave binding — it doesn't bubble, so
+// per-element delivery is unreliable on the Lynx dispatch path.
 function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
   'main thread'
   // Swallow the compatibility mousedown a touch browser replays after a tap.
@@ -443,9 +426,8 @@ function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number })
 function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
   'main thread'
   // Only an EXPLICIT buttons value with the primary bit clear counts as
-  // released (recovers the mouseup lost outside the <lynx-view>). A missing
-  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
-  // it, and ending on those lets the drag go mid-gesture.
+  // released (recovers the mouseup lost outside the <lynx-view>); a missing
+  // `buttons` is treated as still-pressed.
   if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
     _dragEnd()
     return

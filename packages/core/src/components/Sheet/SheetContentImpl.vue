@@ -1,73 +1,12 @@
 <!-- Copyright 2026 The Lynx Authors. All rights reserved.
-     Licensed under the Apache License Version 2.0.
-
-     Hybrid CSS + MT-touch slide:
-
-     - Open / close are driven by `@keyframes vyui-sheet-slide-in/out` on
-       the `ui-entering` / `ui-leaving` class, applied by the Presence state
-       machine. `@animationend` advances Presence to `Entered` / `Left`.
-     - Drag is driven by MT worklets (touch + desktop-mouse twins) that
-       paint inline `transform` via `setStyleProperty`. On release we settle
-       at the nearest snap point (inline transition), or dismiss (inline
-       transition + `setOpen(false)`). The release decision mirrors
-       `pickRelease` in `useSheetBehavior.ts` — see `_dragEnd` for the
-       divergences.
-     - Multi-snap: positions are px-from-open along the panel's travel
-       (`0` = fully open = largest snap; the panel is sized to it). The
-       authoritative current position lives in an MT ref (`posRef`) —
-       the BG side cannot read it (MainThreadRef reads on BG return the
-       init value), so BG-initiated moves hop to MT and decide there.
-       Settles sync back to BG `snapIndex`; `snapIndex` writes and
-       `setSnap` hop the other way.
-     - Drag also paints the backdrop: `touchmove` writes `ctx.progressMTRef`
-       and inline `opacity` on `ctx.backdropElRef` so the dim tracks the
-       panel 1:1; release restores / fades it with a transition matching
-       the panel's. The backdrop unmounts with Presence on close, so the
-       inline opacity can't leak into the next open.
-
-     The MT refs (touchStart, dragging flag, velocity ring buffer, etc.)
-     are only read INSIDE touch worklets, which fire on user input — long
-     after the `INIT_MT_REF` ops have been flushed to MT and the refs are
-     registered in `_workletRefMap`. This avoids the vue-lynx@0.4.0
-     ordering bug that broke the previous MT-rAF approach: that bug only
-     bites when `runOnMainThread(worklet)(…)` is dispatched DURING setup,
-     before refs are registered. Touch handlers attached via
-     `:main-thread-bindtouchstart` go through `SET_WORKLET_EVENT` which
-     flushes in the same batch as `INIT_MT_REF`.
-
-     Config (panel height px, dismiss velocity, settle duration) is
-     mirrored into MT refs: initial values ride the constructor's
-     `INIT_MT_REF` transfer; later changes hop through watch-triggered
-     `runOnMainThread` setter worklets. Plain BG writes to
-     `MainThreadRef.current` are silently dropped by vue-lynx@0.4.0 (the
-     setter is a dev-warn no-op), and the watch dispatches fire post-mount
-     so they don't hit the setup-time registration race above.
-
-     Inline `animation: 'none'` is painted wherever the panel isn't at the
-     keyframes' assumed position: the dismiss-after-drag path (slide off from
-     the dragged position, not translateY(0)), and any settle BELOW fully open
-     (so a later non-drag close can't start `.ui-leaving` from translateY(0) —
-     `_slideOffFromCurrent` drives those closes instead). Settling back at
-     fully open clears it so the normal keyframe paths apply again. In all
-     inline cases `@transitionend` advances Presence to `Left`.
-
-     That inline `animation: 'none'` is NOT load-bearing against a class-driven
-     keyframe — those win over it on the Lynx style path, which is why a
-     drag-dismiss used to close twice (inline transition, then `.ui-leaving`
-     replaying the exit from fully open). `ctx.dragClosing` removes the
-     `ui-leaving` class outright for that path; see `presenceClass` below. -->
+     Licensed under the Apache License Version 2.0. -->
 <script lang="ts">
 export interface SheetContentImplProps {
   /** Disable dragging. */
   dragDisabled?: boolean
   /**
-   * Hug content instead of sizing the panel to `snapPoints × viewport`. The
-   * panel takes its natural content height (a bottom sheet grows upward from
-   * the edge). Drag/slide/backdrop are unaffected: the drag physics already
-   * read the panel's MEASURED extent via `@layoutchange`, and the slide
-   * keyframes translate by `100%` of whatever that height resolves to. Used
-   * by the styled `Tray`, whose per-view height morph needs the panel to
-   * follow its content rather than a fixed viewport fraction.
+   * Hug content instead of sizing the panel to `snapPoints × viewport`, so the
+   * panel takes its natural content height. Used by the styled `Tray`.
    * @defaultValue `false`
    */
   fitContent?: boolean
@@ -106,14 +45,11 @@ const presenceState = computed<PresenceState>(() =>
   presence?.controllers.state.value ?? PresenceState.Entered,
 )
 
-// `transition: false` emits only `ui-open` / `ui-closed`, so no `ui-leaving`
-// and therefore no slide-out keyframe. That's what we want once a drag has
-// dismissed the sheet: the MT release transition is already sliding the panel
-// off from where the finger left it, and the keyframe would drive the same
-// close a SECOND time from the fully-open underlying value — the panel snaps
-// back up and replays the exit. The inline `animation: 'none'` the worklets
-// paint was meant to suppress it, but a class-driven animation beats inline on
-// the Lynx style path, so remove the class instead of fighting it.
+// `transition: false` emits no `ui-leaving`, so no slide-out keyframe. After a
+// drag dismiss the MT release transition is already sliding the panel off; the
+// keyframe would replay the close from fully open. Inline `animation: none`
+// can't suppress it — a class-driven animation beats inline on the Lynx style
+// path — so the class is removed instead.
 const presenceClass = computed(() =>
   presenceClassVariants({
     state: presenceState.value,
@@ -143,11 +79,8 @@ const maxSnap = computed(() => {
 const axis = computed(() => directionAxis(ctx.side.value))
 const closeSign = computed(() => directionCloseSign(ctx.side.value))
 
-// Safe-area: keep the panel's content clear of the hardware insets on the
-// edges it docks against — home indicator for bottom sheets, status bar for
-// top sheets, both for full-height side sheets. Insets are zero outside
-// Sparkling / Lynx Explorer, so this is a no-op everywhere else; opt a
-// subtree out by providing zero insets via `provideSafeAreaInsets`.
+// Safe-area: keep content clear of the hardware insets on the edges the panel
+// docks against. Insets are zero outside Sparkling / Lynx Explorer.
 const safeArea = useSafeArea()
 const safeAreaStyle = computed(() => {
   const side = ctx.side.value
@@ -159,20 +92,16 @@ const safeAreaStyle = computed(() => {
   return pad
 })
 
-// Size of the panel as a viewport string, derived from the largest snap
-// fraction. e.g. `snapPoints: [0.75]` → `height: 75vh` for vertical sheets
-// or `width: 75vw` for horizontal sheets. NOTE: vertical sheets must use
-// `vh`, not `dvh` — Lynx native drops the dynamic-viewport unit, collapsing
-// the panel to its content height.
+// Panel extent as a viewport string, from the largest snap fraction. Vertical
+// sheets must use `vh`, not `dvh` — Lynx native drops the dynamic-viewport
+// unit and collapses the panel to its content height.
 const panelStyle = computed(() => {
   // Inline longhand overrides the 280ms in the enter/leave keyframe
   // shorthands below, so the CSS default and the MT settle paths (which
   // read `durationMsRef`) can't desync when a consumer sets `duration`.
   const duration = { animationDuration: `${ctx.duration.value}ms` }
-  // Content-hug mode: emit no explicit extent so the panel takes its natural
-  // content size. `measuredPanelHeight/Width` (from `@layoutchange`) still
-  // feeds `panelExtentPx`, so the drag threshold and backdrop-fade progress
-  // track the real hugged height.
+  // Content-hug: emit no explicit extent. `@layoutchange` still feeds
+  // `panelExtentPx`, so drag threshold and backdrop fade track the real height.
   if (props.fitContent) return { ...safeAreaStyle.value, ...duration }
   const size = `${maxSnap.value * 100}${axis.value === 'x' ? 'vw' : 'vh'}`
   return {
@@ -196,10 +125,8 @@ function onPanelLayout(event: { detail?: { height?: number, width?: number } } |
   if (typeof width === 'number' && width > 0) measuredPanelWidth.value = width
 }
 
-// Whether the content view should bind touch handlers. `handleOnly` makes
-// `SheetHandle` the only drag surface; props.dragDisabled fully disables drag.
-// With multiple snap points, drag stays enabled even when drag-to-close is
-// off — the user can still drag BETWEEN snaps; only the dismiss branch is
+// Whether the content view binds touch handlers. With multiple snap points drag
+// stays enabled even when drag-to-close is off — only the dismiss branch is
 // gated (by `enableDragToCloseRef` inside `_onTouchEnd`).
 const isDragEnabled = computed(() =>
   !props.dragDisabled
@@ -212,15 +139,13 @@ const isDragEnabled = computed(() =>
 const containerRef = useMainThreadRef<any>(null)
 const touchStartAxisRef = useMainThreadRef<number>(0)
 const isDraggingRef = useMainThreadRef<boolean>(false)
-// Ring-buffer for velocity. Each entry is `[y, timestampMs]`. We keep the
-// trailing 50ms of touch samples.
+// Ring-buffer for velocity, `[y, timestampMs]`, trailing 50ms of samples.
 const sampleRingRef = useMainThreadRef<Array<[number, number]>>([])
 const axisRef = useMainThreadRef<'x' | 'y'>(axis.value)
 const closeSignRef = useMainThreadRef<1 | -1>(closeSign.value)
 
-// Root-owned MT refs (created and INIT_MT_REF-registered by SheetRoot).
-// Bound to local consts so the worklet transform captures the
-// MainThreadRef itself rather than the whole BG context object.
+// Root-owned MT refs (INIT_MT_REF-registered by SheetRoot). Bound to local
+// consts so the worklet transform captures the MainThreadRef, not the context.
 const backdropRef = ctx.backdropElRef
 const progressRef = ctx.progressMTRef
 
@@ -228,9 +153,6 @@ const viewportExtent = computed(() => axis.value === 'x'
   ? ctx.viewportWidth.value
   : ctx.viewportHeight.value)
 
-// Panel extent in px on MT (for the dismiss threshold and backdrop fade
-// progress). Recomputes on rotation / late-resolving SystemInfo /
-// snapPoint changes; the watch below re-syncs it to MT.
 const panelExtentPx = computed(() => {
   const measured = axis.value === 'x' ? measuredPanelWidth.value : measuredPanelHeight.value
   if (measured > 0) return Math.round(measured)
@@ -238,9 +160,8 @@ const panelExtentPx = computed(() => {
 })
 const panelExtentPxRef = useMainThreadRef<number>(panelExtentPx.value)
 
-// Snap positions in px-from-open, ascending (`[0]` = most open = 0, since
-// the panel is sized to the largest snap). Resolved by the unit-tested
-// helper; mirrored to MT for the release worklet.
+// Snap positions in px-from-open, ascending (`[0]` = most open = 0, since the
+// panel is sized to the largest snap).
 const snapPositionsPx = computed(() =>
   viewportSnapsToPositions(
     ctx.snapPoints.value,
@@ -260,20 +181,15 @@ const snapTargetPos = computed(() => {
   return positions[positions.length - 1 - idx] ?? 0
 })
 
-// Release physics from SheetRoot's props. Flick-advance needs no velocity
-// threshold — `pickRelease` (and the worklet mirror of it) implements it
-// via the coast projection instead.
 const dismissVelocityRef = useMainThreadRef<number>(ctx.dismissVelocity.value)
 const durationMsRef = useMainThreadRef<number>(ctx.duration.value)
 const snapPositionsRef = useMainThreadRef<number[]>(snapPositionsPx.value)
 const enableDragToCloseRef = useMainThreadRef<boolean>(ctx.enableDragToClose.value)
 
-// Authoritative panel position, px-from-open (0 = fully open). Written by
-// the drag/settle worklets the moment a move is COMMITTED (eagerly at
-// release, not when the transition finishes). The BG side cannot read it,
-// so BG-initiated moves dispatch to MT and decide against it there.
+// Authoritative panel position, px-from-open (0 = fully open), written the
+// moment a move is COMMITTED. BG cannot read it, so BG-initiated moves
+// dispatch to MT and decide against it there.
 const posRef = useMainThreadRef<number>(0)
-// Position the active drag started from (drags can begin at any snap).
 const touchStartPosRef = useMainThreadRef<number>(0)
 
 // Timestamp of the last real touch. Touch browsers replay a tap as a
@@ -281,11 +197,9 @@ const touchStartPosRef = useMainThreadRef<number>(0)
 // events inside this window so a tap can't double-run the release decision.
 const lastTouchTsRef = useMainThreadRef<number>(0)
 
-// vue-lynx@0.4.0 silently drops BG-thread writes to `MainThreadRef.current`
-// (only the constructor's INIT_MT_REF transfers a value BG → MT), so these
-// syncs have to hop through `runOnMainThread`. That's safe here: watch
-// callbacks fire post-mount, long after the refs are registered — the
-// setup-time dispatch race in the header comment doesn't apply.
+// vue-lynx@0.4.0 silently drops BG writes to `MainThreadRef.current` (only the
+// constructor's INIT_MT_REF transfers BG → MT), so these syncs hop through
+// `runOnMainThread`.
 
 function _setPanelExtentPx(v: number) {
   'main thread'
@@ -346,13 +260,11 @@ function _setStyle(decl: Record<string, string>) {
   }
 }
 
-// Paints a SECOND element (the backdrop) from the content's touch worklets:
-// the same setStyleProperty surface as the panel, but through a ref populated
-// by a sibling component (`SheetBackdropImpl`'s `:main-thread-ref`).
+// Paints the backdrop from the content's touch worklets, through a ref
+// populated by a sibling component (`SheetBackdropImpl`'s `:main-thread-ref`).
 function _setBackdropStyle(decl: Record<string, string>) {
   'main thread'
-  // The backdrop is optional (sheets can render without one) and unmounts
-  // with Presence on close, so `current` may be null — bail quietly.
+  // The backdrop is optional and unmounts with Presence on close.
   const el = backdropRef as unknown as {
     current?: {
       setStyleProperties?(s: Record<string, string>): void
@@ -390,19 +302,12 @@ function _pruneRing(now: number) {
   while (ring.length > 2 && ring[0][1] < now - 50) ring.shift()
 }
 
-// Start a settle / dismiss transition that is GUARANTEED to animate from the
-// live drag position. CSS transitions interpolate from the property's last
-// COMMITTED value; on a fast flick — touchstart → touchmove → touchend all
-// land in one frame — the per-`touchmove` `translateY(pos)` writes never
-// commit a baseline, so a transition started in `_onTouchEnd` interpolates
-// from `translateY(0)` instead: the panel flashes back to full size for a
-// frame before sliding off. (Slow drags paint across many frames, commit a
-// baseline, and never hit this.) So: frame 1 re-pins the panel + backdrop to
-// the live position with `transition: none`, then `requestAnimationFrame`
-// crosses a frame boundary so that pin commits, and frame 2 runs the eased
-// move from there. Mirrors the explicit-from keyframes SwipeAction builds for
-// the same reason. `toTransform` is the literal end transform (dismiss uses
-// `translateY(100%)`; settles use `translateY(<target>px)`).
+// Start a settle / dismiss transition GUARANTEED to animate from the live drag
+// position. CSS transitions interpolate from the last COMMITTED value; on a
+// fast flick (touchstart → move → end in one frame) the `translateY(pos)`
+// writes never commit, so the transition would run from `translateY(0)`. Frame
+// 1 re-pins panel + backdrop with `transition: none`, then a frame boundary
+// commits that pin, and frame 2 runs the eased move from there.
 function _settleTo(
   target: number,
   toTransform: string,
@@ -435,11 +340,9 @@ function _settleTo(
       opacity: String(progress),
     })
   }
-  // Double rAF: on the web runtime a single rAF fires BEFORE the frame's
-  // style commit, so the pin above never becomes the transition baseline and
-  // a flick-dismiss flashes back to translateY(0) before sliding off
-  // (browser-verified). The second hop lands after the pin has painted;
-  // native just holds the pin one extra frame at the release position.
+  // Double rAF: on web a single rAF fires BEFORE the frame's style commit, so
+  // the pin never becomes the transition baseline. Native just holds the pin
+  // one extra frame at the release position.
   function hop() {
     requestAnimationFrame(apply)
   }
@@ -453,17 +356,13 @@ function _dragStart(x: number, y: number) {
   touchStartAxisRef.current = coord
   sampleRingRef.current = [[coord, Date.now()]]
   touchStartPosRef.current = posRef.current
-  // Kill any in-flight transition AND re-assert the last COMMITTED position.
-  // Without re-asserting the transform here, touching mid-settle inherits
-  // whatever intermediate transform the CSS transition was computing — the
-  // engine can keep painting from that interpolated value, fighting our
-  // subsequent `touchmove` writes, so drag doesn't "pick up". We can't read
-  // the interpolated transform on MT, so a mid-settle grab snaps to the
-  // settle's target (`posRef` is written eagerly at release) and drags from
-  // there — a small jump in the worst case, never a stuck panel.
+  // Kill any in-flight transition AND re-assert the last COMMITTED position:
+  // without it the engine keeps painting from the interpolated transform and
+  // fights the `touchmove` writes. MT can't read that interpolated value, so a
+  // mid-settle grab snaps to the settle's target and drags from there.
   _setStyle({ transition: 'none', transform: _translate(posRef.current) })
-  // The backdrop joins the drag: kill its transition so the per-frame
-  // opacity writes in touchmove paint immediately instead of easing.
+  // The backdrop joins the drag: kill its transition so the per-frame opacity
+  // writes paint immediately.
   _setBackdropStyle({ transition: 'none' })
 }
 
@@ -511,45 +410,31 @@ function _dragEnd() {
   const positions = snapPositionsRef.current
   const durationMs = durationMsRef.current
 
-  // Release decision — MIRRORS `pickRelease` in useSheetBehavior.ts (the
-  // unit-tested spec; worklets can't import it — keep the two in sync),
-  // with one deliberate divergence: the "≥15px past most-closed with no
-  // pull-back" mouse fallback is dropped. That rule exists for desktop
-  // Drawer drags (rarely any fling velocity) and would make a touch sheet
-  // dismiss on a 16px sag. Coast: 100ms of inertia biases the snap choice
-  // toward the fling direction, which is what makes a flick advance one
-  // snap without a separate velocity rule.
+  // Release decision — MIRRORS `pickRelease` in useSheetBehavior.ts (worklets
+  // can't import it — keep the two in sync), minus the "≥15px past most-closed"
+  // mouse fallback, which would dismiss a touch sheet on a 16px sag.
   const projected = pos + velocity * 0.1
   const mostClosed = positions.length > 0 ? positions[positions.length - 1] : 0
-  // Distance past the most-closed snap that dismisses with no velocity:
-  // 40% of panel height (the pre-multi-snap rule, generalized to measure
-  // from the most-closed snap instead of from open).
+  // Distance past the most-closed snap that dismisses with no velocity.
   const shouldDismiss = enableDragToCloseRef.current
     && (velocity >= dismissVelocityRef.current
       || projected > mostClosed + extentPx * 0.4)
 
-  // Settle timing scales with release speed: a hard flick reaches its target in
-  // less time (`remaining / speed`), so the settle plays quicker; a slow or
-  // stationary release yields a huge time that clamps to `durationMs`, keeping
-  // the unflicked feel. Floored at 120ms so a violent flick can't snap
-  // instantly. MIRRORS `settleDurationMs` in physics.ts (worklets can't import
-  // it — keep in sync); dismiss keeps its 0.9× cut over the scaled base.
+  // Settle timing scales with release speed; a slow release clamps to
+  // `durationMs`. Floored at 120ms. MIRRORS `settleDurationMs` in physics.ts
+  // (worklets can't import it — keep in sync).
   const MIN_SETTLE_MS = 120
   if (shouldDismiss) {
     let base = (Math.abs(extentPx - pos) / Math.max(Math.abs(velocity), 0.001)) * 1000
     if (base < MIN_SETTLE_MS) base = MIN_SETTLE_MS
     if (base > durationMs) base = durationMs
     const dismissMs = Math.round(base * 0.9)
-    // Slide off from the live drag position (`animation: none` suppresses the
-    // `.ui-leaving` keyframe so it can't snap to translateY(0) first; the
-    // frame-1 re-pin in `_settleTo` guards the flick case). `@transitionend`
-    // then advances Presence to `Left`, which unmounts the backdrop too — so
-    // the inline opacity we fade to 0 here can't leak into the next open.
+    // Slide off from the live drag position; `animation: none` suppresses the
+    // `.ui-leaving` keyframe. `@transitionend` advances Presence to `Left`.
     _settleTo(extentPx, _translateClosed(), dismissMs, 'ease-in', false)
     runOnBackground(_emitClose as any)()
   }
   else {
-    // Settle at the snap nearest the coast-projected position.
     let idx = 0
     let best = positions.length > 0 ? Math.abs(projected - positions[0]) : 0
     for (let i = 1; i < positions.length; i++) {
@@ -563,11 +448,9 @@ function _dragEnd() {
     let settleMs = (Math.abs(target - pos) / Math.max(Math.abs(velocity), 0.001)) * 1000
     if (settleMs < MIN_SETTLE_MS) settleMs = MIN_SETTLE_MS
     if (settleMs > durationMs) settleMs = durationMs
-    // Below fully open, inline `animation: none` stays on the panel so a
-    // later non-drag close can't start `.ui-leaving` from translateY(0)
-    // (`_slideOffFromCurrent` drives those closes). At fully open the
-    // inline animation is cleared (empty-string value) so the keyframe paths
-    // apply again.
+    // Below fully open, inline `animation: none` stays on so a later non-drag
+    // close can't start `.ui-leaving` from translateY(0); at fully open it is
+    // cleared so the keyframe paths apply again.
     _settleTo(target, _translate(target), Math.round(settleMs), 'ease-out', target === 0)
     runOnBackground(_settle as any)(idx)
   }
@@ -577,21 +460,16 @@ function _dragCancel() {
   'main thread'
   if (!isDraggingRef.current) return
   isDraggingRef.current = false
-  // Cancel returns to the position the drag STARTED from (always a snap),
-  // faster than a deliberate release — 0.7× the settle duration (matches
-  // the previous hardcoded 200ms at the 280ms default). Goes through
-  // `_settleTo` so a cancelled flick animates from the live position rather
-  // than flashing back to full size first.
+  // Cancel returns to the snap the drag started from, at 0.7× the settle
+  // duration. Goes through `_settleTo` so a cancelled flick animates from the
+  // live position.
   const target = touchStartPosRef.current
   const cancelMs = Math.round(durationMsRef.current * 0.7)
   _settleTo(target, _translate(target), cancelMs, 'ease-out', target === 0)
 }
 
 // Thin per-modality wrappers over the gesture cores above (worklets can only
-// reference previously-defined worklets, so these must follow them). Touch
-// keeps the Lynx `detail` coords the drag has always read; a gesture is
-// single-modality and only within-gesture deltas matter, so the touch/mouse
-// coordinate spaces never mix.
+// reference previously-defined worklets, so these must follow them).
 function _onTouchStart(e: { detail: { x?: number, y?: number } }) {
   'main thread'
   _dragStart(e.detail.x ?? 0, e.detail.y ?? 0)
@@ -614,11 +492,10 @@ function _onTouchCancel() {
   _dragCancel()
 }
 
-// Desktop web: Lynx web dispatches raw mouse events and never synthesizes
-// touch from them, so the same gesture cores are bound to mouse. Coordinates
-// arrive top-level (mouse `detail` is the DOM click-count number, not
-// `{x, y}`). No mouseleave binding — it doesn't bubble, so per-element
-// delivery is unreliable on the Lynx dispatch path.
+// Desktop web: Lynx web dispatches raw mouse events and never synthesizes touch
+// from them. Coordinates arrive top-level (mouse `detail` is the click-count
+// number). No mouseleave binding — it doesn't bubble, so per-element delivery
+// is unreliable on the Lynx dispatch path.
 function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
   'main thread'
   // Swallow the compatibility mousedown a touch browser replays after a tap.
@@ -648,9 +525,7 @@ function _onMouseUp() {
 }
 
 // Programmatic move (BG `snapIndex` watch / post-enter sync). Skips while
-// dragging, and skips the echo that arrives after a drag settle already
-// moved the panel (`posRef` is written eagerly at release, so the echoed
-// target compares equal).
+// dragging, and skips the echo after a settle (`posRef` already equals it).
 function _jumpToSnap(target: number) {
   'main thread'
   if (isDraggingRef.current) return
@@ -673,13 +548,10 @@ function _jumpToSnap(target: number) {
   })
 }
 
-// Non-drag close (backdrop tap / programmatic `setOpen(false)`) while the
-// panel sits below fully open. The `.ui-leaving` keyframe starts at
-// translateY(0) and would jump the panel up before sliding off; settles
-// below fully open left inline `animation: none` on the panel, so the
-// keyframe never starts and this transition drives the close instead. At
-// fully open (posRef 0) it bails and the keyframe path runs unchanged; at
-// >= panel height a drag-dismiss is already in flight — also bail.
+// Non-drag close while the panel sits below fully open: settles below fully
+// open leave inline `animation: none` on the panel, so the `.ui-leaving`
+// keyframe never starts and this transition drives the close instead. Bails at
+// fully open (keyframe path) and at >= panel height (dismiss already running).
 function _slideOffFromCurrent() {
   'main thread'
   if (isDraggingRef.current) return
@@ -708,30 +580,24 @@ function _emitClose() {
 }
 
 // Drag settle → BG snapIndex. `ascIdx` indexes the most-open-first positions
-// array; flip back to the fraction-ordered ctx convention. The write echoes
-// through the snapIndex watch below, but `_jumpToSnap` no-ops on it (posRef
-// already equals the target).
+// array; flip back to the fraction-ordered ctx convention.
 function _settle(ascIdx: number) {
   const n = ctx.snapPoints.value.length
   const ctxIdx = clamp(n - 1 - ascIdx, 0, n - 1)
   if (ctx.snapIndex.value !== ctxIdx) ctx.snapIndex.value = ctxIdx
 }
 
-// BG-initiated moves. While Entering, the slide-in keyframe owns the
-// transform (inline writes lose to an active animation), so snapIndex
-// changes mid-enter are deferred to the Entered re-sync below. While
-// Leaving/Left the panel is on its way out — nothing to move.
+// BG-initiated moves. While Entering the slide-in keyframe owns the transform
+// (inline writes lose to an active animation), so those are deferred to the
+// Entered re-sync below.
 watch(snapTargetPos, (pos) => {
   if (presenceState.value !== PresenceState.Entered) return
   void runOnMainThread(_jumpToSnap as any)(pos)
 })
 
-// Entered re-sync: the enter keyframe always lands at translateY(0) (fully
-// open). If snapIndex points below that — preset before open, or changed
-// mid-enter — ease down to it now. Also the v1 "open at an intermediate
-// snap" story: slide fully in, then settle down. The dispatch rides a
-// different channel than the Entered class patch, so the first frames of the
-// settle may still be masked by the outgoing keyframe.
+// Entered re-sync: the enter keyframe always lands at translateY(0). If
+// snapIndex points below that — preset before open, or changed mid-enter —
+// ease down to it now.
 watch(presenceState, (s) => {
   if (s === PresenceState.Entered && snapTargetPos.value !== 0) {
     void runOnMainThread(_jumpToSnap as any)(snapTargetPos.value)
@@ -739,8 +605,7 @@ watch(presenceState, (s) => {
 })
 
 // Non-drag close hook for `_slideOffFromCurrent`. Dispatch unconditionally —
-// only MT knows the real position (`posRef`), and the worklet bails when the
-// keyframe path should run (fully open) or a drag-dismiss is in flight.
+// only MT knows the real position.
 watch(() => ctx.open.value, (isOpen) => {
   if (!isOpen) void runOnMainThread(_slideOffFromCurrent as any)()
 })
@@ -757,8 +622,7 @@ provideSheetDragContext({
 
 const handlers = presence?.animationHandlers
 
-// Modal panel: announce as a dialog and trap a11y focus to the sheet. Container
-// role keeps it non-element so the children inside stay reachable.
+// Modal panel: announce as a dialog and trap a11y focus to the sheet.
 const a11y = useA11y(() => ({
   role: 'dialog',
   exclusiveFocus: true,
@@ -796,12 +660,8 @@ const a11y = useA11y(() => ({
 </template>
 
 <style>
-/* No `background-color` — @vyui/core is headless and ships no color, matching
-   the "No defaults" contract every sibling overlay documents (see
-   `DialogContentImpl`'s `backdropStyle`). This class previously hardcoded
-   `#fff`, which beat the consumer's `bg-default` on source order and pinned
-   every Sheet-backed surface — drawer, tray, action sheet, select, combobox,
-   popover — to white in BOTH color modes. Style the panel from the consumer. */
+/* No `background-color` — @vyui/core is headless and ships no color. A value
+   here beats the consumer's `bg-default` on source order. */
 .vyui-sheet__content {
   position: fixed;
   z-index: 1001;
@@ -814,9 +674,7 @@ const a11y = useA11y(() => ({
 }
 
 /* `flex-direction` places the drag handle (SheetContent's first child) on the
-   sheet's inner edge: column keeps it at the top for a bottom sheet, and each
-   variant flips the axis / reverses so it sits on the edge the sheet is pulled
-   toward (bottom for `top`, left for `right`, right for `left`). */
+   sheet's inner edge, flipped per side. */
 .vyui-sheet__content--bottom {
   left: 0;
   right: 0;
@@ -865,13 +723,9 @@ const a11y = useA11y(() => ({
   transform: translate(0, 0);
 }
 
-/* Underlying transform while leaving. The slide-out keyframes below omit their
-   `from` step so they animate from this value — the fully-open position for a
-   plain close, or the live inline `transform` (which outranks this rule) when a
-   drag settles the panel off. A hardcoded `from: translate(0)` would instead
-   snap a mid-drag panel back to full-open for a frame before sliding out — the
-   flash — whenever the inline `animation: none` on the drag path fails to
-   suppress this keyframe (animations outrank transitions for `transform`). */
+/* Underlying transform while leaving. The slide-out keyframes omit their `from`
+   step so they animate from this value — or from the live inline `transform`,
+   which outranks this rule, when a drag settles the panel off. */
 .vyui-sheet__content.ui-leaving {
   transform: translate(0, 0);
 }
@@ -913,9 +767,7 @@ const a11y = useA11y(() => ({
   to   { transform: translateY(0); }
 }
 
-/* Slide-out keyframes intentionally omit `from` — they start from the panel's
-   current transform (see `.ui-leaving` above) so a drag-settled close never
-   flashes back to full-open. */
+/* Slide-out keyframes intentionally omit `from` — see `.ui-leaving` above. */
 @keyframes vyui-sheet-slide-out {
   to { transform: translateY(100%); }
 }

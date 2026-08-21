@@ -106,7 +106,6 @@ const max = useVModel(props, 'max', emit, {
   passive: (props.max === undefined) as false,
 })
 
-// Clamp model value and max to their valid ranges.
 watch(
   () => modelValue.value,
   async (value) => {

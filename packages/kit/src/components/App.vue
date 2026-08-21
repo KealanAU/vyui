@@ -13,16 +13,13 @@ export interface AppProps {
    * @defaultValue true
    */
   overlays?: boolean
-  /**
-   * Corner radius in rem — sets `--ui-radius` on the root. Omit to keep the
-   * `@vyui/kit/style.css` default.
-   */
+  /** Corner radius in rem — sets `--ui-radius` on the root. Omit to keep the
+   *  `@vyui/kit/style.css` default. */
   radius?: number
   /**
    * Provide app-wide safe-area insets to the whole tree (`useSafeArea()`).
-   * `false` opts the app out with zeros (e.g. a fullscreen surface drawing its
-   * own chrome). Omit to use the container's reported insets as-is. A subtree
-   * can still override with its own `provideSafeAreaInsets`.
+   * `false` opts the app out with zeros; omit to use the container's reported
+   * insets as-is. A subtree can still override with `provideSafeAreaInsets`.
    * @defaultValue true
    */
   safeArea?: boolean
@@ -32,10 +29,9 @@ export interface AppProps {
 
 export interface AppEmits {
   /**
-   * Root layout size, from the background-thread `layoutchange` event — fires
-   * on mount and whenever the root resizes (rotation, split screen). Replaces
-   * hand-wiring a binding on the root; `main-thread-*` attrs do not reliably
-   * fall through onto it.
+   * Root layout size, from the background-thread `layoutchange` event — fires on
+   * mount and whenever the root resizes. `main-thread-*` attrs do not reliably
+   * fall through onto the root.
    */
   (e: 'viewport-change', size: { width: number, height: number }): void
 }
@@ -63,9 +59,8 @@ const { mode, isDark } = useColorMode()
 
 const { ui } = useStyledComponent('app', theme, () => ({}))
 
-// App-root safe-area provider: `false` forces zeros for the whole tree (else
-// useSafeArea falls back to the container read anyway); a subtree can still
-// override with its own `provideSafeAreaInsets`.
+// `false` forces zeros for the whole tree; a subtree can still override with its
+// own `provideSafeAreaInsets`.
 provideSafeAreaInsets(props.safeArea === false ? { top: 0, bottom: 0 } : getSafeAreaInsets())
 
 // String form — the Lynx view style type has no custom-property index key.
@@ -90,15 +85,11 @@ function onLayoutChange(event: any): void {
   >
     <!--
       This root <view> owns the app-root contract documented on `useColorMode`:
-      the single `dark` class (custom-property inheritance flows the dark ramp
-      to every descendant) plus the `:key="mode"` remount (Lynx native applies
-      class changes only to freshly mounted nodes). Encapsulated here so the
-      mechanism can change (e.g. a seamless setNativeProps toggle) without
-      consumer churn. A template-root comment would compile to a sibling vnode
-      and turn the component into a fragment, so it lives inside the view.
-      OverlayRoot must live INSIDE this view: teleported overlay content
-      inherits the palette/dark tokens from it and must be covered by the
-      remount.
+      the single `dark` class plus the `:key="mode"` remount (Lynx native applies
+      class changes only to freshly mounted nodes). A template-root comment would
+      compile to a sibling vnode and turn the component into a fragment, so it
+      lives inside the view. OverlayRoot must live INSIDE this view: teleported
+      content inherits the dark tokens from it and must be covered by the remount.
     -->
     <OverlayRoot v-if="overlays" />
     <slot :mode="mode" :is-dark="isDark" />

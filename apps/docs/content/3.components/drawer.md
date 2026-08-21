@@ -64,7 +64,7 @@ Use the `#header`, `#body` and `#footer` slots to customize the drawer's content
 
 ### Directions
 
-Use `direction` (or its `side` alias) to control which edge the drawer slides in from. It defaults to `bottom`.
+Use `side` to control which edge the drawer slides in from. It defaults to `bottom`.
 
 ::component-code
 ---
@@ -97,7 +97,7 @@ const open = ref(false)
 
 - Bind `v-model:open` to control the drawer; `update:open` is emitted on every open-state change.
 - `defaultOpen` initializes uncontrolled open state (now honored by the underlying `SheetRoot`).
-- `direction` / `side` pick the edge: `top`, `right`, `bottom`, or `left`; default `bottom`.
+- `side` picks the edge: `top`, `right`, `bottom`, or `left`; default `bottom`.
 - `overlay` toggles the dimmed backdrop; `dismissible` controls both backdrop dismissal and drag-to-close.
 - `handle` shows the drag-handle pill; `handleOnly` restricts dragging to the handle.
 - `snapPoints` are 0 → 1 fractions of the viewport on the slide axis. Defaults to `[0.75]` (a three-quarter-height bottom sheet). Pass `[1]` for full-screen or e.g. `[0.4, 0.9]` for a resizable sheet.
@@ -147,7 +147,6 @@ Lynx has no DOM focus trap and hardware Escape handling is not currently wired. 
 
 ## Platform notes
 
-- Drawer content is painted through the app-root `OverlayRoot`; `portal` is a transparent pass-through on Lynx.
 - Drag tracking and snap motion run on the main thread (MTS) for native-smooth tracking.
 - The `defaultOpen` flag — previously dead because the panel was always treated as controlled — is now honored (see `useStandardVModel` in `@vyui/core`).
 - Use `<VyDrawer :snap-points="[1]">` for a full-screen sheet, or `VyModal` for a centered blocking dialog.

@@ -27,7 +27,7 @@ const rootContext = injectCheckboxRootContext()
 
 <template>
   <Presence
-    :present="forceMount || isIndeterminate(rootContext.state.value) || rootContext.state.value === true"
+    :show="forceMount || isIndeterminate(rootContext.state.value) || rootContext.state.value === true"
   >
     <Primitive
       :ref="forwardRef"

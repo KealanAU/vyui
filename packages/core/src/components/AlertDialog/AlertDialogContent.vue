@@ -1,11 +1,9 @@
 <script lang="ts">
 import type { AlertDialogContentImplProps } from './AlertDialogContentImpl.vue'
 
-export interface AlertDialogContentProps extends Omit<AlertDialogContentImplProps, 'trapFocus'> {
-  /**
-   * Used to force mounting when more control is needed. Useful when
-   * controlling animation with Vue animation libraries.
-   */
+export interface AlertDialogContentProps extends AlertDialogContentImplProps {
+  /** Force mounting when more control is needed — e.g. driving animation from a
+   *  Vue animation library. */
   forceMount?: boolean
 }
 </script>
@@ -27,15 +25,11 @@ const { forwardRef } = useForwardExpose()
 
 <template>
   <!--
-    An AlertDialog is always modal — reka-ui's `DialogContent` branches between
-    `DialogContentModal` / `DialogContentNonModal`, but here only the modal
-    variant exists, so there is no `v-if` branch.
-
-    `<Presence>` provides the `PresenceContextKey` to `AlertDialogContentModal`
-    and (through the captured-provides bridge) to every node painted in the
-    OverlayRoot portal. The state machine inside `Presence` drives off the
-    `@animation*` / `@transition*` events the inner content wires up — see
-    `AlertDialogContentImpl.vue`.
+    An AlertDialog is always modal, so unlike reka-ui's `DialogContent` there is
+    no modal/non-modal branch. `<Presence>` provides the `PresenceContextKey` to
+    `AlertDialogContentModal` and, through the captured-provides bridge, to every
+    node painted in the OverlayRoot portal; its state machine drives off the
+    `@animation*` / `@transition*` events the inner content wires up.
   -->
   <Presence :show="forceMount || rootContext.open.value">
     <AlertDialogContentModal

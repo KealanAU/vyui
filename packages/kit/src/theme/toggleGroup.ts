@@ -1,25 +1,18 @@
 /**
- * ToggleGroup theme — modelled on a segmented-control / button-group adapted
- * from nuxt/ui v3.0.2 conventions (`theme/button.ts` variant matrix, plus
- * `theme/button-group.ts` orientation rounding). Light-only port for Vue-Lynx.
- *
- * Each item renders a `ToggleGroupItem` styled like a button; the
- * `ui-on` attribute is used to flip into the active appearance per
- * color × variant. Variants supported: `outline`, `soft`, `subtle` (matches
- * what nuxt/ui surfaces for non-solid toggles). Dark rides the semantic tokens.
+ * ToggleGroup theme — a segmented control adapted from nuxt/ui v3.0.2
+ * conventions (`button.ts` variant matrix + `button-group.ts` orientation
+ * rounding). Each item renders a `ToggleGroupItem` styled like a button, with
+ * `ui-on` flipping the active appearance per color × variant. Variants:
+ * `outline`, `soft`, `subtle`. Dark rides the semantic tokens.
  */
 import type { Color } from './colors'
 import { type IconFg, iconFgFromToken } from './iconColor'
 
-// Each builder returns the *inactive* + *on-state* surface classes (`base`,
-// applied to the item <view>) separately from the foreground color (`fg`:
-// text-*, incl. the on-state shift). CSS inheritance is OFF in the Lynx build
-// (`enableCSSInheritance: false`), so a `text-*` on the item <view> never
-// reaches the `leadingIcon` / `label` children — `fg` is spread onto those
-// slots directly. The item <view> carries `group` + `data-state`, so the
-// on-state color shift uses `group-ui-on:text-*` on the children
-// (the children don't get `data-state` themselves). Same convention as
-// `dropdownMenu.ts` / `stepper.ts`.
+// Each builder returns the inactive + on-state surface classes (`base`)
+// separately from the foreground color (`fg`, including the on-state shift). CSS
+// inheritance is OFF in the Lynx build, so `fg` is spread onto the
+// `leadingIcon` / `label` slots directly; the item <view> carries `group` +
+// `data-state`, so the shift uses `group-ui-on:text-*` on the children.
 const outline = (c: string) =>
   ({
     base: `border border-accented bg-default active:bg-${c}-50 active:bg-${c}-100`
@@ -48,11 +41,9 @@ export type Variant = keyof typeof VARIANT_BUILDERS
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 
 // Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
-// XML, so neither the resting `text-*` nor the `group-ui-on:text-*` shift on
-// `leadingIcon` ever reaches the glyph — ToggleGroup.vue bakes the fill per
-// item from the `pressed` state core's Toggle forwards through its slot.
-// Derive it from the same `fg` string the variant emits so class and baked
-// color can't drift.
+// XML, so neither the resting `text-*` nor the `group-ui-on:text-*` shift ever
+// reaches the glyph — ToggleGroup.vue bakes the fill per item from the `pressed`
+// state, derived from the same `fg` string so the two can't drift.
 export function iconFg(color: string, variant: Variant, on: boolean, isDark = false): IconFg {
   const { fg } = VARIANT_BUILDERS[variant](color)
   // on → the `group-ui-on:text-*` accent; off → the resting `text-*` token.
@@ -66,8 +57,7 @@ export default (colors: Color[]) => ({
   slots: {
     // `root` direction is set per orientation variant (flex-row/flex-col).
     root: 'flex min-w-0 max-w-full',
-    // `group` so children can read the item's `data-state` via
-    // `group-ui-on:*` (Lynx won't cascade `text-*`).
+    // `group` so children can read the item's `data-state` via `group-ui-on:*`.
     item: 'group flex flex-row items-center justify-center min-w-0 max-w-full font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
     leadingIcon: 'shrink-0',
     label: 'truncate',
@@ -94,8 +84,7 @@ export default (colors: Color[]) => ({
   },
   compoundVariants: [
     // Surface lands on `item`; foreground color (`fg`) on `leadingIcon` +
-    // `label` since the item <view> won't cascade it (`enableCSSInheritance:
-    // false`).
+    // `label`, which the item <view> won't cascade to.
     ...colors.flatMap(color =>
       VARIANTS.map((variant) => {
         const { base, fg } = VARIANT_BUILDERS[variant](color)

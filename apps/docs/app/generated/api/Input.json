@@ -42,7 +42,7 @@
       "name": "avoidKeyboard",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Native keyboard avoidance (Lynx `avoid-keyboard`): the platform shifts\nthe whole LynxView up so the focused input clears the keyboard — exact\nnative window-coordinate math, no JS. Zero-setup alternative to the\n`VyKeyboardAware*` family for simple forms; do NOT combine with a\n`VyKeyboardAwareRoot`, the two lifts stack. Pair with\n`avoidKeyboardSpacing` to also clear the field's bottom chrome."
+      "description": "Native keyboard avoidance (Lynx `avoid-keyboard`): the platform shifts the\nwhole LynxView so the focused input clears the keyboard, with no JS. Do NOT\ncombine with a `VyKeyboardAwareRoot` — the two lifts stack. Pair with\n`avoidKeyboardSpacing` to also clear the field's bottom chrome."
     },
     {
       "name": "avoidKeyboardSpacing",
@@ -59,7 +59,7 @@
       "name": "confirmType",
       "type": "InputConfirmType | undefined",
       "required": false,
-      "description": "On-screen return-key label and behavior. Maps to iOS `returnKeyType` /\nAndroid `imeOptions`. Defaults to `'done'` from the core primitive.\nPair with `@confirm` to handle the tap."
+      "description": "On-screen return-key label and behavior (iOS `returnKeyType` / Android\n`imeOptions`), defaulting to `'done'`. Pair with `@confirm`."
     },
     {
       "name": "disabled",
@@ -76,7 +76,7 @@
       "name": "icon",
       "type": "string | undefined",
       "required": false,
-      "description": "Iconify shorthand. Routed to the trailing side when `trailing` is true,\notherwise to the leading side. Explicit `leadingIcon` / `trailingIcon`\nalways win."
+      "description": "Iconify shorthand, routed to the trailing side when `trailing` is set and\nthe leading side otherwise. Explicit `leadingIcon` / `trailingIcon` win."
     },
     {
       "name": "id",
@@ -151,7 +151,7 @@
       "type": "InputType | undefined",
       "required": false,
       "default": "\"text\"",
-      "description": "Input mode — drives the on-screen software keyboard on native and the\n`type` attribute on web. `'digit'` shows a pure 0-9 pad (no decimal /\nsign), `'number'` shows the numeric keyboard with decimal, `'tel'` /\n`'email'` give the matching layouts, `'password'` masks input."
+      "description": "Input mode — drives the software keyboard on native and the `type`\nattribute on web: `'digit'` is a pure 0-9 pad, `'number'` adds a decimal,\n`'tel'` / `'email'` give matching layouts, `'password'` masks input."
     },
     {
       "name": "ui",

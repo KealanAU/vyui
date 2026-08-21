@@ -1,15 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { fireEvent, q, render, waitForUpdate } from '@vyui/testing-utils'
 import { overlayEntries } from '@/components/OverlayRoot/overlayStore'
 import AlertDialog from './story/_AlertDialog.vue'
 
 afterEach(() => {
   overlayEntries.value = []
 })
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 // `usePresence` chains rAF callbacks through `delayFrames`. In jsdom rAF is a
 // 16ms setTimeout — waiting `n` frames + a small margin lets all scheduled
@@ -113,10 +109,8 @@ describe('alertDialog', () => {
   })
 
   it('exposes only the modal content variant, no NonModal', async () => {
-    // Negative: passing modal:false to a Dialog story would render a NonModal
-    // variant; AlertDialog has only AlertDialogContentModal. We assert by
-    // confirming the AlertDialog story exposes no modal prop and the
-    // exported module includes only the modal variant.
+    // AlertDialogRoot has no `modal` prop at all — an alert dialog is always
+    // modal — so there is no non-modal path to export.
     const mod = await import('../../index')
     expect((mod as any).AlertDialogContentModal).toBeDefined()
     expect((mod as any).AlertDialogContentNonModal).toBeUndefined()

@@ -12,7 +12,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "The modality of the dialog. When set to `true`,\ninteraction with outside elements will be disabled."
+      "description": "The modality of the dialog. When `true`, `DialogOverlay` paints its\ntap-blocking backdrop and the content confines assistive tech via\n`exclusiveFocus`."
     },
     {
       "name": "open",

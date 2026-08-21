@@ -2,26 +2,17 @@
      Licensed under the Apache License Version 2.0.
 
      The Slider's only drag implementation. Everything runs on the main
-     thread: the track rect is measured once per gesture from the pointer-down
-     worklet, each `touchmove` worklet computes the next value, snaps to
-     `step`, and paints the active thumb's transform and the filled range
-     directly via `setStyleProperty`. BG only sees one round-trip per gesture —
-     on `touchend` — which the root commits as a `valueCommit`.
-
-     A background-thread implementation used to sit alongside this one, driving
-     the drag through per-frame `update:modelValue`. It was removed in 2026-07:
-     it measured correctly but felt worse than the worklet path on device, and
-     keeping both meant every fix landed twice. Keyboard stepping (arrow / home
-     / end) went with it — those handlers never fired on Lynx native, which has
-     no key events to bind. -->
+     thread: the track rect is measured once per gesture, each `touchmove`
+     worklet computes the next value and paints the active thumb and the filled
+     range via `setStyleProperty`. BG sees one round-trip per gesture, on
+     `touchend`, which the root commits as a `valueCommit`. -->
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
 
 export interface SliderImplMTSProps extends PrimitiveProps {}
 
-/** Encoded `startEdge` for the MT side — strings cross worklet boundaries
- *  but numbers compare faster and avoid an interned-string allocation per
- *  touchmove. 0 left, 1 right, 2 top, 3 bottom. */
+/** Encoded `startEdge` for the MT side — numbers compare faster than strings
+ *  across the worklet boundary. 0 left, 1 right, 2 top, 3 bottom. */
 type StartEdgeCode = 0 | 1 | 2 | 3
 
 function encodeStartEdge(edge: 'left' | 'right' | 'top' | 'bottom'): StartEdgeCode {
@@ -49,27 +40,18 @@ const orientation = injectSliderOrientationContext()
 
 // Vitest's vue-lynx harness doesn't run the SWC worklet transform, so the
 // `:main-thread-bind*` props arrive as null and `applySetWorkletEvent` throws
-// while applying the ops. Bind them only outside the harness — the component
-// still mounts and renders there, but the drag itself is device-only.
+// while applying the ops. Bind them only outside the harness.
 const mtBound = !(globalThis as any).lynxTestingEnv
 
 const trackRef = useMainThreadRef<any>(null)
 
 // Track geometry, in the pointer's own frame. All four come from ONE
-// `invoke('boundingClientRect')` at the start of every gesture (see
-// `_beginAt`) — never from `layoutchange`, for two reasons:
-//
-//   - Position: `layoutchange` reports top/left relative to the PAGE, a
-//     pointer relative to the VIEWPORT. Inside a scroll-view the two drift by
-//     the scroll offset, so an offset rebuilt as `pageY - top` is only correct
-//     while nothing has scrolled — measured on device at top 2805 against
-//     pageY 448.
-//   - Size: it arrives in the same response, so making the gesture wait on a
-//     BG `layoutchange` -> `runOnMainThread` hop buys nothing and adds a way
-//     to fail. It stranded the whole drag on Lynx web, where that hop never
-//     delivered and the zero-extent guard in `_dragStart` swallowed every
-//     press. Reading it per gesture is also correct for a track that resized
-//     while its tab was hidden.
+// `invoke('boundingClientRect')` per gesture (see `_beginAt`) — never from
+// `layoutchange`, which reports top/left relative to the PAGE while a pointer
+// is relative to the VIEWPORT (inside a scroll-view the two drift by the scroll
+// offset). Size arrives in the same response, so waiting on a BG
+// `layoutchange` -> `runOnMainThread` hop buys nothing and strands the drag on
+// Lynx web, where that hop never delivers.
 //
 // Individual scalar refs because `useMainThreadRef<object>` is less reliable
 // across the worklet boundary than primitives — see comment in Sheet.
@@ -78,9 +60,8 @@ const rectHRef = useMainThreadRef<number>(0)
 const rectLeftRef = useMainThreadRef<number>(0)
 const rectTopRef = useMainThreadRef<number>(0)
 
-// Timestamp of the last real touch. Touch browsers replay a tap as a
-// compatibility mousedown/mouseup pair after touchend; mouse handlers ignore
-// events inside this window so a tap doesn't double-commit.
+// Timestamp of the last real touch: touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair, which mouse handlers ignore.
 const lastTouchTsRef = useMainThreadRef<number>(0)
 
 // 0 = horizontal (read the touch x offset, paint the left/right anchor), 1 = vertical.
@@ -94,19 +75,11 @@ watch(() => orientation.startEdge.value, (v) => {
 const activeIndexRef = useMainThreadRef<number>(-1)
 
 // Thumb + range elements, resolved ON the main thread from the track's own
-// subtree.
-//
-// The obvious alternative — having each `SliderThumbImpl` push its element
-// handle into a shared `MainThreadRef` on mount — is what this component used
-// to do, and it never worked: that push runs on the background thread, where
-// `MainThreadRef.current` assignment is a silent no-op, so the list was always
-// empty and the paint below never ran. Resolving from MT sidesteps the thread
-// boundary entirely, and also dodges the mount-time race between a
-// `runOnMainThread` dispatch and MT-ref registration.
+// subtree: pushing element handles from each `SliderThumbImpl` on mount runs on
+// BG, where `MainThreadRef.current` assignment is a silent no-op.
 //
 // A CLASS selector, not `[data-vyui-slider-thumb]` — Lynx's selector engine is
-// a narrow subset and class matching is the part everything else in the repo
-// leans on.
+// a narrow subset and class matching is the part it supports.
 const thumbElsRef = useMainThreadRef<any[]>([])
 const rangeElRef = useMainThreadRef<any>(null)
 
@@ -116,11 +89,9 @@ const rangeElRef = useMainThreadRef<any>(null)
 // `zIndex` in SortableItem), and the slider's box is barely thicker than its
 // track, so a mouse drag stranded the moment the cursor drifted off it. A
 // viewport-sized element raised for the length of the gesture keeps the cursor
-// over a bound element wherever it goes.
-//
-// Lynx native gets neither the element nor its bindings: it delivers the whole
-// gesture to the node the press started on, and a stuck full-screen view there
-// would eat every touch in the app.
+// over a bound element. Lynx native gets neither the element nor its bindings:
+// it delivers the whole gesture to the node the press started on, and a stuck
+// full-screen view there would eat every touch in the app.
 //
 // Read at render, not setup — `SystemInfo` can resolve late.
 function isWeb() {
@@ -133,14 +104,11 @@ function _resolveEls() {
   'main thread'
   const track = trackRef.current
   if (!track || typeof track.querySelectorAll !== 'function') return
-  // The wrapper method exists on every platform, but it calls through to a
+  // The wrapper method exists on every platform, but calls through to a
   // `__QuerySelectorAll` PAPI that Lynx web does NOT expose to the main-thread
-  // realm — `invoke` resolves there, this throws `ReferenceError`. A `typeof`
-  // check on the method can't see that, so the call has to be guarded.
-  //
-  // Swallowing is correct rather than lazy: the elements resolved here only
-  // drive the MT paint, which is a latency optimisation over the background's
-  // own render. Losing them costs smoothness, never correctness.
+  // realm, so a `typeof` check can't see the failure. Swallowing is safe: these
+  // elements only drive the MT paint, a latency optimisation over the
+  // background's own render.
   try {
     const els = track.querySelectorAll('.vyui-slider-thumb')
     if (els && els.length > 0) thumbElsRef.current = els
@@ -166,8 +134,7 @@ function _snapClamp(v: number, min: number, max: number, step: number): number {
 
 /**
  * Convert an ELEMENT-RELATIVE pointer offset into a logical value, snapped and
- * clamped. The wrappers have already subtracted the track origin, so only the
- * track's SIZE is involved here — never a stored position.
+ * clamped. Only the track's SIZE is involved — never a stored position.
  */
 function _valueFromTouch(localX: number, localY: number): number {
   'main thread'
@@ -185,9 +152,8 @@ function _valueFromTouch(localX: number, localY: number): number {
   let frac = local / extent
   if (frac < 0) frac = 0
   if (frac > 1) frac = 1
-  // startEdge: 0 left, 1 right, 2 top, 3 bottom. RTL-horizontal (right) and
-  // natural-vertical (bottom) flip the fraction so the touch maps to the
-  // axis the user thinks they're dragging along.
+  // RTL-horizontal (right) and natural-vertical (bottom) flip the fraction so
+  // the touch maps to the axis the user thinks they're dragging along.
   const edge = startEdgeRef.current
   if (edge === 1 || edge === 3) frac = 1 - frac
   const min = root.minMT.current
@@ -197,9 +163,8 @@ function _valueFromTouch(localX: number, localY: number): number {
 }
 
 /**
- * Move thumb `idx` to `value` and re-sort. Mirrors the old background
- * `updateValues`: thumbs are allowed to cross, and the array is kept
- * monotonically increasing so the range fill and `valueCommit` stay coherent.
+ * Move thumb `idx` to `value` and re-sort: thumbs may cross, and the array is
+ * kept monotonically increasing so range fill and `valueCommit` stay coherent.
  */
 function _applyValue(values: number[], idx: number, value: number): number[] {
   'main thread'
@@ -210,10 +175,9 @@ function _applyValue(values: number[], idx: number, value: number): number[] {
 }
 
 /**
- * `minStepsBetweenThumbs`, enforced per frame rather than at commit time. A
- * violating frame is simply dropped so the thumb stops dead at the limit —
- * checking it only on `touchend` would let the drag paint past the limit and
- * then snap back on release.
+ * `minStepsBetweenThumbs`, enforced per frame rather than at commit time: a
+ * violating frame is dropped so the thumb stops dead at the limit instead of
+ * painting past it and snapping back on release.
  */
 function _hasMinGap(vals: number[], gap: number): boolean {
   'main thread'
@@ -253,13 +217,11 @@ function _edgeName(edge: StartEdgeCode): string {
 /**
  * Paint the active thumb at its value.
  *
- * This writes the SAME anchor property the background style computes
- * (`[startEdge]: <pct>%`), rather than translating by a delta from a frozen
- * anchor. That matters now the background is updated live during the drag: a
- * delta-from-touchstart paint double-counts as soon as the background re-anchors
- * mid-gesture, whereas writing the absolute position means both threads converge
- * on the same declaration and the last writer simply wins. It also removes the
- * need to unwind anything on touchend — the centring `transform` is left alone.
+ * Writes the SAME anchor property the background style computes
+ * (`[startEdge]: <pct>%`) rather than a delta from a frozen anchor, which would
+ * double-count once the background re-anchors mid-gesture. Both threads
+ * converge on the same declaration and the last writer wins, so there is
+ * nothing to unwind on touchend.
  */
 function _paintActiveThumb(value: number) {
   'main thread'
@@ -282,14 +244,10 @@ function _paintActiveThumb(value: number) {
 }
 
 /**
- * Repaint the filled range from the MT-side values.
- *
- * The BG only learns the new value on `touchend`, so without this the fill —
- * the part of the control that actually reads as "the value" — sat frozen for
- * the whole gesture and snapped on release while the thumb glided.
- *
- * Writes the same two edge offsets `SliderRange`'s BG style computes, so the
- * commit's re-render lands on identical values and there is nothing to reset.
+ * Repaint the filled range from the MT-side values — the BG only learns the new
+ * value on `touchend`, so without this the fill sat frozen for the whole
+ * gesture. Writes the same two edge offsets `SliderRange`'s BG style computes,
+ * so the commit's re-render lands on identical values.
  */
 function _paintRange(vals: number[]) {
   'main thread'
@@ -328,35 +286,26 @@ function _setShield(up: boolean) {
   el.setStyleProperty('display', up ? 'flex' : 'none')
 }
 
-// Coordinate-based gesture cores — take ELEMENT-LOCAL offsets. Every wrapper
-// below converts to them the same way: viewport coordinate minus the track
-// origin `_beginAt` captured for this gesture.
+// Coordinate-based gesture cores — take ELEMENT-LOCAL offsets: viewport
+// coordinate minus the track origin `_beginAt` captured for this gesture.
 
 function _dragStart(localX: number, localY: number) {
   'main thread'
   if (root.disabledMT.current) return
-  // Zero-extent track — bail instead of starting a gesture. `_valueFromTouch`
-  // would map every coordinate to `min`, silently clobbering the consumer's
-  // value with 0 and then refusing to move. `_beginAt` has already measured,
-  // so reaching this means the element really has no extent.
+  // Zero-extent track — bail instead of starting a gesture, `_valueFromTouch`
+  // would map every coordinate to `min`.
   if ((axisRef.current === 0 ? rectWRef.current : rectHRef.current) <= 0) return
   // Thumb/range elements are resolved lazily: the first touch is guaranteed to
-  // land after the subtree is painted, whereas mount time is not.
-  //
-  // Deliberately NOT a gate. This used to bail when the lookup came back
-  // empty, which stranded the entire control on Lynx web — the platform can't
-  // run the query at all (see `_resolveEls`), so every press aborted here and
-  // the value never left its initial number. The paints below no-op safely on
-  // an empty registry, and the background still receives the value and renders
-  // the thumb from its own style, so an unresolvable subtree costs the MT
-  // paint and nothing else.
+  // land after the subtree is painted, whereas mount time is not. Deliberately
+  // NOT a gate — Lynx web can't run the query at all (see `_resolveEls`), and
+  // the paints below no-op safely on an empty registry.
   if (thumbElsRef.current.length === 0) _resolveEls()
   const value = _valueFromTouch(localX, localY)
   const idx = _pickClosestIndex(value)
   activeIndexRef.current = idx
   // The main thread owns the values for the length of the gesture, so the
   // root's `_setValues` push is gated off this — otherwise the live
-  // `update:modelValue` echoes straight back and stomps a newer MT value.
+  // `update:modelValue` echoes back and stomps a newer MT value.
   root.draggingMT.current = true
   const src = root.valuesMT.current
   const next = _applyValue(src, idx, value)
@@ -392,9 +341,8 @@ function _dragEnd() {
   // extent) still raised the shield, and a stuck shield eats the whole page.
   _setShield(false)
   if (activeIndexRef.current === -1) return
-  // Already sorted and gap-checked by `_applyValue` on every frame, so this is
-  // exactly what the commit will write — and therefore what the fill should be
-  // left painted at.
+  // Already sorted and gap-checked by `_applyValue` every frame, so this is
+  // exactly what the commit will write.
   const src = root.valuesMT.current
   const finalVals: number[] = []
   for (let i = 0; i < src.length; i++) finalVals.push(src[i])
@@ -409,22 +357,15 @@ function _dragEnd() {
  * cores the element-local offset.
  *
  * One entry point for touch and mouse because `clientX`/`clientY` is the only
- * pointer field Lynx reports on both platforms. `touches[0].x`/`.y` — which
- * this used to read on the touch path — arrive element-relative on native but
- * do not exist on web at all: `createCrossThreadEvent` builds web touches from
- * raw DOM `Touch` objects, which have no `x`/`y`, so the offsets came through
- * as `NaN` on any touchscreen browser.
+ * pointer field Lynx reports on both platforms. `touches[0].x`/`.y` arrive
+ * element-relative on native but do not exist on web at all, so those offsets
+ * came through as `NaN` on any touchscreen browser.
  *
- * `boundingClientRect` is the single source for BOTH the origin and the extent
- * — Lynx's main-thread `Element` has no synchronous rect API (see
- * `@lynx-js/types` main-thread/element.d.ts: get/setAttribute,
- * setStyleProperty, querySelector, invoke, animate), and this response already
- * carries width/height. Fetched per gesture rather than at mount so scrolling
- * or a resize in between can't skew it.
- *
- * `invoke` resolves on the microtask queue, ahead of the next move event; if
- * one does land first, `_dragMove` drops it on the `activeIndexRef === -1`
- * guard rather than mapping against a stale origin.
+ * `boundingClientRect` is the single source for BOTH origin and extent — Lynx's
+ * main-thread `Element` has no synchronous rect API — and is fetched per
+ * gesture so scrolling or a resize can't skew it. It resolves on the microtask
+ * queue, ahead of the next move event; one that lands first is dropped by
+ * `_dragMove`'s `activeIndexRef === -1` guard.
  */
 function _beginAt(clientX: number, clientY: number) {
   'main thread'
@@ -439,17 +380,14 @@ function _beginAt(clientX: number, clientY: number) {
       rectHRef.current = r.height
       _dragStart(clientX - r.left, clientY - r.top)
     })
-    // A missing UI method drops the gesture rather than raising an unhandled
-    // rejection.
+    // A missing UI method drops the gesture rather than raising.
     .catch(() => {})
 }
 
 // The template's `hit-slop` / `consume-slide-event` are the native forgiveness
-// knobs (Lynx web ignores both). Slop because the element is only as thick as
-// the track — 9px at the kit's default size. Consuming every slide angle
-// because an ancestor `<scroll-view>` otherwise claims the gesture the moment
-// the finger drifts off-axis; the drift itself is harmless, `_valueFromTouch`
-// clamps the cross-axis away.
+// knobs (Lynx web ignores both): slop because the element is only as thick as
+// the track, consume because an ancestor `<scroll-view>` otherwise claims the
+// gesture the moment the finger drifts off-axis.
 
 function _onTouchStart(e: { touches: Array<{ clientX: number, clientY: number }> }) {
   'main thread'
@@ -472,11 +410,10 @@ function _onTouchEnd() {
 }
 
 // Desktop web: Lynx web dispatches raw mouse events and never synthesizes
-// touch from them, so the same gesture core is bound to mouse. Coordinates
-// arrive top-level (mouse `detail` is the DOM click-count number, not
-// `{x, y}`) in the same viewport frame the touch path uses, so both go through
-// `_beginAt`. No mouseleave binding — it doesn't bubble, so per-element
-// delivery is unreliable on the Lynx dispatch path.
+// touch from them. Coordinates arrive top-level (mouse `detail` is the
+// click-count number) in the same viewport frame the touch path uses. No
+// mouseleave binding — it doesn't bubble, so per-element delivery is unreliable
+// on the Lynx dispatch path.
 function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number }) {
   'main thread'
   // Swallow the compatibility mousedown a touch browser replays after a tap.
@@ -493,9 +430,8 @@ function _onMouseDown(e: { clientX: number, clientY: number, buttons?: number })
 function _onMouseMove(e: { clientX: number, clientY: number, buttons?: number }) {
   'main thread'
   // Only an EXPLICIT buttons value with the primary bit clear counts as
-  // released (recovers the mouseup lost outside the <lynx-view>). A missing
-  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
-  // it, and ending on those lets the drag go mid-gesture.
+  // released (recovers the mouseup lost outside the <lynx-view>); a missing
+  // `buttons` is treated as still-pressed.
   if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
     _dragEnd()
     return
@@ -512,10 +448,8 @@ function _onMouseUp() {
 // worklet-transform notes in Draggable.
 
 /**
- * Per-frame `update:modelValue`. The paint stays on the main thread, so this
- * costs one background hop per touchmove and nothing else waits on it — but a
- * consumer rendering the number next to the slider needs it, and freezing that
- * readout until release looks broken.
+ * Per-frame `update:modelValue`. Costs one background hop per touchmove and
+ * nothing waits on it, but a consumer rendering the number needs it.
  */
 function _emitLive(values: number[]) {
   root.updateFromMT(values)

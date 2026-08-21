@@ -10,28 +10,21 @@ type InputVariants = VariantProps<InputTV>
 export interface InputProps {
   modelValue?: string | number
   /**
-   * Input mode — drives the on-screen software keyboard on native and the
-   * `type` attribute on web. `'digit'` shows a pure 0-9 pad (no decimal /
-   * sign), `'number'` shows the numeric keyboard with decimal, `'tel'` /
-   * `'email'` give the matching layouts, `'password'` masks input.
+   * Input mode — drives the software keyboard on native and the `type`
+   * attribute on web: `'digit'` is a pure 0-9 pad, `'number'` adds a decimal,
+   * `'tel'` / `'email'` give matching layouts, `'password'` masks input.
    */
   type?: InputType
-  /**
-   * On-screen return-key label and behavior. Maps to iOS `returnKeyType` /
-   * Android `imeOptions`. Defaults to `'done'` from the core primitive.
-   * Pair with `@confirm` to handle the tap.
-   */
+  /** On-screen return-key label and behavior (iOS `returnKeyType` / Android
+   *  `imeOptions`), defaulting to `'done'`. Pair with `@confirm`. */
   confirmType?: InputConfirmType
   placeholder?: string
   disabled?: boolean
   loading?: boolean
   /** Iconify name for the spinner. Defaults to `appConfig.ui.icons.loading`. */
   loadingIcon?: string
-  /**
-   * Iconify shorthand. Routed to the trailing side when `trailing` is true,
-   * otherwise to the leading side. Explicit `leadingIcon` / `trailingIcon`
-   * always win.
-   */
+  /** Iconify shorthand, routed to the trailing side when `trailing` is set and
+   *  the leading side otherwise. Explicit `leadingIcon` / `trailingIcon` win. */
   icon?: string
   /** Force `icon` shorthand onto the leading side. */
   leading?: boolean
@@ -61,11 +54,9 @@ export interface InputProps {
   /** Forwarded to the underlying `<input>`. Defaults to `'off'` for email and password inputs. */
   autocorrect?: string
   /**
-   * Native keyboard avoidance (Lynx `avoid-keyboard`): the platform shifts
-   * the whole LynxView up so the focused input clears the keyboard — exact
-   * native window-coordinate math, no JS. Zero-setup alternative to the
-   * `VyKeyboardAware*` family for simple forms; do NOT combine with a
-   * `VyKeyboardAwareRoot`, the two lifts stack. Pair with
+   * Native keyboard avoidance (Lynx `avoid-keyboard`): the platform shifts the
+   * whole LynxView so the focused input clears the keyboard, with no JS. Do NOT
+   * combine with a `VyKeyboardAwareRoot` — the two lifts stack. Pair with
    * `avoidKeyboardSpacing` to also clear the field's bottom chrome.
    */
   avoidKeyboard?: boolean
@@ -112,9 +103,8 @@ const inputRef = ref<any>(null)
 
 const resolvedLoadingIcon = computed(() => props.loadingIcon || appConfig.ui.icons?.loading || 'i-lucide-loader-circle')
 
-// `icon` shorthand resolves to leading by default; flipped to trailing when
-// the `trailing` boolean is set. Explicit `leadingIcon` / `trailingIcon`
-// always win over the shorthand.
+// `icon` shorthand resolves to leading by default, trailing when the `trailing`
+// boolean is set. Explicit `leadingIcon` / `trailingIcon` always win.
 const resolvedLeadingIcon = computed(() => {
   if (props.leadingIcon) return props.leadingIcon
   if (props.icon && !props.trailing) return props.icon
@@ -130,8 +120,7 @@ const hasLeading = computed(() => !!slots.leading || !!resolvedLeadingIcon.value
 const hasTrailing = computed(() => !!slots.trailing || !!resolvedTrailingIcon.value)
 
 // Lynx has no `:focus-within`, and the border/ring chrome lives on the root
-// <view>, not the <input> — track focus in JS and drive the `highlight`
-// variant so the colored border + shadow ring follows focus.
+// <view>, not the <input> — track focus in JS and drive the `highlight` variant.
 const isFocused = ref(false)
 function onFocus(event: unknown) {
   isFocused.value = true
@@ -173,10 +162,9 @@ defineExpose({ inputRef })
 </script>
 
 <template>
-  <!-- The trigger makes KeyboardAware lifts measure the STYLED FIELD (this
-       root view — border + padding included), not the bare inner <input>,
-       so the field's bottom chrome clears the keyboard too. Renders nothing
-       extra (as-child) and no-ops without a KeyboardAwareRoot above. -->
+  <!-- The trigger makes KeyboardAware lifts measure the STYLED FIELD (this root
+       view — border + padding included), not the bare inner <input>. Renders
+       nothing extra and no-ops without a KeyboardAwareRoot above. -->
   <KeyboardAwareTrigger as-child>
     <view :class="ui.root({ class: [props.class, props.ui?.root] })">
     <view
@@ -203,13 +191,11 @@ defineExpose({ inputRef })
         />
       </slot>
     </view>
-    <!-- Lynx doesn't reliably honor `flex-1` on the native `<input>` tag —
-         the host stays at its placeholder/content width instead of growing
-         to fill the flex row. Wrapping CoreInput in a flex-1 `<view>` puts
-         the grow/shrink behavior on a view (which Lynx handles correctly)
-         and the inner input fills the wrapper via its own `w-full` class.
-         `min-w-0` on the wrapper lets it actually shrink alongside trailing
-         siblings instead of being pinned by the input's intrinsic width. -->
+    <!-- Lynx doesn't reliably honor `flex-1` on the native `<input>` tag — the
+         host stays at its content width. Wrapping CoreInput in a flex-1 `<view>`
+         puts grow/shrink on a view (which Lynx handles) and the input fills it
+         via `w-full`. `min-w-0` lets the wrapper shrink alongside trailing
+         siblings. -->
     <view class="flex-1 min-w-0 flex flex-row items-center">
       <CoreInput
         :ref="(el: any) => { inputRef = el }"

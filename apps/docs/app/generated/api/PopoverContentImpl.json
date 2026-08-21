@@ -11,13 +11,13 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+      "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     },
     {
       "name": "backdropStyle",
       "type": "Record<string, any> | undefined",
       "required": false,
-      "description": "Style applied to the full-screen backdrop wrapper. The default\n`OverlayBackdrop` flex-centers its child; pass alignment + padding here\nto dock the popover next to its trigger instead. Mirrors the\n`DialogContentImpl.backdropStyle` escape hatch."
+      "description": "Style applied to the full-screen backdrop wrapper. The default\n`OverlayBackdrop` flex-centers its child; pass alignment + padding here to\ndock the popover next to its trigger instead."
     }
   ],
   "events": [

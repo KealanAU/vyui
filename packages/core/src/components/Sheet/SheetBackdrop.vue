@@ -1,17 +1,13 @@
 <!-- Copyright 2026 The Lynx Authors. All rights reserved.
      Licensed under the Apache License Version 2.0.
 
-     Strategy: CSS-driven fade through the shared `vyui-fade-in` /
-     `vyui-fade-out` keyframes (defined in
-     `components/Presence/presence.css`, side-effect-imported via the
-     `@/components/Presence` entry — see SheetBackdropImpl). The Presence
-     state machine sets `ui-entering` / `ui-leaving` on the `<view>`;
-     `@animationend` (BG-thread event) advances Presence into the
-     `Entered` / `Left` terminal states.
+     CSS-driven fade through the shared `vyui-fade-in` / `vyui-fade-out`
+     keyframes (in `components/Presence/presence.css`). Presence sets
+     `ui-entering` / `ui-leaving` on the `<view>` and `@animationend` advances it
+     to `Entered` / `Left`.
 
-     The MT-side `overlayRef` is still painted by `SheetContent`'s drag
-     worklets so the backdrop fades in sync with finger position during a
-     drag — independent of the enter/exit keyframe animation here. -->
+     The MT-side `overlayRef` is still painted by `SheetContent`'s drag worklets,
+     so the backdrop also fades in sync with finger position during a drag. -->
 <script lang="ts">
 export interface SheetBackdropProps {
   /** Close the sheet when the backdrop is tapped. @defaultValue `true` */

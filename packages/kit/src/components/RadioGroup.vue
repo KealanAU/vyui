@@ -96,17 +96,14 @@ function normalizeItem(item: RadioGroupItem) {
 
 const normalizedItems = computed(() => (props.items ?? []).map(normalizeItem))
 
-// `checked` per item drives the per-color compound variant for the active dot.
 // Items only differ by (checked × disabled), so the resolved class strings are
 // cached per state: an N-item group pays 1–2 tv invocations per render instead
-// of 2 slot calls per item (the invocations are the expensive part on Lynx's
-// interpreter). The cache rebuilds when the variant-shaping props change; the
-// checked/disabled args are read at render time so `modelValue` flips stay
-// reactive without invalidating it.
+// of 2 per item (the invocations are the expensive part on PrimJS). The cache
+// rebuilds when the variant-shaping props change, and the checked/disabled args
+// are read at render time so `modelValue` flips stay reactive.
 const itemStateUi = computed(() => {
   // This path re-invokes the factory per (checked, disabled) combo, which
-  // `useStyledComponent` doesn't expose — rebuild the same per-app factory it
-  // uses (identical config → identical output).
+  // `useStyledComponent` doesn't expose — rebuild the same per-app factory.
   const overrides = (appConfig.ui as Record<string, unknown>).radioGroup as Partial<ReturnType<typeof theme>> | undefined
   const factory = tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
   const { color, size, orientation, ui: uiProp } = props

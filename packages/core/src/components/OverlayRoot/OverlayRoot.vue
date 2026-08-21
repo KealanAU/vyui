@@ -51,11 +51,8 @@ const ContextBridge = defineComponent({
     Each entry is rendered directly — there is no shared full-screen wrapper
     `<view>`. A wrapper would be the topmost node across the whole screen and
     would swallow every touch in its empty regions, freezing the app behind a
-    partial-screen overlay (e.g. a Toast strip pinned to the bottom edge).
-    Modal overlays paint their own full-screen backdrop child, so they still
-    block as intended; non-modal/partial overlays only cover their own bounds.
-    Entry content positions via `position: fixed` / `absolute`, which resolves
-    against the app-root `position: relative` view either way.
+    partial-screen overlay. Modal overlays paint their own full-screen backdrop
+    child, so they still block as intended.
   -->
   <ContextBridge
     v-for="overlayEntry in overlayEntries"

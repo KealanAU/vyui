@@ -2,26 +2,16 @@
  * `BasicDateFormatter` — a minimal, English-only stand-in for
  * `Intl.DateTimeFormat`.
  *
- * Lynx's PrimJS engine ships an incomplete `Intl` (ECMA-402). A full `Intl`
- * needs multi-megabyte CLDR data, so size-optimized mobile engines drop or
- * stub it. `@internationalized/date`'s own `DateFormatter` wraps
- * `Intl.DateTimeFormat` and does extra locale / hour-cycle negotiation that
- * the partial PrimJS `Intl` does not satisfy — which crashes the date/time
- * components.
+ * Lynx's PrimJS engine ships an incomplete `Intl` (ECMA-402), and
+ * `@internationalized/date`'s `DateFormatter` wraps `Intl.DateTimeFormat` with
+ * extra locale / hour-cycle negotiation the partial PrimJS `Intl` doesn't
+ * satisfy — which crashes the date/time components. vyui's `useDateFormatter`
+ * and date helpers format through this class instead, never touching the host
+ * `Intl`. Self-contained on purpose (no `@/` imports), so `shared/intl/` can be
+ * lifted into a standalone package.
  *
- * This class is the stopgap: vyui's `useDateFormatter` and the date
- * helpers format dates through `BasicDateFormatter` directly instead of
- * `@internationalized/date`'s `DateFormatter`, so they never touch the host
- * `Intl` at all. It is `en`-only and intended to be swapped for a real
- * internationalization library later.
- *
- * Self-contained on purpose: no project (`@/`) imports, so the whole
- * `shared/intl/` folder can be lifted into a standalone package.
- *
- * Limitations:
- * - `en` only — any other locale falls back to `en` formatting.
- * - No real time-zone conversion — dates format in the host's local time.
- * - `timeZoneName` is approximated from the host offset (`GMT±N`).
+ * Limitations: `en` only; no real time-zone conversion (dates format in the
+ * host's local time); `timeZoneName` is approximated from the host offset.
  */
 
 export type AnyOptions = Record<string, any>
@@ -209,9 +199,8 @@ function toJsDate(input?: Date | number): Date {
 
 /**
  * Drop-in replacement for the subset of `Intl.DateTimeFormat` /
- * `@internationalized/date`'s `DateFormatter` that vyui uses:
- * `format`, `formatToParts`, `formatRange`, `formatRangeToParts` and
- * `resolvedOptions`.
+ * `@internationalized/date`'s `DateFormatter` that vyui uses: `format`,
+ * `formatToParts`, `formatRange`, `formatRangeToParts`, `resolvedOptions`.
  */
 export class BasicDateFormatter {
   private opts: AnyOptions

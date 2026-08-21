@@ -26,7 +26,7 @@
       "type": "number | undefined",
       "required": false,
       "default": "300",
-      "description": "Height-morph + slide/settle duration in ms. Drives both the per-view\nheight tween and the core sheet's open/close motion."
+      "description": "Height-morph + slide/settle duration in ms, driving both the per-view\nheight tween and the core sheet's open/close motion."
     },
     {
       "name": "handle",
@@ -40,7 +40,7 @@
       "type": "boolean | \"scroll\" | \"lift\" | undefined",
       "required": false,
       "default": "false",
-      "description": "Keyboard handling on Lynx (no-op on web/jsdom — there is no platform\nkeyboard event). When enabled, the whole panel rises above the on-screen\nkeyboard: the panel is bottom-anchored and content-hugging, so growing\nits bottom padding by the keyboard height pushes handle/body/footer up\nwhile the panel background fills behind the keyboard. (Padding, not\n`transform` — the sheet's MT drag worklets own the panel transform.)\n - `'lift'` — rise only. Best for short/medium trays.\n - `'scroll'` (or `true`) — rise, plus the body becomes a keyboard-aware\n   scroll region that keeps the focused input in view. It only scrolls\n   once its height is bounded — cap it via the `bodyScroll` ui slot\n   (e.g. `max-h-*`). Best for tall trays.\n - `false` — no keyboard handling.\nInputs anywhere inside (body or footer) register themselves; no\n`KeyboardAwareTrigger` wrapping needed."
+      "description": "Keyboard handling on Lynx (no-op on web/jsdom). The panel is bottom-anchored\nand content-hugging, so growing its bottom padding by the keyboard height\npushes handle/body/footer up while the background fills in behind the\nkeyboard. (Padding, not `transform` — the sheet's MT drag worklets own the\npanel transform.)\n - `'lift'` — rise only. Best for short/medium trays.\n - `'scroll'` (or `true`) — rise, plus the body becomes a keyboard-aware\n   scroll region. It only scrolls once bounded — cap it via the `bodyScroll`\n   ui slot (e.g. `max-h-*`). Best for tall trays.\n - `false` — no keyboard handling.\nInputs anywhere inside register themselves."
     },
     {
       "name": "modelValue",

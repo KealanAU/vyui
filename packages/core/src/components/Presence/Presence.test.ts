@@ -51,15 +51,6 @@ describe('Presence — v1 mount/unmount surface', () => {
     expect(container.querySelector('[data-testid="content"]')).not.toBeNull()
   })
 
-  it('accepts the back-compat `present` prop alias', async () => {
-    const { container } = render({
-      components: { Presence },
-      template: `<view><Presence :present="true"><view data-testid="content">${CONTENT_TEXT}</view></Presence></view>`,
-    })
-    await waitForUpdate()
-    expect(container.querySelector('[data-testid="content"]')).not.toBeNull()
-  })
-
   it('forceMount keeps the child rendered when show is false', async () => {
     const { container } = render({
       components: { Presence },

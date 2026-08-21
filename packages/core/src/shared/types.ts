@@ -6,33 +6,22 @@ type SingleOrMultipleType = 'single' | 'multiple'
 
 interface SingleOrMultipleProps<T = AcceptableValue | AcceptableValue[]> {
   /**
-   * Determines whether a "single" or "multiple" items can be selected at a time.
-   *
-   * This prop will overwrite the inferred type from `modelValue` and `defaultValue`.
+   * Whether a "single" or "multiple" items can be selected at a time. Overwrites
+   * the type inferred from `modelValue` and `defaultValue`.
    */
   type?: SingleOrMultipleType
 
-  /**
-   * The controlled value of the active item(s).
-   *
-   * Use this when you need to control the state of the items. Can be bound with `v-model`
-   */
+  /** The controlled value of the active item(s). Can be bound with `v-model`. */
   modelValue?: T
 
-  /**
-   * The default active value of the item(s).
-   *
-   * Use when you do not need to control the state of the item(s).
-   */
+  /** The default active value of the item(s), for uncontrolled use. */
   defaultValue?: T
 }
 
 /**
- * A painted element handle returned by ref forwarding. On Lynx native this is a
- * `ShadowElement`-like handle; in web preview it's a DOM element. The two
- * runtimes expose different APIs, so this is intentionally loose — call sites
- * feature-detect (e.g. `typeof el.focus === 'function'`) before reaching for
- * runtime-specific members.
+ * A painted element handle returned by ref forwarding — a `ShadowElement`-like
+ * handle on Lynx native, a DOM element in web preview. Intentionally loose: call
+ * sites feature-detect before reaching for runtime-specific members.
  *
  * Used in place of bare `HTMLElement` / `Element`, which don't exist in Lynx's
  * `lib` and would leak DOM types into consumers' emitted `.d.ts`.
@@ -66,10 +55,9 @@ interface FormFieldProps {
 }
 
 /**
- * The Lynx style-object type accepted by every primitive's `:style` binding.
- * The object form of `@lynx-js/types` `CSSProperties` — Lynx layout/style props
- * such as `paddingHorizontal`, `flexDirection`, `borderRadius`, etc. Use it to
- * type shared style constants instead of reaching for `as const`.
+ * The Lynx style-object type accepted by every primitive's `:style` binding —
+ * the object form of `@lynx-js/types` `CSSProperties`. Use it to type shared
+ * style constants instead of reaching for `as const`.
  */
 type VyStyle = Exclude<NonNullable<IntrinsicElements['view']['style']>, string>
 

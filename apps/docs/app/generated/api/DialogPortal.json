@@ -1,12 +1,5 @@
 {
-  "props": [
-    {
-      "name": "to",
-      "type": "string | undefined",
-      "required": false,
-      "description": "Inert on Lynx. Actual portaling is handled by `overlayStore` + the app-root `OverlayRoot`,\nso this selector is never read. No default is supplied — the prop is\nmeaningless and supplying `'#overlay-root'` would falsely imply a DOM\ntarget."
-    }
-  ],
+  "props": [],
   "events": [],
   "slots": [
     {

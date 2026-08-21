@@ -6,10 +6,8 @@ type PinInputTV = ThemeTV<typeof theme>
 type PinInputVariants = VariantProps<PinInputTV>
 
 export interface PinInputProps {
-  /**
-   * Controlled value as a flat string. Bridges to the core `PinInputRoot`,
-   * which exposes its value as `string[]`.
-   */
+  /** Controlled value as a flat string. Bridges to the core `PinInputRoot`,
+   *  which exposes its value as `string[]`. */
   modelValue?: string
   /** Number of input boxes rendered. */
   length?: number
@@ -63,9 +61,8 @@ const normalizedModel = computed<string[] | undefined>(() => {
   return Array.from(props.modelValue)
 })
 
-// Map our `'numeric' | 'alphanumeric'` facade onto the core's `'number' |
-// 'text'` distinction. Alphanumeric falls through to free-form text since the
-// core only differentiates numeric vs everything-else.
+// Map the `'numeric' | 'alphanumeric'` facade onto the core's `'number' |
+// 'text'`; alphanumeric falls through to free-form text.
 const coreType = computed<'number' | 'text'>(() =>
   props.type === 'numeric' ? 'number' : 'text',
 )

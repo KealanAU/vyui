@@ -5,7 +5,7 @@
       "type": "\"start\" | \"center\" | \"end\" | undefined",
       "required": false,
       "default": "\"start\"",
-      "description": "Active-item alignment within the viewport when it is wider than an item.\n`'start'` (default) | `'center'` | `'end'`. Requires `containerWidth`.\nMirrors lynx-ui `modeConfig.align`."
+      "description": "Active-item alignment when the viewport is wider than an item: `'start'`\n(default) | `'center'` | `'end'`. Requires `containerWidth`."
     },
     {
       "name": "autoplay",
@@ -19,7 +19,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Only consume gestures that are predominantly horizontal (±45°). A\nvertical drag is released to the host scroll surface. Mirrors lynx-ui's\n`experimentalHorizontalSwipeOnly`."
+      "description": "Only consume gestures that are predominantly horizontal (±45°); a vertical\ndrag is released to the host scroll surface. Mirrors lynx-ui's\n`experimentalHorizontalSwipeOnly`."
     },
     {
       "name": "circular",
@@ -75,14 +75,14 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Navigate circularly: dragging/autoplay past the last item wraps to the\nfirst (and vice-versa) SEAMLESSLY — edge slides are cloned so motion\ncontinues across the seam instead of snap-rewinding. When false, the\ntrack clamps at the ends."
+      "description": "Navigate circularly: dragging/autoplay past the last item wraps to the\nfirst SEAMLESSLY — edge slides are cloned so motion continues across the\nseam. When false, the track clamps at the ends."
     },
     {
       "name": "mode",
       "type": "\"normal\" | \"carousel\" | undefined",
       "required": false,
       "default": "\"normal\"",
-      "description": "Layout mode. `'normal'` (default) is the standard paged carousel honoring\n`align`. `'carousel'` is an alias kept for forward-compat; treated as\nnormal. Mirrors lynx-ui `mode`."
+      "description": "Layout mode. `'normal'` (default) is the standard paged carousel;\n`'carousel'` is a forward-compat alias treated as normal."
     },
     {
       "name": "modelValue",
@@ -93,7 +93,7 @@
       "name": "offsetLimit",
       "type": "[number, number] | undefined",
       "required": false,
-      "description": "Explicit `[startLimit, endLimit]` non-loop offset clamp (px past each\nedge the track may rest). Mirrors lynx-ui `offsetLimit`."
+      "description": "Explicit `[startLimit, endLimit]` non-loop offset clamp, px past each edge\nthe track may rest. Mirrors lynx-ui `offsetLimit`."
     },
     {
       "name": "rtl",
@@ -107,7 +107,7 @@
       "type": "number | undefined",
       "required": false,
       "default": "0",
-      "description": "Gap between adjacent items, px. The snap unit becomes\n`itemWidth + spaceBetween`. Mirrors lynx-ui `modeConfig.spaceBetween`."
+      "description": "Gap between adjacent items, px — the snap unit becomes\n`itemWidth + spaceBetween`. Mirrors lynx-ui `modeConfig.spaceBetween`."
     },
     {
       "name": "threshold",

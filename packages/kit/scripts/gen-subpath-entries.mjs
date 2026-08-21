@@ -125,12 +125,14 @@ for (const [name, { js, dts }] of entries) {
 const pkgPath = join(pkgRoot, 'package.json')
 const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
 
-// Fixed surface keeps its existing targets; entries slot in between, sorted.
-const head = ['.', './theme', './tailwind', './config']
-const tail = ['./style.css', './package.json']
-for (const key of [...head, ...tail]) {
-  if (!pkg.exports[key]) throw new Error(`expected exports["${key}"] to already exist in package.json`)
-}
+// Fixed surface keeps its existing keys, targets and order; generated entries
+// slot back into the same slice they occupy now. Derived, not listed, so
+// adding or removing a fixed export is a package.json-only edit.
+const isGenerated = key => pkg.exports[key]?.import?.startsWith('./dist/entries/')
+const keys = Object.keys(pkg.exports)
+const cut = keys.findIndex(isGenerated)
+const head = cut === -1 ? keys : keys.slice(0, cut)
+const tail = cut === -1 ? [] : keys.slice(cut).filter(key => !isGenerated(key))
 const expected = {}
 for (const key of head) expected[key] = pkg.exports[key]
 for (const name of [...entries.keys()].sort()) {

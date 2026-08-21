@@ -11,27 +11,27 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+      "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     },
     {
       "name": "mode",
       "type": "KeyboardAwareResponderMode | undefined",
       "required": false,
       "default": "\"view\"",
-      "description": "Which underlying element to render. `'view'` (the default) renders a\nstatic `<view>` whose `transform` the root mutates. `'scroll-view'`\nwraps content in a `<scroll-view>` and lets the root grow a dummy\nspacer at the bottom to push the focused trigger upward."
+      "description": "Which underlying element to render: `'view'` (default) for a static\n`<view>` whose `transform` the root mutates, or `'scroll-view'` for the\nspacer-growing scroll path."
     },
     {
       "name": "scrollViewClass",
       "type": "any",
       "required": false,
-      "description": "Class applied to the inner `<scroll-view>` when `mode === 'scroll-view'`.\nThe scroll path only engages when the scroll region has a bounded height\n— pass the height cap here (fallthrough attrs land on the outer wrapper\nview, not the scroll-view)."
+      "description": "Class applied to the inner `<scroll-view>`. The scroll path only engages\nwhen the region has a bounded height, so pass the height cap here\n(fallthrough attrs land on the outer wrapper view)."
     },
     {
       "name": "scrollviewId",
       "type": "string | undefined",
       "required": false,
       "default": "\"scrollview\"",
-      "description": "The id of the inner `<scroll-view>` when `mode === 'scroll-view'`. The\nroot uses this to dispatch `scrollTo` ops. Defaults to `'scrollview'`\nfor parity with the React port — pass a unique id when more than one\nscroll-mode responder can be on screen."
+      "description": "Id of the inner `<scroll-view>` when `mode === 'scroll-view'`, used by the\nroot to dispatch `scrollTo` ops. Defaults to `'scrollview'` — pass a unique\nid when more than one scroll-mode responder can be on screen."
     }
   ],
   "events": [],

@@ -4,16 +4,14 @@
      Wraps Lynx's native virtualized `<list>` with an item template, rubber-band
      pull-to-refresh, and load-more on scroll-to-lower.
 
-     PTR rides `:main-thread-bindtouch*` worklets. We track the scroll offset
-     and only take the gesture over while pulling down from the top edge — at
-     `scrollTop 0` with the list's native `bounces` off, nothing competes for
-     the touch.
-     Rationale + device-verify checklist: REFRESH-PHYSICS.md.
+     PTR rides `:main-thread-bindtouch*` worklets, taking the gesture over only
+     while pulling down from the top edge — at `scrollTop 0` with the list's
+     native `bounces` off, nothing competes for the touch. Rationale +
+     device-verify checklist: REFRESH-PHYSICS.md.
 
      Worklet rules: every `'main thread'` fn is inlined here (a `.ts`-resident
-     worklet crashes the card at load) and defined before its callers
-     (backward-reference only); BG writes to `.current` are dropped, so config is
-     pushed via `runOnMainThread` setters. -->
+     worklet crashes the card at load) and defined before its callers; BG writes
+     to `.current` are dropped, so config is pushed via `runOnMainThread`. -->
 <script lang="ts">
 /** Lifecycle of the pull-to-refresh interaction. */
 export type FeedListRefreshState = 'idle' | 'pulling' | 'releaseReady' | 'refreshing' | 'done'
@@ -31,10 +29,7 @@ export interface FeedListProps<T = unknown> {
   itemKeyField?: keyof T & string
   /** Alternative to `itemKeyField`: a function returning the key. Wins if both set. */
   itemKey?: (item: T, index: number) => string
-  /**
-   * Layout type. `'flow'` / `'waterfall'` require `spanCount > 1`.
-   * @defaultValue `'single'`
-   */
+  /** Layout type. `'flow'` / `'waterfall'` require `spanCount > 1`. @defaultValue `'single'` */
   listType?: 'single' | 'flow' | 'waterfall'
   /** Columns / rows for `flow` / `waterfall`. */
   spanCount?: number
@@ -68,10 +63,7 @@ export interface FeedListProps<T = unknown> {
   refreshing?: boolean
   /** Initial refreshing state when uncontrolled. */
   defaultRefreshing?: boolean
-  /**
-   * Pull distance (px) past which release triggers a refresh.
-   * @defaultValue `64`
-   */
+  /** Pull distance (px) past which release triggers a refresh. @defaultValue `64` */
   refreshThreshold?: number
   /**
    * Rubber-band overscroll bounce at both edges that springs back on release.
@@ -95,15 +87,9 @@ export interface FeedListProps<T = unknown> {
    * @defaultValue `false`
    */
   noMoreData?: boolean
-  /**
-   * Items from the bottom that triggers `load-more`.
-   * @defaultValue `2`
-   */
+  /** Items from the bottom that triggers `load-more`. @defaultValue `2` */
   loadMoreThresholdItemCount?: number
-  /**
-   * Items from the top that triggers `scrollToUpper`.
-   * @defaultValue `0`
-   */
+  /** Items from the top that triggers `scrollToUpper`. @defaultValue `0` */
   upperThresholdItemCount?: number
 }
 
@@ -182,7 +168,6 @@ defineSlots<{
 const refreshing = useStandardVModelOf<boolean>(props, 'refreshing', emits)
 const loadingMore = useStandardVModelOf<boolean>(props, 'loadingMore', emits)
 
-// Refresh state machine (BG).
 const refreshState = ref<FeedListRefreshState>('idle')
 /** Live pull progress (0..1 of threshold), painted into the header slot. */
 const pullProgress = ref(0)
@@ -208,8 +193,8 @@ const startOffsetRef = useMainThreadRef<number>(0)
 const scrollTopRef = useMainThreadRef<number>(0)
 /**
  * Whether the list is at the top edge. Driven by the `scrolltoupper` edge event
- * (reliable) rather than the raw scroll value: with item-snap the final settle
- * frame can report a small non-zero `scrollTop`, leaving the raw value stale.
+ * rather than the raw scroll value: with item-snap the final settle frame can
+ * report a small non-zero `scrollTop`.
  */
 const atTopRef = useMainThreadRef<boolean>(true)
 /** Viewport + content heights, for bottom-edge detection. */
@@ -222,9 +207,8 @@ const refreshingRef = useMainThreadRef<boolean>(refreshing.value)
 const disabledRef = useMainThreadRef<boolean>(props.disabled)
 const refreshEnabledRef = useMainThreadRef<boolean>(props.enableRefresh)
 const bounceEnabledRef = useMainThreadRef<boolean>(props.enableBounce)
-// Timestamp of the last real touch. Touch browsers replay a tap as a
-// compatibility mousedown/mouseup pair after touchend; the mouse handlers
-// ignore events inside this window so a tap doesn't run the pull twice.
+// Timestamp of the last real touch: touch browsers replay a tap as a
+// compatibility mousedown/mouseup pair, which mouse handlers ignore.
 const lastTouchTsRef = useMainThreadRef<number>(0)
 
 function _mtIsAndroid() {
@@ -313,7 +297,6 @@ function _syncConfig(
   bounceEnabledRef.current = bounceEnabled
   const wasRefreshing = refreshingRef.current
   refreshingRef.current = isRefreshing
-  // Consumer ended the refresh → spring the header closed.
   if (wasRefreshing && !isRefreshing) _springClose()
 }
 
@@ -350,9 +333,8 @@ function _onLayoutMT(event: any) {
   if (d && typeof d.height === 'number') viewportRef.current = d.height
 }
 
-// Coordinate-based gesture core. The touch and mouse wrappers below feed the
-// same logic; a gesture is all-touch or all-mouse, so the coordinate spaces
-// never mix — only deltas from the recorded start matter.
+// Coordinate-based gesture core. A gesture is all-touch or all-mouse, so the
+// coordinate spaces never mix — only deltas from the recorded start matter.
 
 function _dragStart(y: number) {
   'main thread'
@@ -423,7 +405,6 @@ function _dragEnd() {
     runOnBackground(_onTriggerRefresh as any)()
   }
   else {
-    // Below threshold or a bounce — spring back to rest.
     _animateTo(0, 240)
     runOnBackground(_onRelease as any)()
   }
@@ -446,12 +427,10 @@ function _onTouchEnd() {
 }
 
 // Desktop web: Lynx web dispatches raw mouse events and never synthesizes
-// touch from them, so a touch-only pull is inert under a cursor. The pull only
-// engages at an edge (`atTopRef` / bottom), so binding mouse here doesn't
-// interfere with ordinary wheel scrolling in the middle of the list.
-// Coordinates arrive top-level (mouse `detail` is the DOM click-count number).
-// No mouseleave binding — it doesn't bubble, so per-element delivery is
-// unreliable on the Lynx dispatch path.
+// touch from them. The pull only engages at an edge, so binding mouse here
+// doesn't interfere with ordinary wheel scrolling. Coordinates arrive top-level
+// (mouse `detail` is the click-count number). No mouseleave binding — it
+// doesn't bubble, so per-element delivery is unreliable on the Lynx path.
 function _onMouseDown(e: { pageY: number, buttons?: number }) {
   'main thread'
   // Swallow the compatibility mousedown a touch browser replays after a tap.
@@ -465,9 +444,8 @@ function _onMouseDown(e: { pageY: number, buttons?: number }) {
 function _onMouseMove(e: { pageY: number, buttons?: number }) {
   'main thread'
   // Only an EXPLICIT buttons value with the primary bit clear counts as
-  // released (recovers the mouseup lost outside the <lynx-view>). A missing
-  // `buttons` is treated as still-pressed — trackpad/synthetic moves can omit
-  // it, and ending on those lets go mid-pull.
+  // released (recovers the mouseup lost outside the <lynx-view>); a missing
+  // `buttons` is treated as still-pressed.
   if (typeof e.buttons === 'number' && (e.buttons & 1) === 0) {
     _dragEnd()
     return
@@ -558,9 +536,8 @@ const itemSnapValue = computed(() => {
 })
 
 const isEmpty = computed(() => props.items.length === 0)
-// Footer row only exists when there's something to show: the load-more spinner
-// while fetching, or the end-of-list footer once `noMoreData`. Otherwise no
-// footer renders, so "No more items" never shows while more pages remain.
+// Footer row only exists when there's something to show, so "No more items"
+// never shows while more pages remain.
 const hasFooter = computed(() => props.enableLoadMore && (loadingMore.value || props.noMoreData))
 
 defineExpose({ scrollToIndex, refreshState })
@@ -575,9 +552,8 @@ defineExpose({ scrollToIndex, refreshState })
   >
     <slot name="empty" />
   </view>
-  <!-- PTR / bounce on: the wrapper is translated on pull (down to reveal the
-       refresh header, up to bounce the bottom). Native `bounces` is forced OFF
-       so the edge pull isn't stolen by the scroller (see header). -->
+  <!-- PTR / bounce on: the wrapper is translated on pull. Native `bounces` is
+       forced OFF so the edge pull isn't stolen by the scroller. -->
   <view
     v-else-if="enableRefresh || enableBounce"
     class="vyui-feed-list__ptr"

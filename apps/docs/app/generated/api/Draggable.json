@@ -39,14 +39,14 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Carry release velocity into a momentum coast: a flick keeps gliding and\ndecelerates to rest (clamped to `bounds`) instead of stopping dead at the\nfinger. Ignored when `resetOnEnd` is `true` (reset wins). Off by default."
+      "description": "Carry release velocity into a momentum coast: a flick glides and\ndecelerates to rest (clamped to `bounds`). Ignored when `resetOnEnd` is\n`true`."
     },
     {
       "name": "momentumDecel",
       "type": "number | undefined",
       "required": false,
       "default": "5",
-      "description": "Deceleration rate for `momentum`. Higher = shorter fling. Projected\ncoast distance is `velocity / decel`."
+      "description": "Deceleration rate for `momentum`; higher = shorter fling. Coast distance\nis `velocity / decel`."
     },
     {
       "name": "resetOnEnd",

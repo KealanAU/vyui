@@ -7,11 +7,9 @@ import type {
 /** Preventable outside-interaction events — see `useDismissableLayer`. */
 export type DialogContentEmits = DialogContentImplEmits
 
-export interface DialogContentProps extends Omit<DialogContentImplProps, 'trapFocus'> {
-  /**
-   * Used to force mounting when more control is needed. Useful when
-   * controlling animation with Vue animation libraries.
-   */
+export interface DialogContentProps extends DialogContentImplProps {
+  /** Force mounting when more control is needed — e.g. driving animation from a
+   *  Vue animation library. */
   forceMount?: boolean
   /** Verbose lifecycle tracing — forwarded to both backdrop + panel Presence. */
   debugLog?: boolean
@@ -23,7 +21,6 @@ import { computed, provide, ref, watch } from 'vue'
 import { PresenceState, combineGroupState } from '@/components/Presence'
 import { useEmitAsProps, useForwardExpose } from '@/shared'
 import DialogContentModal from './DialogContentModal.vue'
-import DialogContentNonModal from './DialogContentNonModal.vue'
 import { injectDialogRootContext } from './DialogRoot.vue'
 import {
   DialogContentPresenceKey,
@@ -40,19 +37,16 @@ const rootContext = injectDialogRootContext()
 const emitsAsProps = useEmitAsProps(emits)
 const { forwardRef } = useForwardExpose()
 
-// ─────────────────────────────────────────────────────────────────────────
-// Presence group — coordinates two child Presence layers (backdrop + panel)
-// so the outer `mountView` stays true while either layer is still leaving
-// and the dialog only unmounts once both are Left. Mirrors the React port's
-// `DialogView` → `usePresenceGroup` shape but with two manually-controlled
-// `<Presence>` wrappers because the layers nest (the OverlayBackdrop wraps
-// the Primitive) and `usePresenceGroup.renderChildren()` returns siblings.
-// ─────────────────────────────────────────────────────────────────────────
+// Presence group — coordinates the backdrop + panel layers so the outer
+// `mountView` stays true while either is still leaving and the dialog only
+// unmounts once both are Left. Mirrors the React port's `usePresenceGroup` shape
+// but with two manually-controlled `<Presence>` wrappers, because the layers
+// nest and `renderChildren()` returns siblings.
 
 const showRef = computed(() => rootContext.open.value)
 
-// Per-layer state slots — fed back through `setPresenceState` props on each
-// inner `<Presence>` so the Presence state machine drives them.
+// Per-layer state slots, fed back through `setPresenceState` on each inner
+// `<Presence>`.
 const backdropState = ref<PresenceState>(
   showRef.value ? PresenceState.Entering : PresenceState.Left,
 )
@@ -60,8 +54,8 @@ const panelState = ref<PresenceState>(
   showRef.value ? PresenceState.Entering : PresenceState.Left,
 )
 
-// Mirror the combined state up to the root context so DialogTrigger/Close
-// can `resolveBusyState` against it without injecting Presence.
+// Mirror the combined state up to the root context so DialogTrigger/Close can
+// `resolveBusyState` without injecting Presence.
 watch(
   [backdropState, panelState],
   ([a, b]) => {
@@ -100,10 +94,9 @@ const presenceCtx: DialogContentPresenceContext = {
 }
 provide(DialogContentPresenceKey, presenceCtx)
 
-// `forceMount || mountView || open` — `forceMount` short-circuits the whole
-// lifecycle (the consumer is taking over animation), `mountView` keeps the
-// dialog painted across the leaving animation, and `open` is the immediate
-// truth on the very first paint before the watcher has a chance to fire.
+// `forceMount` short-circuits the lifecycle (the consumer owns animation),
+// `mountView` keeps the dialog painted across the leaving animation, and `open`
+// is the immediate truth on the first paint before the watcher fires.
 const shouldMount = computed(
   () => !!props.forceMount || mountView.value || showRef.value,
 )
@@ -112,19 +105,10 @@ const shouldMount = computed(
 
 <template>
   <DialogContentModal
-    v-if="rootContext.modal.value"
     :ref="forwardRef"
     :present="shouldMount"
     v-bind="{ ...props, ...emitsAsProps, ...$attrs }"
   >
     <slot />
   </DialogContentModal>
-  <DialogContentNonModal
-    v-else
-    :ref="forwardRef"
-    :present="shouldMount"
-    v-bind="{ ...props, ...emitsAsProps, ...$attrs }"
-  >
-    <slot />
-  </DialogContentNonModal>
 </template>

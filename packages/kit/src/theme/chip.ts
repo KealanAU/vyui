@@ -1,37 +1,22 @@
 // Ported from nuxt/ui v4 `src/theme/chip.ts` and adapted for Vue-Lynx.
 //
-// Chip is a notification-dot indicator that overlays a child element. The
-// `root` slot wraps the child (`relative`) and the `base` slot is the dot
-// itself, absolutely positioned at one of four corners.
+// Chip is a notification-dot indicator overlaying a child: `root` wraps the
+// child (`relative`), `base` is the dot, absolutely positioned at one corner
+// (`inset: false` nudges it half its size out via `translate-x/y`).
 //
-// Two size scales live in this theme:
-//   - dot scale  (used when the chip has no content)  — 4–12px pills
-//   - badge scale (used when `text` / `content` slot is set) — readable
-//     numeric badges with horizontal padding so digits don't overflow
-//
-// The component passes `hasContent` so the right scale is picked at runtime.
-//
-// Positioning:
-//   - `base` is `absolute` (dropped when `standalone: true`)
-//   - corner anchored via `top-0`/`right-0`/`bottom-0`/`left-0`
-//   - when `inset: false` the dot is nudged half its size out of the box via
-//     `translate-x`/`translate-y` (supported by `@lynx-js/tailwind-preset`)
-//
-// Ported (dark rides the semantic tokens) — semantic colors resolve to `bg-${c}-500`.
+// Two size scales: a dot scale (no content, 4–12px pills) and a badge scale
+// (`text` / `content` set — readable numeric badges with horizontal padding).
+// The component passes `hasContent` so the right one is picked at runtime.
 import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center justify-center shrink-0',
-    // `tabular-nums` keeps single-digit content visually centered (Lynx
-    // proportional fonts shift digit baselines just enough to look off in a
-    // 16px circle).
+    // `tabular-nums` keeps single-digit content visually centered.
     base: 'rounded-full flex flex-row items-center justify-center font-medium whitespace-nowrap leading-none tabular-nums border-2 border-white',
     // Foreground color for the content <text>. CSS inheritance is OFF in the
-    // Lynx build (`enableCSSInheritance: false`), so `text-white` on the `base`
-    // dot <view> never reaches the content <text> — it sits here directly. The
-    // per-size `text-*` font size is co-located on this slot for the same
-    // reason (font-size doesn't cascade either). Same convention as `button.ts`.
+    // Lynx build, so `text-white` on the `base` dot <view> never reaches the
+    // content <text>; the per-size `text-*` sits here for the same reason.
     text: 'text-white',
   },
   variants: {
@@ -69,13 +54,11 @@ export default (colors: Color[]) => ({
     },
   },
   compoundVariants: [
-    // color -> solid background (flat per spec)
     ...colors.map(color => ({
       color,
       class: `bg-${color}-500`,
     })),
 
-    // dot scale (no content) — original tiny notification dots
     { hasContent: false, size: 'xs' as const, class: 'h-[8px] min-w-[8px]' },
     { hasContent: false, size: 'sm' as const, class: 'h-[9px] min-w-[9px]' },
     { hasContent: false, size: 'md' as const, class: 'h-[10px] min-w-[10px]' },
@@ -84,13 +67,10 @@ export default (colors: Color[]) => ({
     { hasContent: false, size: '2xl' as const, class: 'h-[14px] min-w-[14px]' },
     { hasContent: false, size: '3xl' as const, class: 'h-[16px] min-w-[16px]' },
 
-    // badge scale (with content) — readable numeric pills.
-    // `min-w` matches `h` so single digits render as a perfect circle.
-    // Horizontal padding is intentionally tiny (px-0.5 / px-1) so two-digit
-    // counts widen the pill slightly without the single-digit case going oval.
-    // Font size lives on the `text` slot (the content <text>), not `base` —
-    // Lynx won't cascade `text-*` from the dot <view> (`enableCSSInheritance:
-    // false`). The dot's box sizing (`h-*`/`min-w-*`/`px-*`) stays on `base`.
+    // badge scale (with content). `min-w` matches `h` so single digits render as
+    // a circle, and the tiny horizontal padding widens the pill for two digits
+    // without going oval at one. Font size lives on the `text` slot — Lynx won't
+    // cascade `text-*` from the dot <view>.
     { hasContent: true, size: 'xs' as const, class: { base: 'h-[18px] min-w-[18px] px-1', text: 'text-[11px]' } },
     { hasContent: true, size: 'sm' as const, class: { base: 'h-5 min-w-5 px-1', text: 'text-xs' } },
     { hasContent: true, size: 'md' as const, class: { base: 'h-[22px] min-w-[22px] px-1.5', text: 'text-xs' } },

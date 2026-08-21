@@ -5,17 +5,12 @@
 // Ported from `lynx-family/lynx-ui`
 // `packages/lynx-ui-scroll-view/src/hooks/useBounce.tsx` (Apache-2.0).
 //
-// Adapted for vyui:
-//   - The upstream hook returns `main-thread:bind*` handler worklets (the
-//     ReactLynx spelling; vue-lynx binds `main-thread-bind*`). Ours stay
-//     inlined in `ScrollView.vue` because they close over MT refs bound to
-//     that SFC's own elements and its component state. A `.ts` module CAN
-//     hold `'main thread'` worklets — `useAnimate.ts` ships eight — so this
-//     is an ownership boundary, not a loader limit.
-//   - What lives here instead: the public prop/event surface (types,
-//     constants, defaults) and the *pure* helper math the SFC worklets call
-//     by value. Keeping the maths here makes it unit-testable without an MT
-//     runtime (mirrors how SwipeAction tests its `decide()` logic).
+// Upstream returns handler worklets; ours stay inlined in `ScrollView.vue`
+// because they close over MT refs bound to that SFC's own elements — an
+// ownership boundary, not a loader limit (a `.ts` module CAN hold worklets).
+// What lives here is the public prop/event surface and the *pure* helper math
+// the SFC worklets call by value, which keeps it unit-testable without an MT
+// runtime.
 
 /** Direction passed to the `scrollToBounces` event. */
 export interface ScrollToBouncesInfo {
@@ -31,44 +26,25 @@ export interface ScrollToBouncesInfo {
  */
 export type SingleSidedBounce = 'upper' | 'lower' | 'both' | 'iOSBounces' | 'none'
 
-/**
- * Bounce configuration. Mirrors lynx-ui's `BounceableBasicProps`.
- */
+/** Bounce configuration. Mirrors lynx-ui's `BounceableBasicProps`. */
 export interface BounceableBasicProps {
   /** Enable the custom main-thread bounce/overscroll effect. */
   enableBounces: boolean
-  /**
-   * Fire `scrollToBounces` when the bounce is reached during a fling (i.e.
-   * with no finger down), not only during a drag.
-   * @defaultValue `true`
-   */
+  /** Fire `scrollToBounces` when the bounce is reached during a fling, not only
+   *  during a drag. @defaultValue `true` */
   enableBounceEventInFling?: boolean
-  /**
-   * Overscroll distance (px) past the upper edge needed to fire
-   * `scrollToBounces` with `{ direction: 'upper' }`.
-   * @defaultValue `0`
-   */
+  /** Overscroll distance (px) past the upper edge needed to fire
+   *  `scrollToBounces` with `{ direction: 'upper' }`. @defaultValue `0` */
   startBounceTriggerDistance?: number
-  /**
-   * Overscroll distance (px) past the lower edge needed to fire
-   * `scrollToBounces` with `{ direction: 'lower' }`.
-   * @defaultValue `0`
-   */
+  /** Overscroll distance (px) past the lower edge needed to fire
+   *  `scrollToBounces` with `{ direction: 'lower' }`. @defaultValue `0` */
   endBounceTriggerDistance?: number
-  /**
-   * Allow bouncing even when the content is smaller than the viewport.
-   * @defaultValue `true`
-   */
+  /** Allow bouncing even when the content is smaller than the viewport. @defaultValue `true` */
   alwaysBouncing?: boolean
-  /**
-   * Which edge(s) may bounce.
-   * @defaultValue `'both'`
-   */
+  /** Which edge(s) may bounce. @defaultValue `'both'` */
   singleSidedBounce?: SingleSidedBounce
-  /**
-   * Size hint (px) for the bounce maths before the first layout pass.
-   * Recommended inside `List` / `<list/>`.
-   */
+  /** Size hint (px) for the bounce maths before the first layout pass.
+   *  Recommended inside `List` / `<list/>`. */
   estimatedHeight?: number
   /** Size hint (px) for horizontal bounce maths before first layout. */
   estimatedWidth?: number
@@ -97,10 +73,10 @@ export type BouncingStatusValue =
   (typeof BOUNCING_STATUS)[keyof typeof BOUNCING_STATUS]
 
 /**
- * Rubber-band displacement for a raw drag delta. Pure port of lynx-ui's
- * `rubberEffect` core formula. `frameSize` is the viewport extent along the
- * scroll axis; `delta` is the (signed-removed) drag distance past the edge.
- * Returns a non-negative magnitude — the caller applies the sign.
+ * Rubber-band displacement for a raw drag delta — pure port of lynx-ui's
+ * `rubberEffect`. `frameSize` is the viewport extent along the scroll axis;
+ * `delta` is the unsigned drag distance past the edge. Returns a non-negative
+ * magnitude — the caller applies the sign.
  */
 export function rubberBandingDistance(
   frameSize: number,
@@ -113,10 +89,8 @@ export function rubberBandingDistance(
   )
 }
 
-/**
- * Decide which bounce edge the current offset sits at. Pure port of
- * lynx-ui's `getBouncingStatus`.
- */
+/** Decide which bounce edge the current offset sits at. Pure port of lynx-ui's
+ *  `getBouncingStatus`. */
 export function getBouncingStatus(opts: {
   currentOffset: number
   toUpper: boolean
@@ -134,10 +108,8 @@ export function getBouncingStatus(opts: {
   return BOUNCING_STATUS.inScrollingRange
 }
 
-/**
- * Whether the touch-end / fling sequence should bounce back. Pure port of
- * lynx-ui's `shouldBounceWhenTouchEnd`.
- */
+/** Whether the touch-end / fling sequence should bounce back. Pure port of
+ *  lynx-ui's `shouldBounceWhenTouchEnd`. */
 export function shouldBounceWhenTouchEnd(
   status: BouncingStatusValue,
   alwaysBouncing: boolean,
@@ -158,11 +130,9 @@ export function shouldBounceWhenTouchEnd(
   return false
 }
 
-/**
- * Whether the current overscroll magnitude has crossed the configured
- * trigger distance for its edge — i.e. should `scrollToBounces` fire. Pure
- * port of lynx-ui's `isOverTriggerDistance`.
- */
+/** Whether the current overscroll magnitude has crossed its edge's trigger
+ *  distance — i.e. should `scrollToBounces` fire. Pure port of lynx-ui's
+ *  `isOverTriggerDistance`. */
 export function isOverTriggerDistance(opts: {
   bouncingOffset: number
   startBounceTriggerDistance: number

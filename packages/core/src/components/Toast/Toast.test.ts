@@ -1,12 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { fireEvent, q, render, waitForUpdate } from '@vyui/testing-utils'
 import Toast from './story/_Toast.vue'
 import ToastClosed from './story/_ToastClosed.vue'
 import ToastDuration from './story/_ToastDuration.vue'
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 describe('Toast — initial state', () => {
   it('renders open by default', async () => {

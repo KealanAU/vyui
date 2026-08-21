@@ -636,9 +636,6 @@ importers:
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
-      tailwind-merge:
-        specifier: ^2.5.4
-        version: 2.5.4
     devDependencies:
       '@lynx-js/react':
         specifier: 'catalog:'
