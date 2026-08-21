@@ -2,18 +2,9 @@
 import type { PrimitiveProps } from '@/components/Primitive'
 
 export interface AlertDialogContentImplProps extends PrimitiveProps {
-  /**
-   * Used to force mounting when more control is needed. Useful when
-   * controlling transition with Vue native transition or other animation
-   * libraries.
-   */
+  /** Force mounting when more control is needed — e.g. driving the transition
+   *  from a Vue native transition or another animation library. */
   forceMount?: boolean
-  /**
-   * When `true`, focus cannot escape the `Content`. No-op on Lynx (there is
-   * no focus trap); kept for API parity with reka-ui.
-   * @defaultValue false
-   */
-  trapFocus?: boolean
   /**
    * Style applied to the full-screen backdrop wrapper. No defaults — pass
    * `backgroundColor`, alignment, etc. here for the modal dim/centering.
@@ -45,9 +36,8 @@ const props = withDefaults(defineProps<AlertDialogContentImplProps>(), {
 const rootContext = injectAlertDialogRootContext()
 const { forwardRef } = useForwardExpose()
 
-// Modal alert-dialog semantics for the panel: a valid `alertdialog` role (via
-// role-description) plus an a11y focus trap so the overlay is announced as a
-// self-contained modal.
+// Modal alert-dialog semantics: a valid `alertdialog` role (via
+// role-description) plus an a11y focus trap.
 const a11y = useA11y(() => ({
   role: 'alertdialog',
   exclusiveFocus: true,
@@ -56,15 +46,12 @@ const a11y = useA11y(() => ({
 rootContext.titleId ||= useId(undefined, 'vy-alert-dialog-title')
 rootContext.descriptionId ||= useId(undefined, 'vy-alert-dialog-description')
 
-// `inject` returns null when this component is rendered outside a `<Presence>`
-// (e.g. forceMount with no wrapping Presence) — we fall back to a no-op shape
-// so the bindings render cleanly.
+// `inject` returns null outside a `<Presence>` (e.g. forceMount with none
+// wrapping) — fall back to a no-op shape so the bindings still render.
 const presenceCtx = inject(PresenceContextKey, null)
 
-// Drive the `ui-open` / `ui-closed` / `ui-entering` / `ui-leaving` /
-// `ui-animating` classes off the Presence state machine. When there is no
-// Presence in scope, treat the panel as fully entered so static styles still
-// apply.
+// Drive the lifecycle classes off the Presence state machine; with no Presence
+// in scope, treat the panel as fully entered so static styles still apply.
 const stateRef = computed(() =>
   presenceCtx?.controllers.state.value ?? PresenceState.Entered,
 )
@@ -112,16 +99,12 @@ const handleTransitionCancel
   <!--
     Unlike `DialogContentImpl` there is NO `@tap` on the backdrop: an alert
     dialog must not be dismissed by a backdrop tap — the consumer closes it
-    through AlertDialogAction / AlertDialogCancel. The backdrop only carries
-    the fade-in / fade-out animation hooks so the dim layer animates in step
-    with the panel.
+    through AlertDialogAction / AlertDialogCancel. The backdrop only carries the
+    animation hooks so the dim layer animates in step with the panel.
 
-    Both views bind the full set of animation / transition events
-    (`@animationstart` / `@animationend` / `@animationcancel` /
-    `@transitionstart` / `@transitionend` / `@transitioncancel`) so whichever
-    the consumer uses, the
-    Presence state machine sees a real signal. The 24-frame fallback inside
-    `usePresence` covers the no-animation case.
+    Both views bind the full set of animation / transition events so whichever
+    the consumer uses, the Presence state machine sees a real signal; the
+    24-frame fallback in `usePresence` covers the no-animation case.
   -->
   <OverlayBackdrop
     :backdrop-style="props.backdropStyle"
@@ -155,9 +138,8 @@ const handleTransitionCancel
 </template>
 
 <!--
-  Keyframes (`vyui-fade-*`, `vyui-zoom-*`) ship from `Presence/presence.css`
-  via the side-effect import in `components/Presence/index.ts`. This block
-  only wires the AlertDialog-scoped selectors onto those shared keyframes.
+  Keyframes (`vyui-fade-*`, `vyui-zoom-*`) ship from `Presence/presence.css`;
+  this block only wires the AlertDialog-scoped selectors onto them.
 -->
 <style scoped>
 .vyui-alert-dialog-backdrop.ui-open {

@@ -61,13 +61,6 @@
       "description": "Placeholder rendered when no value is selected. Also used as the sheet title."
     },
     {
-      "name": "presentation",
-      "type": "\"sheet\" | \"anchor\" | undefined",
-      "required": false,
-      "default": "\"sheet\"",
-      "description": "Presentation mode — kept for API parity with `VyPopover` /\n`VyDropdownMenu`. Currently only `'sheet'` is wired (native picker UX\nfor touch). An `'anchor'` (tablet popper) variant is tracked separately\nand falls back to `'sheet'` when requested today."
-    },
-    {
       "name": "selectedIcon",
       "type": "string | undefined",
       "required": false,
@@ -89,7 +82,7 @@
       "type": "number[] | undefined",
       "required": false,
       "default": "[0.5]",
-      "description": "Snap fractions forwarded to `SheetRoot`. Default `[0.5]` matches a\nnative picker — half-screen, scrollable list below the placeholder title."
+      "description": "Snap fractions forwarded to `SheetRoot`. `[0.5]` matches a native picker —\nhalf-screen, scrollable list below the title."
     },
     {
       "name": "trailingIcon",

@@ -3,11 +3,12 @@ import { APP_CONFIG_KEY, type AppConfig } from '../types'
 import icons from '../theme/icons'
 
 /**
- * Fallback config used when components are rendered outside a `VyUI` app
- * context (storybook, isolated tests). Keeps the icon registry intact so
+ * Package-level defaults. `provideVyUI` deep-merges user options on top; it is
+ * also the fallback when a component renders outside a `VyUI` app context
+ * (storybook, isolated tests), so the icon registry stays intact and
  * `useComponentIcons` still resolves semantic names.
  */
-const FALLBACK_CONFIG: AppConfig = {
+export const defaultConfig: AppConfig = {
   ui: {
     icons,
     primary: 'green',
@@ -16,4 +17,4 @@ const FALLBACK_CONFIG: AppConfig = {
 }
 
 /** Inject the merged `AppConfig` provided by `VyUI.install()`. */
-export const useAppConfig = (): AppConfig => inject(APP_CONFIG_KEY, FALLBACK_CONFIG)
+export const useAppConfig = (): AppConfig => inject(APP_CONFIG_KEY, defaultConfig)

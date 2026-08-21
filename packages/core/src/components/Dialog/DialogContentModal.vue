@@ -4,7 +4,6 @@ import { getCurrentInstance, h, onUnmounted, useAttrs, useSlots, watch } from 'v
 import { useEmitAsProps, useForwardExpose, useId } from '@/shared'
 import { registerOverlay, unregisterOverlay } from '@/components/OverlayRoot'
 import DialogContentImpl from './DialogContentImpl.vue'
-import { injectDialogRootContext } from './DialogRoot.vue'
 
 defineOptions({ inheritAttrs: false })
 
@@ -13,7 +12,6 @@ defineOptions({ inheritAttrs: false })
 const props = defineProps<DialogContentImplProps & { present?: boolean }>()
 const emits = defineEmits<DialogContentImplEmits>()
 
-const rootContext = injectDialogRootContext()
 const emitsAsProps = useEmitAsProps(emits)
 useForwardExpose()
 
@@ -38,10 +36,6 @@ function render() {
       ...implProps,
       ...emitsAsProps,
       ...attrs,
-      // Modal: focus would be trapped on the DOM; no-op on Lynx but kept for
-      // API parity. The screen behind is dimmed via `backdropClass` on the
-      // Presence-wired backdrop (so the dim fades with the panel).
-      trapFocus: rootContext.open.value,
     },
     () => slots.default?.(),
   )

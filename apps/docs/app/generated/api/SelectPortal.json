@@ -1,13 +1,5 @@
 {
-  "props": [
-    {
-      "name": "to",
-      "type": "string | undefined",
-      "required": false,
-      "default": "\"#overlay-root\"",
-      "description": "The target selector for the Teleport. Defaults to `#overlay-root`."
-    }
-  ],
+  "props": [],
   "events": [],
   "slots": [
     {

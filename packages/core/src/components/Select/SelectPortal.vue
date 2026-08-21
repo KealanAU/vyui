@@ -1,14 +1,9 @@
 <script lang="ts">
-export interface SelectPortalProps {
-  /** The target selector for the Teleport. Defaults to `#overlay-root`. */
-  to?: string
-}
+export interface SelectPortalProps {}
 </script>
 
 <script setup lang="ts">
-withDefaults(defineProps<SelectPortalProps>(), {
-  to: '#overlay-root',
-})
+defineProps<SelectPortalProps>()
 </script>
 
 <template>

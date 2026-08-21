@@ -11,13 +11,13 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+      "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     },
     {
       "name": "backdropClass",
       "type": "string | undefined",
       "required": false,
-      "description": "Class merged onto the full-screen backdrop wrapper (the `OverlayBackdrop`\nthat centers the panel). Core ships no dim or animation of its own — the\nstyled layer passes the dim colour + a marker class here so the backdrop\nfades in step with the panel. The element carries the Presence lifecycle\nclasses (`ui-entering` / `ui-leaving` / `ui-open` / `ui-closed`) and the\n`bindanimation*` hooks, so the styled layer's keyframes (keyed off those\nclasses) drive the Presence lifecycle just like the panel's."
+      "description": "Class merged onto the full-screen backdrop wrapper (the `OverlayBackdrop`\nthat centers the panel). Core ships no dim or animation of its own; the\nelement carries the Presence lifecycle classes and `bindanimation*` hooks,\nso the styled layer's keyframes drive the lifecycle just like the panel's."
     },
     {
       "name": "backdropStyle",
@@ -29,20 +29,14 @@
       "name": "forceMount",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Used to force mounting when more control is needed. Useful when\ncontrolling transition with Vue native transition or other animation\nlibraries."
+      "description": "Force mounting when more control is needed — e.g. driving the transition\nfrom a Vue native transition or another animation library."
     },
     {
       "name": "transition",
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "Opt the backdrop / panel into the animating-state classes\n(`ui-entering` / `ui-leaving` / `ui-animating` alongside the static\n`ui-open` / `ui-closed` pair). Off by default so callers that don't\nstyle transitions don't get extra classes; on for any caller wiring up\nkeyframes."
-    },
-    {
-      "name": "trapFocus",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "When `true`, focus cannot escape the `Content`. No-op on Lynx because\nthere is no DOM focus trap."
+      "description": "Opt the backdrop / panel into the animating-state classes (`ui-entering` /\n`ui-leaving` / `ui-animating` alongside `ui-open` / `ui-closed`). Off for\ncallers that don't style transitions."
     }
   ],
   "events": [

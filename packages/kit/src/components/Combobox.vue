@@ -2,12 +2,10 @@
 /**
  * `VyCombobox` — sheet picker with in-sheet typeahead search.
  *
- * This also covers the **Autocomplete** use case: with `searchable` (default
- * `true`) the search input filters `items` by substring as you type, and the
- * value can only resolve to one of the supplied items. There is no separate
- * `Autocomplete` component — "autocomplete" is Combobox filtering a fixed set,
- * "combobox" is the same control where free-form entry would also be kept.
- * Disable filtering with `:searchable="false"` to get a plain picker.
+ * This also covers the **Autocomplete** case: with `searchable` (default `true`)
+ * the search input filters `items` by substring and the value can only resolve
+ * to a supplied item. Disable filtering with `:searchable="false"` for a plain
+ * picker.
  */
 import theme from '../theme/combobox'
 import type { SheetDirection } from '@vyui/core'
@@ -18,8 +16,8 @@ type ComboboxVariants = VariantProps<ComboboxTV>
 
 /**
  * Item shape — strings/numbers accepted directly; objects pull their
- * value/label off `valueKey`/`labelKey`. `type: 'label'` / `'separator'`
- * render structural rows instead of selectable items.
+ * value/label off `valueKey`/`labelKey`. `type: 'label'` / `'separator'` render
+ * structural rows.
  */
 export interface ComboboxItem {
   label?: string
@@ -62,24 +60,11 @@ export interface ComboboxProps {
   selectedIcon?: string
   /** Iconify name shown in the in-sheet search input. Defaults to `appConfig.ui.icons.search`. */
   searchIcon?: string
-  /**
-   * Presentation mode — kept for API parity with `VyPopover` /
-   * `VyDropdownMenu`. Currently only `'sheet'` is wired (native picker UX);
-   * `'anchor'` falls back to sheet today.
-   * @defaultValue 'sheet'
-   */
-  presentation?: 'sheet' | 'anchor'
-  /**
-   * Edge the picker sheet slides and drags from.
-   * @defaultValue `'bottom'`
-   */
+  /** Edge the picker sheet slides and drags from. @defaultValue `'bottom'` */
   side?: SheetDirection
-  /**
-   * Snap fractions forwarded to `SheetRoot`. Default `[0.9]` matches a
-   * native search-picker — near-full height so the keyboard has room above
-   * the search input.
-   * @defaultValue `[0.9]`
-   */
+  /** Snap fractions forwarded to `SheetRoot`. `[0.9]` matches a native
+   *  search-picker — near-full height so the keyboard has room above the search
+   *  input. @defaultValue `[0.9]` */
   snapPoints?: number[]
   /** Show the drag-handle pill at the top of the sheet. @defaultValue `true` */
   handle?: boolean
@@ -136,7 +121,6 @@ const props = withDefaults(defineProps<ComboboxProps>(), {
   valueKey: 'value',
   labelKey: 'label',
   searchable: true,
-  presentation: 'sheet',
   snapPoints: () => [0.9],
   handle: true,
 })
@@ -166,18 +150,16 @@ const { ui } = useStyledComponent('combobox', theme, () => ({
 // neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
-// The selected-item tick is baked too (a class can't reach the rasterized svg).
-// Uses the accent ramp (mode-independent), so it reads in light and dark.
+// The selected-item tick is baked too (a class can't reach the rasterized svg),
+// on the mode-independent accent ramp.
 const checkColor = computed(() => resolveColorHex(appConfig, props.color, 500))
 
-// Shared open state bridges `ComboboxRoot` (item-tap closes it; trigger
-// toggles it) and `SheetRoot` (drag-to-close, backdrop-tap). Whichever side
-// flips it, the other observes through this ref.
+// Shared open state bridges `ComboboxRoot` (item-tap, trigger) and `SheetRoot`
+// (drag-to-close, backdrop-tap): whichever flips it, the other observes.
 const localOpen = ref(false)
 
 // Sheet content unmounts on close, so ComboboxInput's own
-// `resetSearchTermOnBlur` watcher never fires — wipe the local term here
-// so the next open starts with an empty filter.
+// `resetSearchTermOnBlur` watcher never fires — wipe the local term here.
 watch(localOpen, (open) => {
   if (!open) searchTerm.value = ''
 })

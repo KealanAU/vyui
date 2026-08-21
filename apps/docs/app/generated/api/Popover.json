@@ -1,19 +1,6 @@
 {
   "props": [
     {
-      "name": "arrow",
-      "type": "boolean | undefined",
-      "required": false,
-      "default": "false",
-      "description": "Display an arrow alongside the popover. Accepted for parity — no\n`PopoverArrow` primitive on Lynx, so this is a no-op."
-    },
-    {
-      "name": "closeDelay",
-      "type": "number | undefined",
-      "required": false,
-      "default": "0"
-    },
-    {
       "name": "content",
       "type": "PopoverContentSettings | undefined",
       "required": false,
@@ -31,7 +18,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "When `false`, the popover stays open on outside tap and a\n`close:prevent` event is emitted instead."
+      "description": "When `false`, the popover stays open on outside tap and emits\n`close:prevent` instead."
     },
     {
       "name": "handle",
@@ -45,14 +32,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "Modality. When `true`, taps outside the popover are blocked from\nreaching the underlying app. Defaults to `false` in anchor mode.\nSheet mode is always modal (the backdrop intercepts taps)."
-    },
-    {
-      "name": "mode",
-      "type": "\"click\" | \"hover\" | undefined",
-      "required": false,
-      "default": "\"click\"",
-      "description": "Display mode. `hover` is accepted for API parity with nuxt/ui but\nbehaves the same as `click` — Lynx has no HoverCard primitive."
+      "description": "Modality. When `true`, taps outside are blocked from reaching the app.\nSheet mode is always modal (the backdrop intercepts taps)."
     },
     {
       "name": "modelValue",
@@ -67,31 +47,17 @@
       "description": "Controlled open state — bind with `v-model:open`."
     },
     {
-      "name": "openDelay",
-      "type": "number | undefined",
-      "required": false,
-      "default": "0",
-      "description": "Hover-mode delays (ms) — accepted for API parity, no-op on Lynx."
-    },
-    {
-      "name": "portal",
-      "type": "boolean | undefined",
-      "required": false,
-      "default": "true",
-      "description": "Render the popover in a portal. Anchor-mode only; sheet mode is\nalways portalled through `OverlayRoot`."
-    },
-    {
       "name": "presentation",
       "type": "\"sheet\" | \"anchor\" | undefined",
       "required": false,
       "default": "\"sheet\"",
-      "description": "How to present the content on mobile.\n- `'sheet'` (default): renders as an edge sheet via `SheetRoot` —\n  native iOS / Material idiom for \"tap → reveal floating panel\" on\n  touch screens. Drag-to-dismiss, snap physics, thumb-reach.\n- `'anchor'`: docks the content next to the trigger (legacy popover\n  behavior). Use on tablets / wide screens where pointer precision\n  makes a tiny anchored panel reasonable."
+      "description": "How to present the content on mobile.\n- `'sheet'` (default): renders as an edge sheet via `SheetRoot`, with\n  drag-to-dismiss and snap physics.\n- `'anchor'`: docks the content next to the trigger, for tablets / wide\n  screens where pointer precision makes a tiny panel reasonable."
     },
     {
       "name": "sheetSide",
       "type": "SheetDirection | undefined",
       "required": false,
-      "description": "Edge the sheet slides and drags from when `presentation` is `'sheet'`.\nAnchor presentation keeps using `content.side` for trigger-relative\nplacement."
+      "description": "Edge the sheet slides and drags from when `presentation` is `'sheet'`.\nAnchor presentation uses `content.side` instead."
     },
     {
       "name": "snapPoints",
@@ -124,12 +90,12 @@
     {
       "name": "default",
       "type": "{ open: boolean; }",
-      "description": "Trigger element. In sheet mode it's wrapped in `SheetTrigger`; in\nanchor mode it's wrapped in `PopoverTrigger`. Both toggle open on tap."
+      "description": "Trigger element — wrapped in `SheetTrigger` (sheet) or `PopoverTrigger`\n(anchor). Both toggle open on tap."
     },
     {
       "name": "anchor",
       "type": "{ open: boolean; }",
-      "description": "Custom anchor element — anchor mode only. Sheet mode ignores this\nslot (a viewport-edge sheet has no anchor)."
+      "description": "Custom anchor element — anchor mode only."
     },
     {
       "name": "content",

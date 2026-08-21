@@ -130,7 +130,6 @@ const plans = [
 - Flat items render as one group. Nested arrays render separate groups.
 - `placeholder` appears in the empty trigger and as the sheet heading.
 - `type: 'label'` and `type: 'separator'` object items are structural and cannot be selected.
-- `presentation="anchor"` is accepted for API parity but currently still renders the sheet presentation.
 - The trigger's displayed selected label is derived from `modelValue`; bind `v-model` when the selected text must be shown reliably.
 
 ### Select item
@@ -160,7 +159,6 @@ const plans = [
 | `highlight` | `boolean` | `false` | Forces a static border using `color`. |
 | `trailingIcon` | `string` | App icon / `i-lucide-chevron-down` | Trigger trailing Iconify name. |
 | `selectedIcon` | `string` | App icon / `i-lucide-check` | Icon shown on the selected row. |
-| `presentation` | `'sheet' \| 'anchor'` | `'sheet'` | Requested presentation; both values currently use the sheet. |
 | `snapPoints` | `number[]` | `[0.5]` | Sheet snap fractions forwarded to `SheetRoot`. |
 | `handle` | `boolean` | `true` | Shows the sheet drag handle. |
 | `valueKey` | `string` | `'value'` | Object field read as the item value. |
@@ -222,7 +220,6 @@ The sheet is optimized for touch selection. Test custom rows with VoiceOver and 
 - The list is rendered in a native bottom sheet with a dismissible backdrop and a vertically scrollable viewport.
 - The default `[0.5]` snap point opens the picker at half the viewport height.
 - Lynx SVG does not inherit `currentColor`; trigger slots receive a resolved `iconColor` for custom icons.
-- `anchor` presentation is not implemented yet and falls back to the same sheet behavior.
 - Empty object values become an empty string, which is not a valid selectable value in the core primitive. Ensure every selectable object has a populated `valueKey`.
 
 ## Related components

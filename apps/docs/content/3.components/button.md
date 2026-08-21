@@ -315,7 +315,6 @@ Use `ui` to override a named theme slot after variants are resolved.
 - `block` stretches to full width and pushes a trailing icon to the far edge; `square` produces an equal-sided icon button.
 - With no `label` and no default slot, icon-only and avatar-only buttons automatically use the square footprint.
 - The `leading` / `trailing` slots receive `iconColor` so custom glyphs can match the variant's resolved foreground.
-- `type` and `autofocus` are kept for API parity with Nuxt UI v4 but are no-ops on Lynx, where the core button renders as a `<view>`.
 - Unlike Nuxt UI's web button, `VyButton` does not currently render links and does not support `to`, `href`, active variants, or automatic promise-based loading.
 
 ## Props
@@ -337,8 +336,6 @@ Use `ui` to override a named theme slot after variants are resolved.
 | `leading` | `boolean` | `false` | Force `icon` onto the leading side. |
 | `trailing` | `boolean` | `false` | Force `icon` onto the trailing side. |
 | `avatar` | `AvatarProps` | `undefined` | Render a `VyAvatar` in the leading slot. |
-| `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | API parity only; no native form behavior on Lynx. |
-| `autofocus` | `boolean` | `false` | Parity only; no-op on Lynx. |
 | `class` | `any` | `undefined` | Classes merged onto the root. |
 | `ui` | `Partial<Record<ButtonSlot, any>>` | `undefined` | Per-instance theme slot overrides. |
 
@@ -377,7 +374,7 @@ The `variant` × `color` matrix resolves fills and foregrounds (e.g. `solid` pai
 
 The core button exposes button semantics and announces disabled state through the Lynx accessibility helpers. Provide a clear visible `label` or custom accessible content; for icon-only and avatar-only buttons, pass `accessibility-label`.
 
-`type` and `autofocus` are no-ops on Lynx. The control does not participate in native HTML form submission, so call the form submit handler from `@tap` when using `VyButton` with `VyForm`.
+The control does not participate in native HTML form submission, so call the form submit handler from `@tap` when using `VyButton` with `VyForm`.
 
 ## Platform notes
 

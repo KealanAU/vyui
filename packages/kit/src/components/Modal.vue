@@ -17,39 +17,16 @@ export interface ModalProps {
   title?: string
   /** Modal description text. Overridden by the `description` slot. */
   description?: string
-  /**
-   * Render an overlay behind the modal.
-   * @defaultValue true
-   */
+  /** Render an overlay behind the modal. @defaultValue true */
   overlay?: boolean
-  /**
-   * Animate the modal when opening or closing.
-   * @defaultValue true
-   */
+  /** Animate the modal when opening or closing. @defaultValue true */
   transition?: ModalVariants['transition']
-  /**
-   * Render the modal in a portal. The `@vyui/core` `DialogPortal` is a
-   * transparent pass-through on Lynx (portaling is handled by `OverlayRoot`);
-   * the prop is kept for API parity but always wraps content in `DialogPortal`
-   * to keep the render tree shape stable.
-   * @defaultValue true
-   */
-  portal?: boolean
-  /**
-   * Display a close button to dismiss the modal. Pass an object to forward
-   * props to the underlying `VyButton`.
-   * @defaultValue true
-   */
+  /** Display a close button to dismiss the modal. Pass an object to forward
+   *  props to the underlying `VyButton`. @defaultValue true */
   close?: boolean | Partial<ButtonProps>
-  /**
-   * Iconify name for the close button.
-   * @defaultValue appConfig.ui.icons.close
-   */
+  /** Iconify name for the close button. @defaultValue appConfig.ui.icons.close */
   closeIcon?: string
-  /**
-   * When `false`, the modal will not close when interacting outside.
-   * @defaultValue true
-   */
+  /** When `false`, the modal will not close when interacting outside. @defaultValue true */
   dismissible?: boolean
   class?: ClassValue
   ui?: Partial<Record<keyof ModalTV['slots'], ClassValue>>
@@ -64,17 +41,13 @@ export interface ModalEmits {
 
 export interface ModalSlots {
   /**
-   * Trigger element — wrapped in `DialogTrigger`. `DialogTrigger` toggles
-   * open state on tap; do NOT bind a `@tap` handler on the slotted child
-   * that also sets the open state — it will race with the trigger and
-   * cause a double-toggle. Use `v-model:open` (or `v-model`) instead.
+   * Trigger element — wrapped in `DialogTrigger`, which toggles open state on
+   * tap. Do NOT also bind a `@tap` handler that sets the open state; use
+   * `v-model:open` instead.
    */
   default(props: { open: boolean }): any
-  /**
-   * Full content override — replaces the default header/body/footer layout
-   * (including the close button, which lives in the header). Matches the
-   * Nuxt UI Modal `#content` escape hatch.
-   */
+  /** Full content override — replaces the default header/body/footer layout,
+   *  including the close button. Matches Nuxt UI's Modal `#content`. */
   content(props: { close: () => void }): any
   /** Header region. Replaces title / description / close. */
   header(props: { close: () => void }): any
@@ -104,7 +77,6 @@ import VyButton from './Button.vue'
 
 const props = withDefaults(defineProps<ModalProps>(), {
   close: true,
-  portal: true,
   overlay: true,
   transition: true,
   dismissible: true,
@@ -115,13 +87,11 @@ const slots = defineSlots<ModalSlots>()
 const appConfig = useAppConfig()
 
 // When the caller supplies `#content`, that slot fully replaces the default
-// header / body / footer scaffold — matches Nuxt UI's Modal where `#content`
-// is the "render whatever you want inside the dialog" escape hatch.
+// header / body / footer scaffold.
 const hasContentSlot = computed(() => !!slots.content)
 
-// `open` is the canonical prop; `modelValue` is a convenience alias so users
-// can `v-model` directly. Whichever is defined wins, with `open` taking
-// precedence when both are passed.
+// `open` is the canonical prop; `modelValue` is a convenience alias, and `open`
+// wins when both are passed.
 const resolvedOpen = computed(() => props.open !== undefined ? props.open : props.modelValue)
 
 const onUpdateOpen = (value: boolean) => {
@@ -130,8 +100,7 @@ const onUpdateOpen = (value: boolean) => {
 }
 
 // Passed to body / footer / content / header slots so callers can dismiss the
-// modal from inside their custom layout (matches Nuxt UI's `{ close }` slot
-// prop — `<template #footer="{ close }">…@click="close"…`).
+// modal from inside their custom layout.
 const close = () => onUpdateOpen(false)
 
 // Mirrors Popover: dismissible defaults true; when false, swallow the

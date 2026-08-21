@@ -10,7 +10,7 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
+      "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     },
     {
       "name": "backdropStyle",
@@ -22,13 +22,7 @@
       "name": "forceMount",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Used to force mounting when more control is needed. Useful when\ncontrolling transition with Vue native transition or other animation\nlibraries."
-    },
-    {
-      "name": "trapFocus",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "When `true`, focus cannot escape the `Content`. No-op on Lynx (there is\nno focus trap); kept for API parity with reka-ui."
+      "description": "Force mounting when more control is needed — e.g. driving the transition\nfrom a Vue native transition or another animation library."
     }
   ],
   "events": [],

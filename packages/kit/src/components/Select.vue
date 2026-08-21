@@ -7,9 +7,9 @@ type SelectTV = ThemeTV<typeof theme>
 type SelectVariants = VariantProps<SelectTV>
 
 /**
- * Item shape — strings/numbers are accepted directly; objects pull their
- * value/label off the configured `valueKey`/`labelKey`. `type: 'label'` /
- * `'separator'` render structural rows instead of selectable items.
+ * Item shape — strings/numbers accepted directly; objects pull their
+ * value/label off `valueKey`/`labelKey`. `type: 'label'` / `'separator'` render
+ * structural rows.
  */
 export interface SelectItem {
   label?: string
@@ -44,24 +44,10 @@ export interface SelectProps {
   trailingIcon?: string
   /** Iconify name rendered next to the selected item. Defaults to `appConfig.ui.icons.check`. */
   selectedIcon?: string
-  /**
-   * Presentation mode — kept for API parity with `VyPopover` /
-   * `VyDropdownMenu`. Currently only `'sheet'` is wired (native picker UX
-   * for touch). An `'anchor'` (tablet popper) variant is tracked separately
-   * and falls back to `'sheet'` when requested today.
-   * @defaultValue 'sheet'
-   */
-  presentation?: 'sheet' | 'anchor'
-  /**
-   * Edge the picker sheet slides and drags from.
-   * @defaultValue `'bottom'`
-   */
+  /** Edge the picker sheet slides and drags from. @defaultValue `'bottom'` */
   side?: SheetDirection
-  /**
-   * Snap fractions forwarded to `SheetRoot`. Default `[0.5]` matches a
-   * native picker — half-screen, scrollable list below the placeholder title.
-   * @defaultValue `[0.5]`
-   */
+  /** Snap fractions forwarded to `SheetRoot`. `[0.5]` matches a native picker —
+   *  half-screen, scrollable list below the title. @defaultValue `[0.5]` */
   snapPoints?: number[]
   /** Show the drag-handle pill at the top of the sheet. @defaultValue `true` */
   handle?: boolean
@@ -114,7 +100,6 @@ import { resolveColorHex } from '../utils/resolveColor'
 const props = withDefaults(defineProps<SelectProps>(), {
   valueKey: 'value',
   labelKey: 'label',
-  presentation: 'sheet',
   snapPoints: () => [0.5],
   handle: true,
 })
@@ -140,13 +125,12 @@ const { ui } = useStyledComponent('select', theme, () => ({
 // neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
-// The selected-item tick is baked too (a class can't reach the rasterized svg).
-// Uses the accent ramp (mode-independent), so it reads in light and dark.
+// The selected-item tick is baked too (a class can't reach the rasterized svg),
+// on the mode-independent accent ramp.
 const checkColor = computed(() => resolveColorHex(appConfig, props.color, 500))
 
-// Shared open state bridges `SelectRoot` (item-tap closes it; SelectTrigger
-// toggles it) and `SheetRoot` (drag-to-close, backdrop-tap). Whichever side
-// flips it, the other observes through this ref.
+// Shared open state bridges `SelectRoot` (item-tap, trigger) and `SheetRoot`
+// (drag-to-close, backdrop-tap): whichever flips it, the other observes.
 const localOpen = ref(false)
 
 const groups = computed<(SelectItem | string | number)[][]>(() => {

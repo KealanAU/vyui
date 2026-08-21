@@ -1,12 +1,6 @@
 {
   "props": [
     {
-      "name": "autofocus",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Focus the button on mount. Kept for API parity with Nuxt UI v4 — the\nVue-Lynx core button renders a non-focusable `<view>`, so this is\ncurrently a no-op."
-    },
-    {
       "name": "avatar",
       "type": "AvatarProps | undefined",
       "required": false,
@@ -31,7 +25,7 @@
       "name": "icon",
       "type": "string | undefined",
       "required": false,
-      "description": "Iconify shorthand. Routed to the trailing side when `trailing` is true,\notherwise to the leading side. Explicit `leadingIcon` / `trailingIcon`\nalways win."
+      "description": "Iconify shorthand, routed to the trailing side when `trailing` is set and\nthe leading side otherwise. Explicit `leadingIcon` / `trailingIcon` win."
     },
     {
       "name": "label",
@@ -83,13 +77,6 @@
       "type": "string | undefined",
       "required": false,
       "description": "Iconify name shown on the trailing side (wins over `icon`)."
-    },
-    {
-      "name": "type",
-      "type": "\"button\" | \"submit\" | \"reset\" | undefined",
-      "required": false,
-      "default": "\"button\"",
-      "description": "HTML button type. Kept for API parity with Nuxt UI v4 — the Vue-Lynx\ncore button renders a `<view>`, so this is currently a no-op forward."
     },
     {
       "name": "ui",

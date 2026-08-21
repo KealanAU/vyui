@@ -213,9 +213,6 @@ const open = ref(false)
 - Anchor mode supports `top`, `right`, `bottom`, or `left` sides; alignment can be `start`, `center`, or `end`.
 - Calling the content slot's `close()` only emits open-state updates. Use controlled state so the parent feeds `false` back to the component.
 - The `open` slot prop is derived from the controlled props. In uncontrolled usage it does not reflect the primitive's internal state.
-- `mode="hover"` currently behaves like click mode. `openDelay` and `closeDelay` are accepted but unused.
-- `arrow` is accepted for API parity but no arrow primitive is rendered.
-- `portal` is accepted for API parity. Current anchor content always registers with `OverlayRoot`, while sheet content always uses the sheet overlay path.
 - `content.alignOffset` is currently accepted but not applied.
 
 ## Content settings
@@ -239,14 +236,9 @@ The `content` prop is used only by `presentation="anchor"`.
 | `presentation` | `'sheet' \| 'anchor'` | `'sheet'` | Mobile bottom sheet or trigger-relative floating panel. |
 | `snapPoints` | `number[]` | `[0.6]` | Sheet height fractions forwarded to `SheetRoot`. |
 | `handle` | `boolean` | `true` | Shows the drag handle in sheet mode. |
-| `mode` | `'click' \| 'hover'` | `'click'` | Compatibility mode; hover currently behaves as click. |
 | `content` | `PopoverContentSettings` | `{ side: 'bottom', sideOffset: 8 }` | Anchor positioning settings. |
-| `arrow` | `boolean` | `false` | Compatibility prop; currently does not render an arrow. |
-| `portal` | `boolean` | `true` | Compatibility prop; current overlay registration is unchanged by this value. |
 | `modal` | `boolean` | `false` | Selects the modal core variant in anchor mode; sheet mode is always modal. |
 | `dismissible` | `boolean` | `true` | Enables outside dismissal and, in sheet mode, drag-to-close. |
-| `openDelay` | `number` | `0` | Compatibility prop for hover mode; currently unused. |
-| `closeDelay` | `number` | `0` | Compatibility prop for hover mode; currently unused. |
 | `class` | `any` | `undefined` | Classes applied to the built-in trigger in anchor mode. |
 | `ui` | `Partial<Record<PopoverSlot, any>>` | `undefined` | Per-instance theme slot overrides. |
 
@@ -278,7 +270,6 @@ Override globally through `appConfig.ui.popover` or locally with `ui`.
 | --- | --- |
 | `content` | Shared panel surface, size constraints, scrolling, border, radius, and elevation. |
 | `handle` | Sheet drag-handle pill. |
-| `arrow` | Reserved arrow styling; no arrow is currently rendered. |
 
 The default content surface is a white, vertically scrollable panel constrained to the viewport, with a neutral border, medium radius, and shared floating-surface shadow. Sheet mode additionally receives the core sheet's fixed bottom positioning and rounded top corners. Anchor mode receives alignment and padding as concrete inline styles calculated from the trigger rectangle.
 

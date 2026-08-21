@@ -21,12 +21,6 @@
       "description": "Header description. Overridden by the `description` slot."
     },
     {
-      "name": "direction",
-      "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
-      "required": false,
-      "description": "Alias for `side`."
-    },
-    {
       "name": "dismissible",
       "type": "boolean | undefined",
       "required": false,
@@ -51,21 +45,21 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "When `true`, only the `<SheetHandle>` is draggable; the rest of the\ndrawer body does not respond to touch drag."
+      "description": "When `true`, only the `<SheetHandle>` is draggable; the drawer body does\nnot respond to touch drag."
     },
     {
       "name": "keyboardAware",
       "type": "boolean | undefined",
       "required": false,
       "default": "false",
-      "description": "When `true`, the footer translates upward to stay above the on-screen\nkeyboard on Lynx. Internally wraps the scaffold in `KeyboardAwareRoot`,\nthe footer in `KeyboardAwareResponder`, and the footer slot in\n`KeyboardAwareTrigger` — any focused `VyInput`/`VyTextarea` inside the\nfooter drives the lift. No-op on web/jsdom (no platform keyboard event)."
+      "description": "When `true`, the footer translates upward to stay above the on-screen\nkeyboard on Lynx: the scaffold is wrapped in `KeyboardAwareRoot`, the footer\nin `KeyboardAwareResponder`/`Trigger`, so any focused input inside the\nfooter drives the lift. No-op on web/jsdom."
     },
     {
       "name": "keyboardAwareForceAttach",
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "Forwarded to `KeyboardAwareRoot.forceAttach`. Defaults to `true` so the\nfooter sticks to the keyboard's top edge (chat-style UX). Set `false`\nfor forms where the input only needs to be barely above the keyboard."
+      "description": "Forwarded to `KeyboardAwareRoot.forceAttach`. Defaults to `true` so the\nfooter sticks to the keyboard's top edge (chat-style UX)."
     },
     {
       "name": "open",
@@ -81,13 +75,6 @@
       "description": "Render the dim overlay behind the content."
     },
     {
-      "name": "portal",
-      "type": "boolean | undefined",
-      "required": false,
-      "default": "true",
-      "description": "Render the drawer in a portal. Advisory — sheet content is always portalled through `OverlayRoot`."
-    },
-    {
       "name": "side",
       "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | undefined",
       "required": false,
@@ -99,7 +86,7 @@
       "type": "number[] | undefined",
       "required": false,
       "default": "[0.75]",
-      "description": "Snap fractions (0 → 1) forwarded to `SheetRoot`. Defaults to a single\nthree-quarter-height snap so a bottom drawer doesn't take over the entire\nviewport. Pass `[1]` for a full-screen drawer or e.g. `[0.4, 0.9]` for a\nresizable sheet."
+      "description": "Snap fractions (0 → 1) forwarded to `SheetRoot`. Defaults to a single\nthree-quarter snap so a bottom drawer doesn't take over the viewport; pass\n`[1]` for full-screen or e.g. `[0.4, 0.9]` for a resizable sheet."
     },
     {
       "name": "title",
@@ -130,12 +117,12 @@
     {
       "name": "default",
       "type": "{ open: boolean; }",
-      "description": "Trigger content. `SheetTrigger` sets open to `true` on tap; do NOT bind\na `@tap` handler on the slotted child that also sets open — use\n`v-model:open`."
+      "description": "Trigger content. `SheetTrigger` sets open to `true` on tap; do NOT also\nbind a `@tap` handler that sets open — use `v-model:open`."
     },
     {
       "name": "content",
       "type": "{ close: () => void; }",
-      "description": "Full content override — replaces the default header/body/footer layout.\nPass arbitrary children when the standard slot scaffold doesn't fit."
+      "description": "Full content override — replaces the default header/body/footer layout."
     },
     {
       "name": "header",

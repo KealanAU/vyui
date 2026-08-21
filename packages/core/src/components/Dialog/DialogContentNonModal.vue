@@ -34,11 +34,6 @@ function render() {
       ...implProps,
       ...emitsAsProps,
       ...attrs,
-      // Forward the consumer-supplied `trapFocus` (defaults to `false` via
-      // reka-ui's non-modal contract). Inert on Lynx — no focus model — but
-      // honoring the prop matches reka-ui and avoids silently shadowing a
-      // value the consumer set.
-      trapFocus: props.trapFocus ?? false,
     },
     () => slots.default?.(),
   )

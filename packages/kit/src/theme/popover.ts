@@ -13,6 +13,5 @@ export default {
   slots: {
     content: 'flex flex-col max-w-[calc(100vw-1rem)] max-h-[calc(100vh-1rem)] overflow-y-auto bg-default rounded-md border border-default shadow-lg shadow-black/10 pointer-events-auto',
     handle: 'self-center w-9 h-1 rounded-full bg-accented mt-1.5 mb-1',
-    arrow: 'fill-default',
   },
 }

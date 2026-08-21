@@ -8,7 +8,7 @@ const open = ref(false)
 <template>
   <VyDrawer
     v-model:open="open"
-    direction="right"
+    side="right"
     title="Notifications"
     description="A drawer can slide in from any edge."
   >
@@ -17,7 +17,7 @@ const open = ref(false)
     <template #content>
       <view class="flex-1 p-4">
         <text class="text-sm text-neutral-600">
-          Use <code>direction</code> (or the <code>side</code> alias) to pick
+          Use <code>side</code> to pick
           <code>top</code>, <code>right</code>, <code>bottom</code>, or
           <code>left</code>.
         </text>
