@@ -4,7 +4,6 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm gen:registry && pnpm playground:build && nuxt dev",
-    "dev:fast": "nuxt dev",
     "build": "pnpm gen:registry && pnpm playground:build && nuxt build",
     "generate": "pnpm gen:registry && pnpm playground:build && nuxt generate",
     "preview": "nuxt preview",
