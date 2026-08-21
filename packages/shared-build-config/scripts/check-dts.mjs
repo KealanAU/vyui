@@ -2,11 +2,13 @@
 // the build if a relative/aliased specifier would not resolve for a consumer.
 // Complements the packed-tarball smoke test (which guards the RUNTIME exports).
 //
-// Catches the two ways @vyui types have broken downstream:
+// Catches the three ways @vyui types have broken downstream:
 //   1. `@/*` path-alias specifiers leaking into `.d.ts` (unresolvable for
 //      consumers — the alias only exists in our own tsconfig).
 //   2. Extensionless relative specifiers (rejected under `moduleResolution:
 //      node16`/`nodenext`), or ones that don't resolve to a real `.d.ts`.
+//   3. CSS side-effect imports surviving into a `.d.ts` — no resolver can
+//      follow them (`add-dts-extensions` strips them from the declaration).
 //
 // Run after the declaration emit + `add-dts-extensions`.
 // Usage: node check-dts.mjs <distDir>
@@ -22,10 +24,10 @@ function collect(dir) {
 }
 
 const SPECIFIER = /(?:\bfrom\s*|import\s*\(\s*|\bimport\s+|\bexport\s+\*\s+from\s*|\bexport\s*\{[^}]*\}\s*from\s*)(['"])([^'"]+)\1/g
-// Code specifiers must carry a JS extension for node16; asset side-effect
-// imports (`import './x.css'`) keep their own and aren't module-resolved.
+// Code specifiers must carry a JS extension for node16. `.json` resolves on its
+// own under `resolveJsonModule`; `.css` never resolves and must not appear.
 const CODE_EXT = /\.(js|mjs|cjs)$/
-const ASSET_EXT = /\.(json|css)$/
+const ASSET_EXT = /\.json$/
 
 /** True if a relative specifier resolves to an existing declaration file. */
 function resolvesToDts(spec, fileDir) {
@@ -43,6 +45,8 @@ for (const file of collect(distDir)) {
   for (const [, , spec] of src.matchAll(SPECIFIER)) {
     if (spec.startsWith('@/')) {
       problems.push({ file, spec, why: 'unresolved path alias (@/ only exists in our tsconfig)' })
+    } else if (/\.css$/.test(spec)) {
+      problems.push({ file, spec, why: 'CSS import left in a .d.ts (no resolver can follow it)' })
     } else if (spec.startsWith('.') && !ASSET_EXT.test(spec)) {
       if (!CODE_EXT.test(spec)) {
         problems.push({ file, spec, why: 'extensionless/wrong-extension relative import (breaks node16/nodenext)' })

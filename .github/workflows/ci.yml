@@ -26,4 +26,6 @@ jobs:
       - run: pnpm build
       # Typecheck needs core's emitted dist types, so it follows the build.
       - run: pnpm typecheck
+      # Guards the published entrypoints, not the source (see .attw.json).
+      - run: pnpm check:exports
       - run: pnpm test

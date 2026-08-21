@@ -27,6 +27,11 @@ function collect(dir) {
 // Matches the specifier of `from '…'`, `import('…')`, and bare `import '…'`.
 const SPECIFIER = /(\bfrom\s*|import\s*\(\s*|\bimport\s+)(['"])(\.[^'"]*)\2/g
 
+// Whole-line CSS side-effect imports. The bundled `.js` keeps them (that's how
+// the stylesheet ships); in a `.d.ts` they carry no types and every resolver
+// fails on them, so drop them from the declaration copy.
+const CSS_SIDE_EFFECT = /^[ \t]*import\s+(['"])\.[^'"]*\.css\1;?[ \t]*\r?\n?/gm
+
 /**
  * Resolve a relative specifier (from `fileDir`) to the `.js` form node16 wants,
  * or null to leave it. Handles missing extensions AND wrong ones — vue-tsc
@@ -52,10 +57,18 @@ function withExtension(spec, fileDir) {
 
 let changedFiles = 0
 let changedSpecs = 0
+let strippedCss = 0
 for (const file of collect(distDir)) {
   const fileDir = dirname(file)
   let touched = false
-  const next = readFileSync(file, 'utf8').replace(SPECIFIER, (match, kw, quote, spec) => {
+  let src = readFileSync(file, 'utf8')
+  const withoutCss = src.replace(CSS_SIDE_EFFECT, '')
+  if (withoutCss !== src) {
+    src = withoutCss
+    touched = true
+    strippedCss++
+  }
+  const next = src.replace(SPECIFIER, (match, kw, quote, spec) => {
     const rewritten = withExtension(spec, fileDir)
     if (!rewritten) return match
     touched = true
@@ -68,4 +81,4 @@ for (const file of collect(distDir)) {
   }
 }
 
-console.log(`[add-dts-extensions] ${distDir}: rewrote ${changedSpecs} specifier(s) across ${changedFiles} file(s)`)
+console.log(`[add-dts-extensions] ${distDir}: rewrote ${changedSpecs} specifier(s) across ${changedFiles} file(s), stripped CSS imports from ${strippedCss}`)
