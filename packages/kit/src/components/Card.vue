@@ -1,14 +1,14 @@
 <script lang="ts">
 import theme from '../theme/card'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type CardTV = ThemeTV<typeof theme>
 type CardVariants = VariantProps<CardTV>
 
 export interface CardProps {
   variant?: CardVariants['variant']
-  class?: any
-  ui?: Partial<Record<keyof CardTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof CardTV['slots'], ClassValue>>
 }
 
 export interface CardSlots {

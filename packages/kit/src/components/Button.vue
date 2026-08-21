@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme, { iconFg } from '../theme/button'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { AvatarProps } from './Avatar.vue'
 
 type ButtonTV = ThemeTV<typeof theme>
@@ -45,8 +45,8 @@ export interface ButtonProps {
   autofocus?: boolean
   /** Text label. Overridden by the default slot if provided. */
   label?: string
-  class?: any
-  ui?: Partial<Record<keyof ButtonTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ButtonTV['slots'], ClassValue>>
 }
 
 export interface ButtonSlots {

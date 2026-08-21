@@ -27,7 +27,7 @@ const { copy, copied } = useClipboard({ source })
           color="neutral"
           :variant="tab === 'preview' ? 'soft' : 'ghost'"
           size="sm"
-          @click="tab = 'preview'"
+          @click="() => { tab = 'preview' }"
         />
         <UButton
           label="Code"
@@ -35,7 +35,7 @@ const { copy, copied } = useClipboard({ source })
           color="neutral"
           :variant="tab === 'code' ? 'soft' : 'ghost'"
           size="sm"
-          @click="tab = 'code'"
+          @click="() => { tab = 'code' }"
         />
       </div>
       <UButton

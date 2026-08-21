@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme, { iconFg } from '../theme/tabs'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type TabsTV = ThemeTV<typeof theme>
 type TabsVariants = VariantProps<TabsTV>
@@ -55,8 +55,8 @@ export interface TabsProps {
    * the tab bar responds instantly even when the incoming panel is heavy.
    */
   deferContent?: boolean
-  class?: any
-  ui?: Partial<Record<keyof TabsTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof TabsTV['slots'], ClassValue>>
 }
 
 export interface TabsEmits {

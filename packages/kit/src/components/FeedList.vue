@@ -1,7 +1,7 @@
 <script lang="ts">
 import theme from '../theme/feedList'
 import type { FeedListRefreshState } from '@vyui/core'
-import type { ThemeTV } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV } from '../composables/useStyledComponent'
 
 type FeedListTV = ThemeTV<typeof theme>
 
@@ -43,8 +43,8 @@ export interface FeedListProps<T = unknown> {
   upperThresholdItemCount?: number
   /** No more data to load — stops `loadMore` and shows the end-of-list footer. */
   noMoreData?: boolean
-  class?: any
-  ui?: Partial<Record<keyof FeedListTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof FeedListTV['slots'], ClassValue>>
 }
 
 export interface FeedListEmits {

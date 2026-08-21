@@ -1,8 +1,9 @@
 <script lang="ts">
+import type { ClassValue } from '../composables/useStyledComponent'
 import theme from '../theme/skeleton'
 
 export interface SkeletonProps {
-  class?: any
+  class?: ClassValue
 }
 
 export interface SkeletonSlots {

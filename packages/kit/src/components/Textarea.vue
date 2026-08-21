@@ -1,7 +1,7 @@
 <script lang="ts">
 import theme from '../theme/textarea'
 import type { AvatarProps } from './Avatar.vue'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type TextareaTV = ThemeTV<typeof theme>
 type TextareaVariants = VariantProps<TextareaTV>
@@ -55,8 +55,8 @@ export interface TextareaProps {
   avoidKeyboard?: boolean
   /** Extra clearance in px above the keyboard when `avoidKeyboard` is set. */
   avoidKeyboardSpacing?: number
-  class?: any
-  ui?: Partial<Record<keyof TextareaTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof TextareaTV['slots'], ClassValue>>
 }
 
 export interface TextareaSlots {

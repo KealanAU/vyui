@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/label'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type LabelTV = ThemeTV<typeof theme>
 type LabelVariants = VariantProps<LabelTV>
@@ -10,8 +10,8 @@ export interface LabelProps {
   for?: string
   size?: LabelVariants['size']
   required?: boolean
-  class?: any
-  ui?: Partial<Record<keyof LabelTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof LabelTV['slots'], ClassValue>>
 }
 
 export interface LabelSlots {

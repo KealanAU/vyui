@@ -113,12 +113,11 @@ function invoke(method: string, params: Record<string, unknown> = {}): Promise<u
   return new Promise((resolve, reject) => {
     // `lynx` is the global selector-query API. On non-Lynx hosts it's
     // absent — bail without throwing so consumers can SSR-render.
-    const g = globalThis as any
-    if (!g?.lynx?.createSelectorQuery) {
+    if (!globalThis.lynx?.createSelectorQuery) {
       resolve(undefined)
       return
     }
-    g.lynx
+    globalThis.lynx
       .createSelectorQuery()
       .select(`#${listId.value}`)
       .invoke({

@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/modal'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { ButtonProps } from './Button.vue'
 
 type ModalTV = ThemeTV<typeof theme>
@@ -51,8 +51,8 @@ export interface ModalProps {
    * @defaultValue true
    */
   dismissible?: boolean
-  class?: any
-  ui?: Partial<Record<keyof ModalTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ModalTV['slots'], ClassValue>>
 }
 
 export interface ModalEmits {

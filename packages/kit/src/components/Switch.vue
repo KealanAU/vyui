@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/switch'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type SwitchTV = ThemeTV<typeof theme>
 type SwitchVariants = VariantProps<SwitchTV>
@@ -30,8 +30,8 @@ export interface SwitchProps {
   uncheckedIcon?: string
   /** Paints a static ring matching `color`, ignoring focus state. */
   highlight?: boolean
-  class?: any
-  ui?: Partial<Record<keyof SwitchTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof SwitchTV['slots'], ClassValue>>
 }
 
 export interface SwitchEmits {

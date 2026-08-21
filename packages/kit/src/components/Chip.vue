@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/chip'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type ChipTV = ThemeTV<typeof theme>
 type ChipVariants = VariantProps<ChipTV>
@@ -18,8 +18,8 @@ export interface ChipProps {
   text?: string | number
   /** Hide the chip itself; the wrapped child still renders. Defaults to `true`. */
   show?: boolean
-  class?: any
-  ui?: Partial<Record<keyof ChipTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ChipTV['slots'], ClassValue>>
 }
 
 export interface ChipSlots {

@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { InputConfirmType, InputType } from '@vyui/core'
 import theme from '../theme/input'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 import type { AvatarProps } from './Avatar.vue'
 
 type InputTV = ThemeTV<typeof theme>
@@ -75,8 +75,8 @@ export interface InputProps {
   autofocus?: boolean
   /** Delay before applying `autofocus`, in milliseconds. */
   autofocusDelay?: number
-  class?: any
-  ui?: Partial<Record<keyof InputTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof InputTV['slots'], ClassValue>>
 }
 
 export interface InputSlots {

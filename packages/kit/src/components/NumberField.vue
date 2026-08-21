@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/numberField'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type NumberFieldTV = ThemeTV<typeof theme>
 type NumberFieldVariants = VariantProps<NumberFieldTV>
@@ -26,8 +26,8 @@ export interface NumberFieldProps {
   size?: NumberFieldVariants['size']
   /** Forwarded to the underlying input. */
   id?: string
-  class?: any
-  ui?: Partial<Record<keyof NumberFieldTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof NumberFieldTV['slots'], ClassValue>>
 }
 
 export interface NumberFieldEmits {

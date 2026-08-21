@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { ToggleProps as CoreToggleProps } from '@vyui/core'
 import theme, { iconFg } from '../theme/toggle'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type ToggleTV = ThemeTV<typeof theme>
 type ToggleVariants = VariantProps<ToggleTV>
@@ -19,8 +19,8 @@ export interface ToggleProps extends /* @vue-ignore */ CoreToggleProps {
   size?: ToggleVariants['size']
   /** Iconify name rendered inside the toggle when no default slot is supplied. */
   icon?: string
-  class?: any
-  ui?: Partial<Record<keyof ToggleTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ToggleTV['slots'], ClassValue>>
 }
 
 export interface ToggleEmits {

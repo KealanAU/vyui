@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/accordion'
-import type { ThemeTV } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV } from '../composables/useStyledComponent'
 
 type AccordionTV = ThemeTV<typeof theme>
 
@@ -35,8 +35,8 @@ export interface AccordionProps {
   trailingIcon?: string
   /** Whether closed item content should unmount. */
   unmountOnHide?: boolean
-  class?: any
-  ui?: Partial<Record<keyof AccordionTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof AccordionTV['slots'], ClassValue>>
 }
 
 export interface AccordionEmits {

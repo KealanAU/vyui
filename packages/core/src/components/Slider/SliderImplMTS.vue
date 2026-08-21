@@ -124,7 +124,7 @@ const rangeElRef = useMainThreadRef<any>(null)
 //
 // Read at render, not setup — `SystemInfo` can resolve late.
 function isWeb() {
-  return (globalThis as any).SystemInfo?.platform === 'web'
+  return (globalThis.SystemInfo?.platform as string) === 'web'
 }
 
 const shieldRef = useMainThreadRef<any>(null)

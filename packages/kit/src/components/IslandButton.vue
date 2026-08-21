@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/islandButton'
-import type { ThemeTV } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV } from '../composables/useStyledComponent'
 // NB: `IslandSize` from `./islandContext` is intentionally NOT imported here.
 // The setup block below imports it; importing in both blocks raises TS2300
 // "Duplicate identifier" because Vue's SFC compiler merges both `<script>`
@@ -65,8 +65,8 @@ export interface IslandButtonProps {
    * `<VyIsland>`'s `size`. Falls back to `md` standalone.
    */
   size?: 'sm' | 'md' | 'lg' | 'xl'
-  class?: any
-  ui?: Partial<Record<keyof IslandButtonTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof IslandButtonTV['slots'], ClassValue>>
 }
 
 export interface IslandButtonEmits {

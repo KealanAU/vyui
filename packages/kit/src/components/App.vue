@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/app'
-import type { ThemeTV } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV } from '../composables/useStyledComponent'
 import type { ColorMode } from '../composables/useColorMode'
 
 type AppTV = ThemeTV<typeof theme>
@@ -26,8 +26,8 @@ export interface AppProps {
    * @defaultValue true
    */
   safeArea?: boolean
-  class?: any
-  ui?: Partial<Record<keyof AppTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof AppTV['slots'], ClassValue>>
 }
 
 export interface AppEmits {

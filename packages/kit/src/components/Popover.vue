@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/popover'
-import type { ThemeTV } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV } from '../composables/useStyledComponent'
 import type { SheetDirection } from '@vyui/core'
 
 type PopoverTV = ThemeTV<typeof theme>
@@ -93,8 +93,8 @@ export interface PopoverProps {
    */
   openDelay?: number
   closeDelay?: number
-  class?: any
-  ui?: Partial<Record<keyof PopoverTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof PopoverTV['slots'], ClassValue>>
 }
 
 export interface PopoverEmits {

@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/pinInput'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type PinInputTV = ThemeTV<typeof theme>
 type PinInputVariants = VariantProps<PinInputTV>
@@ -31,8 +31,8 @@ export interface PinInputProps {
   name?: string
   /** Forwarded to the underlying core control. */
   id?: string
-  class?: any
-  ui?: Partial<Record<keyof PinInputTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof PinInputTV['slots'], ClassValue>>
 }
 
 export interface PinInputEmits {

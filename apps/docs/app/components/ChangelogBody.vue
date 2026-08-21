@@ -9,7 +9,7 @@ const props = defineProps<{
 // Collapsed height cap (px). Entries taller than this get a Read more toggle.
 const COLLAPSED_MAX = 160;
 
-const content = ref<HTMLElement | null>(null);
+const content = ref<HTMLElement>();
 const expanded = ref(false);
 const overflowing = ref(false);
 

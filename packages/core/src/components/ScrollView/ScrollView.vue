@@ -275,13 +275,13 @@ function _mtIsVertical() {
 
 function _mtThreshold() {
   'main thread'
-  const sys: any = (globalThis as any).SystemInfo
+  const sys = globalThis.SystemInfo
   return 1.0 / Number(sys?.pixelRatio ?? 1)
 }
 
 function _mtIsAndroid() {
   'main thread'
-  const sys: any = (globalThis as any).SystemInfo
+  const sys = globalThis.SystemInfo
   return sys?.platform === 'Android'
 }
 

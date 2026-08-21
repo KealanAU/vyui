@@ -229,7 +229,7 @@ const lastTouchTsRef = useMainThreadRef<number>(0)
 
 function _mtIsAndroid() {
   'main thread'
-  const sys: any = (globalThis as any).SystemInfo
+  const sys = globalThis.SystemInfo
   return sys?.platform === 'Android'
 }
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme, { iconFg } from '../theme/alert'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type AlertTV = ThemeTV<typeof theme>
 type AlertVariants = VariantProps<AlertTV>
@@ -20,8 +20,8 @@ export interface AlertProps {
   close?: boolean
   /** Iconify name for the close button. Defaults to `appConfig.ui.icons.close`. */
   closeIcon?: string
-  class?: any
-  ui?: Partial<Record<keyof AlertTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof AlertTV['slots'], ClassValue>>
 }
 
 export interface AlertSlots {

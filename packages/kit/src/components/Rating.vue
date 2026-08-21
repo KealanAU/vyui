@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/rating'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type RatingTV = ThemeTV<typeof theme>
 type RatingVariants = VariantProps<RatingTV>
@@ -16,8 +16,8 @@ export interface RatingProps {
   size?: RatingVariants['size']
   /** Iconify name for the star glyph. Defaults to `appConfig.ui.icons.star`. */
   icon?: string
-  class?: any
-  ui?: Partial<Record<keyof RatingTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof RatingTV['slots'], ClassValue>>
 }
 
 export interface RatingEmits {

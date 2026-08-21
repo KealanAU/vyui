@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/drawer'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '../composables/useStyledComponent'
 
 type DrawerTV = ThemeTV<typeof theme>
 type DrawerVariants = VariantProps<DrawerTV>
@@ -62,8 +62,8 @@ export interface DrawerProps {
    * for forms where the input only needs to be barely above the keyboard.
    */
   keyboardAwareForceAttach?: boolean
-  class?: any
-  ui?: Partial<Record<keyof DrawerTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof DrawerTV['slots'], ClassValue>>
 }
 
 export interface DrawerEmits {
