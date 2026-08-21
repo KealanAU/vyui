@@ -1,0 +1,22 @@
+{
+  "name": "swipe-action",
+  "type": "registry:ui",
+  "dependencies": [
+    "@vyui/core@^0.2.10"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/SwipeAction.vue",
+      "target": "SwipeAction.vue",
+      "type": "registry:ui",
+      "content": "<script lang=\"ts\">\nimport theme from '@@vyui:theme/swipeAction'\nimport type { ThemeTV, VariantProps } from '@@vyui:composables/useStyledComponent'\n\ntype SwipeActionTV = ThemeTV<typeof theme>\ntype SwipeActionVariants = VariantProps<SwipeActionTV>\n\nexport interface SwipeActionProps {\n  /**\n   * Width of the revealed action panel in px. Forwarded to the core\n   * `SwipeAction` primitive — required for the threshold math.\n   */\n  actionWidth: number\n  /**\n   * Width of the row in px. Forwarded to the core primitive — required to\n   * compute the commit threshold.\n   */\n  rowWidth: number\n  /** Controlled open state. Bind with `v-model:open`. */\n  open?: boolean\n  /** Initial open state when uncontrolled. */\n  defaultOpen?: boolean\n  /** Disable interaction. */\n  disabled?: boolean\n  /**\n   * Fraction of `actionWidth` the user must drag past to snap open. 0–1.\n   * Maps to the core `snapThreshold` prop.\n   */\n  threshold?: number\n  /**\n   * Which side reveals the actions. Drives styling only — the core\n   * primitive currently always reveals from the trailing (right) edge.\n   */\n  side?: SwipeActionVariants['side']\n  class?: any\n  ui?: Partial<Record<keyof SwipeActionTV['slots'], any>>\n}\n\nexport interface SwipeActionEmits {\n  (e: 'update:open', value: boolean): void\n  (e: 'commit'): void\n}\n\nexport interface SwipeActionSlots {\n  /** Main row content. Scoped with `{ open, close }` from the core primitive. */\n  default(props: { open: boolean, close: () => void }): any\n  /** Action panel revealed on swipe. Scoped with `{ open, close }`. */\n  actions(props: { open: boolean, close: () => void }): any\n}\n</script>\n\n<script setup lang=\"ts\">\nimport { SwipeAction as CoreSwipeAction } from '@vyui/core'\nimport { useStyledComponent } from '@@vyui:composables/useStyledComponent'\n\nconst props = withDefaults(defineProps<SwipeActionProps>(), {\n  defaultOpen: false,\n  disabled: false,\n  side: 'right',\n})\n\nconst emit = defineEmits<SwipeActionEmits>()\ndefineSlots<SwipeActionSlots>()\n\nconst { ui } = useStyledComponent('swipeAction', theme, () => ({\n  side: props.side,\n}))\n\nfunction onUpdateOpen(value: boolean) {\n  emit('update:open', value)\n}\n\nfunction onCommit() {\n  emit('commit')\n}\n</script>\n\n<template>\n  <CoreSwipeAction\n    :action-width=\"actionWidth\"\n    :row-width=\"rowWidth\"\n    :open=\"open\"\n    :default-open=\"defaultOpen\"\n    :disabled=\"disabled\"\n    :snap-threshold=\"threshold\"\n    :class=\"ui.root({ class: [props.class, props.ui?.root] })\"\n    @update:open=\"onUpdateOpen\"\n    @commit=\"onCommit\"\n  >\n    <template #default=\"scope\">\n      <view :class=\"ui.content({ class: props.ui?.content })\">\n        <slot v-bind=\"scope\" />\n      </view>\n    </template>\n    <template #action=\"scope\">\n      <view :class=\"ui.actions({ class: props.ui?.actions })\">\n        <slot name=\"actions\" v-bind=\"scope\" />\n      </view>\n    </template>\n  </CoreSwipeAction>\n</template>\n"
+    },
+    {
+      "path": "theme/swipeAction.ts",
+      "target": "theme/swipeAction.ts",
+      "type": "registry:theme",
+      "content": "/**\n * SwipeAction theme — vyui original (no nuxt/ui parallel). Dark rides the semantic tokens.\n *\n * NOTE: the core `SwipeAction` primitive only supports a trailing (right-side)\n * action panel today — the `side` variant here drives styling/`data-side`\n * only; it does not flip the physical drag direction.\n */\nexport default {\n  slots: {\n    root: 'relative min-w-0 max-w-full overflow-hidden',\n    actions: 'flex flex-row items-stretch min-w-0 max-w-full overflow-hidden bg-elevated',\n    content: 'flex flex-row items-center min-w-0 max-w-full overflow-hidden bg-default',\n  },\n  variants: {\n    side: {\n      left: {\n        actions: 'justify-start',\n      },\n      right: {\n        actions: 'justify-end',\n      },\n    },\n  },\n  defaultVariants: {\n    side: 'right' as const,\n  },\n}\n"
+    }
+  ]
+}

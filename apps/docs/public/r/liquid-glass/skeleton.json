@@ -1,0 +1,20 @@
+{
+  "name": "skeleton",
+  "type": "registry:ui",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/Skeleton.vue",
+      "target": "Skeleton.vue",
+      "type": "registry:ui",
+      "content": "<script lang=\"ts\">\nimport theme from '@@vyui:theme/skeleton'\n\nexport interface SkeletonProps {\n  class?: any\n}\n\nexport interface SkeletonSlots {\n  default(props?: {}): any\n}\n</script>\n\n<script setup lang=\"ts\">\nimport { useStyledComponent } from '@@vyui:composables/useStyledComponent'\n\nconst props = withDefaults(defineProps<SkeletonProps>(), {})\ndefineSlots<SkeletonSlots>()\n\nconst { ui } = useStyledComponent('skeleton', theme, () => ({ class: props.class }))\n</script>\n\n<template>\n  <view :class=\"ui\">\n    <slot />\n  </view>\n</template>\n"
+    },
+    {
+      "path": "theme/skeleton.ts",
+      "target": "theme/skeleton.ts",
+      "type": "registry:theme",
+      "content": "/**\n * Skeleton theme — adapted from nuxt/ui v3.0.2 `theme/skeleton.ts` for Vue-Lynx.\n *\n * No core primitive exists for skeleton — it's a plain animated `<view>` block.\n * The `bg-accented` semantic token resolves to a per-mode `--ui-bg-accented`\n * value in `@vyui/kit/style.css`, so it flips in dark on its own.\n */\nexport default {\n  base: 'animate-pulse rounded-md bg-accented',\n}\n"
+    }
+  ]
+}
