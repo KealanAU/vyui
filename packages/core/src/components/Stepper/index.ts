@@ -9,12 +9,14 @@ export {
 } from './StepperIndicator.vue'
 
 export {
+  type StepperItemContext,
   injectStepperItemContext,
   default as StepperItem,
   type StepperItemProps,
 } from './StepperItem.vue'
 
 export {
+  type StepperRootContext,
   injectStepperRootContext,
   default as StepperRoot,
   type StepperRootEmits,

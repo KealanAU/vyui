@@ -101,42 +101,42 @@ function onFormSubmit(values: Record<string, unknown>) {
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="solid" color="primary" label="Primary" />
         <VyButton variant="solid" color="success" label="Success" />
-        <VyButton variant="solid" color="error"   label="Error" />
+        <VyButton variant="solid" color="error" label="Error" />
       </view>
 
       <text class="text-muted text-xs pt-1">outline</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="outline" color="primary" label="Primary" />
         <VyButton variant="outline" color="warning" label="Warning" />
-        <VyButton variant="outline" color="info"    label="Info" />
+        <VyButton variant="outline" color="info" label="Info" />
       </view>
 
       <text class="text-muted text-xs pt-1">soft</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="soft" color="primary" label="Primary" />
         <VyButton variant="soft" color="success" label="Success" />
-        <VyButton variant="soft" color="error"   label="Error" />
+        <VyButton variant="soft" color="error" label="Error" />
       </view>
 
       <text class="text-muted text-xs pt-1">subtle</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="subtle" color="primary" label="Primary" />
         <VyButton variant="subtle" color="warning" label="Warning" />
-        <VyButton variant="subtle" color="info"    label="Info" />
+        <VyButton variant="subtle" color="info" label="Info" />
       </view>
 
       <text class="text-muted text-xs pt-1">ghost</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="ghost" color="primary" label="Primary" />
-        <VyButton variant="ghost" color="error"   label="Error" />
+        <VyButton variant="ghost" color="error" label="Error" />
         <VyButton variant="ghost" color="neutral" label="Neutral" />
       </view>
 
       <text class="text-muted text-xs pt-1">link</text>
       <view class="flex flex-row flex-wrap gap-2">
         <VyButton variant="link" color="primary" label="Primary" />
-        <VyButton variant="link" color="info"    label="Info" />
-        <VyButton variant="link" color="error"   label="Error" />
+        <VyButton variant="link" color="info" label="Info" />
+        <VyButton variant="link" color="error" label="Error" />
       </view>
     </view>
 

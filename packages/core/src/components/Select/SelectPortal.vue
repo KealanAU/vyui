@@ -6,7 +6,7 @@ export interface SelectPortalProps {
 </script>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<SelectPortalProps>(), {
+withDefaults(defineProps<SelectPortalProps>(), {
   to: '#overlay-root',
 })
 </script>

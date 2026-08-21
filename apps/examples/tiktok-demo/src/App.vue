@@ -18,7 +18,6 @@ function openComments(videoId: string) {
 // Each domain starts its own segment; we track the combined loaded count here
 // so an app-level figure reflects all loaded data, not just one list.
 const globalLoaded = ref(0)
-const globalTotal = ref(0)          // set on mount via onFeedReady
 
 function onVideosLoaded(count: number) {
   globalLoaded.value += count

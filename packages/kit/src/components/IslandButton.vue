@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme from '../theme/islandButton'
-import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
+import type { ThemeTV } from '../composables/useStyledComponent'
 // NB: `IslandSize` from `./islandContext` is intentionally NOT imported here.
 // The setup block below imports it; importing in both blocks raises TS2300
 // "Duplicate identifier" because Vue's SFC compiler merges both `<script>`
@@ -8,7 +8,6 @@ import type { ThemeTV, VariantProps } from '../composables/useStyledComponent'
 // (derived from the theme) which is structurally compatible with `IslandSize`.
 
 type IslandButtonTV = ThemeTV<typeof theme>
-type IslandButtonVariants = VariantProps<IslandButtonTV>
 
 /**
  * Opinionated button for use inside `<VyIsland>`. Ghost / pill styling.
@@ -83,7 +82,7 @@ export interface IslandButtonSlots {
 </script>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed } from 'vue'
 import { Button as CoreButton, Icon as VyIcon } from '@vyui/core'
 import { useStyledComponent } from '../composables/useStyledComponent'
 import { useAppConfig } from '../composables/useAppConfig'

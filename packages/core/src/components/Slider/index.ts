@@ -3,10 +3,12 @@ export {
   type SliderRangeProps,
 } from './SliderRange.vue'
 export {
-  injectSliderRootContext,
   default as SliderRoot,
+  type SliderRootContext,
   type SliderRootEmits,
   type SliderRootProps,
+  type ThumbAlignment,
+  injectSliderRootContext,
 } from './SliderRoot.vue'
 export {
   default as SliderThumb,

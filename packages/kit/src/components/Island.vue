@@ -134,7 +134,7 @@ export interface IslandSlots {
 </script>
 
 <script setup lang="ts">
-import { Comment, computed, Fragment, ref, Text, toRef, useSlots, type VNode } from 'vue'
+import { Comment, computed, Fragment, ref, Text, type VNode } from 'vue'
 import { useStyledComponent } from '../composables/useStyledComponent'
 import { provideIslandContext, type IslandSize } from './islandContext'
 

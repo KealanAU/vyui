@@ -26,7 +26,7 @@ export interface TabsContentProps extends PrimitiveProps {
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { injectTabsRootContext } from './TabsRoot.vue'
-import { makeContentId, makeTriggerId } from './utils'
+import { makeContentId } from './utils'
 
 // `unmountOnHide` must default to `undefined`, not Vue's Boolean-cast `false`
 // — absence means "inherit the root's setting".
@@ -36,7 +36,6 @@ const props = withDefaults(defineProps<TabsContentProps>(), {
 
 const { forwardRef } = useForwardExpose()
 const rootContext = injectTabsRootContext()
-const triggerId = computed(() => makeTriggerId(rootContext.baseId, props.value))
 const contentId = computed(() => makeContentId(rootContext.baseId, props.value))
 
 // Follows `contentValue`, not `modelValue`: with `deferContent` on the root

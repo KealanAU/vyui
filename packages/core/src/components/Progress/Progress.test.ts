@@ -1,9 +1,10 @@
 // Adapted from reka-ui (MIT) — https://github.com/unovue/reka-ui
 import { describe, expect, it } from 'vitest'
 import { render, waitForUpdate } from '@vyui/testing-utils'
-import { sleep } from '@/test'
 import Progress from './story/_Progress.vue'
 import ProgressStatic from './story/_ProgressStatic.vue'
+
+const sleep = (duration: number) => new Promise(resolve => setTimeout(resolve, duration))
 
 describe('Progress', () => {
   it('renders the initial value in a loading state and updates over time', async () => {

@@ -183,7 +183,7 @@ const tabsUi = computed(() =>
         <template #theme>
           <SectionScroll>
             <ThemeSection
-              v-model:color-palettes="colorPalettes"
+              :color-palettes="colorPalettes"
               v-model:neutral-palette="neutralPalette"
               v-model:radius="radius"
             />

@@ -17,7 +17,7 @@ import { Input } from '@/components/Input'
 import { useForwardExpose } from '@/shared'
 import { injectNumberFieldRootContext } from './NumberFieldRoot.vue'
 
-const props = defineProps<NumberFieldInputProps>()
+defineProps<NumberFieldInputProps>()
 
 const context = injectNumberFieldRootContext()
 useForwardExpose()

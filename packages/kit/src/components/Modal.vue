@@ -88,7 +88,7 @@ export interface ModalSlots {
 </script>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed } from 'vue'
 import {
   DialogRoot,
   DialogTrigger,

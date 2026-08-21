@@ -175,18 +175,6 @@ const { ui } = useStyledComponent('dropdownMenu', theme, () => ({
   size: props.size,
 }))
 
-function getLabel(item: DropdownMenuItem | undefined): string | undefined {
-  if (!item) return undefined
-  const v = (item as Record<string, any>)[props.labelKey]
-  return typeof v === 'string' ? v : undefined
-}
-
-function getDescription(item: DropdownMenuItem | undefined): string | undefined {
-  if (!item) return undefined
-  const v = (item as Record<string, any>)[props.descriptionKey]
-  return typeof v === 'string' ? v : undefined
-}
-
 /**
  * Normalise `items` into a flat row list with group separators interleaved.
  * Each row renders as a single component so the menu content has no

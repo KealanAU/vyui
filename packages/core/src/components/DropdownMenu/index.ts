@@ -1,5 +1,6 @@
 export {
   default as DropdownMenuCheckboxItem,
+  type DropdownMenuCheckboxItemContext,
   type DropdownMenuCheckboxItemEmits,
   type DropdownMenuCheckboxItemProps,
   injectDropdownMenuCheckboxItemContext,
@@ -37,18 +38,21 @@ export {
 } from './DropdownMenuPortal.vue'
 export {
   default as DropdownMenuRadioGroup,
+  type DropdownMenuRadioGroupContext,
   type DropdownMenuRadioGroupEmits,
   type DropdownMenuRadioGroupProps,
   injectDropdownMenuRadioGroupContext,
 } from './DropdownMenuRadioGroup.vue'
 export {
   default as DropdownMenuRadioItem,
+  type DropdownMenuRadioItemContext,
   type DropdownMenuRadioItemEmits,
   type DropdownMenuRadioItemProps,
   injectDropdownMenuRadioItemContext,
 } from './DropdownMenuRadioItem.vue'
 export {
   default as DropdownMenuRoot,
+  type DropdownMenuRootContext,
   type DropdownMenuRootEmits,
   type DropdownMenuRootProps,
   injectDropdownMenuRootContext,
@@ -59,6 +63,7 @@ export {
 } from './DropdownMenuSeparator.vue'
 export {
   default as DropdownMenuSub,
+  type DropdownMenuSubContext,
   type DropdownMenuSubEmits,
   type DropdownMenuSubProps,
   injectDropdownMenuSubContext,

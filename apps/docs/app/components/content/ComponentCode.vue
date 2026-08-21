@@ -68,12 +68,13 @@ const { copy, copied } = useClipboard({ source })
     </ClientOnly>
 
     <template v-else>
-      <!-- eslint-disable-next-line vue/no-v-html -- trusted build-time Shiki output -->
+      <!-- eslint-disable vue/no-v-html -- trusted build-time Shiki output -->
       <div
         v-if="highlighted"
         class="component-code-shiki max-h-[480px] overflow-auto text-[13px] leading-relaxed"
         v-html="highlighted"
       />
+      <!-- eslint-enable vue/no-v-html -->
       <!-- Code lines, faked, while the example chunk loads. -->
       <div v-else class="flex flex-col gap-2.5 p-4" aria-hidden="true">
         <div v-for="w in ['w-2/5', 'w-4/5', 'w-3/5', 'w-3/4', 'w-1/3', 'w-2/3']" :key="w" class="preview-skeleton h-3 rounded" :class="w" />

@@ -48,7 +48,7 @@ const props = withDefaults(defineProps<AlertProps>(), {
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
 }>()
-const slots = defineSlots<AlertSlots>()
+defineSlots<AlertSlots>()
 const _slots = useSlots()
 
 const appConfig = useAppConfig()
@@ -123,7 +123,7 @@ const onClose = () => emit('update:open', false)
       <slot name="close" :icon-color="iconColor">
         <view
           v-if="close"
-          bindtap="onClose"
+          @tap="onClose"
           :class="ui.close({ class: props.ui?.close })"
         >
           <VyIcon :name="resolvedCloseIcon" :color="iconColor" :class="ui.icon({ class: props.ui?.icon })" />

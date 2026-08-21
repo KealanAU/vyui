@@ -1,4 +1,5 @@
 export {
+  type SwitchRootContext,
   injectSwitchRootContext,
   default as SwitchRoot,
   type SwitchRootEmits,

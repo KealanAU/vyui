@@ -18,11 +18,17 @@
     },
     "./vite-sfc-css-imports": {
       "import": "./vite-sfc-css-imports.js"
+    },
+    "./check-dist-shape": {
+      "import": "./scripts/check-dist-shape.mjs"
+    },
+    "./rewrite-deep-imports": {
+      "import": "./scripts/rewrite-deep-imports.mjs"
     }
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.7",
+    "@vitejs/plugin-vue": "catalog:",
     "esbuild": "^0.27.0",
-    "vite": "^7.3.3"
+    "vite": "catalog:"
   }
 }

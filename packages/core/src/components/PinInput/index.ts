@@ -1,5 +1,6 @@
 // Adapted from reka-ui (MIT) — https://github.com/unovue/reka-ui
 export {
+  type PinInputRootContext,
   injectPinInputRootContext,
   default as PinInputRoot,
   type PinInputRootEmits,

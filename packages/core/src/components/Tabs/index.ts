@@ -11,6 +11,7 @@ export {
   type TabsListProps,
 } from './TabsList.vue'
 export {
+  type TabsRootContext,
   injectTabsRootContext,
   default as TabsRoot,
   type TabsRootEmits,

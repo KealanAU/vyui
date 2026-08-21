@@ -108,7 +108,7 @@ export async function ollamaChat(opts: OllamaChatOptions): Promise<OllamaChatRes
   }
   catch (err) {
     if ((err as Error)?.name === 'AbortError') throw new OllamaAbortError()
-    throw new Error(`Couldn't reach Ollama at ${baseUrl}. Is \`ollama serve\` running?`)
+    throw new Error(`Couldn't reach Ollama at ${baseUrl}. Is \`ollama serve\` running?`, { cause: err })
   }
 
   if (!res.ok) {
@@ -121,7 +121,7 @@ export async function ollamaChat(opts: OllamaChatOptions): Promise<OllamaChatRes
   }
   catch (err) {
     if ((err as Error)?.name === 'AbortError') throw new OllamaAbortError()
-    throw new Error('Ollama sent a response this runtime could not read. Try the web build, or update LynxExplorer.')
+    throw new Error('Ollama sent a response this runtime could not read. Try the web build, or update LynxExplorer.', { cause: err })
   }
 
   if (data?.error) throw new Error(data.error)
