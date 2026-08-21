@@ -1,15 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { fireEvent, q, render, waitForUpdate } from '@vyui/testing-utils'
 import { overlayEntries } from '@/components/OverlayRoot/overlayStore'
 import DropdownMenu from './story/_DropdownMenu.vue'
 
 afterEach(() => {
   overlayEntries.value = []
 })
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 describe('dropdownMenu', () => {
   it('renders the trigger', () => {

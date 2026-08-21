@@ -20,3 +20,17 @@ once in `useResizeObserver` (`useElementRect` imports them), the kit's default
 `AppConfig` literal lives once in `useAppConfig` (`provideVyUI` imports it), and
 the alert theme's `iconFg` routes through `iconFgFromToken` like the button,
 tabs, toggle, and toggle-group themes.
+
+Remove `defineVyuiConfig` and the `@vyui/kit/config` entry. It only spread
+`{ theme, components }` into `{ ui: { ...theme, ...components } }`, which is the
+shape you can author directly — `createVyuiPreset` and `provideVyUI` /
+`app.use(VyUI)` still take that same `{ ui }` object:
+
+```ts
+// vyui.config.ts
+import type { VyUIPluginOptions } from '@vyui/kit'
+
+export default {
+  ui: { primary: 'orange', button: { slots: { base: 'rounded-xl' } } },
+} satisfies VyUIPluginOptions
+```

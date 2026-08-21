@@ -38,7 +38,7 @@ const { forwardRef } = useForwardExpose()
 </script>
 
 <template>
-  <Presence :present="forceMount || rootContext.open.value">
+  <Presence :show="forceMount || rootContext.open.value">
     <PopoverContentModal
       :ref="forwardRef"
       v-bind="{ ...forwarded, ...emitsAsProps, ...$attrs }"

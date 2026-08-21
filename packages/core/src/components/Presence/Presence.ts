@@ -40,19 +40,13 @@ import { PresenceState, resolveAnimationStatus } from './utils'
 export const PresenceContextKey: InjectionKey<PresenceContextType>
   = Symbol.for('vyui:PresenceContext')
 
-/** Public props for `<Presence>`. `show` is the lynx-ui-style input; `present`
- *  is a back-compat alias. */
+/** Public props for `<Presence>`. */
 export interface PresenceProps {
   /**
    * Drives the lifecycle. `true` runs Entering → Entered (or DelayedEntering →
    * Entering → Entered with `enable-delay`); `false` runs Leaving → Left.
    */
   show?: boolean
-  /**
-   * Back-compat alias for {@link show}. When both are supplied, `show` wins.
-   * @deprecated Pass `show` instead.
-   */
-  present?: boolean
   /**
    * Force the element to render regardless of `show`, for callers that drive
    * mount/unmount themselves and only want the lifecycle state.
@@ -81,7 +75,7 @@ export interface PresenceProps {
 
 /**
  * Slot props surfaced by the default slot:
- *   - `present` — back-compat boolean; true while the element is mounted.
+ *   - `present` — true while the element is mounted.
  *   - `phase` — legacy four-phase enum derived from `state`.
  *   - `status` — the public {@link PresenceAnimationStatus} flags.
  *   - `state` — the raw {@link PresenceState} enum.
@@ -111,17 +105,12 @@ function statePhase(state: PresenceState): PresenceSlotProps['phase'] {
  * Lynx-safe `Presence` — drives a state machine off real `bindanimation*` /
  * `bindtransition*` events so consumers can wait for an animation to truly
  * finish before unmounting, with a 24-frame fallback for elements that don't
- * animate. The slot prop `present` and the `forceMount` prop are kept for
- * existing call sites.
+ * animate.
  */
 const Presence = defineComponent({
   name: 'Presence',
   props: {
     show: {
-      type: Boolean,
-      default: undefined,
-    },
-    present: {
       type: Boolean,
       default: undefined,
     },
@@ -158,13 +147,7 @@ const Presence = defineComponent({
     default: (props: PresenceSlotProps) => any
   }>,
   setup(props, { slots, expose }) {
-    // `show` is the canonical input; `present` is a v1 alias, so `show` wins
-    // when both are supplied.
-    const showRef = computed<boolean>(() => {
-      if (props.show !== undefined) return props.show
-      if (props.present !== undefined) return props.present
-      return false
-    })
+    const showRef = computed<boolean>(() => props.show ?? false)
 
     // Internal state machine — used when the caller doesn't drive `state`.
     // Defaults to Left so the initial `show -> handleShow` transition runs.
@@ -210,7 +193,7 @@ const Presence = defineComponent({
     const phase = computed<PresenceSlotProps['phase']>(() =>
       statePhase(stateRef.value),
     )
-    // v1 `present` slot prop: stays true whenever the child is mounted.
+    // `present` slot prop: stays true whenever the child is mounted.
     const isPresent = computed<boolean>(() => presence.controllers.mount.value)
 
     expose({

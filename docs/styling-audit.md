@@ -275,7 +275,7 @@ the text hierarchy is now a named, greppable convention instead of ad-hoc
 Minimum fix: make `resolveColorHex` dark-aware (invert neutral shade lookups when the
 active mode is dark, and `useColorMode` already knows). Longer term, document loudly that
 `ui.primary`/`ui.gray` must be kept in sync with any CSS-var rebrand, or derive both
-from one config input (`defineVyuiConfig` is already positioned to be that input).
+from one config input (the shared `vyui.config.ts` bag is already positioned to be that input).
 
 **Still accurate: no library-level fix landed.** Re-verified by reading
 `packages/kit/src/utils/resolveColor.ts`: the `resolveColorHex` signature is unchanged,
@@ -299,7 +299,7 @@ library-level fix, but there is currently no live consumer demonstrating it.
 | Motion ownership | keyframes in core `presence.css`; modal choreography in kit `style.css` via `vy-modal-*` markers; sheet slide inside core `SheetContentImpl`; toast hooks in core `ToastRoot` | Fine to keep split (each is load-bearing), but write the ownership map down, since it's currently reconstructable only from four file headers |
 | Focus ring | `shadow-[0_0_0_2px_var(--ui-color-{c}-200)]` template literal duplicated in `theme/input.ts:92` and `tailwind.js:191` with a "keep in sync" comment | Export one `focusRing(c)` helper from `theme/` used by both; textarea/select/pinInput should reuse it when they gain focus rings |
 | Island family | Hardcoded `bg-white/80`, `border-black/5`, `text-slate-700/900`, a private Linear-style palette | The blur/translucency is the component's identity (keep), but route text through the neutral ramp / surface tokens so it rebrands and dark-flips |
-| Config planes | Colors configured in 3 places: CSS vars, `createVyuiPreset({ colors })`, `provideVyUI({ ui })`, plus `ui.primary`/`ui.gray` for icon hex | Documented, but each pair is a manual sync contract; `defineVyuiConfig` should be the single input threaded to all three (it already covers preset+runtime) |
+| Config planes | Colors configured in 3 places: CSS vars, `createVyuiPreset({ colors })`, `provideVyUI({ ui })`, plus `ui.primary`/`ui.gray` for icon hex | Documented, but each pair is a manual sync contract; the shared `vyui.config.ts` bag should be the single input threaded to all three (it already covers preset+runtime) |
 
 ---
 

@@ -1,15 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { fireEvent, q, render, waitForUpdate } from '@vyui/testing-utils'
 import { overlayEntries } from '@/components/OverlayRoot'
 import Dialog from './story/_Dialog.vue'
 
 afterEach(() => {
   overlayEntries.value = []
 })
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 // Native Lynx a11y output (via useA11y). Behaviour lives in Dialog.test.ts;
 // this file covers the accessibility-* surface only.

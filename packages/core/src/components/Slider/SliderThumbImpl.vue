@@ -13,10 +13,10 @@ import { computed, useAttrs } from 'vue'
 import { useCollection } from '@/components/Collection'
 import { Primitive } from '@/components/Primitive'
 import type { VyStyle } from '@/shared/types'
-import { useForwardExpose, useSize } from '@/shared'
+import { useForwardExpose } from '@/shared'
 import { useA11y } from '@/shared/composables'
 import { injectSliderRootContext } from './SliderRoot.vue'
-import { convertValueToPercentage, getLabel, getThumbInBoundsOffset, injectSliderOrientationContext } from './utils'
+import { convertValueToPercentage, getLabel, injectSliderOrientationContext } from './utils'
 
 defineOptions({
   inheritAttrs: false,
@@ -27,7 +27,7 @@ const props = defineProps<SliderThumbImplProps>()
 const rootContext = injectSliderRootContext()
 const orientation = injectSliderOrientationContext()
 
-const { forwardRef, currentElement: thumbElement } = useForwardExpose()
+const { forwardRef } = useForwardExpose()
 const { CollectionItem } = useCollection()
 
 const value = computed(() => rootContext.currentModelValue.value[props.index])
@@ -40,17 +40,6 @@ const a11y = useA11y(() => ({
   value: { now: value.value ?? null, max: rootContext.max.value ?? 100 },
   label: (attrs['accessibility-label'] as string | undefined) || label.value,
 }))
-const size = useSize(thumbElement as any)
-const orientationSize = computed(() => size[orientation!.size].value)
-const thumbInBoundsOffset = computed(() => {
-  if (rootContext.thumbAlignment.value === 'overflow' || !orientationSize.value) {
-    return 0
-  }
-  else {
-    return getThumbInBoundsOffset(orientationSize.value, percent.value, orientation!.direction.value)
-  }
-})
-
 // ─── Lynx `var()` restriction — canonical write-up ──────────────────────────
 // On Lynx NATIVE, CSS custom properties (`--foo`) set via INLINE `:style=""` are
 // not propagated to the element's resolved styles, and any `var(--foo)`
@@ -66,9 +55,7 @@ const thumbInBoundsOffset = computed(() => {
 //
 // The sign flips with the anchoring edge: `right: X%` puts the thumb's RIGHT
 // edge X% in from the right, so centring means pulling BACK out by half a thumb.
-// Getting it wrong is a half-thumb offset visible only when inverted or RTL —
-// `getThumbInBoundsOffset` would cancel it, but returns 0 on Lynx native, where
-// `useSize` never reports a size.
+// Getting it wrong is a half-thumb offset visible only when inverted or RTL.
 const thumbTransform = computed(() => {
   if (orientation!.size === 'width')
     return orientation!.startEdge.value === 'right' ? 'translateX(50%)' : 'translateX(-50%)'
@@ -80,7 +67,7 @@ const isMounted = useMounted()
 const thumbStyle = computed<VyStyle>(() => ({
   transform: thumbTransform.value,
   position: 'absolute',
-  [orientation!.startEdge.value]: `calc(${percent.value}% + ${thumbInBoundsOffset.value}px)`,
+  [orientation!.startEdge.value]: `${percent.value}%`,
   /** No value on the initial render while the thumb's index resolves, so hide
    *  value-less thumbs to avoid a flash at the wrong position. */
   display: !isMounted.value && value.value === undefined ? 'none' : undefined,

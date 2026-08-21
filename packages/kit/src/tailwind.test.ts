@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createVyuiPreset } from './tailwind.js'
-import { defineVyuiConfig } from './config.js'
 
 /** Structural access — the preset is typed as a deep-partial Tailwind config. */
 function colors(preset: unknown): Record<string, unknown> {
@@ -8,8 +7,8 @@ function colors(preset: unknown): Record<string, unknown> {
 }
 
 describe('createVyuiPreset', () => {
-  it('reads the color set from a defineVyuiConfig result (ui.colors)', () => {
-    const preset = createVyuiPreset(defineVyuiConfig({ theme: { colors: ['primary'] } }))
+  it('reads the color set from the runtime config bag (ui.colors)', () => {
+    const preset = createVyuiPreset({ ui: { colors: ['primary'] } })
 
     expect(Object.keys(colors(preset))).toEqual(expect.arrayContaining(['primary', 'neutral']))
     expect(colors(preset).secondary).toBeUndefined()
@@ -23,7 +22,7 @@ describe('createVyuiPreset', () => {
   it('warns about custom semantic colors that need matching CSS vars', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    createVyuiPreset(defineVyuiConfig({ theme: { colors: ['primary', 'brand'] } }))
+    createVyuiPreset({ ui: { colors: ['primary', 'brand'] } })
 
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('brand'))
     warn.mockRestore()

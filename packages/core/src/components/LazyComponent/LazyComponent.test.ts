@@ -3,14 +3,10 @@
 
 import { afterEach, describe, expect, it } from 'vitest'
 import { defineComponent, h } from 'vue'
-import { render, waitForUpdate } from '@vyui/testing-utils'
+import { q, render, waitForUpdate } from '@vyui/testing-utils'
 
 import LazyComponent, { type LazyComponentProps } from './LazyComponent.vue'
 import Lazy from './story/_LazyComponent.vue'
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 // The testing env owns the `lynx` global and its GlobalEventEmitter for the
 // whole run — `exposure` is fed through the env's own emitter, exactly as Lynx

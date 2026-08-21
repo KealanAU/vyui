@@ -42,7 +42,7 @@
   "scripts": {
     "build": "pnpm build-only && pnpm smoke-test",
     "build-only": "vite build && node scripts/gen-subpath-entries.mjs && node ../shared-build-config/scripts/rewrite-deep-imports.mjs dist @vyui/core ../core/dist/index.js && node ../shared-build-config/scripts/check-dist-shape.mjs dist && vue-tsc -p tsconfig.build.json && pnpm copy-dts && node ../shared-build-config/scripts/add-dts-extensions.mjs dist && node ../shared-build-config/scripts/check-dts.mjs dist",
-    "copy-dts": "cp src/tailwind.d.ts dist/tailwind.d.ts && cp src/config.d.ts dist/config.d.ts && cp src/theme/color-constants.d.ts dist/theme/color-constants.d.ts",
+    "copy-dts": "cp src/tailwind.d.ts dist/tailwind.d.ts && cp src/theme/color-constants.d.ts dist/theme/color-constants.d.ts",
     "smoke-test": "node scripts/smoke-test.mjs",
     "test": "vitest run",
     "test-watch": "vitest",
@@ -62,11 +62,6 @@
       "types": "./dist/tailwind.d.ts",
       "import": "./dist/tailwind.js",
       "default": "./dist/tailwind.js"
-    },
-    "./config": {
-      "types": "./dist/config.d.ts",
-      "import": "./dist/config.js",
-      "default": "./dist/config.js"
     },
     "./accordion": {
       "types": "./dist/entries/accordion.d.ts",

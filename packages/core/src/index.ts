@@ -20,7 +20,6 @@ export * from './components/ConfigProvider'
 export * from './components/Form'
 export * from './components/Icon'
 export * from './components/Input'
-export * from './components/IslandContainer'
 
 export * from './components/Accordion'
 export * from './components/AspectRatio'

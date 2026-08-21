@@ -2,13 +2,9 @@
 // Licensed under the Apache License Version 2.0.
 
 import { describe, expect, it } from 'vitest'
-import { render, waitForUpdate } from '@vyui/testing-utils'
+import { q, render, waitForUpdate } from '@vyui/testing-utils'
 
 import Button from './story/_Button.vue'
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 describe('Button — render', () => {
   it('renders with the idle state in the scoped slot', async () => {

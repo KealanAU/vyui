@@ -134,22 +134,22 @@ const RADIUS_SCALE = {
 /**
  * Build the @vyui/kit preset for a given color set.
  *
- * Accepts EITHER the flat preset options (`{ colors, neutral, shades }`) OR a
- * normalized config from `defineVyuiConfig` — pass the SAME config object here
- * and to `provideVyUI` so palette and runtime `ui.colors` can't drift.
+ * Accepts EITHER the flat preset options (`{ colors, neutral, shades }`) OR the
+ * runtime config bag (`{ ui }`) — pass the SAME config object here and to
+ * `provideVyUI` so palette and runtime `ui.colors` can't drift.
  *
- * @param {object} [options] Flat options, or a `defineVyuiConfig` result.
+ * @param {object} [options] Flat options, or a `{ ui }` runtime config.
  * @param {string[]} [options.colors] Configurable semantic colors (no neutral).
  * @param {string}   [options.neutral] Neutral color name.
  * @param {number[]} [options.shades] Tailwind shade steps.
  * @param {string[]} [options.components] Restrict the theme safelist to these
  *   components; components they render internally are pulled in automatically.
- * @param {object}   [options.ui] Normalized config; `ui.colors` overrides `colors`.
+ * @param {object}   [options.ui] Runtime config bag; `ui.colors` overrides `colors`.
  * @returns {Partial<TailwindConfig>}
  */
 export function createVyuiPreset(options = {}) {
-  // Unwrap the normalized `{ ui }` config from defineVyuiConfig; fall back to
-  // the flat form for direct callers.
+  // Unwrap the shared `{ ui }` runtime config; fall back to the flat form for
+  // direct callers.
   const src = options.ui ?? options
   const { colors = COLORS, neutral = NEUTRAL, shades = SHADES, components } = src
 

@@ -6,8 +6,6 @@ import type { PrimitiveProps } from '@/components/Primitive'
 import { useCollection } from '@/components/Collection'
 import { createContext, useDirection, useForwardExpose } from '@/shared'
 
-export type ThumbAlignment = 'contain' | 'overflow'
-
 export interface SliderRootProps extends PrimitiveProps, FormFieldProps {
   /**
    * The value of the slider when initially rendered. Single thumb may be a
@@ -33,11 +31,6 @@ export interface SliderRootProps extends PrimitiveProps, FormFieldProps {
   step?: number
   /** The minimum permitted steps between multiple thumbs. */
   minStepsBetweenThumbs?: number
-  /**
-   * The alignment of the slider thumb. `contain` keeps thumbs within the
-   * track's bounds; `overflow` adds no offset. @defaultValue 'contain'
-   */
-  thumbAlignment?: ThumbAlignment
 }
 
 export type SliderRootEmits = {
@@ -60,7 +53,6 @@ export interface SliderRootContext {
   modelValue?: Readonly<Ref<number | number[] | null | undefined>>
   currentModelValue: ComputedRef<number[]>
   valueIndexToChangeRef: Ref<number>
-  thumbAlignment: Ref<ThumbAlignment>
   /** MT mirror of `currentModelValue` so worklets can compute per-thumb px. */
   valuesMT: MainThreadRef<number[]>
   /** MT mirror of `min` / `max` / `step` so worklets stay sync-only. */
@@ -102,7 +94,6 @@ const props = withDefaults(defineProps<SliderRootProps>(), {
   minStepsBetweenThumbs: 0,
   defaultValue: () => [0],
   inverted: false,
-  thumbAlignment: 'contain',
   as: 'view',
 })
 const emits = defineEmits<SliderRootEmits>()
@@ -114,7 +105,7 @@ defineSlots<{
   }) => any
 }>()
 
-const { min, max, step, minStepsBetweenThumbs, orientation, disabled, thumbAlignment, dir: propDir } = toRefs(props)
+const { min, max, step, minStepsBetweenThumbs, orientation, disabled, dir: propDir } = toRefs(props)
 const dir = useDirection(propDir)
 const { forwardRef } = useForwardExpose()
 
@@ -270,7 +261,6 @@ provideSliderRootContext({
   max,
   step,
   disabled,
-  thumbAlignment,
   valuesMT,
   minMT,
   maxMT,

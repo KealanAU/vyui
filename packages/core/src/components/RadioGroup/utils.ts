@@ -1,11 +1,19 @@
-import type { VyCustomEvent } from '@/shared/handleAndDispatchCustomEvent'
 import type { AcceptableValue } from '@/shared/types'
-import { handleAndDispatchCustomEvent } from '@/shared'
 
-export type SelectEvent = VyCustomEvent<{ originalEvent: any, value?: AcceptableValue }>
-export const RADIO_SELECT = 'radio.select'
+/** Lynx has no DOM `CustomEvent` and its elements have no
+ *  addEventListener/dispatchEvent, so select is a synthetic event handed
+ *  straight to the callback. */
+export interface SelectEvent {
+  detail: { originalEvent: any, value?: AcceptableValue }
+  defaultPrevented: boolean
+  preventDefault: () => void
+}
 
 export function handleSelect(event: any, value: AcceptableValue | undefined, callback: (event: SelectEvent) => void) {
-  const eventDetail = { originalEvent: event, value }
-  handleAndDispatchCustomEvent(RADIO_SELECT, callback, eventDetail)
+  let defaultPrevented = false
+  callback({
+    detail: { originalEvent: event, value },
+    get defaultPrevented() { return defaultPrevented },
+    preventDefault() { defaultPrevented = true },
+  })
 }

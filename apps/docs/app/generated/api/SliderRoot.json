@@ -92,13 +92,6 @@
       "required": false,
       "default": "1",
       "description": "The stepping interval."
-    },
-    {
-      "name": "thumbAlignment",
-      "type": "ThumbAlignment | undefined",
-      "required": false,
-      "default": "\"contain\"",
-      "description": "The alignment of the slider thumb. `contain` keeps thumbs within the\ntrack's bounds; `overflow` adds no offset."
     }
   ],
   "events": [

@@ -6,7 +6,7 @@
  * referenced keyframes don't exist and the utility overrides core's).
  * `ring-*` converted to `border-*` (Lynx preset has no ringWidth plugin).
  * `shadow-lg shadow-black/10`
- * mirrors the elevation used on `IslandContainer` so floating surfaces
+ * mirrors the elevation used on `Island` so floating surfaces
  * (popover, dropdown, island) share one elevation language.
  */
 export default {

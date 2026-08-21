@@ -48,7 +48,7 @@
     },
     {
       "name": "presentation",
-      "type": "\"sheet\" | \"anchor\" | undefined",
+      "type": "\"anchor\" | \"sheet\" | undefined",
       "required": false,
       "default": "\"sheet\"",
       "description": "How to present the content on mobile.\n- `'sheet'` (default): renders as an edge sheet via `SheetRoot`, with\n  drag-to-dismiss and snap physics.\n- `'anchor'`: docks the content next to the trigger, for tablets / wide\n  screens where pointer precision makes a tiny panel reasonable."
@@ -68,7 +68,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"content\" | \"handle\" | \"arrow\", ClassNameValue>> | undefined",
+      "type": "Partial<Record<\"content\" | \"handle\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

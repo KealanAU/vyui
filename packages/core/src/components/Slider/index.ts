@@ -7,7 +7,6 @@ export {
   type SliderRootContext,
   type SliderRootEmits,
   type SliderRootProps,
-  type ThumbAlignment,
   injectSliderRootContext,
 } from './SliderRoot.vue'
 export {

@@ -1,15 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { fireEvent, q, render, waitForUpdate } from '@vyui/testing-utils'
 import { overlayEntries } from '@/components/OverlayRoot/overlayStore'
 import Popover from './story/_Popover.vue'
 
 afterEach(() => {
   overlayEntries.value = []
 })
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 // Native Lynx a11y output (via useA11y). Behaviour lives in Popover.test.ts;
 // this file covers the accessibility-* surface only.

@@ -2,7 +2,7 @@
  * DropdownMenu theme — adapted from nuxt/ui v3.0.2 `theme/dropdown-menu.ts` for
  * Vue-Lynx. Dark rides the semantic tokens; `dark:*` / `focus*` are dropped and
  * hover/active states keep `data-[state=...]`, `ui-highlighted`, `ui-disabled`.
- * `shadow-lg shadow-black/10` matches `IslandContainer` so floating surfaces
+ * `shadow-lg shadow-black/10` matches `Island` so floating surfaces
  * share one elevation language.
  */
 import type { Color } from './colors'

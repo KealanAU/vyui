@@ -1,15 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { fireEvent, q, render, waitForUpdate } from '@vyui/testing-utils'
 import { overlayEntries } from '@/components/OverlayRoot/overlayStore'
 import Popover from './story/_Popover.vue'
 
 afterEach(() => {
   overlayEntries.value = []
 })
-
-function q(container: Element, id: string) {
-  return container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null
-}
 
 describe('popover', () => {
   it('does not render content while closed', () => {

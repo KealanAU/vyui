@@ -144,7 +144,7 @@ even shipped pieces are still subject to change.
 * Style namespacing (à la shadcn `default`) — pick a style at `init`; styles
   layer tokens, UI theme deltas, and optional full-file overlays over the kit base
 * Documentation site (`vyui.dev`) with generated API tables and live examples
-* Theme system / design tokens — `defineVyuiConfig` feeds both the Tailwind
+* Theme system / design tokens — one config object feeds both the Tailwind
   preset (build) and the runtime, so the emitted classes can't drift from the
   selected variant
 * `<VyIcon>` primitive — resolves any [Iconify](https://iconify.design) icon
