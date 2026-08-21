@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
-import Switch from './_Switch.vue'
+import Switch from './story/_Switch.vue'
 
 // Native Lynx a11y output (via useA11y). Behaviour lives in Switch.test.ts.
 describe('Switch a11y', () => {
