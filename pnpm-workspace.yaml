@@ -58,7 +58,10 @@ catalog:
   '@vue/test-utils': ^2.4.6
   '@vue/tsconfig': ^0.7.0
   '@vitejs/plugin-vue': ^6.0.7
-  vue-tsc: 3.2.6
+  # vue-tsc and vue-component-meta ship the same @vue/language-core; drift
+  # installs two copies of it.
+  vue-tsc: ^3.3.2
+  vue-component-meta: ^3.3.2
 
   vue-lynx: ^0.5.1
   '@lynx-js/types': ^3.8.0
