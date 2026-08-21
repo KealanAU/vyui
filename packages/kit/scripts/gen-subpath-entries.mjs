@@ -126,7 +126,7 @@ const pkgPath = join(pkgRoot, 'package.json')
 const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
 
 // Fixed surface keeps its existing targets; entries slot in between, sorted.
-const head = ['.', './theme', './tailwind', './config']
+const head = ['.', './theme', './tailwind']
 const tail = ['./style.css', './package.json']
 for (const key of [...head, ...tail]) {
   if (!pkg.exports[key]) throw new Error(`expected exports["${key}"] to already exist in package.json`)
