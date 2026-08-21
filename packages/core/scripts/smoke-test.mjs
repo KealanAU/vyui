@@ -18,9 +18,6 @@ globalThis.__DEV__ = false
 const pkgRoot = new URL('..', import.meta.url).pathname
 const pkg = JSON.parse(readFileSync(join(pkgRoot, 'package.json'), 'utf8'))
 
-// Subpaths whose built module is legitimately empty (`export {}`).
-const ALLOW_EMPTY = new Set(['./internal'])
-
 const workDir = mkdtempSync(join(tmpdir(), 'vyui-core-smoke-'))
 let failures = 0
 const fail = (msg) => { console.error(`  ✗ ${msg}`); failures++ }
@@ -78,7 +75,7 @@ try {
     const names = Object.keys(mod)
     const undef = names.filter((n) => mod[n] === undefined)
     if (undef.length) fail(`exports "${sub}" has undefined exports: ${undef.join(', ')}`)
-    else if (!names.length && !ALLOW_EMPTY.has(sub)) fail(`exports "${sub}" has no exports`)
+    else if (!names.length) fail(`exports "${sub}" has no exports`)
     else ok(`exports "${sub}" → ${names.length} export(s), none undefined`)
   }
 } finally {

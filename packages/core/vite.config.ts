@@ -41,7 +41,6 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(src, 'index.ts'),
-        internal: resolve(src, 'internal.ts'),
         'date/index': resolve(src, 'date/index.ts'),
         'shared/index': resolve(src, 'shared/index.ts'),
       },

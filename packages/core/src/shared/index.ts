@@ -1,5 +1,4 @@
 export * from './arrays'
-export * from './browser'
 export { captureProvides } from './captureProvides'
 export * from './clamp'
 export { createContext } from './createContext'

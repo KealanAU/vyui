@@ -60,10 +60,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./internal": {
-      "types": "./dist/internal.d.ts",
-      "import": "./dist/internal.js"
-    },
     "./date": {
       "types": "./dist/date/index.d.ts",
       "import": "./dist/date/index.js"
