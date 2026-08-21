@@ -54,12 +54,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"item\" | \"indicator\" | \"indicators\" | \"indicatorActive\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"item\" | \"indicator\" | \"indicators\" | \"indicatorActive\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

@@ -17,13 +17,20 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while keeping the primitive's props and behavior."
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
     },
     {
       "name": "defaultValue",
       "type": "T | undefined",
       "required": false,
       "description": "The value of the tab that should be active when initially rendered. Use when you do not need to control the state of the tabs"
+    },
+    {
+      "name": "deferContent",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "false",
+      "description": "When `true`, the active-trigger state change and the content swap land in\nseparate flushes: triggers/indicator update immediately, content follows\none macrotask later. On Lynx this makes the tab bar respond instantly\ninstead of waiting for the incoming panel's subtree to mount."
     },
     {
       "name": "dir",
@@ -49,7 +56,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "When `true`, the element will be unmounted on closed state."
+      "description": "When `true`, a content panel is unmounted whenever it is not the active\ntab. When `false`, a panel mounts the FIRST time its tab is selected and\nstays mounted (hidden via `display: none`) afterwards, making revisits a\nstyle flip instead of a full remount. Lazy-on-first-visit rather than\nall-mounted-upfront: on Lynx, mounting every panel at once would move the\ncost to first paint. Use `forceMount` on an individual `TabsContent` for\nthe mount-upfront case."
     }
   ],
   "events": [

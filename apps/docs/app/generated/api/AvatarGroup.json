@@ -13,12 +13,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | \"2xl\" | \"xs\" | \"3xl\" | undefined",
+      "type": "\"md\" | \"xs\" | \"sm\" | \"lg\" | \"xl\" | \"2xl\" | \"3xl\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"base\" | \"root\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"base\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

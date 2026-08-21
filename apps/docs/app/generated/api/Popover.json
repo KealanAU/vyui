@@ -82,7 +82,7 @@
     },
     {
       "name": "presentation",
-      "type": "\"anchor\" | \"sheet\" | undefined",
+      "type": "\"sheet\" | \"anchor\" | undefined",
       "required": false,
       "default": "\"sheet\"",
       "description": "How to present the content on mobile.\n- `'sheet'` (default): renders as an edge sheet via `SheetRoot` —\n  native iOS / Material idiom for \"tap → reveal floating panel\" on\n  touch screens. Drag-to-dismiss, snap physics, thumb-reach.\n- `'anchor'`: docks the content next to the trigger (legacy popover\n  behavior). Use on tablets / wide screens where pointer precision\n  makes a tiny anchored panel reasonable."
@@ -102,7 +102,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"content\" | \"handle\" | \"arrow\", any>> | undefined",
+      "type": "Partial<Record<\"content\" | \"handle\" | \"arrow\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

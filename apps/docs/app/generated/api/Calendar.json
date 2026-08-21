@@ -69,12 +69,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"header\" | \"title\" | \"caveat\" | \"nav\" | \"navButton\" | \"navIcon\" | \"weekdays\" | \"weekday\" | \"weeks\" | \"week\" | \"day\" | \"dayText\" | \"outsideDayText\" | \"todayText\" | \"selectedDay\" | \"selectedDayText\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"header\" | \"title\" | \"caveat\" | \"nav\" | \"navButton\" | \"navIcon\" | \"weekdays\" | \"weekday\" | \"weeks\" | \"week\" | \"day\" | \"dayText\" | \"outsideDayText\" | \"todayText\" | \"selectedDay\" | \"selectedDayText\", ClassNameValue>> | undefined",
       "required": false
     },
     {

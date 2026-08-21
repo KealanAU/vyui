@@ -2,7 +2,7 @@
   "props": [
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"header\" | \"body\" | \"footer\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"header\" | \"body\" | \"footer\", ClassNameValue>> | undefined",
       "required": false
     },
     {

@@ -11,7 +11,7 @@
       "name": "asChild",
       "type": "boolean | undefined",
       "required": false,
-      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while keeping the primitive's props and behavior."
+      "description": "Change the default rendered element for the one passed as a child, merging their props and behavior.\n\nUse this when you need a component to render through a child element while\nkeeping the primitive's props and behavior."
     },
     {
       "name": "defaultValue",
@@ -39,12 +39,6 @@
       "required": false,
       "default": "false",
       "description": "Whether the slider is visually inverted."
-    },
-    {
-      "name": "mainThreadDrag",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Drives the drag on the main thread. Defaults to on — the MT path paints\nthe active thumb directly from `touchmove` worklets so the gesture stays\nat 60fps, and BG only sees one round-trip per gesture (a `valueCommit`\non `touchend`). Per-frame `update:modelValue` is suppressed during the\ndrag; consumers that need continuous updates should set this to `false`.\n\nAuto-disabled under vitest's dual-thread harness because the SWC worklet\ntransform isn't wired there and `:main-thread-bindtouch*` attrs crash."
     },
     {
       "name": "max",

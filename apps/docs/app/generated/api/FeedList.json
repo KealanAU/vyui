@@ -101,7 +101,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<string | number | symbol, any>> | undefined",
+      "type": "Partial<Record<string | number | symbol, ClassNameValue>> | undefined",
       "required": false
     },
     {

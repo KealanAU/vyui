@@ -44,7 +44,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"trailingIcon\" | \"root\" | \"item\" | \"header\" | \"trigger\" | \"content\" | \"body\" | \"bodyText\" | \"leadingIcon\" | \"label\", any>> | undefined",
+      "type": "Partial<Record<\"trailingIcon\" | \"root\" | \"item\" | \"header\" | \"trigger\" | \"content\" | \"body\" | \"bodyText\" | \"leadingIcon\" | \"label\", ClassNameValue>> | undefined",
       "required": false
     },
     {

@@ -21,12 +21,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"item\" | \"handle\" | \"itemContent\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"item\" | \"handle\" | \"itemContent\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

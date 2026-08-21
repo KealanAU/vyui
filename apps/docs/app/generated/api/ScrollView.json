@@ -112,15 +112,15 @@
   ],
   "events": [
     {
+      "name": "scroll",
+      "type": "[event: unknown]"
+    },
+    {
       "name": "scrollToLower",
       "type": "[event: unknown]"
     },
     {
       "name": "scrollToUpper",
-      "type": "[event: unknown]"
-    },
-    {
-      "name": "scroll",
       "type": "[event: unknown]"
     },
     {

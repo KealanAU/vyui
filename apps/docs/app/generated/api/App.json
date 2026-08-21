@@ -21,7 +21,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\", any>> | undefined",
+      "type": "Partial<Record<\"root\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

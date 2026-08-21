@@ -116,7 +116,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"description\" | \"header\" | \"content\" | \"body\" | \"title\" | \"overlay\" | \"handle\" | \"close\" | \"wrapper\" | \"footer\" | \"scaffold\", any>> | undefined",
+      "type": "Partial<Record<\"header\" | \"content\" | \"body\" | \"title\" | \"description\" | \"close\" | \"wrapper\" | \"footer\" | \"handle\" | \"overlay\" | \"scaffold\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

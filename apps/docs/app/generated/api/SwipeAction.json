@@ -34,7 +34,7 @@
     },
     {
       "name": "side",
-      "type": "\"right\" | \"left\" | undefined",
+      "type": "\"left\" | \"right\" | undefined",
       "required": false,
       "default": "\"right\"",
       "description": "Which side reveals the actions. Drives styling only — the core\nprimitive currently always reveals from the trailing (right) edge."
@@ -47,18 +47,18 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"actions\" | \"content\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"content\" | \"actions\", ClassNameValue>> | undefined",
       "required": false
     }
   ],
   "events": [
     {
-      "name": "commit",
-      "type": "[]"
-    },
-    {
       "name": "update:open",
       "type": "[value: boolean]"
+    },
+    {
+      "name": "commit",
+      "type": "[]"
     }
   ],
   "slots": [

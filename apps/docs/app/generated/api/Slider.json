@@ -61,7 +61,7 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
@@ -72,7 +72,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"track\" | \"range\" | \"thumb\", any>> | undefined",
+      "type": "Partial<Record<\"root\" | \"track\" | \"range\" | \"thumb\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

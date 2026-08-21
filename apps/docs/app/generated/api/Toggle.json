@@ -45,12 +45,12 @@
     },
     {
       "name": "size",
-      "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | undefined",
+      "type": "\"md\" | \"sm\" | \"lg\" | \"xl\" | undefined",
       "required": false
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"icon\" | \"base\", any>> | undefined",
+      "type": "Partial<Record<\"icon\" | \"base\", ClassNameValue>> | undefined",
       "required": false
     },
     {
@@ -68,7 +68,7 @@
   "slots": [
     {
       "name": "default",
-      "type": "{ modelValue: boolean; state: \"off\" | \"on\"; pressed: boolean; disabled: boolean; }",
+      "type": "{ modelValue: boolean; state: \"off\" | \"on\"; pressed: boolean; disabled: boolean; iconColor: string; }",
       "description": "Pressed state and disabled flag forwarded from the core primitive."
     }
   ]
