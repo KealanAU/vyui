@@ -62,9 +62,7 @@ type Side = 'top' | 'right' | 'bottom' | 'left'
 interface SliderOrientation {
   startEdge: ComputedRef<Side>
   endEdge: ComputedRef<Side>
-  direction: ComputedRef<1 | -1>
-  size: 'width' | 'height'
 }
 
 export const [injectSliderOrientationContext, provideSliderOrientationContext]
-  = createContext<SliderOrientation>(['SliderVertical', 'SliderHorizontal'])
+  = createContext<SliderOrientation>('SliderOrientation')

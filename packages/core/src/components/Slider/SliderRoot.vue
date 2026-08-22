@@ -31,6 +31,15 @@ export interface SliderRootProps extends PrimitiveProps, FormFieldProps {
   step?: number
   /** The minimum permitted steps between multiple thumbs. */
   minStepsBetweenThumbs?: number
+  /**
+   * Native touch-target padding around the control, e.g. `"24px"`. Grows the
+   * area a drag can START from; it does NOT grow the element's box, so an
+   * ancestor `<scroll-view>` may still claim a gesture that begins out in the
+   * slop. Cross-axis padding on the root is the sturdier lever.
+   * Lynx web ignores this.
+   * @defaultValue "16px"
+   */
+  hitSlop?: string
 }
 
 export type SliderRootEmits = {
@@ -77,8 +86,7 @@ export const [injectSliderRootContext, provideSliderRootContext]
 import { computed, ref, toRefs, watch } from 'vue'
 import { runOnMainThread, useMainThreadRef } from 'vue-lynx'
 import { useStandardVModel } from '@/shared/composables'
-import SliderHorizontal from './SliderHorizontal.vue'
-import SliderVertical from './SliderVertical.vue'
+import SliderOrientation from './SliderOrientation.vue'
 import { hasMinStepsBetweenValues } from './utils'
 
 defineOptions({
@@ -275,9 +283,9 @@ provideSliderRootContext({
 
 <template>
   <CollectionSlot>
-    <component
-      :is="orientation === 'horizontal' ? SliderHorizontal : SliderVertical"
+    <SliderOrientation
       v-bind="$attrs"
+      :orientation="orientation"
       :ref="forwardRef"
       :as-child="asChild"
       :as="as"
@@ -285,9 +293,10 @@ provideSliderRootContext({
       :max="max"
       :dir="dir"
       :inverted="inverted"
+      :hit-slop="hitSlop"
       :data-disabled="disabled ? '' : undefined"
     >
       <slot :model-value="modelValue" />
-    </component>
+    </SliderOrientation>
   </CollectionSlot>
 </template>

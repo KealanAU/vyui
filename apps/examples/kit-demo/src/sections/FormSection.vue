@@ -34,6 +34,8 @@ const bluetoothOn = ref(false)
 const agreed = ref<boolean | 'indeterminate'>(false)
 const loading = ref(false)
 const sliderValue = ref(40)
+const sliderVertical = ref(60)
+const sliderVerticalFat = ref(60)
 const quantity = ref<number | null>(1)
 const price = ref<number | null>(9.5)
 const stepperStep = ref(1)
@@ -242,6 +244,28 @@ function onFormSubmit(values: Record<string, unknown>) {
       <text class="text-highlighted text-base font-semibold">Slider</text>
       <VySlider v-model="sliderValue" :min="0" :max="100" :step="1" />
       <text class="text-muted text-xs">Value: {{ sliderValue }}</text>
+
+      <!-- Vertical drags fight the page <scroll-view> for the gesture: drag a
+           thumb the length of the box and it must track the finger the whole
+           way, without the scroll claiming it partway. -->
+      <text class="text-muted text-xs pt-1">vertical (in a scroll-view)</text>
+      <view class="flex flex-row gap-8 h-48 py-1">
+        <VySlider v-model="sliderVertical" orientation="vertical" :min="0" :max="100" :step="1" />
+        <!-- Same slider with a fatter grab field: 32px of slop AND a wider real
+             box. A press that lands in slop alone can still leave the gesture
+             with the scroll-view, so compare the two when the page pulls. -->
+        <VySlider
+          v-model="sliderVerticalFat"
+          orientation="vertical"
+          color="success"
+          hit-slop="32px"
+          :ui="{ root: 'px-5' }"
+          :min="0"
+          :max="100"
+          :step="1"
+        />
+      </view>
+      <text class="text-muted text-xs">Vertical: {{ sliderVertical }} · wide grab: {{ sliderVerticalFat }}</text>
     </view>
 
     <!-- NumberField -->

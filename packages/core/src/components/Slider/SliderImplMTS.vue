@@ -9,10 +9,14 @@
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
 
-export interface SliderImplMTSProps extends PrimitiveProps {}
+export interface SliderImplMTSProps extends PrimitiveProps {
+  /** Native touch-target padding around the control. @defaultValue "16px" */
+  hitSlop?: string
+}
 
 /** Encoded `startEdge` for the MT side — numbers compare faster than strings
- *  across the worklet boundary. 0 left, 1 right, 2 top, 3 bottom. */
+ *  across the worklet boundary. 0 left, 1 right, 2 top, 3 bottom, so `< 2` is
+ *  also the axis test. */
 type StartEdgeCode = 0 | 1 | 2 | 3
 
 function encodeStartEdge(edge: 'left' | 'right' | 'top' | 'bottom'): StartEdgeCode {
@@ -31,8 +35,9 @@ import { Primitive } from '@/components/Primitive'
 import { injectSliderRootContext } from './SliderRoot.vue'
 import { injectSliderOrientationContext } from './utils'
 
-const props = withDefaults(defineProps<SliderImplMTSProps>(), {
+withDefaults(defineProps<SliderImplMTSProps>(), {
   as: 'view',
+  hitSlop: '16px',
 })
 
 const root = injectSliderRootContext()
@@ -64,8 +69,6 @@ const rectTopRef = useMainThreadRef<number>(0)
 // compatibility mousedown/mouseup pair, which mouse handlers ignore.
 const lastTouchTsRef = useMainThreadRef<number>(0)
 
-// 0 = horizontal (read the touch x offset, paint the left/right anchor), 1 = vertical.
-const axisRef = useMainThreadRef<0 | 1>(orientation.size === 'width' ? 0 : 1)
 const startEdgeRef = useMainThreadRef<StartEdgeCode>(encodeStartEdge(orientation.startEdge.value))
 
 watch(() => orientation.startEdge.value, (v) => {
@@ -140,7 +143,8 @@ function _valueFromTouch(localX: number, localY: number): number {
   'main thread'
   let local: number
   let extent: number
-  if (axisRef.current === 0) {
+  // `< 2` is horizontal: read the touch x offset against the track width.
+  if (startEdgeRef.current < 2) {
     local = localX
     extent = rectWRef.current
   }
@@ -294,7 +298,7 @@ function _dragStart(localX: number, localY: number) {
   if (root.disabledMT.current) return
   // Zero-extent track — bail instead of starting a gesture, `_valueFromTouch`
   // would map every coordinate to `min`.
-  if ((axisRef.current === 0 ? rectWRef.current : rectHRef.current) <= 0) return
+  if ((startEdgeRef.current < 2 ? rectWRef.current : rectHRef.current) <= 0) return
   // Thumb/range elements are resolved lazily: the first touch is guaranteed to
   // land after the subtree is painted, whereas mount time is not. Deliberately
   // NOT a gate — Lynx web can't run the query at all (see `_resolveEls`), and
@@ -464,8 +468,9 @@ function _commit(values: number[]) {
 <template>
   <Primitive
     data-vyui-slider-impl
-    v-bind="props"
-    hit-slop="16px"
+    :as="as"
+    :as-child="asChild"
+    :hit-slop="hitSlop"
     :consume-slide-event="[[0, 360]]"
     :main-thread-ref="mtBound ? trackRef : undefined"
     :main-thread-bindtouchstart="mtBound ? _onTouchStart : undefined"
