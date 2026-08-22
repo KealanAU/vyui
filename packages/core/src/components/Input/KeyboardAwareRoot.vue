@@ -110,10 +110,11 @@ const emit = defineEmits<KeyboardAwareRootEmits>()
  * Distance from `bottom` (a viewport-relative rect edge) to the keyboard's
  * resting edge. Prefers the measured viewport height; falls back to the
  * screen-height math (with the Android status-bar correction).
+ *
+ * Assumes the LynxView's bottom edge sits at the screen bottom (true in
+ * Explorer and Sparkling); a bottom-inset container would also need the gap
+ * below the view subtracted.
  */
-// ponytail: assumes the LynxView's bottom edge sits at the screen bottom
-// (true in Explorer and Sparkling); a bottom-inset container would need the
-// gap below the view subtracted as well.
 async function marginToViewportBottom(bottom: number): Promise<number> {
   const viewportHeight = await measureViewportHeight()
   if (viewportHeight > 0)

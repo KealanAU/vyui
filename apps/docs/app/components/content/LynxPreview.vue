@@ -67,7 +67,6 @@ function whenLoaded(run: () => void) {
   else window.addEventListener('load', () => run(), { once: true })
 }
 
-// ponytail: setTimeout fallback for Safari, which still lacks requestIdleCallback.
 function whenIdle(run: () => void) {
   if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 2000 })
   else setTimeout(run, 200)
