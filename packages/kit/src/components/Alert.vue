@@ -64,9 +64,8 @@ const { ui } = useStyledComponent('alert', theme, () => ({
   title: hasTitle.value,
 }))
 
-// Lynx SVG can't inherit currentColor — bake the variant's foreground into
-// the icon fill at render time (same pattern as Button/Input). Fallbacks
-// mirror the theme's `defaultVariants` (`primary` / `solid`).
+// Baked icon fill (see theme/iconColor.ts), from the variant's foreground.
+// Fallbacks mirror the theme's `defaultVariants` (`primary` / `solid`).
 const iconColor = computed(() => {
   const fg = iconFg(props.color ?? 'primary', props.variant ?? 'solid')
   return fg === 'white' ? 'white' : resolveColorHex(appConfig, fg.semantic, fg.shade)

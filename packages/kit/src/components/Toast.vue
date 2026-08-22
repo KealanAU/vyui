@@ -98,8 +98,7 @@ const { ui } = useStyledComponent('toast', theme, () => ({
 
 const resolvedCloseIcon = computed(() => props.closeIcon || appConfig.ui.icons?.close || 'i-lucide-x')
 
-// Lynx SVG can't inherit currentColor — bake the toast color's `text-*-500`
-// into the icon fill at render time (same pattern as Button/Input).
+// Baked icon fill (see theme/iconColor.ts), from the toast color's `text-*-500`.
 const iconColor = computed(() => resolveColorHex(appConfig, props.color ?? 'primary', ICON_FG_SHADE))
 
 // --- Sonner-style stacking geometry -----------------------------------------

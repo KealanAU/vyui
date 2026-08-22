@@ -1,14 +1,6 @@
 // Regression guard for the published TYPES: scan every emitted `.d.ts` and fail
-// the build if a relative/aliased specifier would not resolve for a consumer.
-// Complements the packed-tarball smoke test (which guards the RUNTIME exports).
-//
-// Catches the three ways @vyui types have broken downstream:
-//   1. `@/*` path-alias specifiers leaking into `.d.ts` (unresolvable for
-//      consumers — the alias only exists in our own tsconfig).
-//   2. Extensionless relative specifiers (rejected under `moduleResolution:
-//      node16`/`nodenext`), or ones that don't resolve to a real `.d.ts`.
-//   3. CSS side-effect imports surviving into a `.d.ts` — no resolver can
-//      follow them (`add-dts-extensions` strips them from the declaration).
+// the build if a relative/aliased specifier would not resolve for a consumer
+// (`@/*` aliases, extensionless imports, surviving CSS imports).
 //
 // Run after the declaration emit + `add-dts-extensions`.
 // Usage: node check-dts.mjs <distDir>

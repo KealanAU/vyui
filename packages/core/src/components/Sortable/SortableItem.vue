@@ -109,7 +109,6 @@ function _registerMT() {
   ctx.itemHandlesMT.current = [...ctx.itemHandlesMT.current, handle]
 }
 
-/** Remove this item from the MT registry on unmount. */
 function _unregisterMT() {
   'main thread'
   const h = handleRef.current
@@ -118,7 +117,6 @@ function _unregisterMT() {
   handleRef.current = null
 }
 
-/** Push a new logical index to the MT (ref + registry handle). */
 function _syncIndexMT(v: number) {
   'main thread'
   indexRef.current = v

@@ -9,6 +9,7 @@ links:
     icon: i-simple-icons-github
     to: https://github.com/KealanAU/vyui/blob/main/packages/core/src/components/Draggable
     target: _blank
+category: Gestures & Lists
 ---
 
 ## Overview

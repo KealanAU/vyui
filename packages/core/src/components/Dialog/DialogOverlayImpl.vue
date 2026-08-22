@@ -20,6 +20,9 @@ useForwardExpose()
 // lock on Lynx, so scroll-lock is intentionally omitted.
 
 function handleTap() {
+  // Same invariant as `DialogContentImpl`'s backdrop: an alert dialog only
+  // closes through an explicit action.
+  if (rootContext.role.value === 'alertdialog') return
   if (rootContext.modal.value)
     rootContext.onOpenChange(false)
 }

@@ -1,6 +1,6 @@
 export { render, cleanup, waitForUpdate } from './render.js'
 export type { RenderResult } from './render.js'
-export { fireEvent, eventMap } from './fire-event.js'
+export { fireEvent } from './fire-event.js'
 export { screen, within, getQueriesForElement } from '@testing-library/dom'
 
 /** First element carrying `data-testid="<id>"` inside `container`. */

@@ -56,7 +56,7 @@
       "type": "boolean | undefined",
       "required": false,
       "default": "true",
-      "description": "When `true`, a content panel is unmounted whenever it is not the active tab.\nWhen `false`, a panel mounts the FIRST time its tab is selected and stays\nmounted (hidden via `display: none`), making revisits a style flip. Lazy on\nfirst visit rather than all-mounted-upfront, which on Lynx would move the\ncost to first paint; use `forceMount` on a `TabsContent` for that case."
+      "description": "When `true`, a content panel is unmounted whenever it is not the active tab.\nWhen `false`, a panel mounts the FIRST time its tab is selected and stays\nmounted (hidden via `display: none`), making revisits a style flip. Lazy on\nfirst visit rather than all-mounted-upfront, which on Lynx would move the\ncost to first paint."
     }
   ],
   "events": [

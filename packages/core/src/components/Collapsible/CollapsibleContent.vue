@@ -1,9 +1,7 @@
 <script lang="ts">
 import type { PrimitiveProps } from '@/components/Primitive'
 
-export interface CollapsibleContentProps extends PrimitiveProps {
-  forceMount?: boolean
-}
+export interface CollapsibleContentProps extends PrimitiveProps {}
 </script>
 
 <script setup lang="ts">
@@ -25,11 +23,10 @@ const { forwardRef } = useForwardExpose()
 
 // With `unmountOnHide` false the content stays in the tree across close with a
 // `hidden=""` attribute (as in reka-ui); otherwise it is v-if'd out entirely.
-// `forceMount` overrides both.
 const isOpen = computed(() => rootContext.open.value)
 const isHidden = computed(() => !isOpen.value)
 const shouldMount = computed(
-  () => props.forceMount || isOpen.value || !rootContext.unmountOnHide.value,
+  () => isOpen.value || !rootContext.unmountOnHide.value,
 )
 
 // -- Height morph -------------------------------------------------------------

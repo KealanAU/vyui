@@ -4,9 +4,7 @@
  * The off state uses a neutral treatment regardless of color so the pressed
  * state carries the color × variant emphasis on its own.
  *
- * Surface (`base`) is kept separate from the foreground color (`fg`): CSS
- * inheritance is OFF in the Lynx build, so a root `text-*` never reaches the
- * `icon` child — `fg` is spread onto the `icon` slot.
+ * `enableCSSInheritance: false` — surface stays on `base`, `fg` lands on `icon`.
  */
 import type { Color } from './colors'
 import { type IconFg, iconFgFromToken } from './iconColor'
@@ -32,9 +30,8 @@ export type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 
-// Same Lynx constraint as `button.ts` / `toggleGroup.ts`: the `<svg>` rasterizes
-// its XML, so neither the pressed nor the resting `text-*` on the `icon` slot
-// reaches the glyph — Toggle.vue bakes the fill from the same `fg` strings.
+// Baked icon fill (see ./iconColor.ts). Toggle.vue bakes both the pressed and
+// the resting fill from the same `fg` strings.
 export function iconFg(color: string, variant: Variant, pressed: boolean, isDark = false): IconFg {
   const suffix = pressed
     ? VARIANT_BUILDERS[variant](color).fg.match(/^text-(\S+)/)?.[1]

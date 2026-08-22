@@ -2,14 +2,10 @@
  * Fails CI when a shipped `@vyui/kit` component has no documentation page.
  *
  * Every SFC in `packages/kit/src/components/*.vue` must have a matching content
- * page at `apps/docs/content/3.components/<kebab-name>.md`. A component library
- * where `button.md` 404s is the worst possible DX signal, so this gate makes an
- * undocumented component a hard build failure.
+ * page at `apps/docs/content/3.components/<kebab-name>.md`.
  *
- * `KNOWN_GAPS` is a ratcheting allowlist of components that predate this check
- * and don't have a page yet. It only shrinks: adding a page for a listed
- * component makes the check tell you to remove it from the list, and a listed
- * component that no longer exists is also an error — so the list can't rot.
+ * `KNOWN_GAPS` is a ratcheting allowlist: it only shrinks, and a listed
+ * component that no longer exists is an error too, so the list can't rot.
  *
  * Usage:
  *   tsx tools/check-docs-coverage.ts

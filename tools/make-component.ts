@@ -58,7 +58,7 @@ export interface ${n}Props extends PrimitiveProps {
 
 <script setup lang="ts">
 import type { Ref } from 'vue'
-import { useVModel } from '@vueuse/core'
+import { useVModel } from '@/shared/composables/useVModel'
 import { Primitive } from '@/components/Primitive'
 
 const props = withDefaults(defineProps<${n}Props>(), {

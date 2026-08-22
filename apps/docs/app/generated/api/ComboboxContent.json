@@ -12,12 +12,6 @@
       "type": "boolean | undefined",
       "required": false,
       "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
-    },
-    {
-      "name": "forceMount",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Used to force mounting when more control is needed."
     }
   ],
   "events": [

@@ -297,7 +297,8 @@ describe('Slider — nothing crosses BG -> MT by assignment', () => {
   // only there — a stuck full-screen view on native would eat every touch.
   it('is forgiving off-axis: native slop and slide claim, a web-only shield', async () => {
     const sfc = await readSfc('SliderImplMTS.vue')
-    expect(sfc).toMatch(/hit-slop="\d+px"/)
+    expect(sfc).toMatch(/:hit-slop="hitSlop"/)
+    expect(sfc).toMatch(/hitSlop: '\d+px'/)
     expect(sfc).toMatch(/:consume-slide-event="\[\[0, 360\]\]"/)
     expect(sfc).toMatch(/v-if="mtBound && isWeb\(\)"/)
     expect(body(sfc, 'isWeb')).toMatch(/SystemInfo\?\.platform\b[^\n]*=== 'web'/)

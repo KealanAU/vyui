@@ -22,7 +22,6 @@ useForwardExpose()
   <CollapsibleContent
     :as-child="props.asChild"
     :as="as"
-    :force-mount="props.forceMount"
     :data-state="itemContext.dataState.value"
     :data-disabled="itemContext.dataDisabled.value"
     :data-orientation="rootContext.orientation"

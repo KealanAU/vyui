@@ -23,7 +23,8 @@ import type { VyStyle } from '@/shared/types'
  * sibling of the app content. Centralising the `position: fixed` rectangle here
  * keeps that contract in one place.
  *
- * Fall-through `@tap` is the dismissal hook; AlertDialog deliberately omits it.
+ * Fall-through `@tap` is the dismissal hook; a `role="alertdialog"` Dialog
+ * deliberately swallows it.
  */
 const props = defineProps<OverlayBackdropProps>()
 defineOptions({ inheritAttrs: true })

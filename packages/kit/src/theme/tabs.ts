@@ -8,14 +8,11 @@
 import type { Color } from './colors'
 import { type IconFg, iconFgFromToken } from './iconColor'
 
-// `enableCSSInheritance: false`: the active/inactive text color must sit on the
-// `label` <text>, not the `trigger` <view>. The trigger carries the `group` class
-// + `data-[state=…]`, so the label uses `group-data-[state=…]:`.
+// `enableCSSInheritance: false` — active/inactive color lands on the `label` <text>.
 
 // `pill`: solid indicator behind the active trigger. Press feedback is
-// `active:opacity-*` on the trigger itself — element opacity needs no CSS
-// inheritance and paints on the main thread the moment the finger lands, unlike
-// the original's `group-active:` reaching the child label.
+// `active:opacity-*` on the trigger itself, which paints on the main thread the
+// moment the finger lands, unlike the original's `group-active:` on the label.
 const pillLabel = (_c: string) =>
   `group-ui-active:text-white group-ui-inactive:text-muted`
 
@@ -27,10 +24,8 @@ const linkLabel = (c: string) =>
 
 const linkIndicator = (c: string) => `bg-${c}-500`
 
-// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
-// XML, so the `group-ui-*:text-*` classes on `leadingIcon` never reach the
-// glyph — Tabs.vue bakes the fill per state via the Icon `color` prop. Derived
-// from the same label builder strings so class and baked color can't drift.
+// Baked icon fill (see ./iconColor.ts). Tabs.vue bakes it per state, derived
+// from the same label builder strings, so class and baked color can't drift.
 export function iconFg(color: string, variant: 'pill' | 'link', active: boolean, isDark = false): IconFg {
   const label = (variant === 'link' ? linkLabel : pillLabel)(color)
   const token = label.match(new RegExp(`group-ui-${active ? 'active' : 'inactive'}:text-(\\S+)`))?.[1]

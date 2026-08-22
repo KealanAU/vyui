@@ -1,14 +1,8 @@
-// Keeps the docs changelog timeline (apps/docs/content/changelog) in sync with
-// the published package versions.
+// Emits a docs changelog entry (apps/docs/content/changelog) for the current
+// version of each tracked package, from its CHANGELOG.md.
 //
-// changeset version bumps packages/*/package.json and writes the per-package
-// CHANGELOG.md, but nothing feeds the docs site's hand-maintained changelog
-// collection — so the /changelog page silently lags every release. This script
-// emits a docs entry for the current version of each tracked package.
-//
-// It is generate-if-missing and never overwrites: a hand-curated entry for a
-// version wins, and this only backfills the ones nobody wrote. Run it after
-// changeset version (wired into the `version-packages` script).
+// Generate-if-missing, never overwrites: a hand-curated entry for a version
+// wins. Run after changeset version (wired into `version-packages`).
 //
 // Usage:
 //   tsx tools/gen-changelog-docs.ts            # write missing entries

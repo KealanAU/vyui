@@ -80,10 +80,8 @@ function normalizeItem(item: ToggleGroupItem) {
 
 const normalizedItems = computed(() => (props.items ?? []).map(normalizeItem))
 
-// Lynx SVG can't inherit currentColor, and the `group-ui-on:` shift on
-// `leadingIcon` never reaches the rasterized glyph — bake the fill per item
-// from the `pressed` state core's Toggle forwards through the item slot
-// (same pattern as Button/Tabs). Fallbacks mirror the theme's
+// Baked icon fill (see theme/iconColor.ts), per item, from the `pressed` state
+// core's Toggle forwards through the item slot. Fallbacks mirror the theme's
 // `defaultVariants` (`primary` / `outline`).
 const { isDark } = useColorMode()
 const itemIconColor = (pressed: boolean | undefined) => {

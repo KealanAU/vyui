@@ -6,10 +6,9 @@
 // The N/total counter (loadedCount / totalCount) is lifted to the parent so
 // it can also count video load-more events in the same badge.
 //
-// NOTE: `defineModel` is avoided here because the vue-lynx@0.4 runtime does
-// not export `mergeModels` — combining defineModel with extra emits triggers
-// the compiler to emit `_mergeModels(...)` which fails at link time. Use
-// plain `defineProps` + `defineEmits` instead.
+// Uses plain `defineProps` + `defineEmits`: combining `defineModel` with extra
+// emits made the compiler emit `_mergeModels(...)`, which failed at link time on
+// vue-lynx 0.4. 0.5.1 exports `mergeModels`, so that constraint is lifted.
 
 import { ref } from 'vue'
 import { Icon as VyIcon } from '@vyui/core'

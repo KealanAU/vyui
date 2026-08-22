@@ -48,11 +48,6 @@ export interface PresenceProps {
    */
   show?: boolean
   /**
-   * Force the element to render regardless of `show`, for callers that drive
-   * mount/unmount themselves and only want the lifecycle state.
-   */
-  forceMount?: boolean
-  /**
    * Controlled state. When provided, `<Presence>` reads/writes through
    * {@link setPresenceState} instead of owning its own `state` ref.
    */
@@ -113,10 +108,6 @@ const Presence = defineComponent({
     show: {
       type: Boolean,
       default: undefined,
-    },
-    forceMount: {
-      type: Boolean,
-      default: false,
     },
     state: {
       type: Number as PropType<PresenceState>,
@@ -212,8 +203,7 @@ const Presence = defineComponent({
     }))
 
     return () => {
-      const shouldRender = props.forceMount || presence.controllers.mount.value
-      if (!shouldRender) return null
+      if (!presence.controllers.mount.value) return null
 
       const children = renderSlotFragments(
         slots.default?.(slotProps.value) ?? [],

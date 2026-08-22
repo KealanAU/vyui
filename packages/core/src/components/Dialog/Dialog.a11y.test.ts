@@ -47,14 +47,16 @@ describe('Dialog a11y', () => {
     expect(q(container, 'content')!.getAttribute('accessibility-exclusive-focus')).toBeNull()
   })
 
-  it('exposes the close button as a focusable button labelled "Close"', async () => {
+  it('exposes the close button as a focusable button that announces its own text', async () => {
     const { container } = render(Dialog)
     fireEvent.tap(q(container, 'trigger')!)
     await waitForUpdate()
     const close = q(container, 'close')!
     expect(close).not.toBeNull()
     expect(close.getAttribute('accessibility-traits')).toBe('button')
-    expect(close.getAttribute('accessibility-label')).toBe('Close')
+    // No forced "Close" label — it would clobber the child text on controls
+    // like `AlertDialogAction`, which is the same component.
+    expect(close.getAttribute('accessibility-label')).toBeNull()
   })
 
   it('announces the title as a heading', async () => {

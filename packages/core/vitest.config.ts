@@ -25,7 +25,7 @@ export default defineConfig({
       '@vyui/testing-utils/setup',
       './vitest.setup.ts',
     ],
-    globalSetup: './vitest.global.ts',
+    env: { TZ: 'US/Eastern' },
     server: {
       deps: {
         inline: [

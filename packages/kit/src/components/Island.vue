@@ -121,8 +121,8 @@ const emit = defineEmits<IslandEmits>()
 const slots = defineSlots<IslandSlots>()
 
 // Local uncontrolled state, used when the caller didn't bind the matching
-// `v-model:*`. Hand-rolled rather than `defineModel` because vue-lynx 0.4.0
-// lacks the `mergeModels` runtime export.
+// `v-model:*`. Predates `mergeModels` reaching vue-lynx (0.5.1 exports it), so
+// `defineModel` would work here now.
 const localOpen = ref(props.defaultOpen)
 const localMode = ref(props.defaultMode)
 const localValue = ref<string | number | null>(props.defaultValue)

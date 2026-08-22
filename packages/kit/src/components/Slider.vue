@@ -23,6 +23,14 @@ export interface SliderProps {
   inverted?: boolean
   /** Minimum step distance between adjacent thumbs (multi-thumb only). */
   minStepsBetweenThumbs?: number
+  /**
+   * Native touch-target padding around the control, e.g. `"24px"`. For a
+   * vertical slider inside a `<scroll-view>`, widening the root's cross-axis
+   * padding (`:ui="{ root: 'px-4' }"`) is the sturdier fix — it grows the real
+   * element box, which is what the scroll claim is judged against.
+   * @defaultValue "16px"
+   */
+  hitSlop?: string
   color?: SliderVariants['color']
   size?: SliderVariants['size']
   /** Forwarded to the underlying core control. */
@@ -80,6 +88,7 @@ const { ui } = useStyledComponent('slider', theme, () => ({
     :orientation="orientation"
     :inverted="inverted"
     :min-steps-between-thumbs="minStepsBetweenThumbs"
+    :hit-slop="hitSlop"
     :name="name"
     :class="ui.root({ class: [props.class, props.ui?.root] })"
     @update:model-value="(v: number | number[] | undefined) => v !== undefined && emit('update:modelValue', v)"

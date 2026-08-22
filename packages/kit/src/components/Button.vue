@@ -86,8 +86,7 @@ const isIconOnly = computed(() =>
   && !!(resolvedLeadingIcon.value || resolvedTrailingIcon.value || props.avatar),
 )
 
-// Lynx SVG can't inherit currentColor — bake the variant's foreground into the
-// icon fill (same pattern as Input/Select).
+// Baked icon fill (see theme/iconColor.ts), from the variant's foreground.
 const { isDark } = useColorMode()
 const iconColor = computed(() => {
   const fg = iconFg(props.color ?? 'primary', props.variant ?? 'solid', isDark.value)

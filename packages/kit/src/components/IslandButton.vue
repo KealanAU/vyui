@@ -112,12 +112,9 @@ const { ui } = useStyledComponent('islandButton', theme, () => ({
 
 const appConfig = useAppConfig()
 
-// Lynx's `<svg>` rasterizes the XML and can't inherit `currentColor`, so the
-// theme's `text-*` on the `leadingIcon` slot never reaches the glyph. As in
-// Button/Input/Alert: read the foreground utility back off the resolved slot
-// class — consumer overrides and active-state shade included — and bake it into
-// the icon `:color`. Non-palette colors return `undefined` so the icon keeps
-// `currentColor`.
+// Baked icon fill (see theme/iconColor.ts). Read the foreground utility back
+// off the resolved slot class — consumer overrides and active-state shade
+// included. Non-palette colors return `undefined`, keeping `currentColor`.
 const iconColor = computed(() => {
   const cls = String(ui.value.leadingIcon({ class: props.ui?.leadingIcon }))
   if (/\btext-white\b/.test(cls)) return 'white'

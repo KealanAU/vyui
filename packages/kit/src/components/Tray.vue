@@ -129,8 +129,8 @@ const props = withDefaults(defineProps<TrayProps>(), {
 const emit = defineEmits<TrayEmits>()
 defineSlots<TraySlots>()
 
-// Hand-rolled controlled/uncontrolled split for `open` and `view` — vue-lynx
-// 0.4.0 lacks `defineModel`'s `mergeModels` runtime export (as in `Island`).
+// Hand-rolled controlled/uncontrolled split for `open` and `view`, as in
+// `Island` — both predate `mergeModels` reaching vue-lynx (0.5.1 exports it).
 const localOpen = ref(props.defaultOpen)
 const localView = ref(props.defaultView)
 

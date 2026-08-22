@@ -61,9 +61,9 @@ const slots = useSlots()
 
 const appConfig = useAppConfig()
 
-// Lynx SVG can't inherit currentColor — bake the item's resting foreground into
-// the icon fill (same pattern as Button/Input). The `group-ui-highlighted:` shade
-// shift stays class-only, so the icon keeps its resting color while pressed.
+// Baked icon fill (see theme/iconColor.ts), from the item's resting foreground.
+// The `group-ui-highlighted:` shade shift stays class-only, so the icon keeps
+// its resting color while pressed.
 const itemIconColor = (color?: DropdownMenuItem['color']) => {
   const fg = iconFg(color)
   return resolveColorHex(appConfig, fg.semantic, fg.shade)
@@ -98,8 +98,7 @@ function getItemSlot(item: DropdownMenuItem | undefined, suffix?: 'leading' | 'l
       v-else-if="row.kind === 'label'"
       :class="ui.label({ class: uiOverrides?.label })"
     >
-      <!-- `enableCSSInheritance: false`: the `label` slot's color sits on the
-           wrapping <view>, so it must land on this <text> directly. -->
+      <!-- `enableCSSInheritance: false` — color lands on this <text>. -->
       <text :class="ui.itemLabel({ class: ['text-highlighted', uiOverrides?.itemLabel] })">{{ getLabel(row.item) }}</text>
     </DropdownMenuLabel>
 

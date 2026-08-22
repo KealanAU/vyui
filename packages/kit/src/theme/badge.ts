@@ -1,10 +1,6 @@
-// Ported from nuxt/ui v4 `src/theme/badge.ts` and adapted for Vue-Lynx.
-//
-// Semantic color names (`primary`, `error`, …) resolve to actual palettes via
-// the consuming app's CSS variables and Tailwind config (see `theme/button.ts`).
-//
-// Ported (dark rides the semantic tokens) — `dark:` and `focus-visible:` classes are dropped.
-// Variants restricted to `solid`/`outline`/`soft`/`subtle` (no `ghost`/`link`).
+// Ported from nuxt/ui v4 `src/theme/badge.ts` — see `./button.ts` for the shared
+// Lynx adaptations. Variants are restricted to `solid` / `outline` / `soft` /
+// `subtle` (no `ghost` / `link`).
 import type { Color } from './colors'
 
 // Variant = structural treatment only. Use `border-*` (Lynx drops `ring-*`;
@@ -14,10 +10,7 @@ import type { Color } from './colors'
 // `-600` (nuxt's `text-primary`) so colored badges read as colored. See
 // `theme/button.ts` for the full rationale.
 //
-// Surface (`base`: bg/border) is kept separate from the foreground color (`fg`:
-// text-*). CSS inheritance is OFF in the Lynx build (`enableCSSInheritance:
-// false`), so `text-*` on the root <view> never reaches the label <text> or
-// icons — `variantClass` spreads `fg` onto those slots directly.
+// `enableCSSInheritance: false` — surface on `base`, `variantClass` spreads `fg` onto label + icon.
 const solid = (c: string) =>
   ({ base: `bg-${c}-500`, fg: 'text-white' })
 

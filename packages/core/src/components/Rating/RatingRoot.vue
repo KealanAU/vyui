@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { ComputedRef, Ref } from 'vue'
 import type { PrimitiveProps } from '@/components/Primitive'
-import { useVModel } from '@vueuse/core'
+import { useVModel } from '@/shared/composables/useVModel'
 import { computed, ref, toRefs } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { createContext, useForwardExpose } from '@/shared'

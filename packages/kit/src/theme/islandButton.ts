@@ -12,9 +12,7 @@
  * Footprint sizing lives entirely in `compoundVariants` so the icon-only and
  * label-pill branches don't fight over `px-*`.
  *
- * Foreground color sits on the `leadingIcon` / `label` slots, NOT the root
- * `base` <view>: CSS inheritance is OFF in the Lynx build, so a root `text-*`
- * never reaches the children. Surface (bg/opacity) stays on `base`.
+ * `enableCSSInheritance: false` — fg lands on `leadingIcon` / `label`; surface stays on `base`.
  */
 export default {
   slots: {

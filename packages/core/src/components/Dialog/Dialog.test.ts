@@ -118,12 +118,6 @@ describe('dialog', () => {
     expect(q(container, 'content')).not.toBeNull()
   })
 
-  it('renders content while closed when forceMount is true', async () => {
-    const { container } = render(Dialog, { forceMount: true })
-    await waitForUpdate()
-    expect(q(container, 'content')).not.toBeNull()
-  })
-
   it('respects v-model:open', async () => {
     const events: boolean[] = []
     const { container } = render({

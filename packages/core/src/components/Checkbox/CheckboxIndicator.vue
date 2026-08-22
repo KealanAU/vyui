@@ -2,13 +2,7 @@
 import type { PrimitiveProps } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
 
-export interface CheckboxIndicatorProps extends PrimitiveProps {
-  /**
-   * Used to force mounting when more control is needed. Useful when
-   * controlling animation with Vue animation libraries.
-   */
-  forceMount?: boolean
-}
+export interface CheckboxIndicatorProps extends PrimitiveProps {}
 </script>
 
 <script setup lang="ts">
@@ -27,7 +21,7 @@ const rootContext = injectCheckboxRootContext()
 
 <template>
   <Presence
-    :show="forceMount || isIndeterminate(rootContext.state.value) || rootContext.state.value === true"
+    :show="isIndeterminate(rootContext.state.value) || rootContext.state.value === true"
   >
     <Primitive
       :ref="forwardRef"

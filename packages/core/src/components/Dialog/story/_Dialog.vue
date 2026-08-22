@@ -11,7 +11,6 @@ import {
 
 const props = defineProps<{
   rootProps?: { open?: boolean, defaultOpen?: boolean, modal?: boolean }
-  forceMount?: boolean
 }>()
 const emit = defineEmits<{
   'update:open': [value: boolean]
@@ -35,7 +34,6 @@ function onPointerDownOutside(e: any) { emit('pointerDownOutside', e) }
       <DialogOverlay data-testid="overlay-impl" />
       <DialogContent
         data-testid="content"
-        :force-mount="forceMount"
         @interact-outside="onInteractOutside"
         @pointer-down-outside="onPointerDownOutside"
       >

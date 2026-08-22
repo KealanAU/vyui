@@ -17,12 +17,6 @@
       "type": "Record<string, any> | undefined",
       "required": false,
       "description": "Style applied to the full-screen backdrop wrapper. The default\n`OverlayBackdrop` flex-centers its child; pass alignment + padding here to\ndock the popover next to its trigger instead."
-    },
-    {
-      "name": "forceMount",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Used to force mounting when more control is needed. Useful when\ncontrolling animation with Vue animation libraries."
     }
   ],
   "events": [

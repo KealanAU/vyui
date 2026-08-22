@@ -5,10 +5,10 @@
  * Lynx's PrimJS engine ships an incomplete `Intl` (ECMA-402), and
  * `@internationalized/date`'s `DateFormatter` wraps `Intl.DateTimeFormat` with
  * extra locale / hour-cycle negotiation the partial PrimJS `Intl` doesn't
- * satisfy — which crashes the date/time components. vyui's `useDateFormatter`
- * and date helpers format through this class instead, never touching the host
- * `Intl`. Self-contained on purpose (no `@/` imports), so `shared/intl/` can be
- * lifted into a standalone package.
+ * satisfy — which crashes the date/time components. vyui's `DateFormatter`
+ * formats through this class instead, never touching the host `Intl`.
+ * Self-contained on purpose (no `@/` imports), so `shared/intl/` can be lifted
+ * into a standalone package.
  *
  * Limitations: `en` only; no real time-zone conversion (dates format in the
  * host's local time); `timeZoneName` is approximated from the host offset.

@@ -34,7 +34,7 @@ try {
   // resolver can't follow the tarball's bare imports (they assume a bundler).
   // `import.meta.resolve` honors the `import` condition (ESM-only exports maps).
   const externals = new Map()
-  for (const spec of ['vue', 'vue-lynx', '@vueuse/core', '@vueuse/shared', '@iconify/utils', 'ohash', 'tailwind-merge', '@internationalized/date']) {
+  for (const spec of ['vue', 'vue-lynx', '@iconify/utils', 'ohash', 'tailwind-merge']) {
     try { externals.set(spec, import.meta.resolve(spec)) } catch { /* not needed by every entry */ }
   }
   const loaderData = JSON.stringify(Object.fromEntries(externals))

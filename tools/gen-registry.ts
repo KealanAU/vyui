@@ -1,38 +1,18 @@
 /**
- * Generates the shadcn-style component registry consumed by `@vyui/cli`.
- *
- * The registry is namespaced by *style* (à la shadcn's `default` / `new-york`):
- *   apps/docs/public/r/
- *     styles.json            — catalog of available styles
- *     <style>/index.json     — component catalog for that style
- *     <style>/init.json      — shared support payload for that style
- *     <style>/<component>.json
- *
- * A style sources its files from `packages/kit/src` (the canonical `default`
- * style) plus an optional overlay dir. For each file the overlay wins if it
- * exists, else the kit base is used.
+ * Generates the shadcn-style component registry consumed by `@vyui/cli`, into
+ * `apps/docs/public/r/<style>/`. A style sources its files from
+ * `packages/kit/src` (the canonical `default`) plus an optional overlay dir;
+ * per file, the overlay wins if it exists.
  *
  * STYLING CASCADE — author from the cheapest layer up:
- *   1. TOKEN LAYER (primary): an overlay with ONLY `style.css` and/or
- *      `tailwind.js`. Because vyui separates structure (`.vue`) / appearance
- *      (`theme/*.ts`) / tokens (CSS vars + preset), most restyling — radius,
- *      neutral palette, border weight, icon set — is achievable here alone.
- *      Such an overlay reuses ALL base `.vue` + `theme/*.ts` files verbatim;
- *      the `rounded` style below is a worked example (radius + neutral only).
- *   2. THEME DELTA: bake serializable `appConfig.ui` overrides into the
- *      generated plugin. This handles slots, variants, and defaultVariants
- *      without copying the base theme.
- *   3. FULL-FILE OVERLAY (escape hatch): drop in a replacement `theme/*.ts`
- *      (or even a `.vue`) ONLY when a slot's classes or structure must differ
- *      in a way tokens can't express. The overlay wins per file.
- *
- * Each component manifest inlines the SFC + its theme file, the npm
- * `dependencies` it needs, and the `registryDependencies` (other registry
- * items) it composes. The CLI fetches these over HTTP and writes them into a
- * downstream project, rewriting relative imports to the user's aliases.
+ *   1. TOKEN LAYER: an overlay with ONLY `style.css` and/or `tailwind.js`.
+ *   2. THEME DELTA: serializable `appConfig.ui` overrides baked into the
+ *      generated plugin — no file copies.
+ *   3. FULL-FILE OVERLAY: a replacement `theme/*.ts` or `.vue`, only when
+ *      tokens can't express it. An overlay REPLACES a kit file, never adds one.
  *
  * Usage:
- *   tsx tools/gen-registry.ts    # every top-level component, every style
+ *   tsx tools/gen-registry.ts
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, posix, resolve } from 'node:path'
@@ -45,17 +25,15 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const kitSrc = resolve(root, 'packages/kit/src')
 const outRoot = resolve(root, 'apps/docs/public/r')
 
-/** Theme files that belong to the shared `init` payload, not a single component. */
+/** Theme files that ship via `init`, not with a single component. */
 const SHARED_THEME = new Set(['colors', 'icons', 'color-constants', 'index'])
 
 /**
- * A style. `overlay` supplies token/file overrides (style.css, preset, or — as
- * an escape hatch — replacement `theme/*.ts` / `.vue`). `appConfig` bakes
- * per-component theme overrides + palette choices into the style's plugin
- * `defaultConfig.ui`; components pick them up at runtime via
- * `appConfig.ui[name]` → `tv({ extend: tv(base), ...overrides })`, so most
- * component restyling needs NO file overlay and never drifts from the base.
- * `default` is the canonical kit; `rounded` demonstrates a token-only overlay.
+ * `appConfig` bakes per-component theme overrides + palette choices into the
+ * style's plugin `defaultConfig.ui`, read at runtime via `appConfig.ui[name]` →
+ * `tv({ extend: tv(base), ...overrides })`. Its `primary` must name the SAME
+ * palette the overlay's `--ui-color-primary-*` holds: baked SVG icon fills
+ * resolve their hex from it (icons can't read CSS vars — see VyIcon).
  */
 interface StyleDef { name: string, overlay?: string, appConfig?: Record<string, unknown> }
 const STYLES: StyleDef[] = [
@@ -63,33 +41,20 @@ const STYLES: StyleDef[] = [
   { name: 'rounded', overlay: resolve(root, 'styles/rounded') },
   {
     name: 'shadcn',
-    overlay: resolve(root, 'styles/shadcn'), // tokens only (style.css): primary→zinc, radius 0.5rem
-    // The shadcn dark default button is a theme override, NOT a file overlay —
-    // merged at runtime via appConfig.ui.button. `primary: 'zinc'` aligns baked
-    // SVG icon fills with the zinc CSS-var palette.
+    overlay: resolve(root, 'styles/shadcn'), // tokens only: primary→zinc, radius 0.5rem
     appConfig: {
-      // Baked SVG icon fills resolve their hex from `appConfig.ui.primary`, so
-      // it must name the SAME palette the `--ui-color-primary-*` vars hold. The
-      // overlay writes those as `slate` for the `__VYUI_GRAY__` rewrite, so this
-      // takes the sentinel too — otherwise icons drift from every surface the
-      // moment a consumer picks a `--base-color` other than the default.
       primary: '__VYUI_GRAY__',
       button: { defaultVariants: { color: 'neutral' } },
     },
   },
   {
     name: 'lunaris',
-    overlay: resolve(root, 'styles/lunaris'), // tokens only (style.css): LUNA signature-gradient variant
-    // `rose` matches the `--ui-color-primary-*` ramp the overlay installs, so
-    // baked icon fills track the pink accent.
+    overlay: resolve(root, 'styles/lunaris'), // tokens only: LUNA signature-gradient variant
     appConfig: { primary: 'rose' },
   },
-  // Token-only like `rounded`: translucent iOS-style surfaces + system accents
-  // + a 14px radius. `primary: 'blue'` only aligns the baked SVG icon fills
-  // with the blue ramp (icons can't read CSS vars — see VyIcon).
   {
     name: 'liquid-glass',
-    overlay: resolve(root, 'styles/liquid-glass'),
+    overlay: resolve(root, 'styles/liquid-glass'), // tokens only: translucent iOS surfaces, 14px radius
     appConfig: { primary: 'blue' },
   },
 ]
@@ -104,13 +69,11 @@ const VERSIONS: Record<string, string> = {
 /** Peers the consumer is assumed to already have (don't force-install). */
 const ASSUMED = new Set(['vue', 'vue-lynx', 'tailwindcss', '@lynx-js/react'])
 
-/** Map a bare import specifier to its package name + pinned range. */
 function toDep(spec: string): { name: string, range: string } | undefined {
   const name = spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0]
   if (ASSUMED.has(name)) return undefined
   const range = VERSIONS[name]
-  // No `latest` fallback: a shippable dep MUST be declared in kit's package.json,
-  // otherwise we'd emit an unpinned (supply-chain-unsafe) specifier.
+  // No `latest` fallback — that would emit an unpinned (supply-chain-unsafe) specifier.
   if (!range) {
     throw new Error(
       `[gen-registry] unresolved dependency "${name}" (from import "${spec}"). `
@@ -124,16 +87,9 @@ const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCas
 
 interface FileEntry { path: string, target: string, type: string, content: string }
 
-/** A single import specifier with its exact byte offsets in the source string. */
+/** An import specifier with its byte offsets *inside the quotes*, file-absolute. */
 interface SpecRef { spec: string, start: number, end: number }
 
-/**
- * Extract every import/export specifier (with exact offsets) from a code string.
- * `es-module-lexer` understands `import … from`, `export … from`, dynamic
- * `import()` and type-only forms — and, crucially, ignores specifiers that
- * appear inside comments or strings, so we never rewrite a `from '…'` in a
- * JSDoc block. `s`/`e` are the offsets of the specifier *inside* the quotes.
- */
 function lexSpecRefs(code: string): SpecRef[] {
   const [imports] = lexImports(code)
   const refs: SpecRef[] = []
@@ -144,18 +100,12 @@ function lexSpecRefs(code: string): SpecRef[] {
   return refs
 }
 
-/**
- * For a `.vue` SFC, return each `<script>` / `<script setup>` block's source
- * along with its absolute offset within the full SFC string, so specifier
- * offsets discovered inside the block can be mapped back to the whole file.
- */
 function sfcScriptBlocks(sfc: string): Array<{ content: string, offset: number }> {
   const { descriptor } = parseSfc(sfc)
   const blocks = [descriptor.script, descriptor.scriptSetup].filter(Boolean)
   return blocks.map(b => ({ content: b!.content, offset: b!.loc.start.offset }))
 }
 
-/** Collect import specifier refs from any source file (offsets are file-absolute). */
 function specRefsFor(srcRel: string, content: string): SpecRef[] {
   if (srcRel.endsWith('.vue')) {
     const refs: SpecRef[] = []
@@ -169,11 +119,7 @@ function specRefsFor(srcRel: string, content: string): SpecRef[] {
   return lexSpecRefs(content)
 }
 
-/**
- * Classify a kit-relative module path (posix, relative to `packages/kit/src`)
- * into the stable `@@vyui:` placeholder the CLI literal-substitutes back to an
- * alias. Mirrors the alias categories the CLI knows about.
- */
+/** Mirrors the alias categories the CLI literal-substitutes `@@vyui:` back to. */
 function placeholderFor(resolved: string): string {
   const [seg0, ...rest] = resolved.split('/')
   const tail = rest.join('/')
@@ -186,16 +132,15 @@ function placeholderFor(resolved: string): string {
   }
 }
 
-/** Resolve a relative specifier from `srcRel` to a kit-src-relative posix path. */
 function resolveRel(srcRel: string, spec: string): string {
   return posix.normalize(posix.join(posix.dirname(srcRel), spec))
 }
 
 /**
- * Rewrite every RELATIVE import specifier in `content` to its `@@vyui:`
- * placeholder, using the lexer's exact offsets so comments/strings are never
- * touched. Bare specifiers are left verbatim. Used for all code files except
- * preset/style (which keep their relative imports).
+ * Rewrite RELATIVE specifiers to their `@@vyui:` placeholder; bare specifiers
+ * stay verbatim. Offsets come from the lexer, so a `from '…'` inside a comment
+ * or string is never touched. Not applied to preset/style files, which keep
+ * their relative imports.
  */
 function placeholderizeImports(srcRel: string, content: string): string {
   const refs = specRefsFor(srcRel, content).filter(r => r.spec.startsWith('.'))
@@ -210,13 +155,12 @@ function placeholderizeImports(srcRel: string, content: string): string {
   return out
 }
 
-/** Is `resolved` a top-level registry component (`components/<Name>.vue`)? */
 function isTopLevelComponent(resolved: string): boolean {
   const parts = resolved.split('/')
   return parts.length === 2 && parts[0] === 'components' && parts[1].endsWith('.vue')
 }
 
-/** Style-aware file reader: overlay wins, else kit base. */
+/** Overlay wins, else kit base. */
 function makeReader(style: StyleDef) {
   return (rel: string): string => {
     if (style.overlay) {
@@ -227,50 +171,38 @@ function makeReader(style: StyleDef) {
   }
 }
 
-/** Candidate kit-base path for a (possibly extensionless) relative module. */
-function existsRel(rel: string, style: StyleDef): boolean {
-  return (style.overlay != null && existsSync(join(style.overlay, rel))) || existsSync(join(kitSrc, rel))
-}
-
 const MODULE_EXTS = ['.ts', '.tsx', '.vue', '.js', '.jsx']
 
 /**
- * Resolve a (possibly extensionless) kit-relative module path to the actual
- * source file's kit-relative path with extension — mirroring TS/bundler
- * resolution so `import './islandContext'` finds `islandContext.ts`.
+ * Mirror TS/bundler resolution so `import './islandContext'` finds
+ * `islandContext.ts`. Kit base only — an overlay replaces a base file, never
+ * adds one.
  */
-function resolveSourceFile(resolved: string, style: StyleDef): string {
-  if (existsRel(resolved, style) && /\.\w+$/.test(resolved)) return resolved
+function resolveSourceFile(resolved: string): string {
+  const exists = (rel: string) => existsSync(join(kitSrc, rel))
+  if (/\.\w+$/.test(resolved) && exists(resolved)) return resolved
   for (const ext of MODULE_EXTS) {
-    if (existsRel(resolved + ext, style)) return resolved + ext
+    if (exists(resolved + ext)) return resolved + ext
   }
   for (const ext of MODULE_EXTS) {
-    if (existsRel(posix.join(resolved, `index${ext}`), style)) return posix.join(resolved, `index${ext}`)
+    if (exists(posix.join(resolved, `index${ext}`))) return posix.join(resolved, `index${ext}`)
   }
   throw new Error(`[gen-registry] cannot resolve relative module "${resolved}" to a source file`)
 }
 
-/** Union of component SFC names from the kit base + the style overlay. */
-function componentNames(style: StyleDef): string[] {
-  const set = new Set<string>()
-  const dirs = [join(kitSrc, 'components'), style.overlay && join(style.overlay, 'components')].filter(Boolean) as string[]
-  for (const dir of dirs) {
-    if (!existsSync(dir)) continue
-    for (const f of readdirSync(dir)) if (f.endsWith('.vue')) set.add(f.replace(/\.vue$/, ''))
-  }
-  return [...set].sort()
+function componentNames(): string[] {
+  return readdirSync(join(kitSrc, 'components'))
+    .filter(f => f.endsWith('.vue'))
+    .map(f => f.replace(/\.vue$/, ''))
+    .sort()
 }
 
-// Minimal plugin: only provides the merged AppConfig. The kit plugin's global
-// component auto-registration (`REGISTRY` loop) is dropped — copied components
-// are imported explicitly, so it isn't needed and would reference 48 files.
 /**
- * Build the init payload's `plugin.ts` for a style. `icons` (a binding) and
- * `gray` (the `__VYUI_GRAY__` baseColor sentinel) are emitted literally; every
- * other `ui` key — `primary` plus any per-component theme overrides from the
- * style's `appConfig` — is serialized in. These bake the style's look into the
- * provided `AppConfig`, so copied components render it via `useStyledComponent`
- * without any theme-file overlay. With no `appConfig`, output matches `default`.
+ * The init payload's `plugin.ts`. Deliberately minimal: the kit plugin's global
+ * component auto-registration is dropped (copied components are imported
+ * explicitly, and it would reference 48 files). `icons` (a binding) and `gray`
+ * (the `__VYUI_GRAY__` sentinel) are emitted literally; every other `ui` key is
+ * serialized in. With no `appConfig`, output matches `default`.
  */
 function makeInitPlugin(appConfig: Record<string, unknown> = {}): string {
   const ui: Record<string, unknown> = { primary: 'green', ...appConfig }
@@ -306,25 +238,14 @@ export const VyUI: Plugin<VyUIPluginOptions> = {
 }
 
 /**
- * Replace every `slate` reference in `style.css` with the `__VYUI_GRAY__`
- * sentinel. The CLI substitutes the sentinel for the user's chosen `baseColor`
- * at write time (mirrors the `@@vyui:` import placeholders), which is what
- * actually wires the otherwise-dead `baseColor` config field.
+ * Swap `slate` for the `__VYUI_GRAY__` sentinel the CLI substitutes with the
+ * user's `baseColor` at write time. Matches ANY `theme('colors.slate.N')` — the
+ * neutral ramp AND the per-mode semantic tokens, since tokens can't `var()`-ref
+ * the ramp on Lynx (single-level rule). `theme('colors.white')` stays literal,
+ * and `baseColor: 'slate'` reproduces the source byte-for-byte.
  *
- * Matches ANY `theme('colors.slate.N')` — the fixed neutral ramp (`:root`) AND
- * the per-mode semantic tokens (`--ui-text*` / `--ui-bg*` / `--ui-border*`, both
- * `:root` and `.dark`), so a zinc/stone app gets a matching base gray for BOTH
- * its ramp and its baked tokens (tokens can't `var()`-ref the ramp on Lynx —
- * single-level rule — so this build-time rewrite is how "neutral drives the
- * surfaces/text/borders" actually happens). `theme('colors.white')` token values
- * are intentionally left literal. With `baseColor: 'slate'` the output is
- * byte-identical to this source.
- *
- * A style opts an ACCENT ramp into the same rewrite by writing it as `slate`:
- * `shadcn` does this for `primary`, because shadcn/ui has no separate brand hue
- * — its accent is the base gray. Styles with a designed palette of their own
- * (`luna`, `lunaris`) hold literal values and are untouched here, so
- * `--base-color` correctly no-ops for them (init warns).
+ * A style opts an ACCENT ramp into the same rewrite by writing it as `slate`
+ * (`shadcn` does). Styles holding literal palettes (`luna`, `lunaris`) no-op.
  */
 function grayifySlate(css: string): string {
   return css.replace(
@@ -352,22 +273,14 @@ const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: st
 ]
 
 /**
- * Recursively walk a component's import graph from its top-level SFC.
- *
- * Starting at `components/<Name>.vue`, for each file we:
- *  - add npm `dependencies` for bare specifiers,
- *  - emit a `registryDependencies` edge for *other* top-level components
- *    (kebab name; NOT inlined — the consumer installs them separately),
- *  - INLINE co-located helpers (anything else under `components/`, e.g.
- *    `internal/*.vue`, `*Context.ts`) into this manifest and recurse,
- *  - INLINE non-shared `theme/<name>` files and recurse,
- *  - treat composables/utils/types/plugin/shared-theme as init-payload deps
- *    (no edge — they ship via `init`).
- * A visited set guards cycles (e.g. Island ↔ islandContext, DropdownMenu ↔
- * its internal items which back-reference the parent SFC).
+ * Walk a component's import graph from `components/<Name>.vue`:
+ *  - bare specifiers → npm `dependencies`,
+ *  - other top-level components → a `registryDependencies` edge (not inlined),
+ *  - co-located `components/*` helpers and non-shared `theme/<name>` → INLINED,
+ *  - composables/utils/types/plugin/shared-theme → no edge, they ship via `init`.
+ * The visited set guards cycles (Island ↔ islandContext, DropdownMenu ↔ items).
  */
 function walkComponent(
-  style: StyleDef,
   read: (rel: string) => string,
   rootName: string,
   srcRel: string,
@@ -389,18 +302,15 @@ function walkComponent(
     const resolved = resolveRel(srcRel, spec)
     if (isTopLevelComponent(resolved)) {
       const depName = kebab(resolved.split('/')[1].replace(/\.vue$/, ''))
-      // Skip self/parent back-references to the component we're generating
+      // Skip back-references to the component we're generating
       // (e.g. internal/DropdownMenuItems.vue → ../DropdownMenu.vue).
       if (depName !== kebab(rootName)) regDeps.add(depName)
       continue
     }
     const seg0 = resolved.split('/')[0]
-    const seg1 = resolveSourceFile(resolved, style).split('/')[1]
+    const seg1 = resolveSourceFile(resolved).split('/')[1]
     if (seg0 === 'components') {
-      // Co-located helper: inline (target is its path relative to components/,
-      // with the real file extension) and recurse so its own deps/themes/edges
-      // are captured.
-      const fileRel = resolveSourceFile(resolved, style)
+      const fileRel = resolveSourceFile(resolved)
       if (!files.has(fileRel)) {
         files.set(fileRel, {
           path: fileRel,
@@ -409,10 +319,10 @@ function walkComponent(
           content: placeholderizeImports(fileRel, read(fileRel)),
         })
       }
-      walkComponent(style, read, rootName, fileRel, deps, regDeps, files, visited)
+      walkComponent(read, rootName, fileRel, deps, regDeps, files, visited)
     }
     else if (seg0 === 'theme' && seg1 && !SHARED_THEME.has(seg1.replace(/\.\w+$/, ''))) {
-      const themeRel = resolveSourceFile(resolved, style)
+      const themeRel = resolveSourceFile(resolved)
       if (!files.has(themeRel)) {
         files.set(themeRel, {
           path: themeRel,
@@ -421,7 +331,7 @@ function walkComponent(
           content: placeholderizeImports(themeRel, read(themeRel)),
         })
       }
-      walkComponent(style, read, rootName, themeRel, deps, regDeps, files, visited)
+      walkComponent(read, rootName, themeRel, deps, regDeps, files, visited)
     }
     // composables/* utils/* types plugin theme/{colors,icons,…} → init payload (no edge)
   }
@@ -433,16 +343,15 @@ function generateStyle(style: StyleDef) {
   mkdirSync(outDir, { recursive: true })
 
   const catalog: Array<{ name: string, type: string, dependencies: string[], registryDependencies: string[] }> = []
-  const names = componentNames(style)
+  const names = componentNames()
 
   for (const name of names) {
     const deps = new Set<string>()
     const regDeps = new Set<string>()
     const rootRel = `components/${name}.vue`
     const inlined = new Map<string, FileEntry>() // keyed by kit-relative path
-    walkComponent(style, read, name, rootRel, deps, regDeps, inlined, new Set())
+    walkComponent(read, name, rootRel, deps, regDeps, inlined, new Set())
 
-    // The top-level SFC is the manifest's primary `registry:ui` file.
     const files: FileEntry[] = [
       { path: rootRel, target: `${name}.vue`, type: 'registry:ui', content: placeholderizeImports(rootRel, read(rootRel)) },
       ...inlined.values(),
@@ -459,12 +368,9 @@ function generateStyle(style: StyleDef) {
     catalog.push({ name: manifest.name, type: manifest.type, dependencies: manifest.dependencies, registryDependencies: manifest.registryDependencies })
   }
 
-  // init payload — these files are flat (no recursion); their relative imports
-  // are placeholderized, bare imports become npm deps. preset/style keep
-  // relative imports verbatim (no placeholder rewrite).
+  // init payload — flat, no recursion.
   const initDeps = new Set<string>()
   const initFiles: FileEntry[] = INIT_SOURCES.map((s) => {
-    // plugin.ts is generated per-style so the style's appConfig overrides bake in.
     const source = s.target === 'plugin.ts' ? makeInitPlugin(style.appConfig) : (s.content ?? read(s.src!))
     const raw = s.transform ? s.transform(source) : source
     if (s.type === 'registry:lib') {
@@ -512,6 +418,5 @@ writeFileSync(resolve(outRoot, 'styles.json'), `${JSON.stringify({
 }, null, 2)}\n`)
 console.log(`[gen-registry] styles=[${STYLES.map(s => s.name).join(', ')}]  →  ${outRoot}`)
 
-// Regenerate the published JSON Schemas alongside the registry so the `$schema`
-// contracts the manifests reference never drift from the CLI types.
+// Keeps the `$schema` contracts the manifests reference from drifting from the CLI types.
 writeSchemas(resolve(outRoot, '..'))

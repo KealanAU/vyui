@@ -9,15 +9,15 @@
 // `decideSnapTarget` is the uniform-paging (carousel) specialization; the sheet
 // family's arbitrary-snap release spec lives in `useSheetBehavior.pickRelease`.
 
-/** Gospel: `const/index.ts` — slop before axis lock engages. */
+/** Upstream: `const/index.ts` — slop before axis lock engages. */
 export const GESTURE_THRESHOLD = 8
 
-/** Gospel: `useOffset.ts:469` — flick threshold. */
+/** Upstream: `useOffset.ts:469` — flick threshold. */
 export const VELOCITY_THRESHOLD_DEFAULT = 300
 
 /**
  * Multi-step snap rounding. `threshold=0.5` rounds 1.4→1, 1.6→2;
- * `threshold=0.95` favors the lower integer. Gospel: `useOffset.ts:65`.
+ * `threshold=0.95` favors the lower integer. Upstream: `useOffset.ts:65`.
  */
 export function customRound(num: number, threshold = 0.5): number {
   'main thread'
@@ -30,7 +30,7 @@ export function customRound(num: number, threshold = 0.5): number {
 /**
  * Rubber-band resistance curve — the dampened delta felt when overscrolling
  * past a boundary. Effective drag is capped at `2 * bounceWidth`; output
- * approaches `1.5 * bounceWidth` asymptotically. Gospel: `useOffset.ts:77-94`.
+ * approaches `1.5 * bounceWidth` asymptotically. Upstream: `useOffset.ts:77-94`.
  */
 export function rubberEffect(rubberDelta: number, bounceWidth: number): number {
   'main thread'
@@ -52,7 +52,7 @@ export interface LimitResult {
 }
 
 /** Clamp an offset to the swiper's valid range; loop mode never clamps.
- *  Gospel: `useOffset.ts:185-210`. */
+ *  Upstream: `useOffset.ts:185-210`. */
 export function calcLimit(
   offset: number,
   fullSize: number,
@@ -75,7 +75,7 @@ export function calcLimit(
 
 /**
  * Rubber-band past a boundary, else clamp — the offset the user sees during
- * touchmove. Gospel: `useOffset.ts:212-226`.
+ * touchmove. Upstream: `useOffset.ts:212-226`.
  */
 export function applyBounce(
   rawOffset: number,
@@ -127,7 +127,7 @@ export interface LoopRebase {
  * animate-from and animate-to offsets shift by one full content width: the
  * visible motion is unchanged, but the destination lands back inside the real
  * range so the NEXT gesture continues seamlessly. `totalWidth` is one full
- * period. Gospel: `useOffset.ts:240-263` (`calcLoop`).
+ * period. Upstream: `useOffset.ts:240-263` (`calcLoop`).
  */
 export function calcLoop(
   start: number,
@@ -157,7 +157,7 @@ export function calcLoop(
 /**
  * Drop samples older than `ms`, keeping at least `minLength` (so sparse
  * touchmove still yields a release velocity). Mutates in place.
- * Gospel: `useVelocity.ts:22-33`.
+ * Upstream: `useVelocity.ts:22-33`.
  */
 export function pruneQueue(
   positions: number[],
@@ -176,7 +176,7 @@ export function pruneQueue(
 /**
  * Velocity (px/s) from position/time queues; 0 with fewer than two samples or a
  * non-positive window. RTL flips the sign so positive = "forward".
- * Gospel: `useVelocity.ts:35-55`.
+ * Upstream: `useVelocity.ts:35-55`.
  */
 export function calcVelocity(positions: number[], times: number[], rtl = false): number {
   'main thread'
@@ -194,7 +194,7 @@ export function calcVelocity(positions: number[], times: number[], rtl = false):
 
 /**
  * Test if `angle` (degrees, -180..180) falls in any of the wrap-aware ranges —
- * axis lock's "horizontal enough" test. Gospel: `useAxisLock.ts:12-21`.
+ * axis lock's "horizontal enough" test. Upstream: `useAxisLock.ts:12-21`.
  */
 export function isAngleInRanges(angle: number, ranges: [number, number][]): boolean {
   'main thread'
@@ -228,7 +228,7 @@ export type AxisLockState =
 /**
  * Resolve axis-lock state for a touchmove. `null` means the gesture hasn't
  * crossed `GESTURE_THRESHOLD` yet — keep waiting.
- * Gospel: `useAxisLock.ts:46-73`.
+ * Upstream: `useAxisLock.ts:46-73`.
  */
 export function resolveAxisLock(
   deltaX: number,
@@ -297,7 +297,7 @@ export function decideSnapTarget(opts: SnapTargetOpts): number {
   return target
 }
 
-/** Gospel: `utils/index.ts:7` — cubic ease-out for snap animation. */
+/** Upstream: `utils/index.ts:7` — cubic ease-out for snap animation. */
 export function easeOutCubic(progress: number): number {
   'main thread'
   return 1 - (1 - progress) ** 3

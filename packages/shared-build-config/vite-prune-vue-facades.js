@@ -1,23 +1,8 @@
-// Prune plugin-vue's redundant re-export sub-modules from a `preserveModules`
-// build.
-//
-// Under Rollup `preserveModules`, `@vitejs/plugin-vue` emits two modules for
-// most SFCs: the canonical component module (id `X.vue`, always written to
-// `X.vue.js` — this is what the barrel and siblings import, and it carries the
-// `_export_sfc` scopeId wrapper for `<style scoped>` SFCs) and the
-// `X.vue?vue&type=script` sub-module. For SFCs whose script is inlined into the
-// canonical module, that sub-module collapses to a pure re-export facade
-// (`X.vue2.js`) that nothing imports — dead weight in the published package.
-//
-// This plugin deletes those facades, but ONLY when both hold:
-//   1. no other emitted chunk (nor entry) imports the facade — removing it
-//      cannot change any consumer's module graph, and
-//   2. the facade has no side effects — every statement is an import/export or
-//      comment, so it registers nothing and imports nothing for effect.
-//
-// The `X.vue2.js` sub-modules that ARE real (the compiled script behind a
-// scoped SFC's `_export_sfc` wrapper) are referenced by their `X.vue.js` and so
-// are kept untouched.
+// Prune plugin-vue's dead re-export facades (`X.vue2.js`) from a
+// `preserveModules` build. A chunk is deleted only when nothing reachable from
+// an entry imports it AND it has no side effects, so the `X.vue2.js` modules
+// that are real (a scoped SFC's compiled script, referenced by its `X.vue.js`)
+// stay untouched.
 
 /**
  * @returns {import('vite').Plugin}

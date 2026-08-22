@@ -1,9 +1,8 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/input-menu.ts` and adapted for Vue-Lynx:
-// dark rides the semantic tokens, `focus*` / `shadow*` / `dark:*` are dropped,
-// and the result is flattened into a single tv config. Tags-input slots are
-// omitted — core lacks a TagsInput primitive, so `multiple` renders without
-// chips. Leading / trailing wrappers are inline flex siblings of the search
-// input, not `absolute` overlays (as in `./input.ts`).
+// Ported from nuxt/ui v3.0.2 `src/theme/input-menu.ts` — see `./button.ts` for
+// the shared Lynx adaptations. Flattened into a single tv config. Tags-input
+// slots are omitted: core has no TagsInput primitive, so `multiple` renders
+// without chips. Leading / trailing wrappers are inline flex siblings of the
+// search input, not `absolute` overlays (as in `./input.ts`).
 
 import type { Color } from './colors'
 

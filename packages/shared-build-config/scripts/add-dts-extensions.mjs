@@ -1,15 +1,8 @@
 // Append explicit `.js` extensions to relative specifiers in emitted `.d.ts`
 // files, so the published types resolve under `moduleResolution: node16` /
 // `nodenext` (which reject extensionless relative imports in an ESM package).
-//
-// Why a post-process: both @vyui packages bundle their RUNTIME (a handful of
-// entry `.js`) but emit UNBUNDLED types (one `.d.ts` per source file, from
-// vue-tsc). vue-tsc writes extensionless relative specifiers, and there is no
-// per-module `.js` to point at, so `tsc-alias --resolve-full-paths` can't add
-// the extension. TS only needs the specifier to resolve to a `.d.ts` for type
-// checking (consumers runtime-import the bundled entry, never these subpaths),
-// so `'./x'` → `'./x.js'` (mapped to `./x.d.ts`) or `'./x/index.js'` is exactly
-// what node16 wants. Safe under `bundler` resolution too.
+// vue-tsc writes them extensionless and `tsc-alias --resolve-full-paths` can't
+// fix it (there is no per-module `.js` to point at), hence this post-process.
 //
 // Usage: node add-dts-extensions.mjs <distDir>
 import { readdirSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs'
@@ -27,16 +20,14 @@ function collect(dir) {
 // Matches the specifier of `from '…'`, `import('…')`, and bare `import '…'`.
 const SPECIFIER = /(\bfrom\s*|import\s*\(\s*|\bimport\s+)(['"])(\.[^'"]*)\2/g
 
-// Whole-line CSS side-effect imports. The bundled `.js` keeps them (that's how
-// the stylesheet ships); in a `.d.ts` they carry no types and every resolver
-// fails on them, so drop them from the declaration copy.
+// Whole-line CSS side-effect imports — no types, and every resolver fails on
+// them, so drop them from the declaration copy.
 const CSS_SIDE_EFFECT = /^[ \t]*import\s+(['"])\.[^'"]*\.css\1;?[ \t]*\r?\n?/gm
 
 /**
  * Resolve a relative specifier (from `fileDir`) to the `.js` form node16 wants,
- * or null to leave it. Handles missing extensions AND wrong ones — vue-tsc
- * emits both `./x` (extensionless) and `./x.ts` (source extension), neither of
- * which resolves for a consumer.
+ * or null to leave it. vue-tsc emits both `./x` and `./x.ts`; neither resolves
+ * for a consumer.
  */
 function withExtension(spec, fileDir) {
   // Asset imports keep their own extension.

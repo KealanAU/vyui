@@ -14,9 +14,7 @@ export default (colors: Color[]) => ({
     root: 'relative flex flex-row items-center justify-center shrink-0',
     // `tabular-nums` keeps single-digit content visually centered.
     base: 'rounded-full flex flex-row items-center justify-center font-medium whitespace-nowrap leading-none tabular-nums border-2 border-white',
-    // Foreground color for the content <text>. CSS inheritance is OFF in the
-    // Lynx build, so `text-white` on the `base` dot <view> never reaches the
-    // content <text>; the per-size `text-*` sits here for the same reason.
+    // `enableCSSInheritance: false` — fg (and the per-size `text-*`) lands on the content <text>.
     text: 'text-white',
   },
   variants: {

@@ -1,3 +1,18 @@
+/**
+ * `enableCSSInheritance: false` — the rule behind the `base`/`fg` split in these
+ * themes, stated once here.
+ *
+ * Lynx's native engine inherits no CSS property except custom properties (which
+ * is why the `--ui-*` token layer resolves at all). Inheritance is a per-app
+ * build flag on `pluginVueLynx`, so a library has to be correct with it off: a
+ * `text-*` class on a wrapping <view> never reaches the nested <text> or icon on
+ * device. It looks right in the browser preview, where the cascade is real.
+ *
+ * So surface (bg/border) stays on the wrapper and the foreground is spread onto
+ * every text-bearing slot. Sites that depend on it carry a one-line
+ * `enableCSSInheritance: false` marker — grep it before moving a `text-*` class
+ * up a level.
+ */
 export { default as icons } from './icons'
 export { ALL_COLORS, COLORS, NEUTRAL, resolveColors, type Color, type VyuiColorRegistry } from './colors'
 

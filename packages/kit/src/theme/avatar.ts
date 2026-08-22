@@ -1,10 +1,5 @@
-// Ported from nuxt/ui v4 `src/theme/avatar.ts` and adapted for Vue-Lynx.
-//
-// Semantic color names (`primary`, `error`, …) resolve to real palettes via
-// the consuming app's CSS variables and Tailwind config — see
-// `apps/examples/kit-demo/src/index.css` for the default mapping.
-//
-// Dark rides the semantic tokens: dark-mode classes from the upstream theme are dropped.
+// Ported from nuxt/ui v4 `src/theme/avatar.ts` — see `./button.ts` for the
+// shared Lynx adaptations.
 import type { Color } from './colors'
 
 const colorVariant = (c: string) => ({

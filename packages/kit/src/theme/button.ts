@@ -20,10 +20,7 @@ import type { Color } from './colors'
 import { NEUTRAL } from './color-constants'
 import { type IconFg, iconFgFromToken } from './iconColor'
 
-// Each variant returns the surface classes (`base`) separately from the
-// foreground color (`fg`). CSS inheritance is OFF in the Lynx build, so a
-// `text-*` on the root <view> does NOT reach the label <text> or the icons —
-// `variantClass` spreads `fg` onto the text-bearing slots.
+// `enableCSSInheritance: false` — surface on `base`, `variantClass` spreads `fg` onto the text slots.
 
 // ── Chromatic colors (primary / secondary / success / info / warning / error) ─
 // Text uses the vibrant `-600` (mimics nuxt's `text-primary` ≈ 500-level) so
@@ -72,11 +69,10 @@ const variantClass = (color: string, variant: Variant) => {
   return { base, label: fg, leadingIcon: fg, trailingIcon: fg }
 }
 
-// The `text-*` classes above reach the label `<text>` but not the icons — Lynx's
-// `<svg>` rasterizes its XML, so the fill must be baked in via the Icon `color`
-// prop. Derive it from the same `fg` string the variant emits so class and baked
-// color can't drift. Neutral variants emit mode-dependent semantic TOKENS, so
-// `isDark` is passed through (`iconFgFromToken`).
+// The `text-*` classes above reach the label `<text>` but not the icons — see
+// ./iconColor.ts. Derived from the same `fg` string the variant emits, so the
+// class and the baked color can't drift. Neutral variants emit mode-dependent
+// semantic TOKENS, so `isDark` is passed through.
 export function iconFg(color: string, variant: Variant, isDark = false): IconFg {
   const { fg } = color === NEUTRAL ? neutralVariants[variant] : VARIANT_BUILDERS[variant](color)
   return iconFgFromToken(fg.match(/^text-(\S+)/)?.[1], isDark)

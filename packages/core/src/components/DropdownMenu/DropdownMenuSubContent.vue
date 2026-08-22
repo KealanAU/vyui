@@ -6,10 +6,7 @@ import type {
 
 export type DropdownMenuSubContentEmits = DropdownMenuSubContentImplEmits
 
-export interface DropdownMenuSubContentProps extends DropdownMenuSubContentImplProps {
-  /** Force mounting so the content stays registered (e.g. for animations). */
-  forceMount?: boolean
-}
+export interface DropdownMenuSubContentProps extends DropdownMenuSubContentImplProps {}
 </script>
 
 <script setup lang="ts">
@@ -51,7 +48,7 @@ const PortalRegistration = defineComponent({
 </script>
 
 <template>
-  <Presence :show="forceMount || subContext.open.value">
+  <Presence :show="subContext.open.value">
     <PortalRegistration />
   </Presence>
 </template>

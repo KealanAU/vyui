@@ -8,9 +8,6 @@ import type {
 export type DialogContentEmits = DialogContentImplEmits
 
 export interface DialogContentProps extends DialogContentImplProps {
-  /** Force mounting when more control is needed — e.g. driving animation from a
-   *  Vue animation library. */
-  forceMount?: boolean
   /** Verbose lifecycle tracing — forwarded to both backdrop + panel Presence. */
   debugLog?: boolean
 }
@@ -94,12 +91,9 @@ const presenceCtx: DialogContentPresenceContext = {
 }
 provide(DialogContentPresenceKey, presenceCtx)
 
-// `forceMount` short-circuits the lifecycle (the consumer owns animation),
-// `mountView` keeps the dialog painted across the leaving animation, and `open`
-// is the immediate truth on the first paint before the watcher fires.
-const shouldMount = computed(
-  () => !!props.forceMount || mountView.value || showRef.value,
-)
+// `mountView` keeps the dialog painted across the leaving animation; `open` is
+// the immediate truth on the first paint before the watcher fires.
+const shouldMount = computed(() => mountView.value || showRef.value)
 
 </script>
 

@@ -1,13 +1,10 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/toast.ts` and adapted for Vue-Lynx:
-// dark mode and `focus-visible:*` classes dropped, color tokens resolved via the
-// consuming app's CSS variables, and the progress-bar slot rendered
-// conditionally by the SFC.
+// Ported from nuxt/ui v3.0.2 `src/theme/toast.ts` — see `./button.ts` for the
+// shared Lynx adaptations. The progress-bar slot is rendered conditionally by
+// the SFC.
 import type { Color } from './colors'
 
-// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
-// XML, so the `text-${c}-500` class on the `icon` slot never reaches the glyph —
-// Toast.vue bakes the hex into the Icon `color` prop. The class below is built
-// from this constant so the two can't drift.
+// Baked icon fill (see ./iconColor.ts). Toast.vue bakes the hex; the class below
+// is built from this constant so the two can't drift.
 export const ICON_FG_SHADE = 500
 
 // LYNX NOTE — `var()` in inline `style=""` does NOT resolve on Lynx native

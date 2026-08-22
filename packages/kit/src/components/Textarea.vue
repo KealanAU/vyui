@@ -112,8 +112,8 @@ const { ui } = useStyledComponent('textarea', theme, () => ({
   trailing: hasTrailing.value,
 }))
 
-// Lynx SVG can't inherit currentColor — bake the hex. Icons default to
-// neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
+// Baked icon fill (see theme/iconColor.ts). Icons default to neutral (dimmed);
+// override via the `leading` / `trailing` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
 onMounted(() => {

@@ -9,6 +9,7 @@ links:
     icon: i-simple-icons-github
     to: https://github.com/KealanAU/vyui/blob/main/packages/kit/src/components/Toast.vue
     target: _blank
+category: Overlay
 ---
 
 ## Overview

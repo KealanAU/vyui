@@ -28,7 +28,6 @@ import { resolve } from 'node:path'
 export function createVyuiAliases(__dirname: string): Record<string, string> {
   return {
     '@vyui/core$': resolve(__dirname, '../../../packages/core/src/index.ts'),
-    '@vyui/core/date$': resolve(__dirname, '../../../packages/core/src/date/index.ts'),
     '@vyui/core/shared$': resolve(__dirname, '../../../packages/core/src/shared/index.ts'),
     '@vyui/kit': resolve(__dirname, '../../../packages/kit/src/index.ts'),
     '@': resolve(__dirname, '../../../packages/core/src'),

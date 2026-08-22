@@ -9,10 +9,8 @@ import type { Color } from './colors'
 import { type IconFg, iconFgFromToken } from './iconColor'
 
 // Each builder returns the inactive + on-state surface classes (`base`)
-// separately from the foreground color (`fg`, including the on-state shift). CSS
-// inheritance is OFF in the Lynx build, so `fg` is spread onto the
-// `leadingIcon` / `label` slots directly; the item <view> carries `group` +
-// `data-state`, so the shift uses `group-ui-on:text-*` on the children.
+// separately from the foreground color (`fg`, including the on-state shift).
+// `enableCSSInheritance: false` — `fg` lands on the `leadingIcon` / `label` slots.
 const outline = (c: string) =>
   ({
     base: `border border-accented bg-default active:bg-${c}-50 active:bg-${c}-100`
@@ -40,10 +38,8 @@ export type Variant = keyof typeof VARIANT_BUILDERS
 
 const VARIANTS = Object.keys(VARIANT_BUILDERS) as Variant[]
 
-// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
-// XML, so neither the resting `text-*` nor the `group-ui-on:text-*` shift ever
-// reaches the glyph — ToggleGroup.vue bakes the fill per item from the `pressed`
-// state, derived from the same `fg` string so the two can't drift.
+// Baked icon fill (see ./iconColor.ts). ToggleGroup.vue bakes it per item from
+// the `pressed` state, derived from the same `fg` string so the two can't drift.
 export function iconFg(color: string, variant: Variant, on: boolean, isDark = false): IconFg {
   const { fg } = VARIANT_BUILDERS[variant](color)
   // on → the `group-ui-on:text-*` accent; off → the resting `text-*` token.

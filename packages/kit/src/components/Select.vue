@@ -121,12 +121,11 @@ const { ui } = useStyledComponent('select', theme, () => ({
   trailing: true,
 }))
 
-// Lynx SVG can't inherit currentColor — bake the hex. Trigger icons default to
-// neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
+// Baked icon fill (see theme/iconColor.ts). Trigger icons default to neutral
+// (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
-// The selected-item tick is baked too (a class can't reach the rasterized svg),
-// on the mode-independent accent ramp.
+// The selected-item tick is baked too, on the mode-independent accent ramp.
 const checkColor = computed(() => resolveColorHex(appConfig, props.color, 500))
 
 // Shared open state bridges `SelectRoot` (item-tap, trigger) and `SheetRoot`

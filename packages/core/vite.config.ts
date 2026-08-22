@@ -54,9 +54,7 @@ export default defineConfig({
         'tailwind-merge',
         'vue-component-type-helpers',
         /^@lynx-js\//,
-        /^@vueuse\//,
         /^@iconify\//,
-        /^@internationalized\//,
       ],
       output: {
         preserveModules: true,

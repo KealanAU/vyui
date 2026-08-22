@@ -1,66 +1,5 @@
 import type { ContentNavigationItem } from '@nuxt/content'
 
-// Component docs are flat files, so categories live here (no per-page
-// frontmatter, no edits to the fleet-authored .md files). Unmapped slugs fall
-// into "Other" — add them here as new components are documented.
-const COMPONENT_CATEGORY: Record<string, string> = {
-  input: 'Form',
-  calendar: 'Form',
-  textarea: 'Form',
-  select: 'Form',
-  combobox: 'Form',
-  checkbox: 'Form',
-  'radio-group': 'Form',
-  switch: 'Form',
-  slider: 'Form',
-  'number-field': 'Form',
-  'pin-input': 'Form',
-  toggle: 'Form',
-  'toggle-group': 'Form',
-  label: 'Form',
-  rating: 'Form',
-  form: 'Form',
-  tabs: 'Navigation',
-  accordion: 'Navigation',
-  stepper: 'Navigation',
-  collapsible: 'Navigation',
-  pagination: 'Navigation',
-  navigation: 'Navigation',
-  modal: 'Overlay',
-  dialog: 'Overlay',
-  'alert-dialog': 'Overlay',
-  drawer: 'Overlay',
-  sheet: 'Overlay',
-  tray: 'Overlay',
-  popover: 'Overlay',
-  tooltip: 'Overlay',
-  'dropdown-menu': 'Overlay',
-  toast: 'Overlay',
-  avatar: 'Data Display',
-  'avatar-group': 'Data Display',
-  alert: 'Data Display',
-  badge: 'Data Display',
-  chip: 'Data Display',
-  progress: 'Data Display',
-  icon: 'Data Display',
-  'aspect-ratio': 'Layout',
-  'scroll-view': 'Layout',
-  separator: 'Layout',
-  card: 'Layout',
-  placeholder: 'Layout',
-  skeleton: 'Layout',
-  'swipe-action': 'Gestures & Lists',
-  swiper: 'Gestures & Lists',
-  sortable: 'Gestures & Lists',
-  draggable: 'Gestures & Lists',
-  feedlist: 'Gestures & Lists',
-  'feed-list': 'Gestures & Lists',
-  island: 'Dynamic Island',
-  'island-button': 'Dynamic Island',
-  'island-group': 'Dynamic Island',
-  button: 'Buttons',
-}
-
 // Slugs kept out of the Components sidebar (documented but not surfaced yet).
 const HIDDEN_COMPONENT_SLUGS = new Set(['keyboard-aware', 'index', 'components'])
 
@@ -70,8 +9,9 @@ export type ComponentLayer = 'all' | 'core' | 'kit'
 // frontmatter (`core` = a headless @vyui/core primitive, `kit` = a styled Vy*
 // component). The Core/Kit sub-filter reads that field, so every page lands in
 // exactly one bucket — no overlap. `package` is surfaced on nav nodes by the
-// `queryCollectionNavigation('docs', ['package'])` call in app.vue.
-type LayeredNavItem = ContentNavigationItem & { package?: 'core' | 'kit' }
+// `queryCollectionNavigation('docs', ['package', 'category'])` call in app.vue,
+// which also surfaces the `category` frontmatter the sidebar groups on.
+type LayeredNavItem = ContentNavigationItem & { package?: 'core' | 'kit', category?: string }
 
 // Shared selection for the Components Core/Kit sub-filter (header pills drive it,
 // the sidebar reads it).
@@ -79,6 +19,7 @@ export function useComponentLayer() {
   return useState<ComponentLayer>('vyui-component-layer', () => 'all')
 }
 
+// Sidebar group order. Pages opt in via their `category:` frontmatter.
 const CATEGORY_ORDER = [
   'Buttons',
   'Form',
@@ -109,6 +50,16 @@ const CATEGORY_CONFIG: CategoryConfig[] = [
   { id: 'composables', title: 'Composables', icon: 'i-lucide-square-function', paths: ['/composables'] },
   { id: 'styling', title: 'Styling', icon: 'i-lucide-palette', paths: ['/theming', '/accessibility', '/i18n'] },
 ]
+
+// Recursively drop `icon` from every nav node — the docs sidebar reads cleaner
+// without them. Applied at render time (the useAsyncData transform did not
+// reliably reach the provided ref).
+function stripNavIcons(items: ContentNavigationItem[] = []): ContentNavigationItem[] {
+  return items.map(({ icon: _icon, ...rest }) => ({
+    ...rest,
+    ...(rest.children ? { children: stripNavIcons(rest.children) } : {}),
+  }))
+}
 
 const slugOf = (path?: string) => (path ?? '').replace(/\/$/, '').split('/').pop() ?? ''
 
@@ -144,7 +95,10 @@ function groupByCategory(children: ContentNavigationItem[] = []): ContentNavigat
     const slug = slugOf(child.path)
     if (HIDDEN_COMPONENT_SLUGS.has(slug))
       continue
-    const cat = COMPONENT_CATEGORY[slug] ?? 'Other'
+    // Anything not in CATEGORY_ORDER would be filtered out below, so an
+    // unrecognised `category:` falls back to Other rather than vanishing.
+    const declared = (child as LayeredNavItem).category
+    const cat = declared && CATEGORY_ORDER.includes(declared) ? declared : 'Other'
     if (!groups.has(cat))
       groups.set(cat, [])
     groups.get(cat)!.push(child)

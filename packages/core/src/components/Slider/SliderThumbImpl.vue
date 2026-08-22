@@ -7,8 +7,7 @@ export interface SliderThumbImplProps extends PrimitiveProps {
 </script>
 
 <script setup lang="ts">
-import { useMounted } from '@vueuse/core'
-import { computed, useAttrs } from 'vue'
+import { computed, onMounted, shallowRef, useAttrs } from 'vue'
 
 import { useCollection } from '@/components/Collection'
 import { Primitive } from '@/components/Primitive'
@@ -57,12 +56,15 @@ const a11y = useA11y(() => ({
 // edge X% in from the right, so centring means pulling BACK out by half a thumb.
 // Getting it wrong is a half-thumb offset visible only when inverted or RTL.
 const thumbTransform = computed(() => {
-  if (orientation!.size === 'width')
-    return orientation!.startEdge.value === 'right' ? 'translateX(50%)' : 'translateX(-50%)'
-  return orientation!.startEdge.value === 'bottom' ? 'translateY(50%)' : 'translateY(-50%)'
+  const edge = orientation!.startEdge.value
+  if (edge === 'left') return 'translateX(-50%)'
+  if (edge === 'right') return 'translateX(50%)'
+  if (edge === 'top') return 'translateY(-50%)'
+  return 'translateY(50%)'
 })
 
-const isMounted = useMounted()
+const isMounted = shallowRef(false)
+onMounted(() => { isMounted.value = true })
 
 const thumbStyle = computed<VyStyle>(() => ({
   transform: thumbTransform.value,

@@ -10,6 +10,8 @@ export default defineContentConfig({
       },
       schema: z.object({
         package: z.enum(['core', 'kit']).optional(),
+        // Components sidebar grouping — see CATEGORY_ORDER in useNavigation.ts.
+        category: z.string().optional(),
         links: z.array(z.object({
           label: z.string(),
           icon: z.string(),

@@ -9,6 +9,7 @@ links:
     icon: i-simple-icons-github
     to: https://github.com/KealanAU/vyui/blob/main/packages/core/src/components/Navigation
     target: _blank
+category: Navigation
 ---
 
 ## Overview

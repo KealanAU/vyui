@@ -9,7 +9,7 @@
 
 import { defineComponent, h, inject, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, waitForUpdate } from '@vyui/testing-utils'
+import { render, waitForUpdate } from '@vyui/testing-utils'
 
 import Presence, { PresenceContextKey } from './Presence'
 import type { PresenceContextType } from './types'
@@ -47,42 +47,6 @@ describe('Presence — v1 mount/unmount surface', () => {
       components: { Presence },
       template: `<view><Presence :show="true"><view data-testid="content">${CONTENT_TEXT}</view></Presence></view>`,
     })
-    await waitForUpdate()
-    expect(container.querySelector('[data-testid="content"]')).not.toBeNull()
-  })
-
-  it('forceMount keeps the child rendered when show is false', async () => {
-    const { container } = render({
-      components: { Presence },
-      template: `<view><Presence :show="false" :force-mount="true"><view data-testid="content">${CONTENT_TEXT}</view></Presence></view>`,
-    })
-    await waitForUpdate()
-    expect(container.querySelector('[data-testid="content"]')).not.toBeNull()
-  })
-
-  it('keeps the child mounted across toggling when forceMount is set', async () => {
-    const { container } = render({
-      components: { Presence },
-      setup() {
-        const open = ref(false)
-        return { open, toggle: () => (open.value = !open.value) }
-      },
-      template: `
-        <view>
-          <view data-testid="trigger" @tap="toggle" />
-          <Presence :show="open" :force-mount="true">
-            <view data-testid="content">${CONTENT_TEXT}</view>
-          </Presence>
-        </view>
-      `,
-    })
-    await waitForUpdate()
-    const trigger = container.querySelector('[data-testid="trigger"]')!
-    expect(container.querySelector('[data-testid="content"]')).not.toBeNull()
-    fireEvent.tap(trigger)
-    await waitForUpdate()
-    expect(container.querySelector('[data-testid="content"]')).not.toBeNull()
-    fireEvent.tap(trigger)
     await waitForUpdate()
     expect(container.querySelector('[data-testid="content"]')).not.toBeNull()
   })
@@ -318,7 +282,7 @@ describe('Presence — slot prop back-compat', () => {
       },
       template: `
         <view>
-          <Presence :show="true" :force-mount="true">
+          <Presence :show="true">
             <template #default="slotProps">
               <view :data-present="String(slotProps.present)" :data-phase="slotProps.phase">
                 {{ record(slotProps) }}

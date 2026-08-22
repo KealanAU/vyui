@@ -13,6 +13,7 @@ links:
     icon: i-simple-icons-github
     to: https://github.com/KealanAU/vyui/tree/main/packages/core/src/components/PinInput
     target: _blank
+category: Form
 ---
 
 ## Overview

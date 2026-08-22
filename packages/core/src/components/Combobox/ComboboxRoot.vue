@@ -62,7 +62,7 @@ export const [injectComboboxRootContext, provideComboboxRootContext]
 </script>
 
 <script setup lang="ts" generic="T extends AcceptableValue = AcceptableValue">
-import { useVModel } from '@vueuse/core'
+import { useVModel } from '@/shared/composables/useVModel'
 import { computed, ref, toRefs } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useStandardVModelOf } from '@/shared/composables'

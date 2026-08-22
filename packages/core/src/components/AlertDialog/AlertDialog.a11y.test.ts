@@ -52,6 +52,9 @@ describe('AlertDialog a11y', () => {
     expect(cancel).not.toBeNull()
     expect(action.getAttribute('accessibility-traits')).toBe('button')
     expect(cancel.getAttribute('accessibility-traits')).toBe('button')
+    // No forced label — each control announces its own text.
+    expect(action.getAttribute('accessibility-label')).toBeNull()
+    expect(cancel.getAttribute('accessibility-label')).toBeNull()
   })
 
   it('announces the title as a heading', async () => {

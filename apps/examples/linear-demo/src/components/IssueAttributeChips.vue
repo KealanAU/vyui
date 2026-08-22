@@ -10,9 +10,9 @@ const PRIORITIES = ['No priority', 'Low', 'Medium', 'High', 'Urgent'] as const
 const ASSIGNEES = ['Unassigned', 'vyui', 'kealan', 'ada', 'grace'] as const
 const LABELS = ['No label', 'bug', 'feature', 'chore', 'docs'] as const
 
-// Model-only SFC: vue-lynx@0.4.0 lacks `mergeModels`, which the compiler
-// emits whenever `defineModel` shares a component with `defineProps` or
-// `defineEmits`. Any extras (e.g. a Save button) must live in the parent.
+// Model-only SFC. `defineProps` / `defineEmits` alongside `defineModel` used to
+// be a link error on vue-lynx 0.4 (no `mergeModels` export); 0.5.1 exports it,
+// so extras no longer have to live in the parent.
 const status = defineModel<string>('status', { required: true })
 const priority = defineModel<string>('priority', { required: true })
 const assignee = defineModel<string>('assignee', { required: true })

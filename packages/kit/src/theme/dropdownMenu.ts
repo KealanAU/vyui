@@ -7,10 +7,9 @@
  */
 import type { Color } from './colors'
 
-// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
-// XML, so the `text-*` classes on the icon slots never reach the glyph —
-// `DropdownMenuItems.vue` bakes the resting fill via the Icon `color` prop. Keep
-// in sync with the `active` variant + the per-color compoundVariants below.
+// Baked icon fill (see ./iconColor.ts). `DropdownMenuItems.vue` bakes the
+// resting fill. Keep in sync with the `active` variant and the per-color
+// compoundVariants below.
 export function iconFg(color?: string): { semantic: string, shade: number } {
   return color ? { semantic: color, shade: 500 } : { semantic: 'neutral', shade: 500 }
 }
@@ -32,10 +31,7 @@ export default (colors: Color[]) => ({
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
-    // `enableCSSInheritance: false`: a foreground color on the `item` <view>
-    // does NOT reach the nested `itemLabel` <text>, so the label color rides on
-    // `itemLabel` (the `item` carries `group`, driving `group-data-[…]:` here)
-    // and only the `bg-*` surface stays on `item`.
+    // `enableCSSInheritance: false` — color lands on `itemLabel`; `item` keeps the `bg-*` surface.
     active: {
       true: {
         item: 'bg-elevated',

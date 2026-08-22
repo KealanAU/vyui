@@ -1,20 +1,17 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/select.ts` and adapted for Vue-Lynx:
-// dark rides the semantic tokens, `focus*` / `shadow*` / `dark:*` are dropped,
-// and the result is flattened into a single tv config (no `defu` merge with the
-// input theme, since `Select` is its own component here).
+// Ported from nuxt/ui v3.0.2 `src/theme/select.ts` — see `./button.ts` for the
+// shared Lynx adaptations. Flattened into a single tv config: `Select` is its own
+// component here, so there is no `defu` merge with the input theme.
 //
-// Lynx adaptation mirrors `./input.ts`: leading / trailing wrappers are inline
-// flex siblings of the value text, not `absolute` overlays — Lynx's layout
-// engine doesn't reliably overlay absolute children on a sibling text run.
+// As in `./input.ts`, leading / trailing wrappers are inline flex siblings of the
+// value text, not `absolute` overlays — Lynx's layout engine does not reliably
+// overlay absolute children on a sibling text run.
 
 import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center',
-    // `base` is the trigger <view> — surface only. Value and placeholder colors
-    // live on their own <text> slots: CSS inheritance is OFF in the Lynx build,
-    // so a `text-*` on the trigger never reaches those children.
+    // `enableCSSInheritance: false` — `base` is surface only; color lands on `value` / `placeholder`.
     base: 'w-full rounded-md flex flex-row items-center disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
     value: 'flex-1 min-w-0 truncate text-start text-highlighted',
     placeholder: 'flex-1 min-w-0 truncate text-start text-dimmed',

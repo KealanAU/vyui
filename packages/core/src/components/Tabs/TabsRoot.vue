@@ -2,7 +2,7 @@
 import type { Ref } from 'vue'
 import type { DataOrientation, Direction, StringOrNumber } from '@/shared/types'
 import type { PrimitiveProps } from '@/components/Primitive'
-import { useVModel } from '@vueuse/core'
+import { useVModel } from '@/shared/composables/useVModel'
 import { createContext, useDirection, useForwardExpose, useId } from '@/shared'
 
 export interface TabsRootContext {
@@ -58,7 +58,7 @@ export interface TabsRootProps<T extends StringOrNumber = StringOrNumber> extend
    * When `false`, a panel mounts the FIRST time its tab is selected and stays
    * mounted (hidden via `display: none`), making revisits a style flip. Lazy on
    * first visit rather than all-mounted-upfront, which on Lynx would move the
-   * cost to first paint; use `forceMount` on a `TabsContent` for that case.
+   * cost to first paint.
    *
    * @defaultValue `true`
    */

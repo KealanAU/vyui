@@ -55,7 +55,7 @@ export const [injectPinInputRootContext, providePinInputRootContext]
 </script>
 
 <script setup lang="ts">
-import { useVModel } from '@vueuse/core'
+import { useVModel } from '@/shared/composables/useVModel'
 import { computed, nextTick, ref, toRefs, watch } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'

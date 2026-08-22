@@ -41,6 +41,12 @@ Licensed under the MIT License.
 Adapted files carry an "Adapted from reka-ui (MIT)" header.
 
 ------------------------------------------------------------------------------
+Portions adapted from vueuse/vueuse (https://github.com/vueuse/vueuse)
+Licensed under the MIT License.
+Affected paths:
+  packages/core/src/shared/composables/useVModel.ts
+
+------------------------------------------------------------------------------
 Portions adapted from melt-ui/melt-ui (https://github.com/melt-ui/melt-ui)
 Licensed under the MIT License.
 Affected paths:

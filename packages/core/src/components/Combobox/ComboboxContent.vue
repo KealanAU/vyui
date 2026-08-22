@@ -3,10 +3,7 @@
 import type { DismissableLayerEmits } from '@/shared/composables'
 import type { PrimitiveProps } from '@/components/Primitive'
 
-export interface ComboboxContentProps extends PrimitiveProps {
-  /** Used to force mounting when more control is needed. */
-  forceMount?: boolean
-}
+export interface ComboboxContentProps extends PrimitiveProps {}
 
 /** Preventable outside-interaction events — see `useDismissableLayer`. */
 export type ComboboxContentEmits = DismissableLayerEmits
@@ -68,7 +65,7 @@ function renderFn() {
 }
 
 watch(
-  () => props.forceMount || rootContext.open.value,
+  () => rootContext.open.value,
   (isOpen) => {
     if (isOpen)
       registerOverlay(id, renderFn, capturedProvides)

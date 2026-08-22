@@ -77,7 +77,7 @@ function validateMax(max: number): number {
 </script>
 
 <script setup lang="ts">
-import { useVModel } from '@vueuse/core'
+import { useVModel } from '@/shared/composables/useVModel'
 import { computed, nextTick, watch } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useA11y } from '@/shared/composables'

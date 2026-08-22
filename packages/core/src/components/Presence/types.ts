@@ -53,8 +53,6 @@ export interface PresenceProps {
   /** Drives the lifecycle. `true` triggers Entering → Entered (with the optional
    *  `DelayedEntering` half-step), `false` triggers Leaving → Left. */
   show: boolean
-  /** Keep the child mounted regardless of `show`. */
-  forceMount?: boolean
   /** Controlled state — pair with {@link setPresenceState}. */
   state?: PresenceState
   /** Controlled state setter — pair with {@link state}. */
@@ -79,7 +77,6 @@ export interface PresenceProps {
  */
 export interface UsePresenceOptions {
   show: boolean
-  forceMount?: boolean
   state: PresenceState
   setPresenceState: (state: PresenceState) => void
   enableDelay?: boolean
