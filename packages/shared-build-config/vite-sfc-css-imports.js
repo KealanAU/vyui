@@ -1,16 +1,8 @@
 // Re-attach per-module SFC CSS side-effect imports.
 //
-// In a `cssCodeSplit` lib build, Vite extracts each SFC's `<style>` to its own
-// `.css` asset but strips the `import "./X.css"` side-effect from the JS module
-// (its browser CSS-injection path doesn't apply to a published library). Under
-// `preserveModules` that leaves the CSS orphaned: the file ships but no module
-// pulls it in, so consumers silently render unstyled — the same net result as
-// the old bundle, which stubbed SFC CSS entirely.
-//
-// This restores the side-effect import at the top of each JS chunk that owns
-// CSS, using the `importedCss` set Vite records on `chunk.viteMetadata`. The
-// consumer's bundler then loads the CSS whenever the component module is
-// imported, exactly as an SFC `<style>` implies.
+// In a `cssCodeSplit` lib build Vite extracts each SFC's `<style>` to its own
+// asset but strips the `import "./X.css"` from the JS module. Under
+// `preserveModules` the CSS then ships orphaned and consumers render unstyled.
 
 import { dirname, relative } from 'node:path/posix'
 

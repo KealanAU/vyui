@@ -11,7 +11,7 @@
 // and imports the built entry points (NOT source) to assert every public export
 // is defined and each `exports` subpath resolves. Run after `build`.
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, readFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, readFileSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -126,10 +126,15 @@ try {
   if (!icon.VyIcon) fail('@vyui/kit/icon entry: VyIcon missing')
   else ok('@vyui/kit/icon entry resolves via deep @vyui/core import')
 
-  // 4. Every `exports` subpath file exists in the packed tarball.
-  for (const [sub, target] of Object.entries(pkg.exports)) {
-    const file = (typeof target === 'string' ? target : target.import || target.default)
-    if (!file || !file.endsWith('.js')) continue
+  // 4. Every `exports` subpath file exists in the packed tarball. The `./*`
+  // pattern maps wholesale onto dist/entries, so expand it from the built dir.
+  const subpaths = Object.entries(pkg.exports)
+    .map(([sub, target]) => [sub, typeof target === 'string' ? target : target.import || target.default])
+    .filter(([, file]) => file?.endsWith('.js') && !file.includes('*'))
+  for (const f of readdirSync(join(pkgRoot, 'dist/entries'))) {
+    if (f.endsWith('.js')) subpaths.push([`./${f.slice(0, -3)}`, `./dist/entries/${f}`])
+  }
+  for (const [sub, file] of subpaths) {
     try {
       readFileSync(join(workDir, 'package', file))
       ok(`exports "${sub}" → ${file} present`)

@@ -146,12 +146,11 @@ const { ui } = useStyledComponent('combobox', theme, () => ({
   trailing: true,
 }))
 
-// Lynx SVG can't inherit currentColor — bake the hex. Trigger icons default to
-// neutral (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
+// Baked icon fill (see theme/iconColor.ts). Trigger icons default to neutral
+// (dimmed); override via the `leading` / `trailing` slots' `iconColor`.
 const iconColor = computed(() => resolveColorHex(appConfig, 'neutral', 400))
 
-// The selected-item tick is baked too (a class can't reach the rasterized svg),
-// on the mode-independent accent ramp.
+// The selected-item tick is baked too, on the mode-independent accent ramp.
 const checkColor = computed(() => resolveColorHex(appConfig, props.color, 500))
 
 // Shared open state bridges `ComboboxRoot` (item-tap, trigger) and `SheetRoot`
@@ -255,8 +254,7 @@ const displayLabel = computed(() => {
           <view :class="ui.viewport({ class: props.ui?.viewport })">
             <ComboboxEmpty :class="ui.empty({ class: props.ui?.empty })">
               <slot name="empty" :search-term="searchTerm">
-                <!-- Lynx enableCSSInheritance:false — empty's text-muted sits on
-                     the wrapping <view>, so the color must land on the text. -->
+                <!-- `enableCSSInheritance: false` — color lands on this <text>. -->
                 <text class="text-muted">No results</text>
               </slot>
             </ComboboxEmpty>

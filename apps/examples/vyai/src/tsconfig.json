@@ -13,7 +13,6 @@
     "baseUrl": ".",
     "paths": {
       "@vyui/core": ["../../../../packages/core/src/index.ts"],
-      "@vyui/core/date": ["../../../../packages/core/src/date/index.ts"],
       "@vyui/core/shared": ["../../../../packages/core/src/shared/index.ts"],
       "@vyui/kit": ["../../../../packages/kit/src/index.ts"]
     }

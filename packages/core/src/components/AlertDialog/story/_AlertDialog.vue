@@ -12,7 +12,6 @@ import {
 
 const props = defineProps<{
   rootProps?: { open?: boolean, defaultOpen?: boolean }
-  forceMount?: boolean
 }>()
 const emit = defineEmits<{
   'update:open': [value: boolean]
@@ -30,10 +29,7 @@ const emit = defineEmits<{
         <text>Delete</text>
       </AlertDialogTrigger>
       <AlertDialogOverlay data-testid="overlay-impl" />
-      <AlertDialogContent
-        data-testid="content"
-        :force-mount="forceMount"
-      >
+      <AlertDialogContent data-testid="content">
         <AlertDialogTitle data-testid="title">
           <text>Are you sure?</text>
         </AlertDialogTitle>

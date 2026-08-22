@@ -9,11 +9,14 @@ links:
     icon: i-simple-icons-github
     to: https://github.com/KealanAU/vyui/blob/main/packages/core/src/components/AlertDialog
     target: _blank
+category: Overlay
 ---
 
 ## Overview
 
-`AlertDialog` is a headless `@vyui/core` primitive for a modal that interrupts the user and expects a response. Unlike [`Dialog`](/components/dialog), it is always modal and cannot be dismissed by clicking the overlay, since the user must choose an explicit action or cancel. Use it for destructive or irreversible confirmations.
+`AlertDialog` is [`Dialog`](/components/dialog) with `role="alertdialog"` preset. The role announces alert-dialog semantics and makes the dialog undismissable by an outside tap, so the user must choose an explicit action or cancel. Use it for destructive or irreversible confirmations.
+
+Every part except `AlertDialogRoot` is a name alias over the Dialog primitive of the same shape, so `<Dialog role="alertdialog">` is equivalent.
 
 ::callout{icon="i-lucide-box"}
 This is a layer of `@vyui/core`, behavior only and no styles. Compose it when you need a custom-styled confirmation flow.
@@ -82,10 +85,9 @@ import {
 
 ## Features and behavior
 
-- Always modal: the overlay blocks interaction with everything behind it and is **not** click-to-dismiss.
+- Modal by default: the overlay blocks interaction with everything behind it and is **not** tap-to-dismiss.
 - `open` / `v-model:open` controls visibility; `defaultOpen` seeds uncontrolled state.
-- Focus is moved to `AlertDialogCancel` by default and trapped within the content while open.
-- `AlertDialogAction` confirms and closes; `AlertDialogCancel` dismisses without acting.
+- `AlertDialogAction` emits `click` then closes; `AlertDialogCancel` closes without acting. Both alias `DialogClose`.
 
 ## API
 
@@ -99,29 +101,28 @@ import {
 
 ### `AlertDialogContent`
 
-::component-props{name="AlertDialogContent"}
+Aliases `DialogContent`.
+
+::component-props{name="DialogContent"}
 ::
 
-::component-emits{name="AlertDialogContent"}
+::component-emits{name="DialogContent"}
 ::
 
-### `AlertDialogAction`
+### `AlertDialogAction` / `AlertDialogCancel`
 
-::component-props{name="AlertDialogAction"}
+Both alias `DialogClose`.
+
+::component-props{name="DialogClose"}
 ::
 
-::component-emits{name="AlertDialogAction"}
-::
-
-### `AlertDialogCancel`
-
-::component-props{name="AlertDialogCancel"}
+::component-emits{name="DialogClose"}
 ::
 
 ## Accessibility
 
 - Announced with native alert-dialog semantics; include both `AlertDialogTitle` and `AlertDialogDescription`.
-- Default focus lands on the cancel control so an accidental confirmation is harder.
+- The content confines assistive tech via `accessibility-exclusive-focus` while open.
 - The dialog cannot be dismissed implicitly; only `AlertDialogAction` or `AlertDialogCancel` close it.
 
 ## Related components

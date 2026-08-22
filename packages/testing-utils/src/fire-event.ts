@@ -1,24 +1,24 @@
 import { createEvent, fireEvent as domFireEvent } from '@testing-library/dom'
 
-export const eventMap: Record<string, { defaultInit: Record<string, unknown> }> = {
-  tap: { defaultInit: {} },
-  longtap: { defaultInit: {} },
-  touchstart: { defaultInit: {} },
-  touchmove: { defaultInit: {} },
-  touchcancel: { defaultInit: {} },
-  touchend: { defaultInit: {} },
-  longpress: { defaultInit: {} },
-  scroll: { defaultInit: {} },
-  scrollend: { defaultInit: {} },
-  focus: { defaultInit: {} },
-  blur: { defaultInit: {} },
-  input: { defaultInit: {} },
-  confirm: { defaultInit: {} },
-  keyboard: { defaultInit: {} },
-  layoutchange: { defaultInit: {} },
-  transitionend: { defaultInit: {} },
-  animationend: { defaultInit: {} },
-}
+const eventNames = [
+  'tap',
+  'longtap',
+  'touchstart',
+  'touchmove',
+  'touchcancel',
+  'touchend',
+  'longpress',
+  'scroll',
+  'scrollend',
+  'focus',
+  'blur',
+  'input',
+  'confirm',
+  'keyboard',
+  'layoutchange',
+  'transitionend',
+  'animationend',
+]
 
 export const fireEvent: Record<string, any> & ((elem: Element, event: Event) => boolean)
   = ((elem: Element, event: Event) => {
@@ -30,13 +30,13 @@ export const fireEvent: Record<string, any> & ((elem: Element, event: Event) => 
     return result
   }) as any
 
-for (const key of Object.keys(eventMap)) {
+for (const key of eventNames) {
   fireEvent[key] = (elem: Element, init?: Record<string, unknown>): boolean => {
     const env = (globalThis as any).lynxTestingEnv
     const wasMain = (globalThis as any).__MAIN_THREAD__
     env?.switchToBackgroundThread()
     const eventType = (init?.eventType as string) ?? 'bindEvent'
-    const eventInit = { eventType, eventName: key, ...eventMap[key]!.defaultInit, ...init }
+    const eventInit = { eventType, eventName: key, ...init }
     const event = createEvent(`${eventType}:${key}`, elem, eventInit)
     Object.assign(event, eventInit)
     const result = domFireEvent(elem, event)

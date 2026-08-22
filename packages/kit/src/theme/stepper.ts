@@ -1,8 +1,5 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/stepper.ts` and adapted for Vue-Lynx.
-//
-// Semantic color names (`primary`, `error`, …) resolve to actual palettes via
-// the consuming app's CSS variables and Tailwind config — see
-// `apps/examples/kit-demo/src/index.css`.
+// Ported from nuxt/ui v3.0.2 `src/theme/stepper.ts` — see `./button.ts` for the
+// shared Lynx adaptations.
 import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
@@ -12,11 +9,7 @@ export default (colors: Color[]) => ({
     header: 'flex min-w-0 max-w-full',
     item: 'group text-center relative w-full min-w-0',
     container: 'relative min-w-0',
-    // `enableCSSInheritance: false`: the foreground (`text-*`) must sit on the
-    // indicator content (`icon` slot / the step-number <text>), not the
-    // `trigger` <view> — color there never reaches the nested icon/number. The
-    // `item` carries the `group`, so state stays `group-data-[state=…]:`. The
-    // `bg-*` fill stays on `trigger`.
+    // `enableCSSInheritance: false` — fg lands on `icon` / the step-number <text>; `trigger` keeps `bg-*`.
     trigger: 'rounded-full font-medium text-center align-middle flex flex-row items-center justify-center font-semibold bg-elevated',
     indicator: 'flex flex-row items-center justify-center size-full',
     icon: 'shrink-0 group-ui-completed:text-white group-ui-active:text-white text-muted',

@@ -16,9 +16,7 @@ export default {
     trigger:
       'group flex-1 flex flex-row items-center gap-1.5 font-medium text-sm py-3.5 min-w-0',
     content: 'overflow-hidden transition-[height] ease-out',
-    // `body` is a wrapping <view> and `enableCSSInheritance: false` means its
-    // `text-*` can't reach the nested content <text>, so the foreground color
-    // moves onto `bodyText`; `body` keeps layout/sizing only.
+    // `enableCSSInheritance: false` — fg lands on `bodyText`, not the `body` <view>.
     body: 'text-sm pb-3.5',
     bodyText: 'text-sm text-default',
     leadingIcon: 'shrink-0 size-5 text-muted',

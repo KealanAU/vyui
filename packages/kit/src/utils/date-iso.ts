@@ -1,8 +1,6 @@
 // ISO-string calendar math for `VyCalendar`. Deliberately host-`Date`-free
 // (Sakamoto weekday, hand-rolled month arithmetic) because Lynx-native `Date`,
-// timezone and locale-formatting behavior is still unverified. The
-// DateValue-based `@vyui/core/date` module targets the future headless
-// primitives; this is what the shipped component runs on today.
+// timezone and locale-formatting behavior is still unverified.
 
 export interface Month {
   year: number

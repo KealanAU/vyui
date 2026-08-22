@@ -69,7 +69,6 @@ const dataState = computed(() =>
 
 const handlers = presence?.animationHandlers
 
-/** Swallow taps on the menu surface so they don't reach the backdrop. */
 function stopTap(event: any) {
   event?.stopPropagation?.()
 }

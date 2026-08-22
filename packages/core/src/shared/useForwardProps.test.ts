@@ -1,6 +1,5 @@
 // Adapted from reka-ui (MIT) — https://github.com/unovue/reka-ui
 import { mount } from '@vue/test-utils'
-import { reactivePick } from '@vueuse/core'
 import { describe, expect, it } from 'vitest'
 import { computed, defineComponent, watch } from 'vue'
 import { useForwardProps } from './useForwardProps'
@@ -56,7 +55,7 @@ describe('useForwardProps', () => {
       props: { id: { type: String, default: 'test' }, extra: { type: String, default: 'not-related' } },
       emits: ['log'],
       setup(props, { emit }) {
-        const picked = reactivePick(props, 'id')
+        const picked = computed(() => ({ id: props.id }))
         const forwarded = useForwardProps(picked)
         watch(forwarded, () => emit('log', forwarded.value), { immediate: true, deep: true })
 

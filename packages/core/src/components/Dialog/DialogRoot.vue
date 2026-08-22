@@ -12,6 +12,11 @@ export interface DialogRootProps {
    *  tap-blocking backdrop and the content confines assistive tech via
    *  `exclusiveFocus`. @defaultValue true */
   modal?: boolean
+  /** Semantic role. `alertdialog` announces an alert dialog AND makes the
+   *  dialog undismissable by an outside tap — the user must pick an explicit
+   *  action, per WAI-ARIA. This is what the `AlertDialog*` aliases preset.
+   *  @defaultValue "dialog" */
+  role?: 'dialog' | 'alertdialog'
 }
 
 export type DialogRootEmits = {
@@ -22,6 +27,7 @@ export type DialogRootEmits = {
 export interface DialogRootContext {
   open: Readonly<Ref<boolean>>
   modal: Ref<boolean>
+  role: Ref<'dialog' | 'alertdialog'>
   openModal: () => void
   onOpenChange: (value: boolean) => void
   onOpenToggle: () => void
@@ -59,6 +65,7 @@ const props = withDefaults(defineProps<DialogRootProps>(), {
   open: undefined,
   defaultOpen: false,
   modal: true,
+  role: 'dialog',
 })
 const emit = defineEmits<DialogRootEmits>()
 
@@ -73,7 +80,7 @@ defineSlots<{
 
 const open = useStandardVModelOf<boolean>(props, 'open', emit)
 
-const { modal } = toRefs(props)
+const { modal, role } = toRefs(props)
 
 const contentElement = ref<unknown>()
 
@@ -87,6 +94,7 @@ const groupState = ref<PresenceState>(
 provideDialogRootContext({
   open,
   modal,
+  role,
   openModal: () => {
     open.value = true
   },

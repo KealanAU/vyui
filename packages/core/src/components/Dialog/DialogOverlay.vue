@@ -1,13 +1,7 @@
 <script lang="ts">
 import type { DialogOverlayImplProps } from './DialogOverlayImpl.vue'
 
-export interface DialogOverlayProps extends DialogOverlayImplProps {
-  /**
-   * Used to force mounting when more control is needed. Useful when
-   * controlling animation with Vue animation libraries.
-   */
-  forceMount?: boolean
-}
+export interface DialogOverlayProps extends DialogOverlayImplProps {}
 </script>
 
 <script setup lang="ts">
@@ -48,7 +42,7 @@ function render() {
 }
 
 watch(
-  () => rootContext.modal.value && (props.forceMount || rootContext.open.value),
+  () => rootContext.modal.value && rootContext.open.value,
   (isPresent) => {
     if (isPresent)
       registerOverlay(id, render, capturedProvides)

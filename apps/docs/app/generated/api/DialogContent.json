@@ -31,12 +31,6 @@
       "description": "Verbose lifecycle tracing — forwarded to both backdrop + panel Presence."
     },
     {
-      "name": "forceMount",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Force mounting when more control is needed — e.g. driving animation from a\nVue animation library."
-    },
-    {
       "name": "transition",
       "type": "boolean | undefined",
       "required": false,

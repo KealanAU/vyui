@@ -1,14 +1,8 @@
 // Regression guard for the published JS SHAPE (the "Target dist contract" from
-// docs/plans/vite-preserve-modules-dist.md). Complements check-dts.mjs (types)
-// and the packed-tarball smoke test (runtime exports).
-//
-// The whole point of the Vite `preserveModules` migration is that
-// worklet-bearing modules ship source-shaped so the consumer's main-thread
-// worklet toolchain can follow them. A regression back to a bundle would
-// reintroduce the `__WEBPACK_EXTERNAL_MODULE_vue_lynx_* is not defined` crash
-// that broke npm consumers of VyTray/VyDrawer. This is the detector that would
-// have caught that bug: it is RED on a bundled module and GREEN on a
-// source-shaped one (see the unit test in packages/core).
+// docs/plans/vite-preserve-modules-dist.md): worklet-bearing modules must ship
+// source-shaped so the consumer's MT worklet toolchain can follow them. A
+// regression back to a bundle reintroduces the
+// `__WEBPACK_EXTERNAL_MODULE_vue_lynx_* is not defined` crash.
 //
 // Usage: node check-dist-shape.mjs <distDir>
 import { readdirSync, readFileSync } from 'node:fs'
@@ -16,8 +10,8 @@ import { join, resolve, relative } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 /**
- * Scan one module's source for contract violations.
- * Pure + synchronous so it can be unit-tested without a build.
+ * Scan one module's source for contract violations. Pure + synchronous so it
+ * can be unit-tested without a build.
  *
  * @param {string} file  label for messages (e.g. a dist-relative path)
  * @param {string} code
@@ -26,33 +20,28 @@ import { pathToFileURL } from 'node:url'
 export function scanModule(file, code) {
   const why = []
 
-  // 1. No webpack external namespace may ever appear — that is the bundle
-  //    fingerprint whose orphaned references crash the consumer's MT bundle.
+  // The bundle fingerprint: its orphaned references crash the consumer's MT bundle.
   if (/__WEBPACK_EXTERNAL_MODULE_/.test(code)) {
     why.push('contains __WEBPACK_EXTERNAL_MODULE_* (dist was bundled, not source-shaped)')
   }
 
-  // 2. vue-lynx must be imported by NAME, never as a namespace — the consumer's
-  //    registration slicing keeps named refs but drops a namespace import.
+  // The consumer's registration slicing keeps named refs, drops a namespace import.
   if (/import\s+\*\s+as\s+\w+\s+from\s*['"]vue-lynx['"]/.test(code)) {
     why.push("namespace import of 'vue-lynx' (must be named imports)")
   }
 
-  // 3. The runtime gate must be fully inlined — no `loadWorkletRuntime`
-  //    reference (vue-lynx doesn't export it; a leftover throws at load).
+  // vue-lynx doesn't export `loadWorkletRuntime`; a leftover throws at load.
   if (/\bloadWorkletRuntime\b/.test(code)) {
     why.push("leftover 'loadWorkletRuntime' reference (inlineRuntimeGate did not fully strip it)")
   }
 
-  // 4. plugin-vue virtual sub-module specifiers must never leak into dist.
+  // plugin-vue virtual sub-module specifiers must never leak into dist.
   if (/['"][^'"]*\?vue&type=/.test(code)) {
     why.push('leaked ?vue&type= virtual sub-module specifier')
   }
 
-  // 5. Per-file worklet self-registration: every `_workletMap["<id>"]`
-  //    reference must have a matching in-file `registerWorkletInternal(
-  //    "main-thread", "<id>", …)`. Source-shaped emit keeps both in the same
-  //    module; a mismatch means the pre-compile broke.
+  // Per-file self-registration: every `_workletMap["<id>"]` needs a matching
+  // in-file `registerWorkletInternal("main-thread", "<id>", …)`.
   const registered = new Set()
   for (const m of code.matchAll(/registerWorkletInternal\(\s*["']main-thread["']\s*,\s*["']([^"']+)["']/g)) {
     registered.add(m[1])
@@ -63,12 +52,8 @@ export function scanModule(file, code) {
     }
   }
 
-  // 6. Every worklet module must retain the `'main thread'` / `"main thread"`
-  //    marker string. The consumer's `worklet-loader-mt` gates registration
-  //    extraction on it (`if (!source.includes("'main thread'") …) return
-  //    'export default {};'`) — without it the module's registrations are
-  //    dropped from the consumer's MT bundle and every gesture throws
-  //    `cannot read property 'bind' of undefined`.
+  // The consumer's `worklet-loader-mt` gates registration extraction on the
+  // `'main thread'` marker — without it every registration is dropped.
   if (registered.size > 0 && !/'main thread'|"main thread"/.test(code)) {
     why.push("worklet module is missing the 'main thread' marker (consumer MT loader will drop its registrations)")
   }

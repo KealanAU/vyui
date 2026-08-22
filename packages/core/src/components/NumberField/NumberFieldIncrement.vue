@@ -10,7 +10,6 @@ export interface NumberFieldIncrementProps extends PrimitiveProps {
 </script>
 
 <script setup lang="ts">
-import { reactiveOmit } from '@vueuse/core'
 import { computed } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
@@ -21,9 +20,6 @@ const props = withDefaults(defineProps<NumberFieldIncrementProps>(), { as: 'view
 
 const context = injectNumberFieldRootContext()
 useForwardExpose()
-
-// Strip the part-specific props so they don't leak onto the rendered element.
-const primitiveProps = reactiveOmit(props, 'multiplier', 'disabled')
 
 const disabled = computed(() =>
   props.disabled
@@ -41,7 +37,9 @@ const a11y = useA11y(() => ({
 
 <template>
   <Primitive
-    v-bind="{ ...primitiveProps, ...a11y }"
+    :as="as"
+    :as-child="asChild"
+    v-bind="a11y"
     :class="{ 'ui-disabled': disabled }"
     :disabled="disabled || undefined"
     :data-disabled="disabled ? '' : undefined"

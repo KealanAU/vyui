@@ -2,6 +2,12 @@
 import type { PrimitiveProps } from '@/components/Primitive'
 
 export interface DialogCloseProps extends PrimitiveProps {}
+
+export type DialogCloseEmits = {
+  /** Fired when the control is tapped and the tap wasn't swallowed as busy —
+   *  before the dialog closes. Backs `AlertDialogAction`. */
+  click: []
+}
 </script>
 
 <script setup lang="ts">
@@ -16,13 +22,17 @@ const props = withDefaults(defineProps<DialogCloseProps>(), {
   as: 'view',
 })
 
+const emit = defineEmits<DialogCloseEmits>()
+
 useForwardExpose()
 const rootContext = injectDialogRootContext()
 
 const attrs = useAttrs()
+// No fallback label: the control announces its own child text. Icon-only
+// closers (kit's Modal) pass `accessibility-label` themselves.
 const a11y = useA11y(() => ({
   role: 'button',
-  label: (attrs['accessibility-label'] as string) || 'Close',
+  label: attrs['accessibility-label'] as string | undefined,
 }))
 
 // While the group is animating in/out, swallow close taps so a half-open
@@ -31,6 +41,7 @@ const busy = computed(() => resolveBusyState(rootContext.groupState.value))
 
 function onTap() {
   if (busy.value) return
+  emit('click')
   rootContext.onOpenChange(false)
 }
 </script>

@@ -48,8 +48,7 @@ export default (colors: Color[]) => ({
         decrementIcon: 'size-6',
       },
     },
-    // Surface only (bg/border) on `root`; typed-text color lives on `base` —
-    // CSS inheritance is OFF in the Lynx build.
+    // `enableCSSInheritance: false` — surface on `root`, typed-text color on `base`.
     variant: {
       outline: { root: 'bg-default border border-default' },
       soft: { root: 'bg-muted disabled:bg-muted border-transparent' },

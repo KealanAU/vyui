@@ -9,7 +9,6 @@ import {
 
 const props = defineProps<{
   rootProps?: { open?: boolean, defaultOpen?: boolean, modal?: boolean }
-  forceMount?: boolean
 }>()
 const emit = defineEmits<{
   'update:open': [value: boolean]
@@ -29,7 +28,6 @@ const emit = defineEmits<{
       </PopoverTrigger>
       <PopoverContent
         data-testid="content"
-        :force-mount="forceMount"
         @interact-outside="(e: any) => emit('interactOutside', e)"
         @pointer-down-outside="(e: any) => emit('pointerDownOutside', e)"
       >

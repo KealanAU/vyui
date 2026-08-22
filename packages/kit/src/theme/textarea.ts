@@ -1,20 +1,16 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/textarea.ts`. Upstream is a pure
-// passthrough to the input theme, mirrored here with one tweak: `root` uses
-// `items-start` so multi-line content sits at the top of the box.
-//
-// Lynx adaptation matches `./input.ts`: chrome lives on `root`, the `<textarea>`
-// is transparent and `flex-1`, and leading / trailing wrappers are inline flex
-// siblings rather than `absolute` overlays.
+// Ported from nuxt/ui v3.0.2 `src/theme/textarea.ts`, which is a pure
+// passthrough to the input theme. One tweak: `root` uses `items-start` so
+// multi-line content sits at the top of the box. Lynx adaptations match
+// `./input.ts`.
 
 import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-start w-full min-w-0 max-w-full overflow-hidden rounded-md transition-colors',
-    // Typed-text color sits on `base` (the <textarea>), not `root`: CSS
-    // inheritance is OFF in the Lynx build. `border-0` resets the native
-    // <textarea>'s user-agent border (a black inset on the web build); the
-    // themed border lives on `root`.
+    // `enableCSSInheritance: false` — typed-text color lands on `base` (the <textarea>), not `root`.
+    // `border-0` resets the native <textarea>'s user-agent border (a black inset on
+    // the web build); the themed border lives on `root`.
     base: 'flex-1 min-w-0 min-h-0 max-w-full bg-transparent border-0 text-highlighted placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:opacity-75 align-top',
     leading: 'flex flex-row items-center shrink-0',
     leadingIcon: 'shrink-0 text-dimmed',

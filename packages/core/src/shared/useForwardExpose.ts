@@ -1,8 +1,6 @@
-import type { MaybeElement } from '@vueuse/core'
 import type { ComponentPublicInstance } from 'vue'
 import type { ElementHandle } from './types'
 // reference: https://github.com/vuejs/rfcs/issues/258#issuecomment-1068697672
-import { unrefElement } from '@vueuse/core'
 import { computed, getCurrentInstance, onUpdated, ref, triggerRef } from 'vue'
 
 // Lynx JS runtime (app-service worker) has no DOM globals
@@ -27,10 +25,10 @@ export function useForwardExpose<T extends ComponentPublicInstance>() {
   })
 
   function resolveCurrentElement() {
-    return unrefElement(currentRef as unknown as MaybeElement) as ElementHandle
+    const el = currentRef.value as any
+    return (el?.$el ?? el) as ElementHandle
   }
 
-  // Do give us credit if you reference our code :D
   // localExpose should only be assigned once else will create infinite loop
   const localExpose: Record<string, any> | null = Object.assign({}, instance.exposed)
   const ret: Record<string, any> = {}
@@ -72,8 +70,8 @@ export function useForwardExpose<T extends ComponentPublicInstance>() {
       get: () => (isRawElement(ref) ? ref : (ref as T).$el),
     })
 
-    // ref not is Element
-    // and `useForwardExpose.test.ts > useForwardRef > should forward plain DOM element ref - 2` Passing in `$el`
+    // A component instance, and not one that was passed its own `$el`. Only
+    // then is there a child `exposed` object to bubble up.
     if (!isRawElement(ref) && !Object.prototype.hasOwnProperty.call(ref, '$el')) {
       const childExposed = (ref as T).$.exposed
       const merged = Object.assign({}, ret)

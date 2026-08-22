@@ -15,6 +15,12 @@ Passing any of them was already a no-op, so behavior is unchanged; they now
 land in `$attrs` instead of being declared props. Use `side` in place of
 `VyDrawer`'s `direction`.
 
+Drop `forceMount` everywhere it was plumbed (`Presence`, `usePresenceGroup`,
+and the Accordion / Checkbox / Collapsible / Combobox / Dialog / DropdownMenu /
+Popover / RadioGroup / Tabs content + indicator components). Nothing in the kit,
+the examples, or the docs ever set it; `unmountOnHide` covers the keep-mounted
+case.
+
 Deduplicate three copies of shared logic: `normalizeRect` / `toNumber` now live
 once in `useResizeObserver` (`useElementRect` imports them), the kit's default
 `AppConfig` literal lives once in `useAppConfig` (`provideVyUI` imports it), and

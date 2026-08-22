@@ -7,7 +7,7 @@ const url = useRequestURL()
 
 // `package` (kit | core) drives the Components Core/Kit sub-filter; it must be
 // requested explicitly to appear on navigation nodes.
-const { data: navigation } = await useAsyncData('navigation', () => queryCollectionNavigation('docs', ['package']))
+const { data: navigation } = await useAsyncData('navigation', () => queryCollectionNavigation('docs', ['package', 'category']))
 
 // The ⌘K palette stays fully dormant until first opened: mounting it eagerly
 // pulls the fuse chunk on every page load, and the sections query drags in the

@@ -25,7 +25,7 @@ export const [injectDropdownMenuCheckboxItemContext, provideDropdownMenuCheckbox
 </script>
 
 <script setup lang="ts">
-import { useVModel } from '@vueuse/core'
+import { useVModel } from '@/shared/composables/useVModel'
 import { Primitive } from '@/components/Primitive'
 import { useA11y } from '@/shared/composables'
 

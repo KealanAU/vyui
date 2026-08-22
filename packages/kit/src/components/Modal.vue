@@ -149,7 +149,7 @@ const resolvedCloseIcon = computed(() => props.closeIcon || appConfig.ui.icons?.
                 </DialogDescription>
               </view>
 
-              <DialogClose v-if="props.close">
+              <DialogClose v-if="props.close" accessibility-label="Close">
                 <slot name="close" :ui="ui">
                   <VyButton
                     :icon="resolvedCloseIcon"

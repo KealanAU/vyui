@@ -1,10 +1,10 @@
 // Copyright 2026 The Lynx Authors. All rights reserved.
 // Licensed under the Apache License Version 2.0.
 
-// Mock vue-lynx the same way useAnimate.test.ts does — run worklets
-// synchronously, stub MT refs. Required because the BG worklet-loader SWC
-// transform doesn't run under vitest, so `:main-thread-bind*` template attrs
-// would otherwise crash at render via `applySetWorkletEvent` with a null ctx.
+// Mock vue-lynx to run worklets synchronously and stub MT refs. Required
+// because the BG worklet-loader SWC transform doesn't run under vitest, so
+// `:main-thread-bind*` template attrs would otherwise crash at render via
+// `applySetWorkletEvent` with a null ctx.
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('vue-lynx', async () => {

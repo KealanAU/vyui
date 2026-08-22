@@ -51,15 +51,16 @@ const mtBound = !(globalThis as any).lynxTestingEnv
 const trackRef = useMainThreadRef<any>(null)
 
 // Track geometry, in the pointer's own frame. All four come from ONE
-// `invoke('boundingClientRect')` per gesture (see `_beginAt`) — never from
-// `layoutchange`, which reports top/left relative to the PAGE while a pointer
-// is relative to the VIEWPORT (inside a scroll-view the two drift by the scroll
-// offset). Size arrives in the same response, so waiting on a BG
-// `layoutchange` -> `runOnMainThread` hop buys nothing and strands the drag on
-// Lynx web, where that hop never delivers.
+// `invoke('boundingClientRect')` per gesture (see `_beginAt`).
 //
-// Individual scalar refs because `useMainThreadRef<object>` is less reliable
-// across the worklet boundary than primitives — see comment in Sheet.
+// Never from `layoutchange`: it reports top/left against the PAGE, a pointer
+// reports against the VIEWPORT, and inside a scroll-view the two drift by the
+// scroll offset. Size arrives in the same response, so a BG `layoutchange` ->
+// `runOnMainThread` hop buys nothing and strands the drag on Lynx web, where
+// that hop never delivers.
+//
+// Scalar refs, not one object ref: `useMainThreadRef<object>` is less reliable
+// across the worklet boundary than primitives (see Sheet).
 const rectWRef = useMainThreadRef<number>(0)
 const rectHRef = useMainThreadRef<number>(0)
 const rectLeftRef = useMainThreadRef<number>(0)
@@ -78,23 +79,24 @@ watch(() => orientation.startEdge.value, (v) => {
 const activeIndexRef = useMainThreadRef<number>(-1)
 
 // Thumb + range elements, resolved ON the main thread from the track's own
-// subtree: pushing element handles from each `SliderThumbImpl` on mount runs on
-// BG, where `MainThreadRef.current` assignment is a silent no-op.
+// subtree. Each `SliderThumbImpl` mounts on BG, where a `MainThreadRef.current`
+// assignment is a silent no-op, so the handles cannot be pushed from there.
 //
-// A CLASS selector, not `[data-vyui-slider-thumb]` — Lynx's selector engine is
-// a narrow subset and class matching is the part it supports.
+// A CLASS selector, not `[data-vyui-slider-thumb]`: Lynx's selector engine
+// supports a narrow subset, and class matching is the part it supports.
 const thumbElsRef = useMainThreadRef<any[]>([])
 const rangeElRef = useMainThreadRef<any>(null)
 
-// Drag shield — WEB ONLY, and rendered nowhere else.
+// Drag shield. Web only.
 //
-// Lynx web re-targets pointer events by position (same root cause as the
-// `zIndex` in SortableItem), and the slider's box is barely thicker than its
-// track, so a mouse drag stranded the moment the cursor drifted off it. A
-// viewport-sized element raised for the length of the gesture keeps the cursor
-// over a bound element. Lynx native gets neither the element nor its bindings:
-// it delivers the whole gesture to the node the press started on, and a stuck
-// full-screen view there would eat every touch in the app.
+// Lynx web re-targets pointer events by position (same cause as SortableItem's
+// `zIndex`), so a mouse drag strands once the cursor leaves the slider's thin
+// box. A viewport-sized element, raised for the length of the gesture, keeps the
+// cursor over a bound element.
+//
+// Native must render neither the element nor its bindings: native delivers the
+// whole gesture to the press target, and a stuck full-screen view there would
+// eat every touch in the app.
 //
 // Read at render, not setup — `SystemInfo` can resolve late.
 function isWeb() {
@@ -108,9 +110,9 @@ function _resolveEls() {
   const track = trackRef.current
   if (!track || typeof track.querySelectorAll !== 'function') return
   // The wrapper method exists on every platform, but calls through to a
-  // `__QuerySelectorAll` PAPI that Lynx web does NOT expose to the main-thread
-  // realm, so a `typeof` check can't see the failure. Swallowing is safe: these
-  // elements only drive the MT paint, a latency optimisation over the
+  // `__QuerySelectorAll` PAPI that Lynx web does not expose to the main-thread
+  // realm, so a `typeof` check cannot see the failure. Swallowing is safe: these
+  // elements only drive the MT paint, which is a latency optimisation over the
   // background's own render.
   try {
     const els = track.querySelectorAll('.vyui-slider-thumb')
@@ -123,7 +125,6 @@ function _resolveEls() {
   }
 }
 
-/** Snap `v` to `step` and clamp to `[min, max]`. */
 function _snapClamp(v: number, min: number, max: number, step: number): number {
   'main thread'
   let out = v
@@ -192,7 +193,6 @@ function _hasMinGap(vals: number[], gap: number): boolean {
   return true
 }
 
-/** Pick the thumb closest to `target` value. Single-thumb returns 0. */
 function _pickClosestIndex(target: number): number {
   'main thread'
   const arr = root.valuesMT.current
@@ -209,7 +209,6 @@ function _pickClosestIndex(target: number): number {
   return bestIdx
 }
 
-/** `startEdge` code -> the CSS property the thumb and range anchor on. */
 function _edgeName(edge: StartEdgeCode): string {
   'main thread'
   if (edge === 0) return 'left'

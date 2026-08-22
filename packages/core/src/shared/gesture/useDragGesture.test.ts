@@ -8,10 +8,10 @@
 // worklet math here mirrors), so under vitest the worklet functions execute
 // as plain synchronous JS — the only blocker is that `useMainThreadRef`,
 // `runOnMainThread`, and `runOnBackground` expect the real Lynx MT dispatch
-// pipeline to be present. We mock them the same way Swiper.test.ts and
-// useAnimate.test.ts do (run worklets in-process, `useMainThreadRef` as a
-// plain `{ current }` box), which makes the ACTUAL touch/drag/snap/loop
-// implementation exercisable directly instead of only mirroring its math.
+// pipeline to be present. We mock them the same way Swiper.test.ts does (run
+// worklets in-process, `useMainThreadRef` as a plain `{ current }` box), which
+// makes the ACTUAL touch/drag/snap/loop implementation exercisable directly
+// instead of only mirroring its math.
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, ref } from 'vue'

@@ -1,7 +1,6 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/alert.ts` and adapted for Vue-Lynx:
-// dark rides the semantic tokens, `dark:` / `focus-visible:` / `shadow-*` are
-// dropped, and variants are restricted to `solid` / `outline` / `soft` /
-// `subtle`. Semantic colors resolve via the app's CSS vars (see `button.ts`).
+// Ported from nuxt/ui v3.0.2 `src/theme/alert.ts` — see `./button.ts` for the
+// shared Lynx adaptations. Variants are restricted to `solid` / `outline` /
+// `soft` / `subtle`.
 import type { Color } from './colors'
 import { type IconFg, iconFgFromToken } from './iconColor'
 
@@ -11,9 +10,7 @@ import { type IconFg, iconFgFromToken } from './iconColor'
 // shades, since the preset can't do opacity modifiers (`ring/25`→`-200`,
 // `bg/10`→`-50`). See `theme/button.ts` for the full rationale.
 //
-// Surface (`base`) is kept separate from the foreground color (`fg`): CSS
-// inheritance is OFF in the Lynx build, so `text-*` on `root` never reaches the
-// title / description / icon — `variantClass` spreads `fg` onto those slots.
+// `enableCSSInheritance: false` — `variantClass` spreads `fg` onto the title / description / icon.
 const solid = (c: string) =>
   ({ base: `bg-${c}-500`, fg: 'text-white' })
 
@@ -40,10 +37,8 @@ const variantClass = (color: string, variant: Variant) => {
   return { root: base, title: fg, description: fg, icon: fg }
 }
 
-// Same Lynx constraint as `button.ts`'s `iconFg`: the `<svg>` rasterizes its
-// XML, so the `text-*` class on the `icon` slot never reaches the glyph — the
-// fill is baked in via the Icon `color` prop, derived from the same `fg` string
-// the variant emits so class and baked color can't drift.
+// Baked icon fill (see ./iconColor.ts). Derived from the same `fg` string the
+// variant emits, so the class and the baked color can't drift.
 export function iconFg(color: string, variant: Variant, isDark = false): IconFg {
   const { fg } = VARIANT_BUILDERS[variant](color)
   return iconFgFromToken(fg.match(/^text-(\S+)/)?.[1], isDark)

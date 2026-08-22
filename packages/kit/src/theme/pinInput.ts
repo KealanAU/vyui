@@ -1,8 +1,5 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/pin-input.ts` and adapted for Vue-Lynx.
-//
-// Semantic color names (`primary`, `error`, …) resolve to actual palettes via
-// the consuming app's CSS variables and Tailwind config — see
-// `apps/examples/kit-demo/src/index.css`.
+// Ported from nuxt/ui v3.0.2 `src/theme/pin-input.ts` — see `./button.ts` for
+// the shared Lynx adaptations.
 import type { Color } from './colors'
 
 export default (colors: Color[]) => ({

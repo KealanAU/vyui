@@ -42,11 +42,13 @@ const colorItems = semanticColors.map(c => ({ value: c, label: c }))
 const setActiveColor = (value: string) => { activeColor.value = value as SemanticColor }
 
 // Reactive map color→palette, owned by App and shared by reference. Modeled
-// (not `defineProps`) so the section uses only `defineModel` — mixing
-// `defineProps` + `defineModel` makes the compiler emit `mergeModels`, which
-// the vue-lynx runtime shim doesn't provide. Mutating entries propagates to App
-// via the shared reference — so App binds it one-way (`:color-palettes`); a
-// `v-model` there would try to reassign its `const reactive`.
+// rather than passed as a prop, because mixing `defineProps` with `defineModel`
+// used to emit a `mergeModels` the vue-lynx shim did not provide (0.5.1 exports
+// it, so that constraint is lifted).
+//
+// Mutating entries propagates to App through the shared reference, so App binds
+// it one-way (`:color-palettes`); a `v-model` there would try to reassign its
+// `const reactive`.
 const colorPalettes = defineModel<Record<string, string>>('colorPalettes', { required: true })
 const neutralPalette = defineModel<string>('neutralPalette', { required: true })
 const radius = defineModel<number>('radius', { required: true })

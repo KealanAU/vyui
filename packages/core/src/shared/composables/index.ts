@@ -14,8 +14,6 @@ export { useDismissableLayer } from './useDismissableLayer.js'
 export type { DismissableLayerEmits, DismissableLayerEvent, UseDismissableLayerOptions } from './useDismissableLayer.js'
 
 
-export { useAnimate } from './useAnimate.js'
-export type { SlideDirection } from './useAnimate.js'
 
 export {
   BOUNCE_CONSTANTS,

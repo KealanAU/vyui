@@ -1,16 +1,7 @@
 // Rewrites barrel imports of a dependency package into per-file deep imports,
 // so consumers that deep-import THIS package don't drag the dependency's whole
-// barrel along.
-//
-// Why this exists: the vue-lynx MT worklet pipeline pulls packages into the
-// main-thread bundle via BARE side-effect imports (no export usage survives),
-// so pruning is governed solely by `sideEffects` globs — everything *reached*
-// ships. @vyui/kit's per-component subpath entries shrink what is reached, but
-// only if kit's own dist doesn't re-enter @vyui/core through its barrel
-// (`import { Button } from "@vyui/core"` reaches ALL of core). This script
-// re-points every such binding at the module that actually defines it
-// (`@vyui/core/dist/components/Button/Button.vue.js`), resolved from the
-// barrel's own import/export statements.
+// barrel along — one `import { Button } from "@vyui/core"` in kit's dist
+// reaches ALL of core in the consumer's MT bundle.
 //
 // Only machine-generated (Rollup preserveModules) statement shapes are
 // accepted; anything else — namespace imports, `export *`, names the barrel

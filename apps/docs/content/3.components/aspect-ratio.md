@@ -9,6 +9,7 @@ links:
     icon: i-simple-icons-github
     to: https://github.com/KealanAU/vyui/blob/main/packages/core/src/components/AspectRatio/AspectRatioRoot.vue
     target: _blank
+category: Layout
 ---
 
 ## Overview

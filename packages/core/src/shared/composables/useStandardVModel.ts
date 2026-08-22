@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { getCurrentInstance, shallowRef, watch } from 'vue'
-import { useVModel } from '@vueuse/core'
+import { useVModel } from './useVModel.js'
 
 /**
  * Loose emit signature accepted by the helpers — component-generated
@@ -84,7 +84,7 @@ export function useStandardVModelOf<T>(
 
   if (!controlled) {
     // Uncontrolled: own the state in a local ref, seeded from `default*`.
-    // vueuse's `passive` path seeds from `props[propName]`, which is `false` for
+    // The `passive` path seeds from `props[propName]`, which is `false` for
     // an unset boolean, so `default*` would never surface.
     const state = shallowRef<T>(defaultVal)
     watch(

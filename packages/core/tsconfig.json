@@ -18,7 +18,6 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "vitest.config.ts",
-    "vitest.global.ts",
     "vitest.setup.ts"
   ],
   "exclude": [

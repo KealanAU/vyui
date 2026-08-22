@@ -1,10 +1,9 @@
 // Post-build canary for the vue-lynx worklet pipeline: every worklet id the
 // bundle references via `_workletMap["<id>"]` must have a matching
 // `registerWorkletInternal("main-thread", "<id>", ...)` registration. Every
-// known pipeline failure (dropped MT-graph imports, truncated/dropped
-// registration extraction — see docs/upstream/vue-lynx-mt-worklet-import-issue.md)
-// converges on this symptom, so run it against a demo build after any
-// vue-lynx bump, BEFORE device testing:
+// known pipeline failure converges on this symptom (see
+// docs/upstream/vue-lynx-mt-worklet-import-issue.md), so run it against a demo
+// build after any vue-lynx bump, BEFORE device testing:
 //
 //   pnpm --dir apps/examples/kit-demo build
 //   node tools/audit-worklet-bundle.mjs apps/examples/kit-demo/dist/main.web.bundle

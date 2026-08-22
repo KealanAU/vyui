@@ -9,6 +9,7 @@ links:
     icon: i-simple-icons-github
     to: https://github.com/KealanAU/vyui/blob/main/packages/kit/src/components/Alert.vue
     target: _blank
+category: Data Display
 ---
 
 ## Overview

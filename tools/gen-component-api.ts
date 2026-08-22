@@ -59,17 +59,15 @@ const sources = [
   { name: 'core', tsconfig: resolve(root, 'packages/core/tsconfig.json'), dir: resolve(root, 'packages/core/src/components') },
 ]
 
-// Kit wrappers are the documented surface; core is the headless layer beneath
-// them. When both share an SFC basename (e.g. `Toggle.vue` in kit and core) the
-// two would write the same `Toggle.json`, and the later core write would clobber
-// the kit table. Skip core collidees so the kit wrapper's props win — the headless
-// core component is still reachable through the kit wrapper's inherited props.
+// On a shared SFC basename (`Toggle.vue` in both kit and core) the later core
+// write would clobber the kit table, so skip core collidees — the kit wrapper's
+// inherited props still cover the headless component.
 const kitDir = sources.find(s => s.name === 'kit')?.dir
 const kitNames = kitDir ? new Set(vueFilesIn(kitDir).map(file => file.split('/').pop()!.replace(/\.vue$/, ''))) : new Set<string>()
 
-// Every SFC the run considered, whether or not its write succeeded. Drives the
-// prune below; a component that threw stays in the set so a transient
-// vue-component-meta failure leaves its page stale rather than deleting it.
+// Every SFC the run considered, whether or not its write succeeded — a component
+// that threw stays in the set, so a transient vue-component-meta failure leaves
+// its page stale rather than deleting it.
 const expected = new Set<string>()
 
 for (const source of sources) {
@@ -94,9 +92,8 @@ for (const source of sources) {
   }
 }
 
-// Deleted/renamed components would otherwise leave their JSON behind forever
-// (SliderImpl.json outlived core 0.2.7 this way). Full runs only — a filtered
-// run has no view of the components it never looked at.
+// Deleted/renamed components would otherwise leave their JSON behind forever.
+// Full runs only — a filtered run never looked at the rest.
 if (!only.length) {
   for (const entry of readdirSync(outDir)) {
     if (!entry.endsWith('.json') || expected.has(entry.replace(/\.json$/, ''))) continue

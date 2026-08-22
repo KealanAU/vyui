@@ -6,17 +6,10 @@ import type {
 
 export type PopoverContentEmits = PopoverContentImplEmits
 
-export interface PopoverContentProps extends PopoverContentImplProps {
-  /**
-   * Used to force mounting when more control is needed. Useful when
-   * controlling animation with Vue animation libraries.
-   */
-  forceMount?: boolean
-}
+export interface PopoverContentProps extends PopoverContentImplProps {}
 </script>
 
 <script setup lang="ts">
-import { reactiveOmit } from '@vueuse/core'
 import { Presence } from '@/components/Presence'
 import { useEmitAsProps, useForwardExpose } from '@/shared'
 import PopoverContentModal from './PopoverContentModal.vue'
@@ -29,19 +22,17 @@ const emits = defineEmits<PopoverContentEmits>()
 
 const rootContext = injectPopoverRootContext()
 
-// reka-ui forwards props + emits with `useForwardPropsEmits`; here we forward
-// the `PopoverContentImpl` props (sans the wrapper-only `forceMount`) with
-// `v-bind` and re-expose emits as props.
-const forwarded = reactiveOmit(props, 'forceMount')
+// reka-ui forwards props + emits with `useForwardPropsEmits`; here we `v-bind`
+// the props and re-expose emits as props.
 const emitsAsProps = useEmitAsProps(emits)
 const { forwardRef } = useForwardExpose()
 </script>
 
 <template>
-  <Presence :show="forceMount || rootContext.open.value">
+  <Presence :show="rootContext.open.value">
     <PopoverContentModal
       :ref="forwardRef"
-      v-bind="{ ...forwarded, ...emitsAsProps, ...$attrs }"
+      v-bind="{ ...props, ...emitsAsProps, ...$attrs }"
     >
       <slot />
     </PopoverContentModal>

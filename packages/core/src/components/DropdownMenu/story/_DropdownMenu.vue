@@ -20,7 +20,6 @@ const props = defineProps<{
   triggerDisabled?: boolean
   itemDisabled?: boolean
   subTriggerDisabled?: boolean
-  forceMount?: boolean
 }>()
 const emit = defineEmits<{
   'update:open': [value: boolean]
@@ -43,10 +42,7 @@ const radio = ref('one')
       >
         <text>Menu</text>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        data-testid="content"
-        :force-mount="forceMount"
-      >
+      <DropdownMenuContent data-testid="content">
         <DropdownMenuItem
           data-testid="item-1"
           @select="emit('select')"

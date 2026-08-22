@@ -9,6 +9,7 @@ links:
     icon: i-simple-icons-github
     to: https://github.com/KealanAU/vyui/blob/main/packages/core/src/components/Dialog
     target: _blank
+category: Overlay
 ---
 
 ## Overview
@@ -127,5 +128,5 @@ const open = ref(false)
 ## Related components
 
 - [`Modal`](/components/modal) is the styled `@vyui/kit` dialog built on this primitive.
-- [`AlertDialog`](/components/alert-dialog) is a focus-trapping confirmation variant with required action/cancel.
+- [`AlertDialog`](/components/alert-dialog) is this primitive with `role="alertdialog"` preset — undismissable, with required action/cancel.
 - [`Sheet`](/components/sheet) is a drag-snappable bottom sheet alternative.

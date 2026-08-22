@@ -13,6 +13,7 @@ links:
     icon: i-simple-icons-github
     to: https://github.com/KealanAU/vyui/blob/main/packages/core/src/components/Icon/resolve.ts
     target: _blank
+category: Data Display
 ---
 
 ## Overview

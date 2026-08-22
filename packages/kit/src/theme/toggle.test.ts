@@ -21,7 +21,7 @@ describe('pressed state is visible at rest', () => {
   })
 })
 
-// `text-*` on the icon slot is inert (Lynx rasterizes the SVG), so the on/off
+// `text-*` on the icon slot is inert (see theme/iconColor.ts), so the on/off
 // difference has to come through as two different baked fills.
 describe('iconFg', () => {
   it('differs between pressed and unpressed', () => {

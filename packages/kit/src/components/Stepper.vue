@@ -103,9 +103,7 @@ const { ui } = useStyledComponent('stepper', theme, () => ({
                   :name="item.icon"
                   :class="ui.icon({ class: props.ui?.icon })"
                 />
-                <!-- `ui.icon` carries the active/completed foreground color;
-                     it must sit on this <text> since color can't inherit from
-                     the trigger <view> (`enableCSSInheritance: false`). -->
+                <!-- `enableCSSInheritance: false` — `ui.icon` fg lands on this <text>. -->
                 <text v-else :class="ui.icon({ class: props.ui?.icon })">{{ index + 1 }}</text>
               </slot>
             </StepperIndicator>

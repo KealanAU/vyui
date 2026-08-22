@@ -28,8 +28,6 @@ export type PresenceGroupChild =
 export interface UsePresenceGroupOptions {
   /** Drives the group lifecycle — pass the live `Ref` from the parent. */
   show: Ref<boolean>
-  /** Force-mount the group container regardless of `show`. */
-  forceMount?: Ref<boolean>
   /** Optional callback that receives the combined group state on every tick. */
   setGroupState?: (state: PresenceState) => void
   /** Enables the entering-with-delay half-step for every child. */
@@ -90,7 +88,6 @@ export const usePresenceGroup = (
 ): UsePresenceGroupReturn => {
   const {
     show,
-    forceMount,
     enableDelay,
     children,
     setGroupState,
@@ -162,7 +159,6 @@ export const usePresenceGroup = (
         Presence,
         {
           show: presenceShows.value[index],
-          forceMount: forceMount?.value ?? false,
           state: stateGroup.value[index],
           setPresenceState: (s: PresenceState) => updateChildState(index, s),
           enableDelay: enableDelay?.value ?? false,

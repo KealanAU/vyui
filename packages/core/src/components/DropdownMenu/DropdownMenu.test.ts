@@ -203,12 +203,6 @@ describe('dropdownMenu', () => {
   })
 
   // --- mount/unmount ---------------------------------------------------------
-  it('forceMount keeps the content registered while closed', async () => {
-    const { container } = render(DropdownMenu, { forceMount: true })
-    await waitForUpdate()
-    expect(q(container, 'content')).not.toBeNull()
-  })
-
   it('unregisters content overlay on unmount', async () => {
     const { container, unmount } = render(DropdownMenu, { rootProps: { defaultOpen: true } })
     await waitForUpdate()

@@ -19,7 +19,7 @@ export interface RadioProps extends PrimitiveProps, FormFieldProps {
 </script>
 
 <script setup lang="ts">
-import { useVModel } from '@vueuse/core'
+import { useVModel } from '@/shared/composables/useVModel'
 import { toRefs, useAttrs } from 'vue'
 import { Primitive } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'

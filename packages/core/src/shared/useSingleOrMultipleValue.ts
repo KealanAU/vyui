@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import type { AcceptableValue, SingleOrMultipleProps } from './types'
-import { useVModel } from '@vueuse/core'
+import { useVModel } from './composables/useVModel'
 import { isEqual } from 'ohash'
 import { computed } from 'vue'
 import { isValueEqualOrExist } from './isValueEqualOrExist'

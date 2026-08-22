@@ -1,50 +1,35 @@
-export {
-  default as AlertDialogAction,
-  type AlertDialogActionEmits,
-  type AlertDialogActionProps,
-} from './AlertDialogAction.vue'
-export {
-  default as AlertDialogCancel,
-  type AlertDialogCancelProps,
-} from './AlertDialogCancel.vue'
-export {
-  default as AlertDialogContent,
-  type AlertDialogContentProps,
-} from './AlertDialogContent.vue'
-export {
-  default as AlertDialogContentImpl,
-  type AlertDialogContentImplProps,
-} from './AlertDialogContentImpl.vue'
-export {
-  default as AlertDialogContentModal,
-} from './AlertDialogContentModal.vue'
-export {
-  default as AlertDialogDescription,
-  type AlertDialogDescriptionProps,
-} from './AlertDialogDescription.vue'
-export {
-  default as AlertDialogOverlay,
-  type AlertDialogOverlayProps,
-} from './AlertDialogOverlay.vue'
-export {
-  default as AlertDialogOverlayImpl,
-  type AlertDialogOverlayImplProps,
-} from './AlertDialogOverlayImpl.vue'
-export {
-  default as AlertDialogPortal,
-  type AlertDialogPortalProps,
-} from './AlertDialogPortal.vue'
+// AlertDialog is Dialog with `role="alertdialog"` — the role makes the dialog
+// undismissable by an outside tap (WAI-ARIA: the user must pick an explicit
+// action), so only the root needs a wrapper. Everything else is a name alias
+// over the Dialog primitives.
 export {
   type AlertDialogRootEmits,
   type AlertDialogRootProps,
   default as AlertDialogRoot,
-  injectAlertDialogRootContext,
 } from './AlertDialogRoot.vue'
+
 export {
-  default as AlertDialogTitle,
-  type AlertDialogTitleProps,
-} from './AlertDialogTitle.vue'
-export {
-  default as AlertDialogTrigger,
-  type AlertDialogTriggerProps,
-} from './AlertDialogTrigger.vue'
+  DialogClose as AlertDialogAction,
+  type DialogCloseEmits as AlertDialogActionEmits,
+  type DialogCloseProps as AlertDialogActionProps,
+  DialogClose as AlertDialogCancel,
+  type DialogCloseProps as AlertDialogCancelProps,
+  DialogContent as AlertDialogContent,
+  DialogContentImpl as AlertDialogContentImpl,
+  type DialogContentImplProps as AlertDialogContentImplProps,
+  DialogContentModal as AlertDialogContentModal,
+  type DialogContentProps as AlertDialogContentProps,
+  DialogDescription as AlertDialogDescription,
+  type DialogDescriptionProps as AlertDialogDescriptionProps,
+  DialogOverlay as AlertDialogOverlay,
+  DialogOverlayImpl as AlertDialogOverlayImpl,
+  type DialogOverlayImplProps as AlertDialogOverlayImplProps,
+  type DialogOverlayProps as AlertDialogOverlayProps,
+  DialogPortal as AlertDialogPortal,
+  type DialogPortalProps as AlertDialogPortalProps,
+  DialogTitle as AlertDialogTitle,
+  type DialogTitleProps as AlertDialogTitleProps,
+  DialogTrigger as AlertDialogTrigger,
+  type DialogTriggerProps as AlertDialogTriggerProps,
+  injectDialogRootContext as injectAlertDialogRootContext,
+} from '@/components/Dialog'

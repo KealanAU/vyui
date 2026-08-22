@@ -23,7 +23,7 @@ export const [injectDropdownMenuRadioGroupContext, provideDropdownMenuRadioGroup
 </script>
 
 <script setup lang="ts">
-import { useVModel } from '@vueuse/core'
+import { useVModel } from '@/shared/composables/useVModel'
 import { Primitive } from '@/components/Primitive'
 
 const props = withDefaults(defineProps<DropdownMenuRadioGroupProps>(), {

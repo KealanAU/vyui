@@ -2,13 +2,7 @@
 import type { PrimitiveProps } from '@/components/Primitive'
 import { useForwardExpose } from '@/shared'
 
-export interface RadioGroupIndicatorProps extends PrimitiveProps {
-  /**
-   * Used to force mounting when more control is needed. Useful when
-   * controlling animation with Vue animation libraries.
-   */
-  forceMount?: boolean
-}
+export interface RadioGroupIndicatorProps extends PrimitiveProps {}
 </script>
 
 <script setup lang="ts">
@@ -25,7 +19,7 @@ const itemContext = injectRadioGroupItemContext()
 
 <template>
   <Primitive
-    v-if="forceMount || itemContext.checked.value"
+    v-if="itemContext.checked.value"
     :ref="forwardRef"
     :data-state="itemContext.checked.value ? 'checked' : 'unchecked'"
     :data-disabled="itemContext.disabled.value ? '' : undefined"

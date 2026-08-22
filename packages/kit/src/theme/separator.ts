@@ -15,8 +15,7 @@ export default (colors: Color[]) => ({
     border: '',
     container: 'font-medium text-highlighted flex flex-row',
     icon: 'shrink-0 size-5',
-    // Lynx enableCSSInheritance:false — the container's text-highlighted doesn't
-    // reach this <text>, so the color must land on the label directly.
+    // `enableCSSInheritance: false` — color lands on `label`.
     label: 'text-sm text-highlighted',
   },
   variants: {

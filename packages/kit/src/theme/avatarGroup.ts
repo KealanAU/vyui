@@ -1,16 +1,14 @@
-// Ported from nuxt/ui v4 `src/theme/avatar-group.ts` and adapted for Vue-Lynx.
+// Ported from nuxt/ui v4 `src/theme/avatar-group.ts` — see `./button.ts` for the
+// shared Lynx adaptations. Two more, both load-bearing here:
+//   - `ring-bg` becomes `ring-white`. vyui ships dark via semantic tokens, so the
+//     upstream page-background semantic has no equivalent.
+//   - `inline-flex` becomes an explicit `flex`. `@lynx-js/tailwind-preset` strips
+//     `inline-flex`, and without `flex` a `<view>` falls back to Lynx's default
+//     `linear` layout: `flex-row-reverse` is ignored and the avatars stack
+//     vertically instead of overlapping.
 //
-// Two Lynx-specific adaptations:
-//   - `ring-bg` (a Nuxt UI semantic that resolves to the page background) is
-//     replaced with `ring-white` since vyui ships dark via semantic tokens.
-//   - `inline-flex` is replaced with `flex`. The `@lynx-js/tailwind-preset`
-//     strips `inline-flex` (Lynx's `display` accepts only `none`, `flex`,
-//     `grid`, `linear`). Without explicit `flex`, `<view>` falls back to
-//     Lynx's default `linear` layout (vertical) and `flex-row-reverse` is
-//     ignored — avatars stack top-to-bottom instead of overlapping inline.
-//
-// `flex-row-reverse` keeps the upstream stacking trick: avatars rendered in
-// reverse order so the first child paints on top via natural source order.
+// `flex-row-reverse` keeps the upstream stacking trick — avatars render in
+// reverse order, so the first child paints on top by source order.
 import type { Color } from './colors'
 
 export default (colors: Color[]) => ({

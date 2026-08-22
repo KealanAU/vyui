@@ -18,7 +18,7 @@ iOS, Android, and web from one Vue codebase.
 Dialog, AlertDialog, Sheet, Popover, DropdownMenu, Combobox, Select, Tabs,
 Accordion, Collapsible, Slider, Swiper, Sortable, Draggable, SwipeAction,
 Checkbox, RadioGroup, Switch, Toggle, NumberField, PinInput, Rating, Stepper,
-Pagination, Progress, Toast, Avatar, FeedList, Form / Field / Label, and more.
+Progress, Toast, Avatar, FeedList, Form / Field / Label, and more.
 
 Components expose state attributes (`data-state`, `data-disabled`, …) and
 namespaced structural markers (`data-vyui-*`) you can style and select against.

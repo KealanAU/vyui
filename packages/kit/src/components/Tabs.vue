@@ -117,11 +117,9 @@ const classes = computed(() => ({
 const resolveValue = (item: TabsItem, index: number) =>
   item.value !== undefined ? item.value : String(index)
 
-// Lynx SVG can't inherit currentColor, and the active/inactive `group-ui-*`
-// classes on `leadingIcon` never reach the rasterized glyph — bake the fill per
-// trigger (same pattern as Button/Input). `activeValue` comes from TabsRoot's
-// scoped slot, the same ref `TabsTrigger` compares against, so it tracks
-// uncontrolled tabs too; `isDark` keeps the baked neutral fill mode-aware.
+// Baked icon fill (see theme/iconColor.ts), per trigger. `activeValue` comes
+// from TabsRoot's scoped slot — the same ref `TabsTrigger` compares against, so
+// it tracks uncontrolled tabs too; `isDark` keeps the neutral fill mode-aware.
 const { isDark } = useColorMode()
 const triggerIconColor = (item: TabsItem, index: number, activeValue: string | number | undefined) => {
   const fg = iconFg(props.color ?? 'primary', props.variant ?? 'pill', resolveValue(item, index) === activeValue, isDark.value)

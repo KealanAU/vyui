@@ -11,12 +11,37 @@
 import type { Ref } from 'vue'
 import { onMounted, ref, watch } from 'vue'
 
-import { delayFrames, log } from '@/shared'
 import type {
   PresenceContextType,
   UsePresenceReturnType,
 } from './types'
 import { PresenceState } from './utils'
+
+type RAFScheduler = (cb: (timestamp?: number) => void) => unknown
+
+function getRAF(): RAFScheduler {
+  if (typeof requestAnimationFrame === 'function') return requestAnimationFrame
+  // Lynx < 3.0 — `lynx.requestAnimationFrame` is the only scheduler.
+  const lynxGlobal = globalThis.lynx as unknown as
+    | { requestAnimationFrame?: RAFScheduler }
+    | undefined
+  if (typeof lynxGlobal?.requestAnimationFrame === 'function') {
+    return lynxGlobal.requestAnimationFrame.bind(lynxGlobal)
+  }
+  // jsdom / SSR — approximate a 60fps frame so callers don't hang.
+  return (cb: (timestamp?: number) => void) => setTimeout(() => cb(Date.now()), 16)
+}
+
+function delayFrames(frames: number, callback: () => void): void {
+  let count = 0
+  const raf = getRAF()
+  const frameHandler = () => {
+    count++
+    if (count >= frames) callback()
+    else raf(frameHandler)
+  }
+  raf(frameHandler)
+}
 
 /** Reactive options accepted by {@link usePresence} — each driving field is a
  *  `Ref` so the composable can `watch` it. */
@@ -76,7 +101,9 @@ export function usePresence(opts: UsePresenceRefOptions): UsePresenceReturnType 
   const getEnteringStateWithDelay = () =>
     getEnableDelay() ? PresenceState.DelayedEntering : PresenceState.Entering
 
-  const trace = (msg: string) => log(debugLog, `[vyui-presence][usePresence] ${msg}`)
+  const trace = (msg: string) => {
+    if (debugLog) console.info(`[vyui-presence][usePresence] ${msg}`)
+  }
 
   trace(`init, show: ${show.value}, state: ${state.value}, enableDelay: ${getEnableDelay()}`)
 

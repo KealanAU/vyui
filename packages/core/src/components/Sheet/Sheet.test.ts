@@ -89,7 +89,7 @@ describe('SheetRoot — v-model:open / v-model:snapIndex', () => {
     expect(ctx.open.value).toBe(true)
   })
 
-  // `setOpen` runs through vueuse `useVModel`, which under vue-lynx's
+  // `setOpen` runs through `useVModel`, which under vue-lynx's
   // dual-thread `render()` doesn't sync `open.value = next` back to the
   // captured probe within a single microtask. The flow is exercised at
   // runtime by SheetTrigger; the snapIndex direct-write path below covers

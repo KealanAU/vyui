@@ -26,12 +26,6 @@
       "description": "Style applied to the full-screen backdrop wrapper. No defaults — pass\n`backgroundColor`, alignment, etc. here for the modal dim/centering."
     },
     {
-      "name": "forceMount",
-      "type": "boolean | undefined",
-      "required": false,
-      "description": "Force mounting when more control is needed — e.g. driving the transition\nfrom a Vue native transition or another animation library."
-    },
-    {
       "name": "transition",
       "type": "boolean | undefined",
       "required": false,

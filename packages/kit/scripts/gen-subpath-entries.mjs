@@ -16,13 +16,11 @@
 //
 // Runs after `vite build` (writes dist/entries/*.{js,d.ts}) and BEFORE
 // rewrite-deep-imports (so `@vyui/core` re-exports here get deep-rewritten).
-// package.json `exports` must match the generated set: default mode verifies,
-// `--write` updates it.
+// package.json exports them with a single `"./*"` wildcard, so nothing to sync.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const pkgRoot = new URL('..', import.meta.url).pathname
-const write = process.argv.includes('--write')
 
 // Entries whose bindings live in @vyui/core (no kit SFC to point at) — the
 // js re-export is barrel-shaped here and made deep by rewrite-deep-imports.
@@ -119,41 +117,6 @@ mkdirSync(join(pkgRoot, 'dist/entries'), { recursive: true })
 for (const [name, { js, dts }] of entries) {
   writeFileSync(join(pkgRoot, `dist/entries/${name}.js`), js.join('\n') + '\n')
   writeFileSync(join(pkgRoot, `dist/entries/${name}.d.ts`), dts.join('\n') + '\n')
-}
-
-// ---- sync package.json `exports` ------------------------------------------
-const pkgPath = join(pkgRoot, 'package.json')
-const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
-
-// Fixed surface keeps its existing keys, targets and order; generated entries
-// slot back into the same slice they occupy now. Derived, not listed, so
-// adding or removing a fixed export is a package.json-only edit.
-const isGenerated = key => pkg.exports[key]?.import?.startsWith('./dist/entries/')
-const keys = Object.keys(pkg.exports)
-const cut = keys.findIndex(isGenerated)
-const head = cut === -1 ? keys : keys.slice(0, cut)
-const tail = cut === -1 ? [] : keys.slice(cut).filter(key => !isGenerated(key))
-const expected = {}
-for (const key of head) expected[key] = pkg.exports[key]
-for (const name of [...entries.keys()].sort()) {
-  expected[`./${name}`] = {
-    types: `./dist/entries/${name}.d.ts`,
-    import: `./dist/entries/${name}.js`,
-  }
-}
-for (const key of tail) expected[key] = pkg.exports[key]
-
-const current = JSON.stringify(pkg.exports, null, 2)
-const wanted = JSON.stringify(expected, null, 2)
-if (current !== wanted) {
-  if (!write) {
-    console.error('gen-subpath-entries: package.json `exports` is out of sync with the generated entries.')
-    console.error('Run: node scripts/gen-subpath-entries.mjs --write')
-    process.exit(1)
-  }
-  pkg.exports = expected
-  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
-  console.log('gen-subpath-entries: package.json exports updated')
 }
 
 console.log(`gen-subpath-entries: ${entries.size} entries written to dist/entries/`)

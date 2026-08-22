@@ -1,16 +1,14 @@
-// Ported from nuxt/ui v3.0.2 `src/theme/input.ts`. Semantic color names resolve
-// via CSS variables defined in the consuming app.
+// Ported from nuxt/ui v3.0.2 `src/theme/input.ts` — see `./button.ts` for the
+// shared Lynx adaptations. The focus ring is a flat arbitrary `box-shadow`
+// (`@lynx-js/tailwind-preset` has no ringWidth plugin).
 //
-// Lynx adaptation: `ring-*` → `border-*` plus a flat arbitrary `box-shadow`
-// focus ring (no ringWidth plugin in `@lynx-js/tailwind-preset`), `inline-flex`
-// → `flex`, and — most importantly — leading / trailing slots are **inline
-// siblings** of the `<input>` rather than absolutely-positioned overlays: Lynx's
-// layout engine doesn't reliably overlay `position: absolute` children on a
-// sibling `<input>`, so border + background live on `root` and the input sits
-// transparent between the two icon wrappers.
+// Leading / trailing slots are inline SIBLINGS of the `<input>`, not absolutely
+// positioned overlays: Lynx's layout engine does not reliably overlay
+// `position: absolute` children on a sibling `<input>`. Border and background
+// live on `root`; the input sits transparent between the two icon wrappers.
 //
-// Inline `as const` on literal values is required so tailwind-variants can
-// narrow `compoundVariants` entries to the variant union types.
+// Literal values carry an inline `as const` so tailwind-variants can narrow
+// `compoundVariants` entries to the variant union types.
 
 import type { Color } from './colors'
 

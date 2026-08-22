@@ -6,9 +6,6 @@ import { useForwardExpose } from '@/shared'
 export interface TabsContentProps extends PrimitiveProps {
   /** A unique value that associates the content with a trigger. */
   value: StringOrNumber
-  /** Force mounting when more control is needed — e.g. driving animation from a
-   *  Vue animation library. */
-  forceMount?: boolean
   /**
    * Per-panel override of the root's `unmountOnHide`. Set `true` on a panel
    * whose subtree writes styles from main-thread worklets: those writes land on
@@ -51,14 +48,10 @@ watch(isSelected, (selected) => {
 })
 
 const isMounted = computed(() =>
-  props.forceMount || isSelected.value
-  || (!unmountOnHide.value && hasBeenSelected.value))
+  isSelected.value || (!unmountOnHide.value && hasBeenSelected.value))
 
-// Only the keep-mounted case hides itself; `forceMount` panels keep the
-// existing contract where the consumer owns visibility (animation libraries).
 const isKeptHidden = computed(() =>
-  !isSelected.value && !props.forceMount
-  && !unmountOnHide.value && hasBeenSelected.value)
+  !isSelected.value && !unmountOnHide.value && hasBeenSelected.value)
 
 // `visibility: hidden` alongside `display: none`: MT-written styles bypass the
 // BG style object and can keep a node compositing through `display: none` on

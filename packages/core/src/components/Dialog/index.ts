@@ -1,5 +1,6 @@
 export {
   default as DialogClose,
+  type DialogCloseEmits,
   type DialogCloseProps,
 } from './DialogClose.vue'
 export {

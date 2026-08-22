@@ -8,9 +8,6 @@ import type { PrimitiveProps } from '@/components/Primitive'
 export type DialogContentImplEmits = DismissableLayerEmits
 
 export interface DialogContentImplProps extends PrimitiveProps {
-  /** Force mounting when more control is needed — e.g. driving the transition
-   *  from a Vue native transition or another animation library. */
-  forceMount?: boolean
   /**
    * Style applied to the full-screen backdrop wrapper. No defaults — pass
    * `backgroundColor`, alignment, etc. here for the modal dim/centering.
@@ -74,13 +71,21 @@ const { onInteractOutside } = useDismissableLayer({
   onDismiss: () => rootContext.onOpenChange(false),
 })
 
-// A valid `dialog` role (via role-description). `exclusiveFocus` is Lynx's
-// focus containment — the only real modality lever here — so it follows the
-// root's `modal` flag: a non-modal dialog leaves siblings reachable.
+// A valid `dialog` / `alertdialog` role (via role-description).
+// `exclusiveFocus` is Lynx's focus containment — the only real modality lever
+// here — so it follows the root's `modal` flag: a non-modal dialog leaves
+// siblings reachable.
 const a11y = useA11y(() => ({
-  role: 'dialog',
+  role: rootContext.role.value,
   exclusiveFocus: rootContext.modal.value,
 }))
+
+// An alert dialog is never dismissed by a backdrop tap, so the tap doesn't even
+// surface as an outside interaction.
+function onBackdropTap() {
+  if (rootContext.role.value === 'alertdialog') return
+  onInteractOutside()
+}
 
 // DialogContent owns the per-layer Presence state and provides it through
 // `DialogContentPresenceKey`. Painted through the OverlayRoot portal, the
@@ -208,20 +213,18 @@ const PanelLayer = defineComponent({
     :state="contentCtx.backdropState.value"
     :set-presence-state="contentCtx.setBackdropState"
     :show="contentCtx.show.value"
-    :force-mount="props.forceMount"
     :debug-log="contentCtx.debugLog"
   >
     <BackdropLayer
       :backdrop-style="props.backdropStyle"
       :backdrop-class="props.backdropClass"
-      @tap="onInteractOutside"
+      @tap="onBackdropTap"
     >
       <Presence
         :state="contentCtx.panelState.value"
         :set-presence-state="contentCtx.setPanelState"
         :show="contentCtx.show.value"
-        :force-mount="props.forceMount"
-        :debug-log="contentCtx.debugLog"
+            :debug-log="contentCtx.debugLog"
       >
         <PanelLayer
           :ref="forwardRef"

@@ -14,7 +14,6 @@ export function convertValueToPercentage(value: number, min: number, max: number
   return clamp(percentage, 0, 100)
 }
 
-/** Returns a label for each thumb when there are two or more thumbs */
 export function getLabel(index: number, totalValues: number) {
   if (totalValues > 2)
     return `Value ${index + 1} of ${totalValues}`
