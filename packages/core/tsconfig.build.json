@@ -19,8 +19,6 @@
     "src/**/*.test.tsx",
     "src/**/*.test.vue",
     "src/__type-guards__/**",
-    "src/test-utils.ts",
-    "src/test/**",
     "src/**/*.story.vue",
     "src/**/story/**",
     "src/**/_*.vue"

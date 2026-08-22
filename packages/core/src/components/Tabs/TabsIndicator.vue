@@ -39,10 +39,9 @@ const indicatorStyle = ref<IndicatorStyle>({
 const ready = ref(false)
 
 // The list rect only moves on a layout change (or an orientation/dir flip), so
-// cache it and re-measure only then.
-// ponytail: assumes the list rect is stable between `layoutTick` bumps —
-// TabsList + TabsTrigger bump it from their own `@layoutchange`, so a list that
-// shifts without emitting one would read stale until the next bump.
+// cache it and re-measure only then. TabsList and TabsTrigger bump `layoutTick`
+// from their own `@layoutchange`; a list that shifts without emitting one reads
+// stale until the next bump.
 let cachedListRect: Awaited<ReturnType<typeof useElementRect>> | null = null
 
 /**

@@ -72,14 +72,13 @@ const contentStyle = computed(() => {
   return { height: `${measuredHeight.value}px`, transitionProperty }
 })
 
-// ponytail: a close in the DEFAULT unmount mode still snaps — the content is
-// v-if'd out the instant `open` flips false, before the collapse can play.
-// Animating it needs the leave gated on the height `@transitionend` (keep the
-// node mounted through the tween, then unmount), i.e. wrapping this in
-// `Presence` the way `SheetContentImpl` does. That changes the synchronous
-// unmount timing every current Collapsible/Accordion test (and consumers) rely
-// on, so it's deferred; the kept-mounted path (`unmountOnHide: false`) morphs
-// both directions today.
+// A close in the DEFAULT unmount mode still snaps — the content is v-if'd out
+// the instant `open` flips false, before the collapse can play. Animating it
+// needs the leave gated on the height `@transitionend` (keep the node mounted
+// through the tween, then unmount), i.e. wrapping this in `Presence` the way
+// `SheetContentImpl` does. That changes the synchronous unmount timing every
+// current Collapsible/Accordion test (and consumers) rely on, so it's deferred;
+// the kept-mounted path (`unmountOnHide: false`) morphs both directions today.
 </script>
 
 <template>
