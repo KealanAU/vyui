@@ -1,3 +1,12 @@
 {
-  "extends": "./.nuxt/tsconfig.json"
+  // `files: []` is load-bearing: TS only enforces `composite: true` on
+  // referenced projects when the parent has inputs, and Nuxt's generated
+  // configs set neither composite nor emit.
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.server.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" },
+    { "path": "./.nuxt/tsconfig.node.json" }
+  ]
 }

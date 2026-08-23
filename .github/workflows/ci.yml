@@ -5,13 +5,45 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 # Cancel superseded runs, except on main.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  ci:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      core: ${{ steps.filter.outputs.core }}
+      kit: ${{ steps.filter.outputs.kit }}
+    steps:
+      - id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          # Pushes to main always run everything; PRs only the affected packages.
+          if [ -z "$PR" ]; then
+            printf 'core=true\nkit=true\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(gh pr diff "$PR" --name-only --repo "$GITHUB_REPOSITORY")
+          # Lockfile, tooling and shared config can break any package.
+          if grep -qE '^(package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|eslint\.config\.js|\.attw\.json|\.github/|tools/|patches/|styles/|packages/(shared-build-config|testing-utils)/)' <<<"$files"; then
+            printf 'core=true\nkit=true\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          grep -qE '^packages/core/' <<<"$files" && echo 'core=true' >> "$GITHUB_OUTPUT"
+          # kit compiles against core's emitted types, so a core change re-runs it.
+          grep -qE '^(packages/(core|kit)/|fixtures/)' <<<"$files" && echo 'kit=true' >> "$GITHUB_OUTPUT"
+          exit 0
+
+  # Everything that is not core or kit: lint, docs coverage, cli, docs app.
+  repo:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -23,9 +55,53 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm check:docs
-      - run: pnpm build
-      # Typecheck needs core's emitted dist types, so it follows the build.
-      - run: pnpm typecheck
+      - run: pnpm --filter @vyui/cli --filter @vyui/testing-utils --filter @vyui/docs typecheck
+      - run: pnpm --filter @vyui/cli build
+      - run: pnpm --filter @vyui/cli test
+
+  core:
+    needs: changes
+    if: needs.changes.outputs.core == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @vyui/core build
+      - run: pnpm --filter @vyui/core typecheck
+      - run: pnpm --filter @vyui/core test
       # Guards the published entrypoints, not the source (see .attw.json).
-      - run: pnpm check:exports
-      - run: pnpm test
+      - run: pnpm check:exports:core
+
+  kit:
+    needs: changes
+    if: needs.changes.outputs.kit == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      # kit and the consumer fixture resolve @vyui/core through its dist, so core builds first.
+      - run: pnpm --filter "@vyui/kit..." build
+      - run: pnpm --filter @vyui/kit typecheck
+      - run: pnpm --filter @vyui/kit test
+      - run: pnpm --filter @vyui/fixture-consumer typecheck
+      - run: pnpm check:exports:kit
+
+  # The one required status check: green only when nothing above failed. Keeps
+  # branch protection satisfied when core or kit is skipped by the path filter.
+  ci:
+    needs: [changes, repo, core, kit]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
