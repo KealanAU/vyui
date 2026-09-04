@@ -165,4 +165,14 @@ describe('FeedList — inline rubber mirrors physics.ts', () => {
     // 1.5 is `scaleFactor` in physics.ts.
     expect(fn).toMatch(/return sign \* bounce \* 1\.5/)
   })
+
+  it('is called with a 2x-threshold band so a threshold-px drag reaches the trigger', async () => {
+    expect(body(await readSfc(), '_dragMove')).toMatch(/_rubber\([^)]*, threshold \* 2\)/)
+    const { rubberEffect } = await import('@/shared/gesture/physics')
+    const threshold = 64
+    expect(rubberEffect(threshold, threshold * 2)).toBe(threshold)
+    // The band saturates at its width: width === threshold put the trigger on
+    // the curve's asymptote, so a threshold-px pull never armed the release.
+    expect(rubberEffect(threshold, threshold)).toBeLessThan(threshold)
+  })
 })

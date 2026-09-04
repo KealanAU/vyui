@@ -11,6 +11,7 @@ import DisplaySection from './sections/DisplaySection.vue'
 import GesturesSection from './sections/GesturesSection.vue'
 import SwipeDeckSection from './sections/SwipeDeckSection.vue'
 import ScrollViewSection from './sections/ScrollViewSection.vue'
+import FeedListSection from './sections/FeedListSection.vue'
 import IslandSection from './sections/IslandSection.vue'
 import OverlaySection from './sections/OverlaySection.vue'
 
@@ -104,6 +105,7 @@ const tabItems = [
   { value: 'gestures', label: 'Gestures', icon: 'icon-park-outline:hand-up',      slot: 'gestures', unmountOnHide: true },
   { value: 'swipe',   label: 'Swipe',  icon: 'icon-park-outline:check-one',       slot: 'swipe',    unmountOnHide: true },
   { value: 'scroll',  label: 'Scroll', icon: 'icon-park-outline:swipe',           slot: 'scroll',   unmountOnHide: true },
+  { value: 'feed',    label: 'Feed',  icon: 'icon-park-outline:list-two',         slot: 'feed',     unmountOnHide: true },
   { value: 'island',  label: 'Island', icon: 'icon-park-outline:pill',            slot: 'island' },
   { value: 'overlay', label: 'Modal', icon: 'icon-park-outline:application-menu', slot: 'overlay' },
 ]
@@ -212,6 +214,10 @@ const tabsUi = computed(() =>
 
         <template #scroll>
           <ScrollViewSection />
+        </template>
+
+        <template #feed>
+          <FeedListSection />
         </template>
 
         <template #island>

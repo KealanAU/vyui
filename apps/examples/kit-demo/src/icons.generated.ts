@@ -80,6 +80,9 @@ export const iconParkOutline = {
     "like": {
       "body": "<path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"4\" d=\"M15 8C8.925 8 4 12.925 4 19c0 11 13 21 20 23.326C31 40 44 30 44 19c0-6.075-4.925-11-11-11c-3.72 0-7.01 1.847-9 4.674A10.99 10.99 0 0 0 15 8\"/>"
     },
+    "list-two": {
+      "body": "<g fill=\"none\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"4\"><path d=\"M9 42a4 4 0 1 0 0-8a4 4 0 0 0 0 8Zm0-28a4 4 0 1 0 0-8a4 4 0 0 0 0 8Zm0 14a4 4 0 1 0 0-8a4 4 0 0 0 0 8Z\"/><path stroke-linecap=\"round\" d=\"M21 24h22M21 38h22M21 10h22\"/></g>"
+    },
     "list-view": {
       "body": "<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"4\"><rect width=\"40\" height=\"36\" x=\"4\" y=\"6\" rx=\"3\"/><path d=\"M4 14h40M20 24h16m-16 8h16m-24-8h2m-2 8h2\"/></g>"
     },
