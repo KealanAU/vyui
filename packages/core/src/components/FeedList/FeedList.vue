@@ -9,6 +9,14 @@
      native `bounces` off, nothing competes for the touch. Rationale +
      device-verify checklist: REFRESH-PHYSICS.md.
 
+     Shrinking `items` needs a vue-lynx whose `<list>` bridge applies removals —
+     stock 0.5.1 only appends, leaving ghost rows and a "duplicated list
+     item-key" crash on the next append (docs/upstream/vue-lynx-list-append-only.md).
+
+     The host must give this component a DEFINITE height — a native `<list>`
+     inside a `flex-1 min-h-0` box measures 0px and renders no rows. Measure the
+     container and pass pixels.
+
      Worklet rules: every `'main thread'` fn is inlined here (a `.ts`-resident
      worklet crashes the card at load) and defined before its callers; BG writes
      to `.current` are dropped, so config is pushed via `runOnMainThread`. -->
@@ -379,7 +387,11 @@ function _dragMove(y: number) {
   }
 
   const threshold = thresholdRef.current > 0 ? thresholdRef.current : 64
-  const offset = _rubber(startOffsetRef.current + (y - startYRef.current), threshold)
+  // Band width is 2x the threshold, NOT the threshold: `_rubber` saturates at
+  // its width, so width === threshold made `offset >= threshold` reachable only
+  // at the curve's exact asymptote (a 2x-threshold drag landing on equality).
+  // At 2x, a drag of exactly `threshold` px paints exactly `threshold` px.
+  const offset = _rubber(startOffsetRef.current + (y - startYRef.current), threshold * 2)
   offsetRef.current = offset
   _paint(offset)
 
