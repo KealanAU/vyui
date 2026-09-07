@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { getViewportSize } from '@vyui/core'
+import { getViewportSize, useResizeObserver } from '@vyui/core'
 import { VyButton, VyFeedList } from '@vyui/kit'
 
 // FeedList — native `<list>` virtualization with load-more (scroll to the
@@ -27,10 +27,9 @@ const listHeight = computed(() => measuredHeight.value || fallbackHeight)
 const noMoreData = ref(false)
 const refreshing = ref(false)
 
-function onSlotLayout(event: any): void {
-  const height = event?.detail?.height ?? event?.params?.height
-  if (typeof height === 'number' && height > 0) measuredHeight.value = Math.round(height)
-}
+const { onLayoutChange } = useResizeObserver((rect) => {
+  if (rect.height > 0) measuredHeight.value = Math.round(rect.height)
+})
 
 function resetFeed(): void {
   nextFeedId = 21
@@ -72,7 +71,7 @@ function onLoadMore(): void {
       </view>
       <text class="text-muted text-xs">Pull down to refresh; scroll to the bottom to load more.</text>
 
-      <view class="flex-1 min-h-0" @layoutchange="onSlotLayout">
+      <view class="flex-1 min-h-0" @layoutchange="onLayoutChange">
         <view :style="{ height: `${listHeight}px` }">
           <VyFeedList
             v-model:refreshing="refreshing"

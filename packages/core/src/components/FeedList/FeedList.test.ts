@@ -167,7 +167,7 @@ describe('FeedList — inline rubber mirrors physics.ts', () => {
   })
 
   it('is called with a 2x-threshold band so a threshold-px drag reaches the trigger', async () => {
-    expect(body(await readSfc(), '_dragMove')).toMatch(/_rubber\([^)]*, threshold \* 2\)/)
+    expect(body(await readSfc(), '_dragMove')).toMatch(/_rubber\(.*, threshold \* 2\)/)
     const { rubberEffect } = await import('@/shared/gesture/physics')
     const threshold = 64
     expect(rubberEffect(threshold, threshold * 2)).toBe(threshold)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { getViewportSize, ScrollView } from '@vyui/core'
+import { getViewportSize, ScrollView, useResizeObserver } from '@vyui/core'
 
 // ScrollView — native vertical scrolling with iOS rubber-band overscroll (the
 // underlying element is a real UIScrollView, so bounce comes for free).
@@ -17,10 +17,9 @@ const measuredHeight = ref(0)
 const fallbackHeight = Math.round((getViewportSize()?.height ?? 812) * 0.5)
 const scrollHeight = computed(() => measuredHeight.value || fallbackHeight)
 
-function onSlotLayout(event: any): void {
-  const height = event?.detail?.height ?? event?.params?.height
-  if (typeof height === 'number' && height > 0) measuredHeight.value = Math.round(height)
-}
+const { onLayoutChange } = useResizeObserver((rect) => {
+  if (rect.height > 0) measuredHeight.value = Math.round(rect.height)
+})
 </script>
 
 <template>
@@ -34,7 +33,7 @@ function onSlotLayout(event: any): void {
         Scroll the panel; overscroll past either edge for the native rubber-band bounce.
       </text>
 
-      <view class="flex-1 min-h-0" @layoutchange="onSlotLayout">
+      <view class="flex-1 min-h-0" @layoutchange="onLayoutChange">
         <view :style="{ height: `${scrollHeight}px` }">
           <ScrollView class="w-full h-full">
             <view class="flex flex-col">
