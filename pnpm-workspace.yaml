@@ -30,7 +30,9 @@ allowBuilds:
   vue-demi: false
 # 0.5.1's worklet-loader-mt registration scan chokes on comments inside worklet
 # bodies; patch makes findBalancedEnd comment-aware. Drop when upstream #287
-# (AST-span extraction) ships.
+# (AST-span extraction) ships. The same patch also makes the main-thread `<list>`
+# bridge honour removals and anchors — upstream only ever appends, so a shrunk
+# `items` keeps ghost rows and the next append throws "duplicated list item-key".
 patchedDependencies:
   '@changesets/cli@2.31.0': patches/@changesets__cli@2.31.0.patch
   '@lynx-js/react@0.116.5': patches/@lynx-js__react@0.116.5.patch

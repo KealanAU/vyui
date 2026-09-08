@@ -121,12 +121,14 @@ Never combine the two, because the lifts stack.
 
 ## Open questions / upstream
 
-- **`GlobalEventEmitter` `keyboardstatuschanged` delivery is fixed upstream**
-  in vue-lynx PR #193 ("route LEPUS global events to GlobalEventEmitter",
-  ships after 0.4.2, plus a `useGlobalEvent` composable). vyui is pinned to
-  0.4.2 (0.5.x Draggable regression), so the element `keyboard` event remains
-  the primary signal; `useGlobalKeyboard` starts working on the day the pin
-  moves past that release.
+- **`GlobalEventEmitter` delivery, post-#193 (unverified on device).** vyui is
+  now on vue-lynx 0.5.1, which ships #193's `useGlobalEvent` plus
+  `onLifecycleEvent` routing. That routing only forwards events the *main
+  thread* emits (`globalEventFromLepus`); `keyboardstatuschanged` is emitted by
+  native straight into the background context, which is the delivery that
+  failed. So it is unproven that `useGlobalKeyboard` works on 0.5.1 — the
+  element `keyboard` event stays the primary signal until someone re-runs the
+  iOS-simulator check.
 - **`KeyboardAware*` rework:** DONE. The root's primary signal is the input's
   `keyboard` event relayed through the trigger context;
   `useGlobalKeyboard` is retained as a harmless fallback.

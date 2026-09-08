@@ -1,12 +1,21 @@
 # `worklet-loader-mt`: non-relative imports silently dropped from MT module graph, breaking aliased/package worklets at runtime
 
+> **Status (2026-08-29): fixed upstream; kept as the record of why the setup
+> looks the way it does.** Everything below the Summary describes vue-lynx
+> **≤ 0.4.1**. From 0.4.2 (#190) the loader resolves every specifier through
+> the bundler resolver, so aliases work by default and `node_modules`
+> packages are opted in with `includeWorkletPackages`. The live requirements
+> are in "VyUI status" and the addenda: the 0.5.1 loader patch, the
+> `@lynx-js/react` error patch, and the consumer-side
+> `includeWorkletPackages: ['@vyui/core', '@vyui/kit']`.
+
 ## Summary
 
 `extractLocalImports` in `plugin/dist/loaders/worklet-loader-mt.js` builds the main-thread (MT) module graph by re-emitting a processed module's imports as side-effect imports, but it filters specifiers with a regex that requires them to start with `.`. Any import using a path alias (`@/…`, `~/…`, tsconfig `paths`) or a bare package specifier (`@scope/pkg`) is silently excluded. The result is a `'main thread'` worklet that exists in the background bundle but whose `registerWorkletInternal(…)` call is never emitted into the MT bundle; at runtime, `_workletMap[id].bind(this)` throws `TypeError: cannot read property 'bind' of undefined`.
 
 ---
 
-## Loader behavior / root cause
+## Loader behavior / root cause (≤ 0.4.1)
 
 - The culprit is `extractLocalImports(source)` in `plugin/dist/loaders/worklet-loader-mt.js`.
 - It matches import specifiers using exactly two regexes:
@@ -20,7 +29,7 @@
 
 ---
 
-## Why `sideEffects` / tree-shaking can't fix it
+## Why `sideEffects` / tree-shaking couldn't fix it (≤ 0.4.1)
 
 - This is **not** a tree-shaking or `package.json#sideEffects` problem; those mechanisms operate at the bundler stage and cannot fix it.
 - The filtering happens at the **loader stage**, when the MT module's import list is generated, one stage before bundling and dead-code elimination run.
@@ -29,7 +38,7 @@
 
 ---
 
-## Reproduction
+## Reproduction (≤ 0.4.1)
 
 - Define a `'main thread'` worklet in a module `gesture.ts` (a touch handler that mutates a `useMainThreadRef` and updates a transform style via `runOnMainThread`).
 - Import it into an SFC using a **path alias** configured in tsconfig `paths` (e.g. `import { useGesture } from '@/gesture'`) and bind it with `:main-thread-bindtouchstart`.
@@ -42,14 +51,21 @@
 
 ---
 
-## Impact
+## Impact (≤ 0.4.1)
 
 - **Breaks aliased imports (near-universal pattern):** Any shared composable or module that defines `'main thread'` worklets and is consumed via `@/`/tsconfig path aliases, the standard project convention, silently fails at runtime with a confusing low-level error that is far from the root cause.
-- **Blocks published component libraries entirely:** A package consumed via a bare specifier (e.g. `@vyui/core`) cannot ship MT worklets to consumers, because the consumer's MT loader skips all imports into that package. A fully general solution needs upstream package traversal / allowlisting. VyUI currently carries a narrow local patch that follows only `@/…` plus `@vyui/core` / `@vyui/kit` imports; it is a stopgap for VyUI consumers, not a general npm-package traversal policy.
+- **Blocks published component libraries entirely:** A package consumed via a bare specifier (e.g. `@vyui/core`) cannot ship MT worklets to consumers, because the consumer's MT loader skips all imports into that package. A fully general solution needs upstream package traversal / allowlisting. VyUI carried a narrow local patch (follow `@/…` plus `@vyui/core` / `@vyui/kit`) until #190 landed; that patch is gone.
 
 ---
 
-## Proposed fix
+## Proposed fix — both tiers shipped in 0.4.2 (#190)
+
+`extractLocalImports` is now async: it keeps relative specifiers, resolves
+everything else through the bundler resolver, keeps whatever lands outside
+`node_modules` (aliases, workspace links), and keeps a `node_modules` hit only
+when its package root matches `includeWorkletPackages` (string or RegExp).
+Verified against the installed 0.5.1 dist. The original proposal, for the
+record:
 
 **Tier 1: aliases (internal projects):**
 - Replace the `^\.` regex check with resolution via the bundler's own resolver (webpack/rspack `this.resolve`) or by consulting the configured aliases and tsconfig `paths` directly.
@@ -63,7 +79,7 @@
 
 ## VyUI status (as shipped)
 
-`@vyui/core` and `@vyui/kit` now publish **per-file, source-shaped ESM** (Vite lib + Rollup `preserveModules`; see `docs/plans/vite-preserve-modules-dist.md`). Every worklet module ships with direct **named** `vue-lynx` imports and its own pre-compiled `registerWorkletInternal(...)` registrations, the shape the whole MT toolchain assumes. This removes the second failure mode (a bundle's `__WEBPACK_EXTERNAL_MODULE_vue_lynx_*` namespace being orphaned by the consumer's registration slicing). A `check-dist-shape` build gate keeps dist source-shaped.
+`@vyui/core` and `@vyui/kit` now publish **per-file, source-shaped ESM** (Vite lib + Rollup `preserveModules`; see `docs/plans/archive/vite-preserve-modules-dist.md`). Every worklet module ships with direct **named** `vue-lynx` imports and its own pre-compiled `registerWorkletInternal(...)` registrations, the shape the whole MT toolchain assumes. This removes the second failure mode (a bundle's `__WEBPACK_EXTERNAL_MODULE_vue_lynx_*` namespace being orphaned by the consumer's registration slicing). A `check-dist-shape` build gate keeps dist source-shaped.
 
 With source-shaped dist, the **only** remaining consumer-side requirement is the Tier-2 **traversal** fix so the consumer's MT loader walks into `@vyui/*` at all:
 - **RESOLVED:** #190 shipped in vue-lynx 0.4.2; the local patch is gone (we're on ^0.4.2). NPM consumers must set `pluginVueLynx({ includeWorkletPackages: ['@vyui/core', '@vyui/kit'] })`. In-repo demos don't need it, since they alias `@vyui/*` at workspace source (`apps/examples/_shared/vyui-aliases.ts`), which the loader follows by default.
@@ -94,7 +110,9 @@ When the `_wkltId`'s `registerWorkletInternal(...)` never reached the MT bundle 
 
 ## Environment
 
-- `vue-lynx` 0.4.0
+Originally reported against `vue-lynx` 0.4.0. Current (2026-08-29):
+
+- `vue-lynx` 0.5.1 (still the latest release; patched locally, see addenda)
 - `@lynx-js/rspeedy` 0.13.6
-- `@lynx-js/react` 0.116.5 (provides `worklet-runtime` and `@lynx-js/react/transform`)
+- `@lynx-js/react` 0.116.5 (provides `worklet-runtime` and `@lynx-js/react/transform`; patched locally)
 - `@lynx-js/types` 3.8.0

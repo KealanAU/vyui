@@ -26,3 +26,121 @@ index 3bd4022..b65fff2 100644
          } else if ('(' === ch) depth++;
          else if (')' === ch) {
              depth--;
+diff --git a/main-thread/dist/list-apply.js b/main-thread/dist/list-apply.js
+index a24e191..a4ffd90 100644
+--- a/main-thread/dist/list-apply.js
++++ b/main-thread/dist/list-apply.js
+@@ -70,7 +70,7 @@ function isPlatformInfoAttr(key) {
+ function createListElement(id) {
+     listElementIds.add(id);
+     listItems.set(id, []);
+-    listItemsReported.set(id, 0);
++    listItemsReported.set(id, []);
+     const cbs = createListCallbacks(id);
+     const el = __CreateList(__WEBPACK_EXTERNAL_MODULE__element_registry_js_05e5c264__.pageUniqueId, cbs.componentAtIndex, cbs.enqueueComponent, {}, cbs.componentAtIndexes);
+     __SetCSSId([
+@@ -78,12 +78,31 @@ function createListElement(id) {
+     ], 0);
+     return el;
+ }
+-function insertListItem(parentId, child, childId) {
++function insertListItem(parentId, child, childId, anchorId) {
++    // vyui patch: honour the anchor (and drop any prior entry for this child) so
++    // a keyed insert / move lands where Vue put it, not always at the tail.
+     const items = listItems.get(parentId);
+-    if (items) items.push({
++    if (!items) return;
++    const existing = items.findIndex((entry)=>entry.bgId === childId);
++    if (-1 !== existing) items.splice(existing, 1);
++    const at = null == anchorId || -1 === anchorId ? -1 : items.findIndex((entry)=>entry.bgId === anchorId);
++    const entry = {
+         el: child,
+         bgId: childId
+-    });
++    };
++    if (-1 === at) items.push(entry);
++    else items.splice(at, 0, entry);
++}
++function removeListItem(parentId, childId) {
++    // vyui patch: REMOVE on a list parent has to shrink the item array. Without
++    // it the row stays in the native data source, so a shrunk list keeps ghost
++    // rows and the next append trips "duplicated list item-key".
++    const items = listItems.get(parentId);
++    if (!items) return;
++    const at = items.findIndex((entry)=>entry.bgId === childId);
++    if (-1 !== at) items.splice(at, 1);
++    itemKeyMap.delete(childId);
++    listItemPlatformInfo.delete(childId);
+ }
+ function setPlatformInfoProp(id, key, value) {
+     const info = listItemPlatformInfo.get(id);
+@@ -94,15 +113,24 @@ function setPlatformInfoProp(id, key, value) {
+     if ('item-key' === key) itemKeyMap.set(id, String(value));
+ }
+ function flushListUpdates() {
++    // vyui patch: diff the reported key order against the current one instead of
++    // only appending the tail. `removeAction` indexes the OLD list, insertion
++    // `position` indexes the NEW one — same contract as @lynx-js/react's
++    // ListUpdateInfoRecording.
+     for (const [bgId, items] of listItems){
+         var _listItemsReported_get;
+-        const reported = null != (_listItemsReported_get = listItemsReported.get(bgId)) ? _listItemsReported_get : 0;
+-        if (items.length <= reported) continue;
++        const reported = null != (_listItemsReported_get = listItemsReported.get(bgId)) ? _listItemsReported_get : [];
++        if (reported.length === items.length && reported.every((id, j)=>id === items[j].bgId)) continue;
+         const listEl = __WEBPACK_EXTERNAL_MODULE__element_registry_js_05e5c264__.elements.get(bgId);
+         if (!listEl) continue;
++        const currentIds = new Set(items.map((entry)=>entry.bgId));
++        const reportedIds = new Set(reported);
++        const removeAction = [];
++        for(let j = 0; j < reported.length; j++)if (!currentIds.has(reported[j])) removeAction.push(j);
+         const insertAction = [];
+-        for(let j = reported; j < items.length; j++){
++        for(let j = 0; j < items.length; j++){
+             const entry = items[j];
++            if (reportedIds.has(entry.bgId)) continue;
+             var _itemKeyMap_get;
+             const action = {
+                 position: j,
+@@ -115,10 +143,10 @@ function flushListUpdates() {
+         }
+         __SetAttribute(listEl, 'update-list-info', {
+             insertAction,
+-            removeAction: [],
++            removeAction,
+             updateAction: []
+         });
+-        listItemsReported.set(bgId, items.length);
++        listItemsReported.set(bgId, items.map((entry)=>entry.bgId));
+     }
+ }
+ function resetListState() {
+@@ -128,4 +156,4 @@ function resetListState() {
+     listItemPlatformInfo.clear();
+     listItemsReported.clear();
+ }
+-export { createListElement, flushListUpdates, insertListItem, isListParent, isPlatformInfoAttr, resetListState, setPlatformInfoProp };
++export { createListElement, flushListUpdates, insertListItem, isListParent, isPlatformInfoAttr, removeListItem, resetListState, setPlatformInfoProp };
+diff --git a/main-thread/dist/ops-apply.js b/main-thread/dist/ops-apply.js
+index fc2f444..52ad769 100644
+--- a/main-thread/dist/ops-apply.js
++++ b/main-thread/dist/ops-apply.js
+@@ -65,7 +65,7 @@ function applyOps(ops, flush = true) {
+                     const anchorId = ops[i++];
+                     const parent = __WEBPACK_EXTERNAL_MODULE__element_registry_js_05e5c264__.elements.get(parentId);
+                     const child = __WEBPACK_EXTERNAL_MODULE__element_registry_js_05e5c264__.elements.get(childId);
+-                    if (parent && child) if ((0, __WEBPACK_EXTERNAL_MODULE__list_apply_js_59c834d8__.isListParent)(parentId)) (0, __WEBPACK_EXTERNAL_MODULE__list_apply_js_59c834d8__.insertListItem)(parentId, child, childId);
++                    if (parent && child) if ((0, __WEBPACK_EXTERNAL_MODULE__list_apply_js_59c834d8__.isListParent)(parentId)) (0, __WEBPACK_EXTERNAL_MODULE__list_apply_js_59c834d8__.insertListItem)(parentId, child, childId, anchorId);
+                     else if (-1 === anchorId) __AppendElement(parent, child);
+                     else {
+                         const anchor = __WEBPACK_EXTERNAL_MODULE__element_registry_js_05e5c264__.elements.get(anchorId);
+@@ -79,7 +79,8 @@ function applyOps(ops, flush = true) {
+                     const childId = ops[i++];
+                     const parent = __WEBPACK_EXTERNAL_MODULE__element_registry_js_05e5c264__.elements.get(parentId);
+                     const child = __WEBPACK_EXTERNAL_MODULE__element_registry_js_05e5c264__.elements.get(childId);
+-                    if (parent && child) __RemoveElement(parent, child);
++                    if (parent && child) if ((0, __WEBPACK_EXTERNAL_MODULE__list_apply_js_59c834d8__.isListParent)(parentId)) (0, __WEBPACK_EXTERNAL_MODULE__list_apply_js_59c834d8__.removeListItem)(parentId, childId);
++                    else __RemoveElement(parent, child);
+                     break;
+                 }
+             case __WEBPACK_EXTERNAL_MODULE_vue_lynx_internal_ops_dc871e34__.OP.SET_PROP:
