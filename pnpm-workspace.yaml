@@ -34,7 +34,6 @@ allowBuilds:
 # bridge honour removals and anchors — upstream only ever appends, so a shrunk
 # `items` keeps ghost rows and the next append throws "duplicated list item-key".
 patchedDependencies:
-  '@changesets/cli@2.31.0': patches/@changesets__cli@2.31.0.patch
   '@lynx-js/react@0.116.5': patches/@lynx-js__react@0.116.5.patch
   vue-lynx@0.5.1: patches/vue-lynx@0.5.1.patch
 minimumReleaseAgeExclude:
