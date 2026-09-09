@@ -74,5 +74,5 @@ function onLower() {
 
 ## Related components
 
-- [`FeedList`](/components/feedlist) gives virtualized lists with pull-to-refresh built on the scroll/gesture layer.
+- [`FeedList`](/components/feed-list) gives virtualized lists with pull-to-refresh built on the scroll/gesture layer.
 - [`Swiper`](/components/swiper) does paged horizontal scrolling.

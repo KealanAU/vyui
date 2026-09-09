@@ -7,6 +7,10 @@
  * `KNOWN_GAPS` is a ratcheting allowlist: it only shrinks, and a listed
  * component that no longer exists is an error too, so the list can't rot.
  *
+ * Also fails when a docs page links to an internal route that doesn't exist —
+ * the docs build isn't part of CI, so a dead link would otherwise only show up
+ * as a prerender 404 during a release.
+ *
  * Usage:
  *   tsx tools/check-docs-coverage.ts
  */
@@ -17,6 +21,8 @@ import { fileURLToPath } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const componentsDir = resolve(root, 'packages/kit/src/components')
 const contentDir = resolve(root, 'apps/docs/content/3.components')
+const contentRoot = resolve(root, 'apps/docs/content')
+const pagesDir = resolve(root, 'apps/docs/app/pages')
 
 /**
  * Components that don't have a docs page yet. Backfill a page, then delete the
@@ -27,9 +33,6 @@ const KNOWN_GAPS = new Set([
   'badge',
   'chip',
   'combobox',
-  'dropdown-menu',
-  'feed-list',
-  'form-field',
   'tray-view',
 ])
 
@@ -74,6 +77,45 @@ for (const file of readdirSync(contentDir).filter(f => f.endsWith('.md'))) {
   }
 }
 
+// --- Internal links resolve to a real route ---------------------------------
+function mdFilesIn(dir: string, prefix = ''): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name
+    if (entry.isDirectory()) return mdFilesIn(resolve(dir, entry.name), rel)
+    return entry.name.endsWith('.md') ? [rel] : []
+  })
+}
+
+/** `3.components/index.md` -> `/components`, `4.theming/2.overrides.md` -> `/theming/overrides`. */
+function routeOf(relPath: string): string {
+  const segments = relPath.replace(/\.md$/, '').split('/').map(s => s.replace(/^\d+\./, ''))
+  if (segments.at(-1) === 'index') segments.pop()
+  return `/${segments.join('/')}`
+}
+
+const contentFiles = mdFilesIn(contentRoot)
+const routes = new Set(contentFiles.map(routeOf))
+// Hand-written pages (`/`, `/changelog`) aren't content files. Dynamic routes
+// are skipped — they only render content that's already in `routes`.
+for (const file of readdirSync(pagesDir).filter(f => f.endsWith('.vue') && !f.includes('['))) {
+  routes.add(file === 'index.vue' ? '/' : `/${file.replace(/\.vue$/, '')}`)
+}
+
+const deadLinks: string[] = []
+for (const file of contentFiles) {
+  const text = readFileSync(resolve(contentRoot, file), 'utf8')
+  const hrefs = [
+    ...[...text.matchAll(/\]\((\/[^)\s]*)\)/g)].map(m => m[1]!),
+    ...[...text.matchAll(/\bto="(\/[^"]*)"/g)].map(m => m[1]!),
+  ]
+  for (const href of new Set(hrefs)) {
+    const path = href.split(/[#?]/)[0]!.replace(/\/$/, '')
+    // Anything with an extension is a public asset or server route, not a page.
+    if (!path || routes.has(path) || /\.[a-z0-9]+$/i.test(path)) continue
+    deadLinks.push(`  - ${file}: ${href}`)
+  }
+}
+
 const missing = [...componentPages].filter(p => !docPages.has(p) && !KNOWN_GAPS.has(p)).sort()
 const staleGaps = [...KNOWN_GAPS].filter(p => docPages.has(p)).sort()
 const orphanGaps = [...KNOWN_GAPS].filter(p => !componentPages.has(p)).sort()
@@ -101,6 +143,14 @@ if (orphanGaps.length) {
     `KNOWN_GAPS references components that no longer exist — remove them from `
     + `tools/check-docs-coverage.ts:\n`
     + orphanGaps.map(p => `  - ${p}`).join('\n'),
+  )
+}
+
+if (deadLinks.length) {
+  errors.push(
+    `Docs pages link to internal routes that don't exist — write the page or fix `
+    + `the link:\n`
+    + deadLinks.join('\n'),
   )
 }
 
