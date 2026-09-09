@@ -68,10 +68,9 @@ export default defineNuxtConfig({
       routes: ['/', '/changelog.xml'],
       crawlLinks: true,
       autoSubfolderIndex: false,
-      // Several component pages link to docs that aren't written yet (button,
-      // checkbox, drawer, …). Don't fail the build on those 404s; drop this
-      // once the linked pages exist.
-      failOnError: false,
+      // A 404 here means a docs page links to a route that doesn't exist.
+      // `pnpm check:docs` catches those in CI; this is the backstop.
+      failOnError: true,
     },
   },
 
