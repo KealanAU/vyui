@@ -1,0 +1,5 @@
+# pnpm v10+ requires explicit approval for dependency build scripts
+# (`strictDepBuilds` fails the install otherwise). `core-js` (via the Lynx
+# toolchain) only prints a version banner in its postinstall — safe to allow.
+allowBuilds:
+  core-js: true
