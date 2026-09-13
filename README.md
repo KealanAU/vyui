@@ -67,7 +67,14 @@ Components come from a versioned, style-namespaced [registry](https://vyui.dev/r
 
 ## Quick start
 
-Add Vy UI to your own Vue-Lynx app:
+Start a new app with everything wired (Tailwind preset, worklets, providers,
+overlay hosts):
+
+```sh
+npm create vyui@latest my-app
+```
+
+Or add Vy UI to your own Vue-Lynx app:
 
 ```sh
 pnpm add @vyui/core @vyui/kit

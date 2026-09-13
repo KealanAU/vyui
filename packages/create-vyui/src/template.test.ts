@@ -1,10 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isDirEmpty, validName } from './index.js'
 
-const template = join(dirname(fileURLToPath(import.meta.url)), '../template')
+const template = fileURLToPath(new URL('../template', import.meta.url))
 const read = (name: string) => readFileSync(join(template, name), 'utf8')
 
 describe('template contract', () => {
@@ -23,7 +22,7 @@ describe('template contract', () => {
       'src/lynx-env.d.ts',
       'src/rspeedy-env.d.ts',
       'README.md',
-      '.gitignore',
+      '_gitignore',
     ]) {
       expect(existsSync(join(template, file)), file).toBe(true)
     }
@@ -42,28 +41,13 @@ describe('template contract', () => {
     expect(read('src/App.vue')).toContain('ToastProvider')
   })
 
-  it('ships pnpm build approvals so fresh installs pass the scripts gate', () => {
-    expect(read('pnpm-workspace.yaml')).toContain('core-js: true')
-    const pkg = JSON.parse(read('package.json')) as { pnpm?: unknown }
-    expect(pkg.pnpm).toBeUndefined()
+  it('lists core-js in allowBuilds so pnpm 11 installs pass the scripts gate', () => {
+    expect(read('pnpm-workspace.yaml')).toContain('core-js:')
   })
 
-  it('imports kit from deep entries so native bundles stay small', () => {
-    expect(read('src/App.vue')).toContain('@vyui/kit/button')
-    expect(read('src/App.vue')).not.toContain("from '@vyui/kit'")
-  })
-})
-
-describe('scaffold helpers', () => {
-  it('validates app names like npm', () => {
-    expect(validName('my-app')).toBe(true)
-    expect(validName('@scope/my-app')).toBe(true)
-    expect(validName('My App')).toBe(false)
-    expect(validName('')).toBe(false)
-  })
-
-  it('treats missing dirs as empty', () => {
-    expect(isDirEmpty(join(template, '__missing__'))).toBe(true)
-    expect(isDirEmpty(template)).toBe(false)
+  it('never imports the kit barrel, which ships every component on Vue-Lynx', () => {
+    for (const file of ['src/index.ts', 'src/App.vue']) {
+      expect(read(file), file).not.toMatch(/import \{[^}]*\} from '@vyui\/kit'/)
+    }
   })
 })

@@ -55,9 +55,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm check:docs
-      - run: pnpm --filter @vyui/cli --filter @vyui/testing-utils --filter @vyui/docs typecheck
+      - run: pnpm --filter @vyui/cli --filter create-vyui --filter @vyui/testing-utils --filter @vyui/docs typecheck
       - run: pnpm --filter @vyui/cli build
-      - run: pnpm --filter @vyui/cli test
+      - run: pnpm --filter @vyui/cli --filter create-vyui test
 
   core:
     needs: changes

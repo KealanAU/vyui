@@ -31,15 +31,11 @@
     "template",
     "README.md"
   ],
-  "exports": {
-    "./package.json": "./package.json"
-  },
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsup",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "typecheck": "tsc --noEmit"
   },
   "engines": {
     "node": ">=18.3.0"

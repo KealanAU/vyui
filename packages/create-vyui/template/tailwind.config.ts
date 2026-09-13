@@ -24,8 +24,6 @@ const config: Config = {
     './node_modules/@vyui/kit/dist/**/*.js',
     './node_modules/@vyui/core/dist/**/*.js',
   ],
-  // One config object feeds both planes: the preset *generates* the classes
-  // and `provideVyUI(app, vyuiConfig)` *selects* from them at runtime.
   presets: [lynxPreset, createVyuiPreset(vyuiConfig) as Config],
 }
 

@@ -18,7 +18,7 @@ cd my-app
 npm run dev
 ```
 
-Scan the printed QR with [Lynx Go](https://vyui.dev) for on-device preview, or
+Scan the printed QR with [Lynx Go](https://vyui.dev/guides/testing-on-device) for on-device preview, or
 open the `main.web.bundle` URL for the web preview.
 
 Options:
