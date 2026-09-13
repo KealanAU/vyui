@@ -1,0 +1,4 @@
+# pnpm 11 fails install on any unlisted dependency build script. core-js
+# (via the Lynx toolchain) only prints a donation notice, so it is denied.
+allowBuilds:
+  core-js: false

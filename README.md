@@ -67,7 +67,14 @@ Components come from a versioned, style-namespaced [registry](https://vyui.dev/r
 
 ## Quick start
 
-Add Vy UI to your own Vue-Lynx app:
+Start a new app with everything wired (Tailwind preset, worklets, providers,
+overlay hosts):
+
+```sh
+npm create vyui@latest my-app
+```
+
+Or add Vy UI to your own Vue-Lynx app:
 
 ```sh
 pnpm add @vyui/core @vyui/kit
@@ -119,6 +126,7 @@ vyui/
 │   ├── core/                  # @vyui/core — runtime primitives (published)
 │   ├── kit/                   # @vyui/kit — styled components on top of core
 │   ├── cli/                   # @vyui/cli — shadcn-style init/add CLI + registry
+│   ├── create-vyui/           # create-vyui — starter template (npm create vyui)
 │   ├── shared-build-config/   # shared Vite build config
 │   └── testing-utils/         # shared test helpers
 └── apps/
@@ -149,17 +157,13 @@ even shipped pieces are still subject to change.
   selected variant
 * `<VyIcon>` primitive — resolves any [Iconify](https://iconify.design) icon
   (bring your own `@iconify-json` set; nothing is bundled)
+* `create-vyui` — starter template (`npm create vyui@latest`) that wires the
+  Tailwind preset, worklet allowlist, providers, and overlay hosts in one step
 
 ### In progress
 
 * Cross-target verification (iOS, Android, Web) — behavior is proven on some
   targets but not yet uniformly validated across all three
-
-### Planned
-
-* Starter templates — a `create-vyui` / template repo that wires the Tailwind
-  preset, providers, and overlay hosts in one step (the setup ceremony is the
-  biggest onboarding cost today)
 
 ## Contributing
 
