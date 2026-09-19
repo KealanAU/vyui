@@ -11,12 +11,12 @@ export default (colors: Color[]) => ({
     // `enableCSSInheritance: false` — typed-text color lands on `base` (the <textarea>), not `root`.
     // `border-0` resets the native <textarea>'s user-agent border (a black inset on
     // the web build); the themed border lives on `root`.
-    base: 'flex-1 min-w-0 min-h-0 max-w-full bg-transparent border-0 text-highlighted placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:opacity-75 align-top',
+    base: 'flex-1 min-w-0 min-h-0 max-w-full bg-transparent border-0 text-highlighted placeholder:text-dimmed disabled:opacity-75 align-top',
     leading: 'flex flex-row items-center shrink-0',
-    leadingIcon: 'shrink-0 text-dimmed',
+    leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',
     trailing: 'flex flex-row items-center shrink-0',
-    trailingIcon: 'shrink-0 text-dimmed'
+    trailingIcon: 'shrink-0'
   },
   variants: {
     size: {

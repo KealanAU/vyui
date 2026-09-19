@@ -6,7 +6,6 @@ export interface CheckboxIndicatorProps extends PrimitiveProps {}
 </script>
 
 <script setup lang="ts">
-import { Presence } from '@/components/Presence'
 import { Primitive } from '@/components/Primitive'
 import { injectCheckboxRootContext } from './CheckboxRoot.vue'
 import { getState, isIndeterminate } from './utils'
@@ -20,19 +19,19 @@ const rootContext = injectCheckboxRootContext()
 </script>
 
 <template>
-  <Presence
-    :show="isIndeterminate(rootContext.state.value) || rootContext.state.value === true"
+  <!-- Plain v-if, not <Presence>: the indicator never binds the animation
+       handlers, so Presence only ever unmounted it via its 24-frame watchdog —
+       the check glyph lingered until the next interaction. -->
+  <Primitive
+    v-if="isIndeterminate(rootContext.state.value) || rootContext.state.value === true"
+    :ref="forwardRef"
+    :data-state="getState(rootContext.state.value)"
+    :data-disabled="rootContext.disabled.value ? '' : undefined"
+    :style="{ pointerEvents: 'none' }"
+    :as-child="asChild"
+    :as="as"
+    v-bind="$attrs"
   >
-    <Primitive
-      :ref="forwardRef"
-      :data-state="getState(rootContext.state.value)"
-      :data-disabled="rootContext.disabled.value ? '' : undefined"
-      :style="{ pointerEvents: 'none' }"
-      :as-child="asChild"
-      :as="as"
-      v-bind="$attrs"
-    >
-      <slot />
-    </Primitive>
-  </Presence>
+    <slot />
+  </Primitive>
 </template>

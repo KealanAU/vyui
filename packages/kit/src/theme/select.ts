@@ -12,22 +12,21 @@ export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center',
     // `enableCSSInheritance: false` — `base` is surface only; color lands on `value` / `placeholder`.
-    base: 'w-full rounded-md flex flex-row items-center disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
+    base: 'w-full rounded-md flex flex-row items-center disabled:opacity-75 transition-colors',
     value: 'flex-1 min-w-0 truncate text-start text-highlighted',
     placeholder: 'flex-1 min-w-0 truncate text-start text-dimmed',
-    arrow: 'fill-default',
-    content: 'max-h-[100vh] w-full bg-default rounded-md border border-default overflow-hidden pointer-events-auto',
+    content: 'max-h-[100vh] w-full bg-default rounded-md border border-default overflow-hidden',
     handle: 'self-center w-9 h-1 rounded-full bg-accented mt-1.5 mb-1',
     sheetHeader: 'px-4 pt-2 pb-1',
-    sheetTitle: 'text-muted text-xs font-semibold uppercase',
-    viewport: 'flex-1 min-h-0 px-2 py-1 overflow-y-auto divide-y divide-muted scroll-py-1',
+    sheetTitle: 'text-muted text-xs font-semibold',
+    viewport: 'flex-1 min-h-0 px-2 py-1',
     group: 'p-1',
     empty: 'py-2 text-center text-sm text-muted',
     label: 'font-semibold text-highlighted',
     separator: '-mx-1 my-1 h-px bg-accented',
     // `item` is the row <view> — surface/layout only. Item label color lives on
     // `itemLabel`, which a `text-*` on the row would never reach.
-    item: 'group relative w-full flex flex-row items-center select-none rounded-md ui-disabled:cursor-not-allowed ui-disabled:opacity-75 transition-colors px-3 py-2.5',
+    item: 'group relative w-full flex flex-row items-center rounded-md ui-disabled:opacity-75 transition-colors px-3 py-2.5',
     itemLeadingIcon: 'shrink-0 transition-colors',
     itemLeadingAvatar: 'shrink-0',
     itemTrailing: 'ms-auto flex flex-row gap-1.5 items-center',
@@ -37,7 +36,7 @@ export default (colors: Color[]) => ({
     leadingIcon: 'shrink-0 text-dimmed',
     leadingAvatar: 'shrink-0',
     trailing: 'flex flex-row items-center shrink-0 ms-auto',
-    trailingIcon: 'shrink-0 text-dimmed',
+    trailingIcon: 'shrink-0',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,

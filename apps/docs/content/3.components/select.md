@@ -208,7 +208,7 @@ Override globally through `appConfig.ui.select` or locally with `ui`.
 | `itemLeadingIcon` | Built-in item icon. |
 | `itemTrailing` / `itemTrailingIcon` | Trailing content and selected indicator. |
 
-The theme also defines reserved `root`, `arrow`, `empty`, avatar, and leading-icon slots that the current template does not render. `color`, `variant`, `size`, and `highlight` style the trigger; option rows remain neutral by default.
+The theme also defines reserved `root`, `empty`, avatar, and leading-icon slots that the current template does not render. `color`, `variant`, `size`, and `highlight` style the trigger; option rows remain neutral by default.
 
 ## Accessibility
 

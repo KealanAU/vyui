@@ -19,14 +19,14 @@ export default {
     // `enableCSSInheritance: false` — fg lands on `bodyText`, not the `body` <view>.
     body: 'text-sm pb-3.5',
     bodyText: 'text-sm text-default',
-    leadingIcon: 'shrink-0 size-5 text-muted',
+    leadingIcon: 'shrink-0 size-5',
     trailingIcon:
-      'shrink-0 size-5 ms-auto text-muted group-ui-open:rotate-180 transition-transform duration-200',
-    label: 'text-start break-words text-highlighted',
+      'shrink-0 size-5 ms-auto group-ui-open:rotate-180 transition-transform duration-200',
+    label: 'text-start text-highlighted',
   },
   variants: {
     disabled: {
-      true: { trigger: 'cursor-not-allowed opacity-75' },
+      true: { trigger: 'opacity-75' },
     },
   },
   defaultVariants: {},

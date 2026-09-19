@@ -83,7 +83,7 @@ export function iconFg(color: string, variant: Variant, isDark = false): IconFg 
 // regenerates this file with the consumer's configured union.
 export default (colors: Color[]) => ({
   slots: {
-    base: 'min-w-0 max-w-full rounded-md font-medium flex flex-row items-center disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
+    base: 'min-w-0 max-w-full rounded-md font-medium flex flex-row items-center disabled:opacity-75 transition-colors',
     label: 'min-w-0 truncate',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',

@@ -42,7 +42,7 @@ export default (colors: Color[]) => ({
     list: 'relative flex flex-row min-w-0 max-w-full overflow-hidden p-1 group',
     indicator: 'absolute transition-[translate,width] duration-200',
     trigger:
-      'group relative flex flex-row items-center shrink-0 min-w-0 font-medium rounded-md active:opacity-60 disabled:cursor-not-allowed disabled:opacity-75 transition-colors',
+      'group relative flex flex-row items-center shrink-0 min-w-0 font-medium rounded-md active:opacity-60 disabled:opacity-75 transition-colors',
     content: 'w-full min-w-0',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',

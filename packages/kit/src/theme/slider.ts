@@ -6,7 +6,7 @@ export default (colors: Color[]) => ({
   slots: {
     // `root` direction is set per orientation variant (flex-row default,
     // flex-col vertical).
-    root: 'relative flex items-center select-none touch-none',
+    root: 'relative flex items-center',
     track: 'relative bg-accented overflow-hidden rounded-full grow',
     range: 'absolute rounded-full',
     thumb: 'rounded-full bg-white border-2',
@@ -36,7 +36,7 @@ export default (colors: Color[]) => ({
       },
     },
     disabled: {
-      true: { root: 'opacity-75 cursor-not-allowed' },
+      true: { root: 'opacity-75' },
     },
   },
   compoundVariants: [

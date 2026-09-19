@@ -38,7 +38,7 @@ export default {
       },
     },
     disabled: {
-      true: { item: 'opacity-50 cursor-not-allowed' },
+      true: { item: 'opacity-50' },
     },
   },
   defaultVariants: {

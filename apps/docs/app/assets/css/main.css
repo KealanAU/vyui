@@ -152,9 +152,7 @@ body.landing-page {
 }
 
 /* Display weight for prominent headings + hero typography */
-.font-display,
-.u-page-hero h1,
-.u-page-header h1 {
+.font-display {
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.025em;

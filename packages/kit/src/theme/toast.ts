@@ -13,13 +13,12 @@ export const ICON_FG_SHADE = 500
 // `core/src/components/Slider/SliderThumbImpl.vue` for the canonical write-up.
 export default (colors: Color[]) => ({
   slots: {
-    root: 'relative group overflow-hidden bg-default rounded-lg border border-default shadow-lg shadow-black/10 p-4 flex flex-row min-w-0 gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
+    root: 'relative group overflow-hidden bg-default rounded-lg border border-default shadow-lg p-4 flex flex-row min-w-0 gap-2.5 w-[calc(100vw-2rem)] max-w-sm',
     wrapper: 'w-0 min-w-0 flex-1 flex flex-col',
     title: 'text-sm font-medium text-highlighted',
     description: 'text-sm text-muted',
     icon: 'shrink-0 size-5',
     avatar: 'shrink-0',
-    avatarSize: '2xl' as const,
     actions: 'flex flex-row flex-wrap max-w-full gap-1.5 shrink-0',
     progress: 'absolute inset-x-0 bottom-0 h-1 z-10',
     close: 'shrink-0'

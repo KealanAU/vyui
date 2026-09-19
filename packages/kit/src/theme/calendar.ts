@@ -7,7 +7,7 @@ export default (colors: Color[]) => ({
     title: 'text-base font-semibold text-highlighted',
     nav: 'flex flex-row items-center gap-1',
     navButton: 'size-9 rounded-md flex items-center justify-center active:bg-elevated disabled:opacity-50',
-    navIcon: 'size-5 text-muted',
+    navIcon: 'size-5',
     weekdays: 'flex flex-row',
     weekday: 'w-[14.285714%] text-center text-xs font-medium text-muted',
     weeks: 'flex flex-col gap-1',

@@ -2,7 +2,7 @@
  * DropdownMenu theme — adapted from nuxt/ui v3.0.2 `theme/dropdown-menu.ts` for
  * Vue-Lynx. Dark rides the semantic tokens; `dark:*` / `focus*` are dropped and
  * hover/active states keep `data-[state=...]`, `ui-highlighted`, `ui-disabled`.
- * `shadow-lg shadow-black/10` matches `Island` so floating surfaces
+ * `shadow-lg` matches `Island` so floating surfaces
  * share one elevation language.
  */
 import type { Color } from './colors'
@@ -16,14 +16,13 @@ export function iconFg(color?: string): { semantic: string, shade: number } {
 
 export default (colors: Color[]) => ({
   slots: {
-    content: 'min-w-32 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-1rem)] bg-default rounded-lg border border-default shadow-lg shadow-black/10 divide-y divide-default overflow-y-auto',
+    content: 'min-w-32 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-1rem)] bg-default rounded-lg border border-default shadow-lg',
     group: 'p-1',
     label: 'w-full flex flex-row items-center font-semibold text-highlighted',
     separator: '-mx-1 my-1 h-px bg-accented',
-    item: 'group relative w-full flex flex-row items-start rounded-md ui-disabled:opacity-50 ui-disabled:cursor-not-allowed transition-colors',
+    item: 'group relative w-full flex flex-row items-start rounded-md ui-disabled:opacity-50 transition-colors',
     itemLeadingIcon: 'shrink-0',
     itemLeadingAvatar: 'shrink-0',
-    itemLeadingAvatarSize: '',
     itemTrailing: 'ms-auto flex flex-row gap-1.5 items-center',
     itemWrapper: 'flex-1 flex flex-col text-start min-w-0',
     itemLabel: 'truncate',
@@ -36,12 +35,10 @@ export default (colors: Color[]) => ({
       true: {
         item: 'bg-elevated',
         itemLabel: 'text-highlighted',
-        itemLeadingIcon: 'text-default',
       },
       false: {
         item: 'ui-highlighted:bg-elevated ui-open:bg-elevated',
         itemLabel: 'text-default group-ui-highlighted:text-highlighted group-ui-open:text-highlighted',
-        itemLeadingIcon: 'text-muted group-ui-highlighted:text-default group-ui-open:text-default',
       },
     },
     loading: {

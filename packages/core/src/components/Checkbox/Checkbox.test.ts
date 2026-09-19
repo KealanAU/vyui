@@ -38,6 +38,9 @@ describe('given a default Checkbox', () => {
       it('shows unchecked state', () => {
         expect(checkbox.getAttribute('data-state')).toBe('unchecked')
       })
+      it('removes the indicator on the same update', () => {
+        expect(container.querySelector('[data-testid="indicator"]')).toBeNull()
+      })
     })
   })
 })

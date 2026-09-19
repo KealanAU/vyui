@@ -10,13 +10,13 @@ import type { Color } from './colors'
 import { type IconFg, iconFgFromToken } from './iconColor'
 
 const solid = (c: string) =>
-  ({ base: `bg-${c}-500 active:bg-${c}-600 active:bg-${c}-600`, fg: 'text-white' })
+  ({ base: `bg-${c}-500 active:bg-${c}-600`, fg: 'text-white' })
 
 const outline = (c: string) =>
-  ({ base: `border border-${c}-300 active:bg-${c}-50 active:bg-${c}-100`, fg: `text-${c}-500` })
+  ({ base: `border border-${c}-300 active:bg-${c}-100`, fg: `text-${c}-500` })
 
 const soft = (c: string) =>
-  ({ base: `bg-${c}-100 active:bg-${c}-100 active:bg-${c}-200`, fg: `text-${c}-500` })
+  ({ base: `bg-${c}-100 active:bg-${c}-200`, fg: `text-${c}-500` })
 
 // The pressed surface has to REST on screen, not only under a finger: an
 // `active:` -only ghost is invisible the moment the tap ends, which left the
@@ -41,7 +41,7 @@ export function iconFg(color: string, variant: Variant, pressed: boolean, isDark
 
 export default (colors: Color[]) => ({
   slots: {
-    base: 'min-w-0 max-w-full rounded-md font-medium flex flex-row items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+    base: 'min-w-0 max-w-full rounded-md font-medium flex flex-row items-center justify-center transition-colors disabled:opacity-50',
     icon: 'shrink-0',
   },
   variants: {
@@ -55,8 +55,7 @@ export default (colors: Color[]) => ({
     },
     pressed: {
       true: '',
-      // `text-*` must sit on the `icon` slot too — the root <view> won't cascade.
-      false: { base: 'active:bg-elevated active:bg-accented', icon: 'text-default' },
+      false: { base: 'active:bg-accented' },
     },
   },
   compoundVariants: [

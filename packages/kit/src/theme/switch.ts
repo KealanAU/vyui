@@ -14,7 +14,7 @@ export default (colors: Color[]) => ({
     // silently fails to paint (see `core/src/components/Slider/SliderThumbImpl.vue`).
     // `px-0.5` keeps the thumb off the rail edges at both ends.
     base: 'relative flex flex-row items-center justify-start shrink-0 px-0.5 rounded-full transition-colors',
-    thumb: 'pointer-events-none flex flex-row items-center justify-center rounded-full bg-white shadow',
+    thumb: 'flex flex-row items-center justify-center rounded-full bg-white shadow',
     wrapper: 'flex-1 min-w-0 flex flex-col',
     label: 'text-sm font-medium text-highlighted',
     description: 'text-xs text-muted',
@@ -33,7 +33,7 @@ export default (colors: Color[]) => ({
       false: { base: 'bg-accented' },
     },
     disabled: {
-      true: { base: 'opacity-50 cursor-not-allowed' },
+      true: { base: 'opacity-50' },
     },
     highlight: {
       true: '',

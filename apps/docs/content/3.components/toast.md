@@ -274,7 +274,6 @@ Override globally through `appConfig.ui.toast` or locally with `ui`.
 | `description` | Supporting text. |
 | `icon` | Built-in leading icon. |
 | `avatar` | Built-in leading avatar. |
-| `avatarSize` | Theme value reserved for avatar sizing. |
 | `actions` | Generated action-button group. |
 | `progress` | Countdown bar. |
 | `close` | Built-in close button. |

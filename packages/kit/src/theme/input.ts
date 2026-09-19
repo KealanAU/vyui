@@ -19,12 +19,12 @@ export default (colors: Color[]) => ({
     root: 'flex flex-row items-center w-full rounded-md transition-colors',
     // Typed-text color sits on `base` (the <input>), not `root`: CSS inheritance
     // is OFF in the Lynx build, so a root `text-*` never reaches the input.
-    base: 'flex-1 min-w-0 bg-transparent text-highlighted placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
+    base: 'flex-1 min-w-0 bg-transparent text-highlighted placeholder:text-dimmed disabled:opacity-75',
     leading: 'flex flex-row items-center shrink-0',
-    leadingIcon: 'shrink-0 text-dimmed',
+    leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',
     trailing: 'flex flex-row items-center shrink-0',
-    trailingIcon: 'shrink-0 text-dimmed'
+    trailingIcon: 'shrink-0'
   },
   variants: {
     size: {

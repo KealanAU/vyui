@@ -15,7 +15,7 @@ export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-center gap-1',
     base: 'shrink-0',
-    icon: 'text-dimmed',
+    icon: '',
   },
   variants: {
     color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,
@@ -26,7 +26,7 @@ export default (colors: Color[]) => ({
       xl: { icon: 'size-8' },
     },
     disabled: {
-      true: { base: 'opacity-50 cursor-not-allowed' },
+      true: { base: 'opacity-50' },
     },
   },
   compoundVariants: [

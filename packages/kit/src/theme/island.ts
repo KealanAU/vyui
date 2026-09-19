@@ -16,9 +16,7 @@
  * viewport edge, `layer` controls stacking vs in-flow.
  */
 
-const PILL_SURFACE
-  = 'bg-white/80 backdrop-blur-xl '
-    + 'border border-black/5 shadow-xl shadow-black/10'
+const PILL_SURFACE = 'bg-white/80 border border-black/5 shadow-xl'
 
 export default {
   slots: {
@@ -29,7 +27,7 @@ export default {
     row: `flex flex-row items-center max-w-full ${PILL_SURFACE} rounded-full`,
     // Panel surface, floating in front of the row when `open === true`.
     // Stripped of chrome in `attached` mode.
-    panel: `flex flex-col max-w-full max-h-[calc(100vh-4rem)] overflow-y-auto ${PILL_SURFACE} rounded-3xl`,
+    panel: `flex flex-col max-w-full max-h-[calc(100vh-4rem)] ${PILL_SURFACE} rounded-3xl`,
   },
   variants: {
     // Which viewport edge to float against, when `layer !== 'inline'`. The fixed
@@ -96,8 +94,8 @@ export default {
       open: true,
       class: {
         root: `gap-0 items-stretch ${PILL_SURFACE} rounded-3xl`,
-        row: 'bg-transparent border-0 shadow-none backdrop-blur-none rounded-none',
-        panel: 'bg-transparent border-0 shadow-none backdrop-blur-none rounded-none',
+        row: 'bg-transparent border-0 shadow-none rounded-none',
+        panel: 'bg-transparent border-0 shadow-none rounded-none',
       },
     },
   ],

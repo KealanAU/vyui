@@ -10,8 +10,8 @@ const colorVariant = (c: string) => ({
 
 export default (colors: Color[]) => ({
   slots: {
-    root: 'flex flex-row items-center justify-center shrink-0 select-none rounded-full align-middle overflow-hidden',
-    image: 'h-full w-full rounded-[inherit] object-cover',
+    root: 'flex flex-row items-center justify-center shrink-0 rounded-full align-middle overflow-hidden',
+    image: 'h-full w-full rounded-[inherit]',
     text: 'font-medium truncate',
     icon: 'shrink-0',
   },

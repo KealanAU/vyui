@@ -13,21 +13,21 @@ import { type IconFg, iconFgFromToken } from './iconColor'
 // `enableCSSInheritance: false` — `fg` lands on the `leadingIcon` / `label` slots.
 const outline = (c: string) =>
   ({
-    base: `border border-accented bg-default active:bg-${c}-50 active:bg-${c}-100`
+    base: `border border-accented bg-default active:bg-${c}-100`
       + ` ui-on:border-${c}-500 ui-on:bg-${c}-50`,
     fg: `text-default group-ui-on:text-${c}-600`,
   })
 
 const soft = (c: string) =>
   ({
-    base: `bg-elevated active:bg-${c}-50 active:bg-${c}-100`
+    base: `bg-elevated active:bg-${c}-100`
       + ` ui-on:bg-${c}-100`,
     fg: `text-default group-ui-on:text-${c}-600`,
   })
 
 const subtle = (c: string) =>
   ({
-    base: `border border-default bg-default active:bg-${c}-50 active:bg-${c}-100`
+    base: `border border-default bg-default active:bg-${c}-100`
       + ` ui-on:border-${c}-300 ui-on:bg-${c}-100`,
     fg: `text-default group-ui-on:text-${c}-600`,
   })
@@ -54,7 +54,7 @@ export default (colors: Color[]) => ({
     // `root` direction is set per orientation variant (flex-row/flex-col).
     root: 'flex min-w-0 max-w-full',
     // `group` so children can read the item's `data-state` via `group-ui-on:*`.
-    item: 'group flex flex-row items-center justify-center min-w-0 max-w-full font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+    item: 'group flex flex-row items-center justify-center min-w-0 max-w-full font-medium transition-colors disabled:opacity-50',
     leadingIcon: 'shrink-0',
     label: 'truncate',
   },
@@ -69,11 +69,11 @@ export default (colors: Color[]) => ({
     },
     orientation: {
       horizontal: {
-        root: 'flex-row flex-wrap -space-x-px',
+        root: 'flex-row flex-wrap',
         item: 'first:rounded-s-md last:rounded-e-md',
       },
       vertical: {
-        root: 'flex-col -space-y-px',
+        root: 'flex-col',
         item: 'first:rounded-t-md last:rounded-b-md w-full',
       },
     },

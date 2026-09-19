@@ -232,7 +232,7 @@ Override globally through `appConfig.ui.modal` or locally with `ui`.
 
 The only theme variant is `transition`. When enabled, the backdrop fades and the panel zooms during the core Presence lifecycle. The panel is capped at `calc(100dvh - 1rem)`, and the body scrolls when its content exceeds the available height.
 
-The root theme uses `divide-y`, so the default header, body, and footer regions produce separators even when a region has no slot content. Use the `content` slot when you need complete control over structure and dividers.
+The header, body, and footer regions are not separated by dividers — Tailwind's `divide-*` utilities have no counterpart in the Lynx preset. Use the `content` slot when you need complete control over structure and dividers.
 
 ## Accessibility
 

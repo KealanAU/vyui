@@ -11,7 +11,7 @@ import type { Color } from './colors'
 export default (colors: Color[]) => ({
   slots: {
     root: 'flex flex-row items-center w-full rounded-md border bg-default overflow-hidden',
-    base: 'flex-1 min-w-0 bg-transparent text-center text-highlighted placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
+    base: 'flex-1 min-w-0 bg-transparent text-center text-highlighted placeholder:text-dimmed disabled:opacity-75',
     increment: 'shrink-0 flex flex-row items-center justify-center text-toned active:bg-elevated ui-disabled:opacity-50',
     decrement: 'shrink-0 flex flex-row items-center justify-center text-toned active:bg-elevated ui-disabled:opacity-50',
     incrementIcon: 'shrink-0',

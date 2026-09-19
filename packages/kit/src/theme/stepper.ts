@@ -9,14 +9,14 @@ export default (colors: Color[]) => ({
     header: 'flex min-w-0 max-w-full',
     item: 'group text-center relative w-full min-w-0',
     container: 'relative min-w-0',
-    // `enableCSSInheritance: false` — fg lands on `icon` / the step-number <text>; `trigger` keeps `bg-*`.
-    trigger: 'rounded-full font-medium text-center align-middle flex flex-row items-center justify-center font-semibold bg-elevated',
+    // `enableCSSInheritance: false` — fg lands on the step-number <text>; `trigger` keeps `bg-*`.
+    trigger: 'rounded-full text-center align-middle flex flex-row items-center justify-center font-semibold bg-elevated',
     indicator: 'flex flex-row items-center justify-center size-full',
-    icon: 'shrink-0 group-ui-completed:text-white group-ui-active:text-white text-muted',
+    icon: 'shrink-0',
     separator: 'absolute rounded-full group-ui-disabled:opacity-75 bg-accented',
     wrapper: 'min-w-0',
     title: 'font-medium text-highlighted',
-    description: 'text-muted text-wrap',
+    description: 'text-muted',
     content: 'size-full min-w-0 min-h-0',
   },
   variants: {

@@ -9,6 +9,6 @@ const modelValue = ref(props.modelValue)
 
 <template>
   <CheckboxRoot v-bind="props" v-model="modelValue" data-testid="checkbox">
-    <CheckboxIndicator />
+    <CheckboxIndicator data-testid="indicator" />
   </CheckboxRoot>
 </template>

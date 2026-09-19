@@ -81,14 +81,13 @@ export default (colors: Color[]) => ({
     },
     disabled: {
       true: {
-        base: 'opacity-50 cursor-not-allowed',
-        label: 'opacity-50 cursor-not-allowed',
+        base: 'opacity-50',
+        label: 'opacity-50',
       },
     },
     required: {
-      true: {
-        legend: "after:content-['*'] after:ms-0.5 after:text-error-500",
-      },
+      // See formField.ts: an `after:` asterisk cannot paint on Lynx.
+      true: { legend: '' },
     },
   },
   compoundVariants: [

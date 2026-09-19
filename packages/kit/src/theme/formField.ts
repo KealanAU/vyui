@@ -48,9 +48,9 @@ export default {
       },
     },
     required: {
-      true: {
-        label: "after:content-['*'] after:ms-0.5 after:text-error-500",
-      },
+      // Lynx has no pseudo-elements and the preset ships no `content` plugin, so
+      // the nuxt/ui `after:content-['*']` asterisk can't paint. Needs a real node.
+      true: { label: '' },
     },
   },
   defaultVariants: {

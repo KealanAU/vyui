@@ -12,8 +12,7 @@ import type { Color } from './colors'
 export default (colors: Color[]) => ({
   slots: {
     root: 'relative flex flex-row items-center justify-center shrink-0',
-    // `tabular-nums` keeps single-digit content visually centered.
-    base: 'rounded-full flex flex-row items-center justify-center font-medium whitespace-nowrap leading-none tabular-nums border-2 border-white',
+    base: 'rounded-full flex flex-row items-center justify-center font-medium whitespace-nowrap leading-none border-2 border-white',
     // `enableCSSInheritance: false` — fg (and the per-size `text-*`) lands on the content <text>.
     text: 'text-white',
   },

@@ -84,11 +84,13 @@ const { ui } = useStyledComponent('checkbox', theme, () => ({
         <VyIcon
           v-if="modelValue === 'indeterminate'"
           :name="resolvedIndeterminateIcon"
+          color="white"
           :class="ui.icon({ class: props.ui?.icon })"
         />
         <VyIcon
           v-else
           :name="resolvedIcon"
+          color="white"
           :class="ui.icon({ class: props.ui?.icon })"
         />
       </CheckboxIndicator>

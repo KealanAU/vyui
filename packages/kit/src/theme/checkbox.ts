@@ -12,7 +12,7 @@ export default (colors: Color[]) => ({
     root: 'flex flex-row items-start min-w-0 max-w-full gap-2',
     base: 'shrink-0 flex flex-row items-center justify-center rounded transition-colors',
     indicator: 'flex flex-row items-center justify-center',
-    icon: 'shrink-0 text-white',
+    icon: 'shrink-0', // fill is baked via the Icon `color` prop — Lynx rasterizes the svg
     wrapper: 'flex-1 min-w-0 flex flex-col',
     label: 'text-sm font-medium text-highlighted',
     description: 'text-xs text-muted',
@@ -30,7 +30,7 @@ export default (colors: Color[]) => ({
       false: { base: 'bg-default border border-accented' },
     },
     disabled: {
-      true: { base: 'opacity-50 cursor-not-allowed' },
+      true: { base: 'opacity-50' },
     },
     highlight: {
       true: '',
