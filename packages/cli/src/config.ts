@@ -116,6 +116,16 @@ function parseJsonc<T>(text: string): T | undefined {
   }
 }
 
+function* readPaths(cwd: string): Generator<Record<string, string[]>> {
+  for (const file of ['tsconfig.json', 'jsconfig.json']) {
+    const p = join(cwd, file)
+    if (!existsSync(p)) continue
+    const parsed = parseJsonc<{ compilerOptions?: { paths?: Record<string, string[]> } }>(readFileSync(p, 'utf8'))
+    const paths = parsed?.compilerOptions?.paths
+    if (paths) yield paths
+  }
+}
+
 export interface DetectedAlias {
   /** Import prefix, e.g. `@` for a `"@/*"` paths entry. */
   prefix: string
@@ -130,12 +140,7 @@ export interface DetectedAlias {
  * Returns `undefined` when no such config / wildcard entry exists.
  */
 export function detectTsconfigAlias(cwd: string): DetectedAlias | undefined {
-  for (const file of ['tsconfig.json', 'jsconfig.json']) {
-    const p = join(cwd, file)
-    if (!existsSync(p)) continue
-    const parsed = parseJsonc<{ compilerOptions?: { paths?: Record<string, string[]> } }>(readFileSync(p, 'utf8'))
-    const paths = parsed?.compilerOptions?.paths
-    if (!paths) continue
+  for (const paths of readPaths(cwd)) {
     for (const [key, targets] of Object.entries(paths)) {
       // Only wildcard entries map a prefix → a directory (e.g. `@/*`).
       if (!key.endsWith('/*')) continue
@@ -152,12 +157,7 @@ export function detectTsconfigAlias(cwd: string): DetectedAlias | undefined {
 
 /** True if `tsconfig.json`/`jsconfig.json` declares a `paths` entry for `<prefix>/*`. */
 export function hasPathsEntryForPrefix(cwd: string, prefix: string): boolean {
-  for (const file of ['tsconfig.json', 'jsconfig.json']) {
-    const p = join(cwd, file)
-    if (!existsSync(p)) continue
-    const parsed = parseJsonc<{ compilerOptions?: { paths?: Record<string, string[]> } }>(readFileSync(p, 'utf8'))
-    const paths = parsed?.compilerOptions?.paths
-    if (!paths) continue
+  for (const paths of readPaths(cwd)) {
     if (Object.keys(paths).some(k => k === `${prefix}/*` || k === prefix)) return true
   }
   return false

@@ -2,7 +2,7 @@
   "name": "label",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.10"
+    "@vyui/core@^1.0.1"
   ],
   "registryDependencies": [],
   "files": [
@@ -16,7 +16,7 @@
       "path": "theme/label.ts",
       "target": "theme/label.ts",
       "type": "registry:theme",
-      "content": "/**\n * `VyLabel` theme. nuxt/ui v3 has no standalone Label (it lives inside\n * FormField), so this is a minimal single-part design: a `base` slot with\n * `size` and `required` variants. When `required` is true we append a red\n * asterisk via the `after:` pseudo-element, matching the convention used by\n * nuxt/ui's FormField label.\n */\nexport default {\n  slots: {\n    base: 'font-medium text-highlighted select-none',\n  },\n  variants: {\n    size: {\n      sm: 'text-base',\n      md: 'text-lg',\n      lg: 'text-xl',\n      xl: 'text-2xl',\n    },\n    required: {\n      true: \"after:content-['*'] after:ms-0.5 after:text-red-500\",\n    },\n  },\n  defaultVariants: {\n    size: 'md' as const,\n    required: false as const,\n  },\n}\n"
+      "content": "/**\n * `VyLabel` theme. nuxt/ui v3 has no standalone Label (it lives inside\n * FormField), so this is a minimal single-part design: a `base` slot with\n * `size` and `required` variants.\n */\nexport default {\n  slots: {\n    base: 'font-medium text-highlighted',\n  },\n  variants: {\n    size: {\n      sm: 'text-base',\n      md: 'text-lg',\n      lg: 'text-xl',\n      xl: 'text-2xl',\n    },\n    required: {\n      // See formField.ts: an `after:` asterisk cannot paint on Lynx.\n      true: '',\n    },\n  },\n  defaultVariants: {\n    size: 'md' as const,\n    required: false as const,\n  },\n}\n"
     }
   ]
 }

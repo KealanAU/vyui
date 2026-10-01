@@ -2,7 +2,7 @@
   "name": "pin-input",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.10"
+    "@vyui/core@^1.0.1"
   ],
   "registryDependencies": [],
   "files": [
@@ -16,7 +16,7 @@
       "path": "theme/pinInput.ts",
       "target": "theme/pinInput.ts",
       "type": "registry:theme",
-      "content": "// Ported from nuxt/ui v3.0.2 `src/theme/pin-input.ts` and adapted for Vue-Lynx.\n//\n// Semantic color names (`primary`, `error`, …) resolve to actual palettes via\n// the consuming app's CSS variables and Tailwind config — see\n// `apps/examples/kit-demo/src/index.css`.\nimport type { Color } from '@@vyui:theme/colors'\n\nexport default (colors: Color[]) => ({\n  slots: {\n    root: 'relative flex flex-row flex-wrap items-center min-w-0 max-w-full gap-1.5 overflow-hidden',\n    base: 'shrink-0 rounded-md placeholder:text-dimmed text-center text-highlighted disabled:cursor-not-allowed disabled:opacity-75 transition-colors',\n  },\n  variants: {\n    size: {\n      sm: { base: 'size-8 text-sm' },\n      md: { base: 'size-9 text-sm' },\n      lg: { base: 'size-10 text-base' },\n      xl: { base: 'size-11 text-lg' },\n    },\n    variant: {\n      outline: 'bg-default border border-default',\n      soft: 'bg-muted active:bg-elevated disabled:bg-muted',\n      subtle: 'bg-elevated border border-default',\n      ghost: 'bg-transparent active:bg-elevated disabled:bg-transparent',\n      none: 'bg-transparent',\n    },\n    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,\n    highlight: {\n      true: '',\n    },\n  },\n  compoundVariants: [\n    // Resting border is neutral; the colored border is opt-in via `highlight`\n    // (no focus state on Lynx).\n    ...colors.map(color => ({\n      color,\n      highlight: true,\n      class: `border border-${color}-500`,\n    })),\n  ],\n  defaultVariants: {\n    size: 'md' as const,\n    color: 'primary' as const,\n    variant: 'outline' as const,\n  },\n})\n"
+      "content": "// Ported from nuxt/ui v3.0.2 `src/theme/pin-input.ts` — see `./button.ts` for\n// the shared Lynx adaptations.\nimport type { Color } from '@@vyui:theme/colors'\n\nexport default (colors: Color[]) => ({\n  slots: {\n    root: 'relative flex flex-row flex-wrap items-center min-w-0 max-w-full gap-1.5 overflow-hidden',\n    base: 'shrink-0 rounded-md placeholder:text-dimmed text-center text-highlighted disabled:opacity-75 transition-colors',\n  },\n  variants: {\n    size: {\n      sm: { base: 'size-8 text-sm' },\n      md: { base: 'size-9 text-sm' },\n      lg: { base: 'size-10 text-base' },\n      xl: { base: 'size-11 text-lg' },\n    },\n    variant: {\n      outline: 'bg-default border border-default',\n      soft: 'bg-muted active:bg-elevated disabled:bg-muted',\n      subtle: 'bg-elevated border border-default',\n      ghost: 'bg-transparent active:bg-elevated disabled:bg-transparent',\n      none: 'bg-transparent',\n    },\n    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,\n    highlight: {\n      true: '',\n    },\n  },\n  compoundVariants: [\n    // Resting border is neutral; the colored border is opt-in via `highlight`\n    // (no focus state on Lynx).\n    ...colors.map(color => ({\n      color,\n      highlight: true,\n      class: `border border-${color}-500`,\n    })),\n  ],\n  defaultVariants: {\n    size: 'md' as const,\n    color: 'primary' as const,\n    variant: 'outline' as const,\n  },\n})\n"
     }
   ]
 }

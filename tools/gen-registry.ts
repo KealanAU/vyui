@@ -257,7 +257,6 @@ function grayifySlate(css: string): string {
 const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: string, content?: string, transform?: (s: string) => string }> = [
   { src: 'composables/useAppConfig.ts', path: 'composables/useAppConfig.ts', target: 'composables/useAppConfig.ts', type: 'registry:lib' },
   { src: 'composables/useStyledComponent.ts', path: 'composables/useStyledComponent.ts', target: 'composables/useStyledComponent.ts', type: 'registry:lib' },
-  { src: 'composables/useComponentIcons.ts', path: 'composables/useComponentIcons.ts', target: 'composables/useComponentIcons.ts', type: 'registry:lib' },
   { src: 'utils/resolveColor.ts', path: 'utils/resolveColor.ts', target: 'utils/resolveColor.ts', type: 'registry:lib' },
   { src: 'utils/tv.ts', path: 'utils/tv.ts', target: 'utils/tv.ts', type: 'registry:lib' },
   { src: 'theme/colors.ts', path: 'theme/colors.ts', target: 'theme/colors.ts', type: 'registry:lib' },

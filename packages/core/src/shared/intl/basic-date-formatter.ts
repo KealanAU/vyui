@@ -5,7 +5,7 @@
  * Lynx's PrimJS engine ships an incomplete `Intl` (ECMA-402), and
  * `@internationalized/date`'s `DateFormatter` wraps `Intl.DateTimeFormat` with
  * extra locale / hour-cycle negotiation the partial PrimJS `Intl` doesn't
- * satisfy — which crashes the date/time components. vyui's `DateFormatter`
+ * satisfy — which crashes the date/time components. `installIntlPolyfill`
  * formats through this class instead, never touching the host `Intl`.
  * Self-contained on purpose (no `@/` imports), so `shared/intl/` can be lifted
  * into a standalone package.

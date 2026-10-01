@@ -5,8 +5,7 @@ import icons from '../theme/icons'
 /**
  * Package-level defaults. `provideVyUI` deep-merges user options on top; it is
  * also the fallback when a component renders outside a `VyUI` app context
- * (storybook, isolated tests), so the icon registry stays intact and
- * `useComponentIcons` still resolves semantic names.
+ * (storybook, isolated tests), so the icon registry stays intact.
  */
 export const defaultConfig: AppConfig = {
   ui: {

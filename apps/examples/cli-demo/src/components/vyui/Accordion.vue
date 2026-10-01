@@ -1,16 +1,8 @@
 <script lang="ts">
-import { tv } from 'tailwind-variants'
 import theme from '@/lib/vyui/theme/accordion'
-import type { AppConfig } from '@/lib/vyui/types'
+import type { ClassValue, ThemeTV } from '@/lib/vyui/composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.accordion`.
- */
-export const buildAccordion = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).accordion as Partial<typeof theme> | undefined
-  return tv({ extend: tv(theme), ...(overrides || {}) })
-}
+type AccordionTV = ThemeTV<typeof theme>
 
 export interface AccordionItem {
   label?: string
@@ -43,8 +35,8 @@ export interface AccordionProps {
   trailingIcon?: string
   /** Whether closed item content should unmount. */
   unmountOnHide?: boolean
-  class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildAccordion>['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof AccordionTV['slots'], ClassValue>>
 }
 
 export interface AccordionEmits {
@@ -72,6 +64,7 @@ import {
   Icon as VyIcon,
 } from '@vyui/core'
 import { useAppConfig } from '@/lib/vyui/composables/useAppConfig'
+import { useStyledComponent } from '@/lib/vyui/composables/useStyledComponent'
 
 const props = withDefaults(defineProps<AccordionProps>(), {
   type: 'single',
@@ -83,7 +76,7 @@ const slots = defineSlots<AccordionSlots>()
 
 const appConfig = useAppConfig()
 
-const ui = computed(() => buildAccordion(appConfig)({
+const { ui } = useStyledComponent('accordion', theme, () => ({
   disabled: props.disabled,
 }))
 

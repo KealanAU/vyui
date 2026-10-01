@@ -2,7 +2,7 @@
   "name": "sortable",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.10"
+    "@vyui/core@^1.0.1"
   ],
   "registryDependencies": [],
   "files": [
@@ -16,7 +16,7 @@
       "path": "theme/sortable.ts",
       "target": "theme/sortable.ts",
       "type": "registry:theme",
-      "content": "/**\n * Sortable theme — light-mode Vue-Lynx defaults for a drag-to-reorder list.\n *\n * Two-layer row: `item` is the transparent shell core transforms during a drag\n * (any paint on it would travel with the finger — that's how the old divider\n * look smeared); `itemContent` is the visible pill, so only the pill appears\n * to move. The shell's bottom padding is the row gap and lives INSIDE the\n * fixed row pitch (`itemHeight` on `SortableRoot`), keeping the main-thread\n * swap math aligned with the rendered geometry.\n *\n * Size variant drives the gap, pill padding, and the optional drag handle\n * size. The `itemHeight` prop is set in pixels by the wrapper from this same\n * size token.\n */\nexport default {\n  slots: {\n    root: 'w-full min-w-0 max-w-full overflow-hidden flex flex-col',\n    item: 'group flex flex-col min-w-0 max-w-full',\n    itemContent: 'flex-1 flex flex-row items-center min-w-0 overflow-hidden gap-2 bg-default border border-default rounded-md group-ui-dragging:border-accented',\n    handle: 'shrink-0 text-dimmed',\n  },\n  variants: {\n    size: {\n      sm: {\n        item: 'pb-1.5',\n        itemContent: 'px-4 text-base',\n        handle: 'size-5',\n      },\n      md: {\n        item: 'pb-2',\n        itemContent: 'px-5 text-lg',\n        handle: 'size-6',\n      },\n      lg: {\n        item: 'pb-2',\n        itemContent: 'px-6 text-xl',\n        handle: 'size-7',\n      },\n    },\n    disabled: {\n      true: { item: 'opacity-50 cursor-not-allowed' },\n    },\n  },\n  defaultVariants: {\n    size: 'md' as const,\n  },\n}\n"
+      "content": "/**\n * Sortable theme — light-mode Vue-Lynx defaults for a drag-to-reorder list.\n *\n * Two-layer row: `item` is the transparent shell core transforms during a drag\n * (any paint on it would travel with the finger — that's how the old divider\n * look smeared); `itemContent` is the visible pill, so only the pill appears\n * to move. The shell's bottom padding is the row gap and lives INSIDE the\n * fixed row pitch (`itemHeight` on `SortableRoot`), keeping the main-thread\n * swap math aligned with the rendered geometry.\n *\n * Size variant drives the gap, pill padding, and the optional drag handle\n * size. The `itemHeight` prop is set in pixels by the wrapper from this same\n * size token.\n */\nexport default {\n  slots: {\n    root: 'w-full min-w-0 max-w-full overflow-hidden flex flex-col',\n    item: 'group flex flex-col min-w-0 max-w-full',\n    itemContent: 'flex-1 flex flex-row items-center min-w-0 overflow-hidden gap-2 bg-default border border-default rounded-md group-ui-dragging:border-accented',\n    handle: 'shrink-0 text-dimmed',\n  },\n  variants: {\n    size: {\n      sm: {\n        item: 'pb-1.5',\n        itemContent: 'px-4 text-base',\n        handle: 'size-5',\n      },\n      md: {\n        item: 'pb-2',\n        itemContent: 'px-5 text-lg',\n        handle: 'size-6',\n      },\n      lg: {\n        item: 'pb-2',\n        itemContent: 'px-6 text-xl',\n        handle: 'size-7',\n      },\n    },\n    disabled: {\n      true: { item: 'opacity-50' },\n    },\n  },\n  defaultVariants: {\n    size: 'md' as const,\n  },\n}\n"
     }
   ]
 }

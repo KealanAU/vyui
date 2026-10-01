@@ -1,20 +1,10 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '@/lib/vyui/theme/avatar'
-import { resolveColors } from '@/lib/vyui/theme/colors'
-import type { AppConfig } from '@/lib/vyui/types'
+import type { ClassValue, ThemeTV, VariantProps } from '@/lib/vyui/composables/useStyledComponent'
 import type { ChipProps } from '@/components/vyui/Chip.vue'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.avatar`.
- */
-export const buildAvatar = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).avatar as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
-
-type AvatarVariants = VariantProps<ReturnType<typeof buildAvatar>>
+type AvatarTV = ThemeTV<typeof theme>
+type AvatarVariants = VariantProps<AvatarTV>
 
 export interface AvatarProps {
   /** Image source URL. Renders an `<image>`; on load failure it falls back to initials/icon. */
@@ -28,14 +18,13 @@ export interface AvatarProps {
   size?: AvatarVariants['size']
   color?: AvatarVariants['color']
   /**
-   * Decorative chip rendered on top of the avatar. Pass `true` for the
-   * default style, or a `ChipProps` object to customize color / size /
-   * position / inset. Defaults to `inset: true` so it isn't clipped by the
-   * avatar's `overflow-hidden` root.
+   * Decorative chip rendered on top of the avatar: `true` for the default style,
+   * or a `ChipProps` object. Defaults to `inset: true` so it isn't clipped by
+   * the avatar's `overflow-hidden` root.
    */
   chip?: boolean | ChipProps
-  class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildAvatar>['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof AvatarTV['slots'], ClassValue>>
 }
 
 export interface AvatarSlots {
@@ -57,7 +46,7 @@ export const AVATAR_GROUP_KEY: InjectionKey<AvatarGroupContext> = Symbol('vyui:a
 
 <script setup lang="ts">
 import { computed, inject } from 'vue'
-import { useAppConfig } from '@/lib/vyui/composables/useAppConfig'
+import { useStyledComponent } from '@/lib/vyui/composables/useStyledComponent'
 import {
   AvatarFallback as CoreAvatarFallback,
   AvatarImage as CoreAvatarImage,
@@ -69,26 +58,23 @@ import VyChip from '@/components/vyui/Chip.vue'
 const props = withDefaults(defineProps<AvatarProps>(), {})
 defineSlots<AvatarSlots>()
 
-// Resolve `chip` to a `ChipProps` object (or `undefined` to skip rendering).
-// Boolean `true` becomes a defaulted inset chip so it isn't clipped by the
-// avatar's `overflow-hidden` root.
+// Resolve `chip` to a `ChipProps` object (or `undefined` to skip rendering);
+// boolean `true` becomes a defaulted inset chip.
 const resolvedChipProps = computed<ChipProps | undefined>(() => {
   if (!props.chip) return undefined
   if (props.chip === true) return { inset: true }
   return { inset: true, ...props.chip }
 })
 
-const appConfig = useAppConfig()
-
-// AvatarGroup pushes `size`/`color` via provide() so nested avatars inherit
-// the group's scale. Component-level props win when explicitly set.
+// AvatarGroup pushes `size`/`color` via provide() so nested avatars inherit the
+// group's scale. Component-level props win when explicitly set.
 const groupCtx = inject(AVATAR_GROUP_KEY, null)
 
 const resolvedSize = computed(() => props.size ?? groupCtx?.size)
 const resolvedColor = computed(() => props.color ?? groupCtx?.color)
 
-// Derive initials from `text`, otherwise from `alt` (first letter of up to
-// two words). Matches Nuxt UI v4 behaviour.
+// Initials from `text`, else `alt` (first letter of up to two words), matching
+// Nuxt UI v4.
 const fallbackText = computed(() => {
   if (props.text) return props.text
   if (props.alt) {
@@ -97,7 +83,7 @@ const fallbackText = computed(() => {
   return ''
 })
 
-const ui = computed(() => buildAvatar(appConfig)({
+const { ui } = useStyledComponent('avatar', theme, () => ({
   size: resolvedSize.value,
   color: resolvedColor.value,
 }))
@@ -106,8 +92,7 @@ const ui = computed(() => buildAvatar(appConfig)({
 <template>
   <!--
     Headless behaviour (image load-status + fallback) comes from @vyui/core's
-    Avatar primitives. The Lynx `<image>` `binderror` (`@error`) handling lives
-    in `CoreAvatarImage`; this wrapper only layers theming + chip overlay.
+    Avatar primitives; this wrapper only layers theming + chip overlay.
   -->
   <CoreAvatarRoot :class="[ui.root({ class: [props.class, props.ui?.root] }), chip ? 'relative' : '']">
     <slot>

@@ -2,7 +2,7 @@
   "name": "popover",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.10"
+    "@vyui/core@^1.0.1"
   ],
   "registryDependencies": [],
   "files": [
@@ -16,7 +16,7 @@
       "path": "theme/popover.ts",
       "target": "theme/popover.ts",
       "type": "registry:theme",
-      "content": "/**\n * Popover theme — adapted from nuxt/ui v3.0.2 `theme/popover.ts` for Vue-Lynx.\n *\n * Stripped: all `dark:*`, `focus:*`, `focus-visible:*`, `transition-shadow`,\n * and Nuxt UI's animation utilities (core owns open/close motion; the\n * referenced keyframes don't exist and the utility overrides core's).\n * `ring-*` converted to `border-*` (Lynx preset has no ringWidth plugin).\n * `shadow-lg shadow-black/10`\n * mirrors the elevation used on `Island` so floating surfaces\n * (popover, dropdown, island) share one elevation language.\n */\nexport default {\n  slots: {\n    content: 'flex flex-col max-w-[calc(100vw-1rem)] max-h-[calc(100vh-1rem)] overflow-y-auto bg-default rounded-md border border-default shadow-lg shadow-black/10 pointer-events-auto',\n    handle: 'self-center w-9 h-1 rounded-full bg-accented mt-1.5 mb-1',\n  },\n}\n"
+      "content": "/**\n * Popover theme — adapted from nuxt/ui v3.0.2 `theme/popover.ts` for Vue-Lynx.\n *\n * Stripped: all `dark:*`, `focus:*`, `focus-visible:*`, `transition-shadow`,\n * and Nuxt UI's animation utilities (core owns open/close motion; the\n * referenced keyframes don't exist and the utility overrides core's).\n * `ring-*` converted to `border-*` (Lynx preset has no ringWidth plugin).\n * `shadow-lg` mirrors the elevation used on `Island` so floating surfaces\n * (popover, dropdown, island) share one elevation language.\n */\nexport default {\n  slots: {\n    content: 'flex flex-col max-w-[calc(100vw-1rem)] max-h-[calc(100vh-1rem)] bg-default rounded-md border border-default shadow-lg',\n    handle: 'self-center w-9 h-1 rounded-full bg-accented mt-1.5 mb-1',\n  },\n}\n"
     }
   ]
 }
