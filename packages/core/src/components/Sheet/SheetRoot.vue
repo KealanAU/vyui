@@ -65,6 +65,8 @@ import { computed, ref, watch } from 'vue'
 
 import { useMainThreadRef } from 'vue-lynx'
 
+import type { MTElement } from '../../shared/types'
+
 import { getViewportSize, useStandardVModelOf } from '../../shared/composables'
 import { clamp } from '../../shared/clamp'
 import { provideSheetRootContext } from './sheetContext'
@@ -110,7 +112,7 @@ const viewportWidth = computed(() => {
 // MT drag progress (1 fully open → 0 dragged to dismiss; only written during
 // drag — see sheetContext). Lives at the root so the backdrop can read it.
 const progressMTRef = useMainThreadRef<number>(0)
-const backdropElRef = useMainThreadRef<any>(null)
+const backdropElRef = useMainThreadRef<MTElement | null>(null)
 
 // Close does NOT reset snapIndex: reopen restores the last snap, and rewriting
 // a settled v-model mid-close would misfire SheetContentImpl's close logic.

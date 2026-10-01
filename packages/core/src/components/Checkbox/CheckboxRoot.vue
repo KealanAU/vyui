@@ -55,8 +55,8 @@ const props = withDefaults(defineProps<CheckboxRootProps<T>>(), {
   modelValue: undefined,
   value: 'on',
   as: 'view',
-  trueValue: (() => true) as unknown as undefined,
-  falseValue: (() => false) as unknown as undefined,
+  trueValue: () => true as T & {},
+  falseValue: () => false as T & {},
 })
 const emits = defineEmits<CheckboxRootEmits<T>>()
 
@@ -73,7 +73,7 @@ const { forwardRef } = useForwardExpose()
 
 const checkboxGroupContext = injectCheckboxGroupRootContext(null)
 
-const modelValue = useStandardVModel<T | 'indeterminate'>(props as any, emits as any, props.falseValue as T | 'indeterminate')
+const modelValue = useStandardVModel<T | 'indeterminate'>(props, emits, props.falseValue as T | 'indeterminate')
 
 const disabled = computed(() => checkboxGroupContext?.disabled.value || props.disabled)
 

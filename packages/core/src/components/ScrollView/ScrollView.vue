@@ -106,9 +106,11 @@ export type ScrollViewEmits = {
 
 <script setup lang="ts">
 import { computed, useId, useSlots } from 'vue'
+import type { MainThread } from '@lynx-js/types'
 import { runOnBackground, useMainThreadRef } from 'vue-lynx'
 
 import { BOUNCE_CONSTANTS, BOUNCING_STATUS, getViewportSize } from '@/shared/composables'
+import type { MTElement } from '@/shared/types'
 
 // NEITHER `runOnBackground` NOR `useMainThreadRef` may be aliased — SWC's
 // worklet transform only wraps the literal identifiers at the call site.
@@ -186,9 +188,9 @@ const endBounceTriggerDistanceRef = useMainThreadRef<number>(props.endBounceTrig
 // Element handles for the nodes the bounce moves. `main-thread-ref`s rather
 // than lynx-ui's `lynx.querySelector('#id')`: that API exists only on the
 // native main thread, so on web-core every selector call threw.
-const containerElRef = useMainThreadRef<any>(null)
-const upperElRef = useMainThreadRef<any>(null)
-const lowerElRef = useMainThreadRef<any>(null)
+const containerElRef = useMainThreadRef<MTElement | null>(null)
+const upperElRef = useMainThreadRef<MTElement | null>(null)
+const lowerElRef = useMainThreadRef<MTElement | null>(null)
 
 const startTouch = useMainThreadRef<any>(null)
 const prevTouch = useMainThreadRef<any>(null)
@@ -292,7 +294,10 @@ function _mtRaf(animationFunc: () => void) {
   }
 }
 
-function _mtGetCurrentDelta(event: any) {
+// The subset the bounce maths reads — the mouse wrappers synthesize exactly this.
+interface TouchLike { touches: Array<{ pageX: number, pageY: number }> }
+
+function _mtGetCurrentDelta(event: TouchLike) {
   'main thread'
   if (startTouch.current !== null) {
     if (startBouncingTouch.current === null) {
@@ -410,7 +415,7 @@ function _mtRubberEffect(isNegative: number, delta: number) {
   _mtBouncingSetStyle(isNegative * dist)
 }
 
-function _mtTriggerRubberIfCrossingEdge(event: any) {
+function _mtTriggerRubberIfCrossingEdge(event: TouchLike) {
   'main thread'
   const delta = _mtGetCurrentDelta(event)
 
@@ -484,7 +489,7 @@ function _mtFlingBounce() {
   flingEndWithBouncingEnableFlag.current = true
 }
 
-function _mtTouchStart(event: any) {
+function _mtTouchStart(event: TouchLike) {
   'main thread'
   startTouch.current = event.touches
   bouncingTouchStartPosition.current = bouncingPositionInfo.current?.bouncingOffset ?? 0
@@ -493,7 +498,7 @@ function _mtTouchStart(event: any) {
   flingEndWithBouncingEnableFlag.current = false
 }
 
-function _mtTouchMove(event: any) {
+function _mtTouchMove(event: TouchLike) {
   'main thread'
   prevTouch.current = event.touches
   if (startTouch.current === null) return
@@ -579,7 +584,7 @@ function _mtMouseMove(e: { pageX: number, pageY: number, buttons?: number }) {
   _mtTouchMove({ touches: [{ pageX: e.pageX, pageY: e.pageY }] })
 }
 
-function _mtHandleScroll(event: any) {
+function _mtHandleScroll(event: { detail: { scrollTop: number, scrollLeft: number } }) {
   'main thread'
   if (prevScroll.current && !_mtIsEmpty(prevScroll.current)) {
     const prev = prevScroll.current
@@ -598,7 +603,7 @@ function _mtHandleScroll(event: any) {
   }
 }
 
-function _mtLayoutChange(event: any) {
+function _mtLayoutChange(event: MainThread.LayoutChangeEvent) {
   'main thread'
   heightRef.current = (_mtIsAndroid() ? event.params?.height : event.detail?.height) ?? heightRef.current
   widthRef.current = (_mtIsAndroid() ? event.params?.width : event.detail?.width) ?? widthRef.current

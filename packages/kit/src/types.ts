@@ -1,17 +1,12 @@
 import type { Component, InjectionKey } from 'vue'
+import type { ComponentThemes } from './theme/componentThemes'
+
+export type { ComponentThemes }
 
 /** Recursive `Partial<T>` — every nested property is also optional. */
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
 }
-
-/**
- * Per-component theme override bucket, keyed by component name. Each entry is a
- * partial of that component's resolved `tailwind-variants` config, typed loosely
- * here because component themes register lazily — strong typing happens at each
- * component boundary via `Partial<typeof theme>`.
- */
-export type ComponentThemes = Record<string, unknown>
 
 export interface AppConfig {
   ui: {
@@ -23,7 +18,9 @@ export interface AppConfig {
     colors?: string[]
     /** Semantic icon name → Iconify id (e.g. `loading` → `i-lucide-loader-circle`). */
     icons?: Record<string, string>
-  } & ComponentThemes
+  // The open index keeps custom semantic colors (`ui.tertiary = 'violet'`,
+  // read by `resolveColorHex`) assignable alongside the typed component keys.
+  } & ComponentThemes & Record<string, unknown>
 }
 
 export const APP_CONFIG_KEY: InjectionKey<AppConfig> = Symbol('vyui:app-config')

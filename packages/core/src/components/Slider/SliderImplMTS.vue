@@ -32,6 +32,7 @@ import { watch } from 'vue'
 import { runOnBackground, useMainThreadRef } from 'vue-lynx'
 
 import { Primitive } from '@/components/Primitive'
+import type { MTElement } from '@/shared/types'
 import { injectSliderRootContext } from './SliderRoot.vue'
 import { injectSliderOrientationContext } from './utils'
 
@@ -48,7 +49,7 @@ const orientation = injectSliderOrientationContext()
 // while applying the ops. Bind them only outside the harness.
 const mtBound = !(globalThis as any).lynxTestingEnv
 
-const trackRef = useMainThreadRef<any>(null)
+const trackRef = useMainThreadRef<MTElement | null>(null)
 
 // Track geometry, in the pointer's own frame. All four come from ONE
 // `invoke('boundingClientRect')` per gesture (see `_beginAt`).
@@ -84,8 +85,8 @@ const activeIndexRef = useMainThreadRef<number>(-1)
 //
 // A CLASS selector, not `[data-vyui-slider-thumb]`: Lynx's selector engine
 // supports a narrow subset, and class matching is the part it supports.
-const thumbElsRef = useMainThreadRef<any[]>([])
-const rangeElRef = useMainThreadRef<any>(null)
+const thumbElsRef = useMainThreadRef<MTElement[]>([])
+const rangeElRef = useMainThreadRef<MTElement | null>(null)
 
 // Drag shield. Web only.
 //
@@ -103,7 +104,7 @@ function isWeb() {
   return (globalThis.SystemInfo?.platform as string) === 'web'
 }
 
-const shieldRef = useMainThreadRef<any>(null)
+const shieldRef = useMainThreadRef<MTElement | null>(null)
 
 function _resolveEls() {
   'main thread'
@@ -232,7 +233,7 @@ function _paintActiveThumb(value: number) {
   if (idx < 0) return
   const els = thumbElsRef.current
   if (idx >= els.length) return
-  const el = els[idx] as { setStyleProperty?: (k: string, v: string) => void } | null
+  const el = els[idx]
   if (!el?.setStyleProperty) return
 
   const min = root.minMT.current
@@ -254,7 +255,7 @@ function _paintActiveThumb(value: number) {
  */
 function _paintRange(vals: number[]) {
   'main thread'
-  const el = rangeElRef.current as { setStyleProperty?: (k: string, v: string) => void } | null
+  const el = rangeElRef.current
   if (!el?.setStyleProperty) return
   const min = root.minMT.current
   const max = root.maxMT.current
@@ -284,7 +285,7 @@ function _paintRange(vals: number[]) {
 
 function _setShield(up: boolean) {
   'main thread'
-  const el = shieldRef.current as { setStyleProperty?: (k: string, v: string) => void } | null
+  const el = shieldRef.current
   if (!el?.setStyleProperty) return
   el.setStyleProperty('display', up ? 'flex' : 'none')
 }

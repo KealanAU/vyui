@@ -19,6 +19,8 @@ import type { Ref } from 'vue'
 import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
+import type { MTElement, MTRef } from '../types'
+
 export interface DragGestureConfig {
   /** Controlled index (v-model). The controller animates to it on change and
    *  writes the settled index back to it. */
@@ -70,7 +72,7 @@ export interface DragGestureConfig {
 
 export interface DragGesture {
   /** Bind to the draggable track's `:main-thread-ref`. */
-  containerRef: ReturnType<typeof useMainThreadRef<any>>
+  containerRef: MTRef
   onTouchStart: (e: { detail: { x: number, y: number } }) => void
   onTouchMove: (e: { detail: { x: number, y: number } }) => void
   onTouchEnd: () => void
@@ -127,7 +129,7 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
     return 0
   }
 
-  const containerRef = useMainThreadRef<any>(null)
+  const containerRef = useMainThreadRef<MTElement | null>(null)
 
   const offsetRef = useMainThreadRef<number>(-(currentIndex.value ?? 0) * fullSizeOf())
   const touchStartXRef = useMainThreadRef<number>(0)
@@ -266,13 +268,10 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
   // a "next" step reads as forward. Mirrors lynx-ui `onOffsetUpdate`/`setOffset`.
   function _setTransform(offset: number) {
     'main thread'
-    const el = containerRef as unknown as {
-      current?: { setStyleProperty?(k: string, v: string): void }
-    }
     let effective = offset + alignOffsetRef.current
     if (rtlRef.current) effective = -effective
-    if (el.current?.setStyleProperty) {
-      el.current.setStyleProperty('transform', `translateX(${effective}px)`)
+    if (containerRef.current?.setStyleProperty) {
+      containerRef.current.setStyleProperty('transform', `translateX(${effective}px)`)
     }
   }
 
@@ -300,13 +299,10 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
       const eased = 1 - (1 - progress) * (1 - progress) * (1 - progress)
       const value = from + (to - from) * eased
       offsetRef.current = value
-      const el = containerRef as unknown as {
-        current?: { setStyleProperty?(k: string, v: string): void }
-      }
       let effective = value + alignOffsetRef.current
       if (rtlRef.current) effective = -effective
-      if (el.current?.setStyleProperty) {
-        el.current.setStyleProperty('transform', `translateX(${effective}px)`)
+      if (containerRef.current?.setStyleProperty) {
+        containerRef.current.setStyleProperty('transform', `translateX(${effective}px)`)
       }
       if (progress < 1) requestAnimationFrame(step)
     }
@@ -337,15 +333,12 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
       if (progress > 1) progress = 1
       const eased = 1 - (1 - progress) * (1 - progress) * (1 - progress)
       const value = from + (rawTo - from) * eased
-      const el = containerRef as unknown as {
-        current?: { setStyleProperty?(k: string, v: string): void }
-      }
       if (progress < 1) {
         offsetRef.current = value
         let effective = value + alignOffsetRef.current
         if (rtlRef.current) effective = -effective
-        if (el.current?.setStyleProperty) {
-          el.current.setStyleProperty('transform', `translateX(${effective}px)`)
+        if (containerRef.current?.setStyleProperty) {
+          containerRef.current.setStyleProperty('transform', `translateX(${effective}px)`)
         }
         requestAnimationFrame(step)
       }
@@ -354,8 +347,8 @@ export function useDragGesture(config: DragGestureConfig): DragGesture {
         offsetRef.current = realTo
         let effective = realTo + alignOffsetRef.current
         if (rtlRef.current) effective = -effective
-        if (el.current?.setStyleProperty) {
-          el.current.setStyleProperty('transform', `translateX(${effective}px)`)
+        if (containerRef.current?.setStyleProperty) {
+          containerRef.current.setStyleProperty('transform', `translateX(${effective}px)`)
         }
       }
     }

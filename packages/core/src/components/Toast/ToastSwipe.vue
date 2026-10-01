@@ -49,7 +49,10 @@ export function decideDismiss(opts: {
 
 <script setup lang="ts">
 import { onUnmounted } from 'vue'
+import type { MainThread } from '@lynx-js/types'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
+
+import type { MTElement } from '../../shared/types'
 import { injectToastRootContext } from './ToastRoot.vue'
 
 // NEITHER `runOnMainThread` NOR `runOnBackground` may be aliased — SWC's
@@ -69,7 +72,7 @@ defineSlots<{ default?: () => any }>()
 
 const toast = injectToastRootContext()
 
-const rowRef = useMainThreadRef<any>(null)
+const rowRef = useMainThreadRef<MTElement | null>(null)
 const currentXRef = useMainThreadRef<number>(0)
 const touchStartXRef = useMainThreadRef<number>(0)
 const startXRef = useMainThreadRef<number>(0)
@@ -92,7 +95,7 @@ const timeQueueRef = useMainThreadRef<number[]>([])
 
 // Handle of the in-flight snap/fling animation. A fill-forwards animation
 // outranks inline style, so it must be cancelled before the next drag's writes.
-const snapAnimRef = useMainThreadRef<any>(null)
+const snapAnimRef = useMainThreadRef<MainThread.Animation | null>(null)
 
 // Timestamp of the last real touch: touch browsers replay a tap as a
 // compatibility mousedown/mouseup pair, which mouse handlers ignore.
@@ -115,12 +118,9 @@ function onRowLayout(e: { detail?: { width?: number } } | undefined) {
 
 function _apply(x: number, opacity: number) {
   'main thread'
-  const el = rowRef as unknown as {
-    current?: { setStyleProperty?(k: string, v: string): void }
-  }
-  if (el.current?.setStyleProperty) {
-    el.current.setStyleProperty('transform', `translateX(${x}px)`)
-    el.current.setStyleProperty('opacity', `${opacity}`)
+  if (rowRef.current?.setStyleProperty) {
+    rowRef.current.setStyleProperty('transform', `translateX(${x}px)`)
+    rowRef.current.setStyleProperty('opacity', `${opacity}`)
   }
 }
 
@@ -137,14 +137,8 @@ function _opacityFor(x: number) {
 function _animateTo(targetX: number, targetOpacity: number) {
   'main thread'
   const from = currentXRef.current
-  const el = rowRef as unknown as {
-    current?: {
-      animate?(keyframes: any[], options: any): any
-      setStyleProperty?(k: string, v: string): void
-    }
-  }
   currentXRef.current = targetX
-  if (typeof el.current?.animate === 'function') {
+  if (typeof rowRef.current?.animate === 'function') {
     // Write the end state inline BEFORE animating: Lynx web's animation PAPI
     // reads Lynx-style timing keys and silently drops WAAPI fill/easing, so a
     // web settle would finish fill-less and snap back. Both spellings are
@@ -152,7 +146,7 @@ function _animateTo(targetX: number, targetOpacity: number) {
     _apply(targetX, targetOpacity)
     // Keep the handle: a fill-forwards animation outranks inline style in the
     // cascade, so it must be cancelled before the next drag's transform writes.
-    snapAnimRef.current = el.current.animate(
+    snapAnimRef.current = rowRef.current.animate(
       [
         { transform: `translateX(${from}px)`, opacity: `${_opacityFor(from)}` },
         { transform: `translateX(${targetX}px)`, opacity: `${targetOpacity}` },

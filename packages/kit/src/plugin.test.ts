@@ -53,6 +53,21 @@ describe('VyUI plugin', () => {
 })
 
 describe('provideVyUI', () => {
+  it('types `ui` by component name and still accepts custom color keys', () => {
+    const provide = vi.fn()
+    provideVyUI({ provide } as any, {
+      ui: {
+        tertiary: 'violet',
+        card: {
+          defaultVariants: { variant: 'soft' },
+          // @ts-expect-error slot classes are strings
+          slots: { root: 1 },
+        },
+      },
+    })
+    expect(provide.mock.calls[0][1].ui.card.defaultVariants.variant).toBe('soft')
+  })
+
   it('provides merged config using only app.provide (never app.component)', () => {
     const provide = vi.fn()
     const app = { provide } as any
