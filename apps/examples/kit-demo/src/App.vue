@@ -88,6 +88,9 @@ const rootClass = computed(() => [
   'w-full h-full bg-default',
   ...Object.entries(colorPalettes).map(([color, palette]) => `${color}-${palette}`),
   `neutral-${neutralPalette.value}`,
+  // A class, not an inline `--ui-radius`: Lynx native drops custom properties
+  // set through inline style.
+  `radius-${radius.value * 1000}`,
   ...(isDark.value ? ['dark'] : []),
 ].join(' '))
 
@@ -140,7 +143,6 @@ const tabsUi = computed(() =>
   <view
     :key="mode"
     :class="rootClass"
-    :style="{ '--ui-radius': `${radius}rem` }"
     :main-thread-bindlayoutchange="onViewportLayoutChange"
   >
     <OverlayRoot />
