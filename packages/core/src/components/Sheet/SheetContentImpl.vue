@@ -30,6 +30,7 @@ import {
   viewportSnapsToPositions,
 } from '@/shared/composables'
 import { clamp } from '@/shared/clamp'
+import type { MTElement } from '@/shared/types'
 import { injectSheetRootContext, provideSheetDragContext } from './sheetContext'
 
 const props = withDefaults(defineProps<SheetContentImplProps>(), {
@@ -136,7 +137,7 @@ const isDragEnabled = computed(() =>
 
 // All read/written only inside `'main thread'` worklets that fire on user
 // input. By that time, the `INIT_MT_REF` ops below have been flushed.
-const containerRef = useMainThreadRef<any>(null)
+const containerRef = useMainThreadRef<MTElement | null>(null)
 const touchStartAxisRef = useMainThreadRef<number>(0)
 const isDraggingRef = useMainThreadRef<boolean>(false)
 // Ring-buffer for velocity, `[y, timestampMs]`, trailing 50ms of samples.
@@ -246,17 +247,11 @@ watch(closeSign, (v) => { void runOnMainThread(_setCloseSign as any)(v) })
 
 function _setStyle(decl: Record<string, string>) {
   'main thread'
-  const el = containerRef as unknown as {
-    current?: {
-      setStyleProperties?(s: Record<string, string>): void
-      setStyleProperty?(k: string, v: string): void
-    }
+  if (containerRef.current?.setStyleProperties) {
+    containerRef.current.setStyleProperties(decl)
   }
-  if (el.current?.setStyleProperties) {
-    el.current.setStyleProperties(decl)
-  }
-  else if (el.current?.setStyleProperty) {
-    for (const k in decl) el.current.setStyleProperty(k, decl[k])
+  else if (containerRef.current?.setStyleProperty) {
+    for (const k in decl) containerRef.current.setStyleProperty(k, decl[k])
   }
 }
 
@@ -265,17 +260,11 @@ function _setStyle(decl: Record<string, string>) {
 function _setBackdropStyle(decl: Record<string, string>) {
   'main thread'
   // The backdrop is optional and unmounts with Presence on close.
-  const el = backdropRef as unknown as {
-    current?: {
-      setStyleProperties?(s: Record<string, string>): void
-      setStyleProperty?(k: string, v: string): void
-    }
+  if (backdropRef.current?.setStyleProperties) {
+    backdropRef.current.setStyleProperties(decl)
   }
-  if (el.current?.setStyleProperties) {
-    el.current.setStyleProperties(decl)
-  }
-  else if (el.current?.setStyleProperty) {
-    for (const k in decl) el.current.setStyleProperty(k, decl[k])
+  else if (backdropRef.current?.setStyleProperty) {
+    for (const k in decl) backdropRef.current.setStyleProperty(k, decl[k])
   }
 }
 

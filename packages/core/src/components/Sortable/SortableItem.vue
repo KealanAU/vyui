@@ -18,6 +18,8 @@ export interface SortableItemProps {
 import { computed, nextTick, onBeforeUnmount, watch } from 'vue'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
+import type { MTElement } from '@/shared/types'
+
 import type { SortableItemHandle } from './sortableContext'
 import { injectSortableRootContext } from './sortableContext'
 
@@ -55,7 +57,7 @@ const rowStyle = computed(() => {
   return style
 })
 
-const containerRef = useMainThreadRef<any>(null)
+const containerRef = useMainThreadRef<MTElement | null>(null)
 const touchStartYRef = useMainThreadRef<number>(0)
 const touchStartTimeRef = useMainThreadRef<number>(0)
 const armedRef = useMainThreadRef<boolean>(false) // touchstart fired, awaiting activation
@@ -103,7 +105,7 @@ onBeforeUnmount(() => {
 function _registerMT() {
   'main thread'
   if (handleRef.current) return
-  const el = (containerRef as unknown as { current: any }).current
+  const el = containerRef.current
   const handle: SortableItemHandle = { index: indexRef.current, elementRef: { current: el } }
   handleRef.current = handle
   ctx.itemHandlesMT.current = [...ctx.itemHandlesMT.current, handle]
@@ -181,12 +183,7 @@ function _autoScroll(pageY: number) {
   'main thread'
   const edge = ctx.autoScrollEdgeMT.current
   if (edge <= 0) return
-  const el = ctx.scrollRefMT.current as unknown as {
-    scrollTop?: number
-    scrollHeight?: number
-    clientHeight?: number
-    scrollTo?(opts: { top?: number, behavior?: string }): void
-  } | null
+  const el = ctx.scrollRefMT.current
   if (!el) return
   const viewportTop = ctx.viewportTopMT.current
   const viewport = ctx.viewportHeightMT.current
@@ -233,7 +230,7 @@ function _activate() {
   draggingRef.current = true
   ctx.draggingIndexMT.current = indexRef.current
   lastTargetRef.current = indexRef.current
-  _setTransform((containerRef as unknown as { current: any }).current, 0)
+  _setTransform(containerRef.current, 0)
   runOnBackground(_emitDragStart as any)(indexRef.current)
 }
 
@@ -302,7 +299,7 @@ function _gestureMove(clientY: number) {
   const count = ctx.itemHandlesMT.current.length
 
   liftedDyRef.current = dy
-  _setTransform((containerRef as unknown as { current: any }).current, dy)
+  _setTransform(containerRef.current, dy)
 
   // Velocity sampling — last 50ms window, keep >=2 so a release always has a
   // pair to differentiate.
@@ -370,7 +367,7 @@ function _gestureEnd() {
   // clears the transforms once that commit has rendered.
   _shiftOthers(startIdx, target)
   _setTransform(
-    (containerRef as unknown as { current: any }).current,
+    containerRef.current,
     (target - startIdx) * ctx.itemHeightMT.current,
   )
   liftedDyRef.current = 0

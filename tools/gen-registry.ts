@@ -265,6 +265,8 @@ const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: st
   { src: 'theme/color-constants.js', path: 'theme/color-constants.js', target: 'theme/color-constants.js', type: 'registry:lib' },
   { src: 'theme/color-constants.d.ts', path: 'theme/color-constants.d.ts', target: 'theme/color-constants.d.ts', type: 'registry:lib' },
   { src: 'types.ts', path: 'types.ts', target: 'types.ts', type: 'registry:lib' },
+  // Kit's version maps every theme file; a copied project only has the ones it added.
+  { path: 'theme/componentThemes.ts', target: 'theme/componentThemes.ts', type: 'registry:lib', content: 'export type ComponentThemes = Record<string, unknown>\n' },
   { path: 'plugin.ts', target: 'plugin.ts', type: 'registry:lib' }, // content built per-style via makeInitPlugin
   { src: 'style.css', path: 'style.css', target: 'style.css', type: 'registry:style', transform: grayifySlate },
   // Sits at lib/vyui/ root so its relative `./theme/color-constants.js` import

@@ -44,7 +44,10 @@ export type SwipeActionEmits = {
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, watch } from 'vue'
+import type { MainThread } from '@lynx-js/types'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
+
+import type { MTElement } from '@/shared/types'
 
 import { useStandardVModelOf } from '@/shared/composables'
 
@@ -71,7 +74,7 @@ defineSlots<{
 
 const open = useStandardVModelOf<boolean>(props, 'open', emits)
 
-const rowRef = useMainThreadRef<any>(null)
+const rowRef = useMainThreadRef<MTElement | null>(null)
 // Current translateX of the row. 0 = closed; -actionWidth = open. Range
 // clamped to [-rowWidth, 0] during drag.
 const currentXRef = useMainThreadRef<number>(props.defaultOpen ? -props.actionWidth : 0)
@@ -82,7 +85,7 @@ const isDraggingRef = useMainThreadRef<boolean>(false)
 // Handle to the in-flight snap animation. A `fill: 'forwards'` Web Animation
 // outranks inline style in the cascade, so it must be cancelled before the next
 // drag's `setStyleProperty` writes. Mirrors Draggable's `resetAnimRef`.
-const snapAnimRef = useMainThreadRef<any>(null)
+const snapAnimRef = useMainThreadRef<MainThread.Animation | null>(null)
 // Axis lock: 0 = undecided, 1 = horizontal (own the gesture),
 // 2 = vertical (yield to list scroll). Resolved once per gesture after the
 // finger crosses GESTURE_THRESHOLD, then sticky until release.
@@ -122,25 +125,16 @@ watch(open, (isOpen, wasOpen) => {
 
 function _applyTransform(x: number) {
   'main thread'
-  const el = rowRef as unknown as {
-    current?: { setStyleProperty?(k: string, v: string): void }
-  }
-  if (el.current?.setStyleProperty) {
-    el.current.setStyleProperty('transform', `translateX(${x}px)`)
+  if (rowRef.current?.setStyleProperty) {
+    rowRef.current.setStyleProperty('transform', `translateX(${x}px)`)
   }
 }
 
 function _animateTo(targetX: number) {
   'main thread'
   const from = currentXRef.current
-  const el = rowRef as unknown as {
-    current?: {
-      animate?(keyframes: any[], options: any): any
-      setStyleProperty?(k: string, v: string): void
-    }
-  }
   currentXRef.current = targetX
-  if (typeof el.current?.animate === 'function') {
+  if (typeof rowRef.current?.animate === 'function') {
     // Write the end state inline BEFORE animating: Lynx web's animation PAPI
     // reads Lynx-style timing keys and silently drops WAAPI fill/easing, so a
     // web settle would finish fill-less and snap back. Both spellings are
@@ -148,7 +142,7 @@ function _animateTo(targetX: number) {
     _applyTransform(targetX)
     // Keep the handle: a fill-forwards animation outranks inline style in the
     // cascade, so it must be cancelled before the next drag's transform writes.
-    snapAnimRef.current = el.current.animate(
+    snapAnimRef.current = rowRef.current.animate(
       [
         { transform: `translateX(${from}px)` },
         { transform: `translateX(${targetX}px)` },
@@ -162,8 +156,8 @@ function _animateTo(targetX: number) {
       },
     )
   }
-  else if (el.current?.setStyleProperty) {
-    el.current.setStyleProperty('transform', `translateX(${targetX}px)`)
+  else if (rowRef.current?.setStyleProperty) {
+    rowRef.current.setStyleProperty('transform', `translateX(${targetX}px)`)
   }
 }
 

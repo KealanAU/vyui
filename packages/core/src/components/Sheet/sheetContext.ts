@@ -6,6 +6,7 @@ import type { MainThreadRef } from 'vue-lynx'
 
 import { createContext } from '../../shared/createContext'
 import type { SheetDirection } from '../../shared/composables'
+import type { MTRef } from '../../shared/types'
 
 export interface SheetRootContext {
   /** Controlled open state. */
@@ -48,7 +49,7 @@ export interface SheetRootContext {
    * it so the fade tracks drag position. May be null — sheets can render
    * without a backdrop, and Presence unmounts it on close.
    */
-  backdropElRef: MainThreadRef<any>
+  backdropElRef: MTRef
   /**
    * Set by SheetContent's release worklet when a drag DISMISSES the sheet: the
    * MT inline transition is already painting the panel and backdrop off-screen,

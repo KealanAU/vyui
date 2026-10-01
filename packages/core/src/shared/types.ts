@@ -1,4 +1,5 @@
-import type { IntrinsicElements } from '@lynx-js/types'
+import type { IntrinsicElements, MainThread } from '@lynx-js/types'
+import type { MainThreadRef } from 'vue-lynx'
 
 type DataOrientation = 'vertical' | 'horizontal'
 type Direction = 'ltr' | 'rtl'
@@ -61,4 +62,24 @@ interface FormFieldProps {
  */
 type VyStyle = Exclude<NonNullable<IntrinsicElements['view']['style']>, string>
 
-export type { AcceptableValue, ArrayOrWrapped, DataOrientation, Direction, ElementHandle, FormFieldProps, GenericComponentInstance, VyStyle, SingleOrMultipleProps, SingleOrMultipleType, StringOrNumber }
+/**
+ * `animate()` options plus the Lynx-style key spellings — Lynx web's animation
+ * PAPI reads those and drops WAAPI `fill` / `easing`.
+ */
+type MTAnimationOptions = MainThread.AnimationOptions & {
+  fillMode?: MainThread.AnimationOptions['fill']
+  timingFunction?: string
+}
+
+/**
+ * A main-thread element as worklets see it. Members are optional: not every
+ * platform exposes the full PAPI (Lynx web has no `__QuerySelectorAll`), so
+ * call sites feature-detect.
+ */
+type MTElement = Partial<Omit<MainThread.Element, 'animate'>> & {
+  animate?(keyframes: Record<string, number | string>[], options?: number | MTAnimationOptions): MainThread.Animation
+}
+
+type MTRef<T = MTElement> = MainThreadRef<T | null>
+
+export type { AcceptableValue, ArrayOrWrapped, DataOrientation, Direction, ElementHandle, FormFieldProps, GenericComponentInstance, MTElement, MTRef, VyStyle, SingleOrMultipleProps, SingleOrMultipleType, StringOrNumber }

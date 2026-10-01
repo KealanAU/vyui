@@ -125,9 +125,11 @@ export type FeedListEmits = {
 
 <script setup lang="ts" generic="T = unknown">
 import { computed, ref, watch } from 'vue'
+import type { MainThread } from '@lynx-js/types'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
 
 import { useStandardVModelOf } from '@/shared/composables'
+import type { MTElement } from '@/shared/types'
 
 const props = withDefaults(defineProps<FeedListProps<T>>(), {
   itemKeyField: 'id' as never,
@@ -189,8 +191,8 @@ function setRefreshState(next: FeedListRefreshState): void {
 const listEl = ref<any>(null)
 
 // MT refs (read/written only inside worklets).
-const wrapperRef = useMainThreadRef<any>(null)
-const listRef = useMainThreadRef<any>(null)
+const wrapperRef = useMainThreadRef<MTElement | null>(null)
+const listRef = useMainThreadRef<MTElement | null>(null)
 const offsetRef = useMainThreadRef<number>(0)
 const draggingRef = useMainThreadRef<boolean>(false)
 /** We've taken the gesture over from the native scroller. */
@@ -230,19 +232,14 @@ function _mtIsAndroid() {
 function _setListScroll(enable: boolean) {
   'main thread'
   if (!_mtIsAndroid()) return
-  const el = (listRef as unknown as {
-    current?: { setAttribute?: (k: string, v: unknown) => void }
-  }).current
+  const el = listRef.current
   if (el?.setAttribute) el.setAttribute('enable-scroll', enable)
 }
 
 function _paint(offset: number) {
   'main thread'
-  const el = wrapperRef as unknown as {
-    current?: { setStyleProperty?: (k: string, v: string) => void }
-  }
-  if (el.current?.setStyleProperty) {
-    el.current.setStyleProperty('transform', `translateY(${offset}px)`)
+  if (wrapperRef.current?.setStyleProperty) {
+    wrapperRef.current.setStyleProperty('transform', `translateY(${offset}px)`)
   }
 }
 
@@ -316,8 +313,10 @@ watch(
   },
 )
 
+interface ScrollMetrics { scrollTop?: number, scrollHeight?: number }
+
 /** Track scroll offset + content height. Detail is `.detail` (iOS) / `.params` (Android). */
-function _onScrollMT(event: any) {
+function _onScrollMT(event: { detail?: ScrollMetrics, params?: ScrollMetrics }) {
   'main thread'
   const d = event.detail ?? event.params
   if (d && typeof d.scrollTop === 'number') {
@@ -335,7 +334,7 @@ function _onReachTop() {
   scrollTopRef.current = 0
 }
 
-function _onLayoutMT(event: any) {
+function _onLayoutMT(event: MainThread.LayoutChangeEvent) {
   'main thread'
   const d = event.detail ?? event.params
   if (d && typeof d.height === 'number') viewportRef.current = d.height
@@ -422,12 +421,12 @@ function _dragEnd() {
   }
 }
 
-function _onTouchStart(event: any) {
+function _onTouchStart(event: MainThread.TouchEvent) {
   'main thread'
   _dragStart(event.touches[0].pageY)
 }
 
-function _onTouchMove(event: any) {
+function _onTouchMove(event: MainThread.TouchEvent) {
   'main thread'
   _dragMove(event.touches[0].pageY)
 }

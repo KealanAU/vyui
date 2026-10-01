@@ -75,7 +75,10 @@ export type DraggableEmits = {
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import type { MainThread } from '@lynx-js/types'
 import { runOnBackground, runOnMainThread, useMainThreadRef } from 'vue-lynx'
+
+import type { MTElement } from '@/shared/types'
 
 const props = withDefaults(defineProps<DraggableProps>(), {
   axis: 'both',
@@ -116,13 +119,7 @@ function encodeAxis(a: DraggableAxis): 0 | 1 | 2 {
   return 0
 }
 
-// Structural element type — never DOM lib types (they don't exist on Lynx).
-interface DragElement {
-  setStyleProperty?: (key: string, value: string) => void
-  animate?: (keyframes: any[], options: any) => any
-}
-
-const containerRef = useMainThreadRef<DragElement | null>(null)
+const containerRef = useMainThreadRef<MTElement | null>(null)
 
 // Position relative to origin. `(0, 0)` = element at its laid-out position.
 // Persists across drags so released elements stay where they were dropped.
@@ -154,7 +151,7 @@ const tQueueRef = useMainThreadRef<number[]>([])
 
 // Handle of the in-flight `resetOnEnd` animation. Written only inside MT
 // worklets (BG writes to MainThreadRef.current are silently dropped).
-const resetAnimRef = useMainThreadRef<any>(null)
+const resetAnimRef = useMainThreadRef<MainThread.Animation | null>(null)
 
 // Timestamp of the last real touch: touch browsers replay a tap as a
 // compatibility mousedown/mouseup pair, which mouse handlers ignore.

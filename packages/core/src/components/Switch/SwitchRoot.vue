@@ -44,8 +44,8 @@ const props = withDefaults(defineProps<SwitchRootProps<T>>(), {
   as: 'view',
   modelValue: undefined,
   value: 'on',
-  trueValue: (() => true) as unknown as undefined,
-  falseValue: (() => false) as unknown as undefined,
+  trueValue: () => true as T & {},
+  falseValue: () => false as T & {},
 })
 const emit = defineEmits<SwitchRootEmits<T>>()
 
@@ -60,7 +60,7 @@ defineSlots<{
 
 const { disabled } = toRefs(props)
 
-const modelValue = useStandardVModel<T>(props as any, emit as any, props.falseValue as T)
+const modelValue = useStandardVModel<T>(props, emit, props.falseValue as T)
 
 const checked = computed(() => modelValue.value === props.trueValue)
 
