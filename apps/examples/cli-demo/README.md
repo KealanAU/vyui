@@ -40,10 +40,11 @@ pnpm vyui:add add button accordion chip -y --skip-install --overwrite
 `vyui:add` is a package script pointing at the built CLI (`packages/cli/dist`),
 so build the CLI first if needed: `pnpm --filter @vyui/cli build`.
 
-## Wiring (done once, by hand)
+## Wiring
 
-The CLI copies files and rewrites imports to the `@` alias; the host app wires
-them in — see the inline comments in each file:
+`init` applies this wiring on a standard project. This demo ran it with
+`--skip-install` against workspace paths, so the same three edits are spelled
+out in the files — see the inline comments in each:
 
 - **`lynx.config.ts`** — maps `@` to `src/` for the bundler and resolves
   `@vyui/core` from its built package (not the workspace source).

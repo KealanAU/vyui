@@ -16,9 +16,9 @@
 // The default export is a builder `(colors: Color[]) => themeObject`, threaded
 // in by `useStyledComponent` from `appConfig.ui.colors`, so adding a color at
 // runtime emits its variants without editing this file.
-import type { Color } from '@/lib/vyui/theme/colors'
-import { NEUTRAL } from '@/lib/vyui/theme/color-constants'
-import { type IconFg, iconFgFromToken } from '@/lib/vyui/theme/iconColor'
+import type { Color } from './colors'
+import { NEUTRAL } from './color-constants'
+import { type IconFg, iconFgFromToken } from './iconColor'
 
 // `enableCSSInheritance: false` — surface on `base`, `variantClass` spreads `fg` onto the text slots.
 

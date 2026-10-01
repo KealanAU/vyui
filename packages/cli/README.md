@@ -20,13 +20,16 @@ npx @vyui/cli add --all        # everything in the registry
 
 # Discover and inspect before installing
 npx @vyui/cli list
-npx @vyui/cli list button
+npx @vyui/cli list button      # `search button` is an alias
 npx @vyui/cli view button
 npx @vyui/cli info
 npx @vyui/cli add toast --dry-run
 
 # List the styles offered by the registry
 npx @vyui/cli styles
+
+# Audit the wiring (worklet allowlist, preset, providers); exits non-zero on gaps
+npx @vyui/cli check
 ```
 
 `init` detects the app entry, Tailwind config, global CSS, import alias, and
@@ -77,7 +80,8 @@ the config (then re-`add --overwrite`).
 | --- | --- |
 | `default` | The canonical kit — green accent, 0.25rem radius, solid surfaces. |
 | `rounded` | `default` with a 0.75rem radius. |
-| `shadcn` | shadcn/ui — monochrome zinc accent, 0.5rem radius, near-black solid button. |
+| `shadcn` | shadcn/ui — monochrome accent that follows `--base-color`, 0.5rem radius, near-black solid button. |
+| `lunaris` | The LUNA design system's signature-gradient variant. |
 | `liquid-glass` | iOS — Apple system accents, translucent surfaces, hairline separators, 0.875rem radius. Lynx has no `backdrop-filter`, so this is the translucency half of the material, not a blurred backdrop. |
 
 ```bash
@@ -102,7 +106,12 @@ const STYLES = [
   {
     name: 'shadcn',
     overlay: resolve(root, 'styles/shadcn'),                    // tokens (style.css)
-    appConfig: { primary: 'zinc', button: { defaultVariants: { color: 'neutral' } } },
+    appConfig: { primary: '__VYUI_GRAY__', button: { defaultVariants: { color: 'neutral' } } },
+  },
+  {
+    name: 'lunaris',
+    overlay: resolve(root, 'styles/lunaris'),                   // tokens (style.css)
+    appConfig: { primary: 'rose' },
   },
   {
     name: 'liquid-glass',
@@ -127,14 +136,12 @@ const STYLES = [
    `defaultVariants` **without copying a theme file**, so it never drifts from
    the base. The shipped `shadcn` style uses this: `appConfig.ui.button`
    flips the default button to the near-black `neutral` solid, and `primary:
-   'zinc'` aligns baked SVG icon fills with the zinc token palette.
+   '__VYUI_GRAY__'` (substituted with the chosen `--base-color` at write time)
+   aligns baked SVG icon fills with the token palette.
 3. **Full-file overlay (escape hatch).** Drop a replacement `theme/*.ts` (or
    `.vue`) into the overlay dir **only** when a slot's *structure* must differ in
    a way override data can't express. The overlay wins per file — but you then
    own that copy and must track base changes, so prefer layers 1–2.
-
-> See the rendered `default` vs `shadcn` comparison in [`demo/`](../../demo) —
-> open `demo/index.html` in a browser.
 
 ## Theming: install-time vs runtime
 
@@ -168,9 +175,16 @@ overrides). These flow through `useAppConfig`.
 then copies the shared library (`useAppConfig`, `resolveColor`, the Tailwind
 preset, `style.css`, the `VyUI` plugin, …) into your project.
 
+The copied plugin is registered with `app.use(VyUI)`. It only provides the
+merged config, so it works on Vue-Lynx's `createApp`; `provideVyUI` is the
+`@vyui/kit` package's equivalent and isn't part of a copied project.
+
 `add` fetches a component manifest from the registry, recursively resolves its
 `registryDependencies`, writes every file to your configured directories, and
-**rewrites the relative imports** in the copied source to your aliases. Bare
+**rewrites the relative imports** in the copied source to your aliases. Theme
+files keep their sibling imports relative, and `add` regenerates
+`theme/index.ts`, because Tailwind loads `vyui-preset.js` → the theme files
+outside your bundler, where aliases don't resolve. Bare
 imports (`@vyui/core`, `vue`, `tailwind-variants`) are left untouched and
 installed as npm dependencies.
 

@@ -6,7 +6,7 @@
  * helper and the public `Color` type.
  */
 import type { AppConfig } from '@/lib/vyui/types'
-import { ALL_COLORS, COLORS, NEUTRAL } from '@/lib/vyui/theme/color-constants'
+import { ALL_COLORS, COLORS, NEUTRAL } from './color-constants'
 
 export { ALL_COLORS, COLORS, NEUTRAL }
 
