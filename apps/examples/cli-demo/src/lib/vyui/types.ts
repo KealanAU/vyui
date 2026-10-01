@@ -1,18 +1,12 @@
-import type { InjectionKey } from 'vue'
+import type { Component, InjectionKey } from 'vue'
+import type { ComponentThemes } from '@/lib/vyui/theme/componentThemes'
+
+export type { ComponentThemes }
 
 /** Recursive `Partial<T>` — every nested property is also optional. */
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
 }
-
-/**
- * Per-component theme override bucket. Keyed by component name (e.g. `button`,
- * `input`). Each entry is a partial of the component's resolved
- * `tailwind-variants` config. Typed as `Record<string, unknown>` here because
- * component themes register themselves lazily — strong typing happens at each
- * component boundary via `Partial<typeof theme>`.
- */
-export type ComponentThemes = Record<string, unknown>
 
 export interface AppConfig {
   ui: {
@@ -24,7 +18,9 @@ export interface AppConfig {
     colors?: string[]
     /** Semantic icon name → Iconify id (e.g. `loading` → `i-lucide-loader-circle`). */
     icons?: Record<string, string>
-  } & ComponentThemes
+  // The open index keeps custom semantic colors (`ui.tertiary = 'violet'`,
+  // read by `resolveColorHex`) assignable alongside the typed component keys.
+  } & ComponentThemes & Record<string, unknown>
 }
 
 export const APP_CONFIG_KEY: InjectionKey<AppConfig> = Symbol('vyui:app-config')
@@ -32,4 +28,8 @@ export const APP_CONFIG_KEY: InjectionKey<AppConfig> = Symbol('vyui:app-config')
 export interface VyUIPluginOptions {
   /** Override the default `ui` config — deep-merged over the package defaults. */
   ui?: DeepPartial<AppConfig['ui']>
+  /** Register only this subset of components globally (keyed by tag name).
+   *  Defaults to the full `REGISTRY`; an explicit set lets the bundler
+   *  tree-shake the rest. */
+  components?: Record<string, Component>
 }

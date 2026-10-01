@@ -1,19 +1,9 @@
 <script lang="ts">
-import { tv, type VariantProps } from 'tailwind-variants'
 import theme from '@/lib/vyui/theme/chip'
-import { resolveColors } from '@/lib/vyui/theme/colors'
-import type { AppConfig } from '@/lib/vyui/types'
+import type { ClassValue, ThemeTV, VariantProps } from '@/lib/vyui/composables/useStyledComponent'
 
-/**
- * Resolve a per-app `tv` factory by merging the package default theme with
- * user overrides pulled from `appConfig.ui.chip`.
- */
-export const buildChip = (appConfig: AppConfig) => {
-  const overrides = (appConfig.ui as Record<string, unknown>).chip as Partial<ReturnType<typeof theme>> | undefined
-  return tv({ extend: tv(theme(resolveColors(appConfig))), ...(overrides || {}) })
-}
-
-type ChipVariants = VariantProps<ReturnType<typeof buildChip>>
+type ChipTV = ThemeTV<typeof theme>
+type ChipVariants = VariantProps<ChipTV>
 
 export interface ChipProps {
   color?: ChipVariants['color']
@@ -28,8 +18,8 @@ export interface ChipProps {
   text?: string | number
   /** Hide the chip itself; the wrapped child still renders. Defaults to `true`. */
   show?: boolean
-  class?: any
-  ui?: Partial<Record<keyof ReturnType<typeof buildChip>['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ChipTV['slots'], ClassValue>>
 }
 
 export interface ChipSlots {
@@ -40,7 +30,7 @@ export interface ChipSlots {
 
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
-import { useAppConfig } from '@/lib/vyui/composables/useAppConfig'
+import { useStyledComponent } from '@/lib/vyui/composables/useStyledComponent'
 
 const props = withDefaults(defineProps<ChipProps>(), {
   inset: false,
@@ -50,11 +40,9 @@ const props = withDefaults(defineProps<ChipProps>(), {
 defineSlots<ChipSlots>()
 const slots = useSlots()
 
-const appConfig = useAppConfig()
-
 const hasContent = computed(() => !!slots.content || props.text !== undefined && props.text !== null)
 
-const ui = computed(() => buildChip(appConfig)({
+const { ui } = useStyledComponent('chip', theme, () => ({
   color: props.color,
   size: props.size,
   position: props.position,

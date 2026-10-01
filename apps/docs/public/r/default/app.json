@@ -2,7 +2,7 @@
   "name": "app",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.10"
+    "@vyui/core@^1.0.1"
   ],
   "registryDependencies": [],
   "files": [

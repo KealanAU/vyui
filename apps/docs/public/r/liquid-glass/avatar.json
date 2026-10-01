@@ -2,7 +2,7 @@
   "name": "avatar",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.10"
+    "@vyui/core@^1.0.1"
   ],
   "registryDependencies": [
     "chip"
@@ -18,7 +18,7 @@
       "path": "theme/avatar.ts",
       "target": "theme/avatar.ts",
       "type": "registry:theme",
-      "content": "// Ported from nuxt/ui v4 `src/theme/avatar.ts` and adapted for Vue-Lynx.\n//\n// Semantic color names (`primary`, `error`, …) resolve to real palettes via\n// the consuming app's CSS variables and Tailwind config — see\n// `apps/examples/kit-demo/src/index.css` for the default mapping.\n//\n// Dark rides the semantic tokens: dark-mode classes from the upstream theme are dropped.\nimport type { Color } from '@@vyui:theme/colors'\n\nconst colorVariant = (c: string) => ({\n  root: `bg-${c}-100`,\n  text: `text-${c}-600`,\n  icon: `text-${c}-600`,\n})\n\nexport default (colors: Color[]) => ({\n  slots: {\n    root: 'flex flex-row items-center justify-center shrink-0 select-none rounded-full align-middle overflow-hidden',\n    image: 'h-full w-full rounded-[inherit] object-cover',\n    text: 'font-medium truncate',\n    icon: 'shrink-0',\n  },\n  variants: {\n    color: Object.fromEntries(colors.map(c => [c, colorVariant(c)])) as Record<Color, ReturnType<typeof colorVariant>>,\n    size: {\n      'xs': { root: 'size-8 text-base' },\n      'sm': { root: 'size-9 text-lg' },\n      'md': { root: 'size-10 text-xl' },\n      'lg': { root: 'size-11 text-[22px]' },\n      'xl': { root: 'size-12 text-2xl' },\n      '2xl': { root: 'size-14 text-3xl' },\n      '3xl': { root: 'size-16 text-4xl' },\n    },\n  },\n  defaultVariants: {\n    size: 'md' as const,\n    color: 'neutral' as const,\n  },\n})\n"
+      "content": "// Ported from nuxt/ui v4 `src/theme/avatar.ts` — see `./button.ts` for the\n// shared Lynx adaptations.\nimport type { Color } from '@@vyui:theme/colors'\n\nconst colorVariant = (c: string) => ({\n  root: `bg-${c}-100`,\n  text: `text-${c}-600`,\n  icon: `text-${c}-600`,\n})\n\nexport default (colors: Color[]) => ({\n  slots: {\n    root: 'flex flex-row items-center justify-center shrink-0 rounded-full align-middle overflow-hidden',\n    image: 'h-full w-full rounded-[inherit]',\n    text: 'font-medium truncate',\n    icon: 'shrink-0',\n  },\n  variants: {\n    color: Object.fromEntries(colors.map(c => [c, colorVariant(c)])) as Record<Color, ReturnType<typeof colorVariant>>,\n    size: {\n      'xs': { root: 'size-8 text-base' },\n      'sm': { root: 'size-9 text-lg' },\n      'md': { root: 'size-10 text-xl' },\n      'lg': { root: 'size-11 text-[22px]' },\n      'xl': { root: 'size-12 text-2xl' },\n      '2xl': { root: 'size-14 text-3xl' },\n      '3xl': { root: 'size-16 text-4xl' },\n    },\n  },\n  defaultVariants: {\n    size: 'md' as const,\n    color: 'neutral' as const,\n  },\n})\n"
     }
   ]
 }

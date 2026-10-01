@@ -2,7 +2,7 @@
   "name": "rating",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.10"
+    "@vyui/core@^1.0.1"
   ],
   "registryDependencies": [],
   "files": [
@@ -16,7 +16,7 @@
       "path": "theme/rating.ts",
       "target": "theme/rating.ts",
       "type": "registry:theme",
-      "content": "/**\n * Rating theme — styled wrapper over `@vyui/core`'s `RatingRoot` /\n * `RatingItem` / `RatingItemIndicator` primitives.\n *\n * Classes use semantic color names (`text-warning-500`) which Tailwind resolves\n * via CSS variables defined in the consuming app — see\n * `apps/examples/kit-demo/src/index.css`.\n *\n * The filled vs. empty state is driven by the `data-state=\"active\"` attribute\n * core emits on each `RatingItemIndicator` — see `RatingItemIndicator.vue`.\n */\nimport type { Color } from '@@vyui:theme/colors'\n\nexport default (colors: Color[]) => ({\n  slots: {\n    root: 'flex flex-row items-center gap-1',\n    base: 'shrink-0',\n    icon: 'text-dimmed',\n  },\n  variants: {\n    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,\n    size: {\n      sm: { icon: 'size-5' },\n      md: { icon: 'size-6' },\n      lg: { icon: 'size-7' },\n      xl: { icon: 'size-8' },\n    },\n    disabled: {\n      true: { base: 'opacity-50 cursor-not-allowed' },\n    },\n  },\n  compoundVariants: [\n    ...colors.map(c => ({ color: c, class: { icon: `ui-active:text-${c}-500` } })),\n  ],\n  defaultVariants: {\n    color: 'warning' as const,\n    size: 'md' as const,\n  },\n})\n"
+      "content": "/**\n * Rating theme — styled wrapper over `@vyui/core`'s `RatingRoot` /\n * `RatingItem` / `RatingItemIndicator` primitives.\n *\n * Classes use semantic color names (`text-warning-500`) which Tailwind resolves\n * via CSS variables defined in the consuming app — see\n * `apps/examples/kit-demo/src/index.css`.\n *\n * The filled vs. empty state is driven by the `data-state=\"active\"` attribute\n * core emits on each `RatingItemIndicator` — see `RatingItemIndicator.vue`.\n */\nimport type { Color } from '@@vyui:theme/colors'\n\nexport default (colors: Color[]) => ({\n  slots: {\n    root: 'flex flex-row items-center gap-1',\n    base: 'shrink-0',\n    icon: '',\n  },\n  variants: {\n    color: Object.fromEntries(colors.map(c => [c, ''])) as Record<Color, ''>,\n    size: {\n      sm: { icon: 'size-5' },\n      md: { icon: 'size-6' },\n      lg: { icon: 'size-7' },\n      xl: { icon: 'size-8' },\n    },\n    disabled: {\n      true: { base: 'opacity-50' },\n    },\n  },\n  compoundVariants: [\n    ...colors.map(c => ({ color: c, class: { icon: `ui-active:text-${c}-500` } })),\n  ],\n  defaultVariants: {\n    color: 'warning' as const,\n    size: 'md' as const,\n  },\n})\n"
     }
   ]
 }

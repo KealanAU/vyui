@@ -1,6 +1,6 @@
 <script lang="ts">
 import theme, { iconFg } from '@/lib/vyui/theme/button'
-import type { ThemeTV, VariantProps } from '@/lib/vyui/composables/useStyledComponent'
+import type { ClassValue, ThemeTV, VariantProps } from '@/lib/vyui/composables/useStyledComponent'
 import type { AvatarProps } from '@/components/vyui/Avatar.vue'
 
 type ButtonTV = ThemeTV<typeof theme>
@@ -20,11 +20,8 @@ export interface ButtonProps {
   leadingIcon?: string
   /** Iconify name shown on the trailing side (wins over `icon`). */
   trailingIcon?: string
-  /**
-   * Iconify shorthand. Routed to the trailing side when `trailing` is true,
-   * otherwise to the leading side. Explicit `leadingIcon` / `trailingIcon`
-   * always win.
-   */
+  /** Iconify shorthand, routed to the trailing side when `trailing` is set and
+   *  the leading side otherwise. Explicit `leadingIcon` / `trailingIcon` win. */
   icon?: string
   /** Force `icon` shorthand onto the leading side. */
   leading?: boolean
@@ -32,21 +29,10 @@ export interface ButtonProps {
   trailing?: boolean
   /** When set, render `<VyAvatar>` in the leading slot instead of an icon. */
   avatar?: AvatarProps
-  /**
-   * HTML button type. Kept for API parity with Nuxt UI v4 — the Vue-Lynx
-   * core button renders a `<view>`, so this is currently a no-op forward.
-   */
-  type?: 'button' | 'submit' | 'reset'
-  /**
-   * Focus the button on mount. Kept for API parity with Nuxt UI v4 — the
-   * Vue-Lynx core button renders a non-focusable `<view>`, so this is
-   * currently a no-op.
-   */
-  autofocus?: boolean
   /** Text label. Overridden by the default slot if provided. */
   label?: string
-  class?: any
-  ui?: Partial<Record<keyof ButtonTV['slots'], any>>
+  class?: ClassValue
+  ui?: Partial<Record<keyof ButtonTV['slots'], ClassValue>>
 }
 
 export interface ButtonSlots {
@@ -65,11 +51,10 @@ import { useAppConfig } from '@/lib/vyui/composables/useAppConfig'
 import { useStyledComponent } from '@/lib/vyui/composables/useStyledComponent'
 import { Icon as VyIcon } from '@vyui/core'
 import { resolveColorHex } from '@/lib/vyui/utils/resolveColor'
+import { useColorMode } from '@/lib/vyui/composables/useColorMode'
 import VyAvatar from '@/components/vyui/Avatar.vue'
 
-const props = withDefaults(defineProps<ButtonProps>(), {
-  type: 'button',
-})
+const props = defineProps<ButtonProps>()
 defineSlots<ButtonSlots>()
 const slots = useSlots()
 
@@ -79,9 +64,8 @@ const buttonRef = ref<any>(null)
 
 const resolvedLoadingIcon = computed(() => props.loadingIcon || appConfig.ui.icons?.loading || 'i-lucide-loader-circle')
 
-// `icon` shorthand resolves to leading by default; flipped to trailing when
-// the `trailing` boolean is set. Explicit `leadingIcon` / `trailingIcon`
-// always win over the shorthand.
+// `icon` shorthand resolves to leading by default, trailing when the `trailing`
+// boolean is set. Explicit `leadingIcon` / `trailingIcon` always win.
 const resolvedLeadingIcon = computed(() => {
   if (props.leadingIcon) return props.leadingIcon
   if (props.icon && !props.trailing) return props.icon
@@ -93,22 +77,19 @@ const resolvedTrailingIcon = computed(() => {
   return undefined
 })
 
-// Icon-only buttons (no label, no default slot, only an icon) collapse to
-// the `square` compound variant so the padding goes from `px-3 py-2` to a
-// uniform `p-2` — keeps a ghost send/x/check button visually square instead
-// of stretched. Mirrors IslandButton's `iconOnly` detection. Explicit
-// `square` prop wins so callers can still force it on or off.
+// Icon-only buttons collapse to the `square` compound variant so padding goes
+// from `px-3 py-2` to a uniform `p-2`. Mirrors IslandButton's `iconOnly`
+// detection; an explicit `square` prop wins.
 const isIconOnly = computed(() =>
   !props.label
   && !slots.default
   && !!(resolvedLeadingIcon.value || resolvedTrailingIcon.value || props.avatar),
 )
 
-// Lynx SVG can't inherit currentColor — bake the variant's foreground into
-// the icon fill at render time (same pattern as Input/Select). Fallbacks
-// mirror the theme's `defaultVariants` (`primary` / `solid`).
+// Baked icon fill (see theme/iconColor.ts), from the variant's foreground.
+const { isDark } = useColorMode()
 const iconColor = computed(() => {
-  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'solid')
+  const fg = iconFg(props.color ?? 'primary', props.variant ?? 'solid', isDark.value)
   return fg === 'white' ? 'white' : resolveColorHex(appConfig, fg.semantic, fg.shade)
 })
 
@@ -121,10 +102,9 @@ const { ui } = useStyledComponent('button', theme, () => ({
   loading: props.loading,
 }))
 
-// `leadingAvatarSize` is a size token (not a class) carried on the theme slot
-// for the active button size. Pass it to `<VyAvatar>` so an avatar shrinks with
-// the button instead of rendering at the Avatar default (`md`/40px). An explicit
-// `avatar.size` from the caller always wins (it's spread after via `v-bind`).
+// `leadingAvatarSize` is a size token carried on the theme slot for the active
+// button size — pass it to `<VyAvatar>` so an avatar shrinks with the button. An
+// explicit `avatar.size` from the caller wins (spread after via `v-bind`).
 const resolvedAvatarSize = computed<AvatarProps['size']>(
   () => (props.avatar?.size ?? ui.value.leadingAvatarSize()) as AvatarProps['size'],
 )
@@ -135,7 +115,6 @@ defineExpose({ buttonRef })
 <template>
   <CoreButton
     :ref="(el: any) => { buttonRef = el }"
-    :type="type"
     :disabled="disabled || loading"
     :class="ui.base({ class: [props.class, props.ui?.base] })"
   >

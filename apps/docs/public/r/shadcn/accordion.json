@@ -2,7 +2,7 @@
   "name": "accordion",
   "type": "registry:ui",
   "dependencies": [
-    "@vyui/core@^0.2.10"
+    "@vyui/core@^1.0.1"
   ],
   "registryDependencies": [],
   "files": [
@@ -16,7 +16,7 @@
       "path": "theme/accordion.ts",
       "target": "theme/accordion.ts",
       "type": "registry:theme",
-      "content": "/**\n * Accordion theme — adapted from nuxt/ui v3.0.2 `theme/accordion.ts` for\n * Vue-Lynx. Dark rides the semantic tokens; `focus-visible:*` / `shadow-*` are\n * removed.\n *\n * Nuxt UI's `accordion-down` / `accordion-up` keyframes animate to\n * `height: auto`, which CSS can't do and Lynx doesn't support, so a measured px\n * height is tweened instead: `CollapsibleContent` writes the natural height\n * inline and the `content` slot's `transition-[height]` interpolates it.\n */\nexport default {\n  slots: {\n    root: 'w-full',\n    item: 'border-b border-default last:border-b-0',\n    header: 'flex flex-row',\n    trigger:\n      'group flex-1 flex flex-row items-center gap-1.5 font-medium text-sm py-3.5 min-w-0',\n    content: 'overflow-hidden transition-[height] ease-out',\n    // `body` is a wrapping <view> and `enableCSSInheritance: false` means its\n    // `text-*` can't reach the nested content <text>, so the foreground color\n    // moves onto `bodyText`; `body` keeps layout/sizing only.\n    body: 'text-sm pb-3.5',\n    bodyText: 'text-sm text-default',\n    leadingIcon: 'shrink-0 size-5 text-muted',\n    trailingIcon:\n      'shrink-0 size-5 ms-auto text-muted group-ui-open:rotate-180 transition-transform duration-200',\n    label: 'text-start break-words text-highlighted',\n  },\n  variants: {\n    disabled: {\n      true: { trigger: 'cursor-not-allowed opacity-75' },\n    },\n  },\n  defaultVariants: {},\n}\n"
+      "content": "/**\n * Accordion theme — adapted from nuxt/ui v3.0.2 `theme/accordion.ts` for\n * Vue-Lynx. Dark rides the semantic tokens; `focus-visible:*` / `shadow-*` are\n * removed.\n *\n * Nuxt UI's `accordion-down` / `accordion-up` keyframes animate to\n * `height: auto`, which CSS can't do and Lynx doesn't support, so a measured px\n * height is tweened instead: `CollapsibleContent` writes the natural height\n * inline and the `content` slot's `transition-[height]` interpolates it.\n */\nexport default {\n  slots: {\n    root: 'w-full',\n    item: 'border-b border-default last:border-b-0',\n    header: 'flex flex-row',\n    trigger:\n      'group flex-1 flex flex-row items-center gap-1.5 font-medium text-sm py-3.5 min-w-0',\n    content: 'overflow-hidden transition-[height] ease-out',\n    // `enableCSSInheritance: false` — fg lands on `bodyText`, not the `body` <view>.\n    body: 'text-sm pb-3.5',\n    bodyText: 'text-sm text-default',\n    leadingIcon: 'shrink-0 size-5',\n    trailingIcon:\n      'shrink-0 size-5 ms-auto group-ui-open:rotate-180 transition-transform duration-200',\n    label: 'text-start text-highlighted',\n  },\n  variants: {\n    disabled: {\n      true: { trigger: 'opacity-75' },\n    },\n  },\n  defaultVariants: {},\n}\n"
     }
   ]
 }
