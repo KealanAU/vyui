@@ -7,7 +7,7 @@
 // Two size scales: a dot scale (no content, 4–12px pills) and a badge scale
 // (`text` / `content` set — readable numeric badges with horizontal padding).
 // The component passes `hasContent` so the right one is picked at runtime.
-import type { Color } from '@/lib/vyui/theme/colors'
+import type { Color } from './colors'
 
 export default (colors: Color[]) => ({
   slots: {

@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { RegistryFile, RegistryFileType } from './registry-schema.js'
 import { defaultConfig } from './config.js'
-import { destFor, writeFiles } from './write-files.js'
+import { destFor, writeFiles, writeThemeBarrel } from './write-files.js'
 
 function projectDir(): string {
   return mkdtempSync(join(tmpdir(), 'vyui-write-'))
@@ -106,5 +106,28 @@ describe('writeFiles', () => {
 
     expect(result.planned).toEqual([destination])
     expect(existsSync(destination)).toBe(false)
+  })
+})
+
+describe('writeThemeBarrel', () => {
+  it('re-exports only the theme files that have a default export', () => {
+    const project = projectDir()
+    const config = defaultConfig('/registry', 'default', 'src', '@', 'slate')
+    vi.spyOn(console, 'log').mockImplementation(() => undefined)
+    writeFiles([
+      registryFile('registry:theme', 'theme/button.ts', 'export default {}\n'),
+      registryFile('registry:theme', 'theme/avatarGroup.ts', 'export default () => ({})\n'),
+      registryFile('registry:theme', 'theme/iconColor.ts', 'export function iconFg() {}\n'),
+      registryFile('registry:lib', 'theme/color-constants.d.ts', 'export default 1\n'),
+    ], config, project, false)
+
+    writeThemeBarrel(config, project)
+    writeThemeBarrel(config, project)
+
+    expect(readFileSync(resolve(project, 'src/lib/vyui/theme/index.ts'), 'utf8').split('\n').slice(1)).toEqual([
+      'export { default as avatarGroup } from \'./avatarGroup\'',
+      'export { default as button } from \'./button\'',
+      '',
+    ])
   })
 })

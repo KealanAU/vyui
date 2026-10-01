@@ -149,7 +149,12 @@ function placeholderizeImports(srcRel: string, content: string): string {
   refs.sort((a, b) => b.start - a.start)
   let out = content
   for (const r of refs) {
-    const placeholder = placeholderFor(resolveRel(srcRel, r.spec))
+    const resolved = resolveRel(srcRel, r.spec)
+    // Tailwind loads the copied preset → theme files through jiti, which can't
+    // resolve the consumer's aliases. The theme dir is copied flat, so sibling
+    // specifiers stay valid as written.
+    if (srcRel.startsWith('theme/') && resolved.startsWith('theme/')) continue
+    const placeholder = placeholderFor(resolved)
     out = out.slice(0, r.start) + placeholder + out.slice(r.end)
   }
   return out
@@ -268,8 +273,9 @@ const INIT_SOURCES: Array<{ src?: string, path: string, target: string, type: st
   { path: 'theme/componentThemes.ts', target: 'theme/componentThemes.ts', type: 'registry:lib', content: 'export type ComponentThemes = Record<string, unknown>\n' },
   { path: 'plugin.ts', target: 'plugin.ts', type: 'registry:lib' }, // content built per-style via makeInitPlugin
   { src: 'style.css', path: 'style.css', target: 'style.css', type: 'registry:style', transform: grayifySlate },
-  // Sits at lib/vyui/ root so its relative `./theme/color-constants.js` import
-  // resolves to the copied theme dir; the CLI leaves preset imports un-rewritten.
+  // Sits at lib/vyui/ root so its relative `./theme/*` imports resolve to the
+  // copied theme dir; the CLI leaves preset imports un-rewritten and generates
+  // the `./theme/index.ts` barrel it reads (`writeThemeBarrel`).
   { src: 'tailwind.js', path: 'tailwind.js', target: 'vyui-preset.js', type: 'registry:preset' },
 ]
 

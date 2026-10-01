@@ -1,6 +1,6 @@
 // Ported from nuxt/ui v4 `src/theme/avatar.ts` — see `./button.ts` for the
 // shared Lynx adaptations.
-import type { Color } from '@/lib/vyui/theme/colors'
+import type { Color } from './colors'
 
 const colorVariant = (c: string) => ({
   root: `bg-${c}-100`,

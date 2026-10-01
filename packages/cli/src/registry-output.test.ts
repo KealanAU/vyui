@@ -40,6 +40,15 @@ describe('published registry contracts', () => {
     expect(plugin).toContain('"color": "neutral"')
   })
 
+  // The copied preset loads theme files through Tailwind's jiti, which cannot
+  // resolve the consumer's aliases.
+  it('keeps theme-to-theme imports relative', () => {
+    const button = readJson<RegistryItem>(join(publicDir, 'r/default/button.json'))
+    const theme = button.files.find(file => file.target === 'theme/button.ts')?.content
+    expect(theme).toContain('from \'./color-constants\'')
+    expect(theme).not.toContain('@@vyui:theme/')
+  })
+
   const styles = readJson<{ styles: string[] }>(join(publicDir, 'r/styles.json')).styles
 
   const styleCss = (style: string): string => {

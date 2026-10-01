@@ -1,7 +1,7 @@
 import { readConfig, styleRegistry } from '../config.js'
 import { init } from './init.js'
 import { fetchIndex, fetchItem, resolveItems } from '../registry.js'
-import { writeFiles } from '../write-files.js'
+import { writeFiles, writeThemeBarrel } from '../write-files.js'
 import { confirm, detectPackageManager, installDeps, log, prompt, c } from '../utils.js'
 
 export interface AddOptions {
@@ -84,6 +84,7 @@ export async function add(opts: AddOptions): Promise<void> {
     const requested = names.includes(item.name)
     results.push(writeFiles(item.files, config, cwd, Boolean(opts.overwrite && requested), opts.dryRun, requested))
   }
+  if (!opts.dryRun) writeThemeBarrel(config, cwd)
 
   // Union of npm deps across init + every resolved component, deduped by name.
   const deps = dedupeDeps([...initItem.dependencies, ...items.flatMap(i => i.dependencies)])

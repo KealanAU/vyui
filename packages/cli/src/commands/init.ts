@@ -4,7 +4,7 @@ import { BASE_COLORS, DEFAULT_BASE_COLOR, GRAY_SENTINEL, configPath, defaultConf
 import { detectProject } from '../project-info.js'
 import { fetchItem, fetchStyles } from '../registry.js'
 import { applyProjectUpdates, planProjectUpdates } from '../update-project.js'
-import { writeFiles } from '../write-files.js'
+import { writeFiles, writeThemeBarrel } from '../write-files.js'
 import { confirm, detectPackageManager, installDeps, log, prompt, c } from '../utils.js'
 
 export interface InitOptions {
@@ -115,6 +115,7 @@ export async function init(opts: InitOptions): Promise<void> {
     log.ok('Dry run complete. No files were changed.')
     return
   }
+  writeThemeBarrel(config, cwd)
 
   if (!opts.skipInstall) {
     const pm = detectPackageManager(cwd)
