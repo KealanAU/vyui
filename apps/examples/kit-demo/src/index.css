@@ -144,6 +144,13 @@
 .dark.neutral-luna { --ui-bg: #0d0d0d; --ui-bg-muted: #1a1a1a; --ui-bg-elevated: #2c2c2c; --ui-bg-accented: #505050; --ui-bg-inverted: #f8f8f8; --ui-text-dimmed: #6e6e6e; --ui-text-muted: #b3b3b3; --ui-text-toned: #d9d9d9; --ui-text: #d9d9d9; --ui-text-highlighted: #f8f8f8; --ui-text-inverted: #010101; --ui-border: rgba(248, 248, 248, 0.32); --ui-border-muted: #333333; --ui-border-accented: #656565; --ui-border-inverted: #f8f8f8; }
 .dark.neutral-stone { --ui-bg: theme('colors.stone.900'); --ui-bg-muted: theme('colors.stone.800'); --ui-bg-elevated: theme('colors.stone.800'); --ui-bg-accented: theme('colors.stone.700'); --ui-bg-inverted: theme('colors.white'); --ui-text-dimmed: theme('colors.stone.500'); --ui-text-muted: theme('colors.stone.400'); --ui-text-toned: theme('colors.stone.300'); --ui-text: theme('colors.stone.200'); --ui-text-highlighted: theme('colors.white'); --ui-text-inverted: theme('colors.stone.900'); --ui-border: theme('colors.stone.800'); --ui-border-muted: theme('colors.stone.800'); --ui-border-accented: theme('colors.stone.700'); --ui-border-inverted: theme('colors.white'); }
 
+/* Steps mirror `radiusSteps` in ThemeSection.vue (rem × 1000). */
+.radius-0 { --ui-radius: 0rem; }
+.radius-125 { --ui-radius: 0.125rem; }
+.radius-250 { --ui-radius: 0.25rem; }
+.radius-375 { --ui-radius: 0.375rem; }
+.radius-500 { --ui-radius: 0.5rem; }
+
 /*
  * LUNA signature gradients — a VERBATIM copy of the `.luna-gradient-*` block in
  * `styles/lunaris/style.css`, which is a registry overlay and therefore ships
