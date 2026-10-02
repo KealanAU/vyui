@@ -57,14 +57,26 @@ defineOgImage('Default', { title, description })
 
 const headline = computed(() => findPageHeadline(navigation?.value, page.value?.path))
 
-const links = computed(() => toc?.bottom?.links || [])
+const links = computed(() => [
+  ...(toc?.bottom?.links || []),
+  ...(toc?.bottom?.edit && page.value
+    ? [{
+        icon: 'i-lucide-pen',
+        label: 'Edit this page',
+        to: `${toc.bottom.edit}/${page.value.stem}.${page.value.extension}`,
+        target: '_blank',
+      }]
+    : []),
+])
+
+const { dlx } = usePackageManager()
 
 const componentCliCommand = computed(() => {
   if (!page.value?.path?.startsWith('/components/') || page.value.package !== 'kit')
     return undefined
 
   const name = page.value.path.split('/').pop()
-  return name ? `npx @vyui/cli add ${name}` : undefined
+  return name ? `${dlx.value} @vyui/cli add ${name}` : undefined
 })
 </script>
 
@@ -116,6 +128,8 @@ const componentCliCommand = computed(() => {
       #right
     >
       <UContentToc
+        highlight
+        highlight-variant="circuit"
         :title="toc?.title"
         :links="page.body?.toc?.links"
       >

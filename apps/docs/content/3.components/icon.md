@@ -54,13 +54,9 @@ import {
 
 Install an Iconify JSON collection and register it during application startup, before mounting the app. Use [Icones](https://icones.js.org/) to browse Iconify collections, preview icon names, and find the matching `@iconify-json/*` package to install.
 
-::code-group
+::code-group{sync="pm"}
 ```bash [pnpm]
 pnpm add @iconify-json/lucide
-```
-
-```bash [npm]
-npm install @iconify-json/lucide
 ```
 
 ```bash [yarn]
@@ -69,6 +65,10 @@ yarn add @iconify-json/lucide
 
 ```bash [bun]
 bun add @iconify-json/lucide
+```
+
+```bash [npm]
+npm install @iconify-json/lucide
 ```
 ::
 
