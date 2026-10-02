@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useClipboard } from '@vueuse/core'
 
-const install = 'npm i @vyui/kit'
+const { add } = usePackageManager()
+const install = computed(() => `${add.value} @vyui/kit`)
 const { copy, copied } = useClipboard({ source: install })
 
 // Dots mirror what each accent maps to in `@vyui/kit`'s style.css.

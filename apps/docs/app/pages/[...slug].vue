@@ -59,12 +59,14 @@ const headline = computed(() => findPageHeadline(navigation?.value, page.value?.
 
 const links = computed(() => toc?.bottom?.links || [])
 
+const { dlx } = usePackageManager()
+
 const componentCliCommand = computed(() => {
   if (!page.value?.path?.startsWith('/components/') || page.value.package !== 'kit')
     return undefined
 
   const name = page.value.path.split('/').pop()
-  return name ? `npx @vyui/cli add ${name}` : undefined
+  return name ? `${dlx.value} @vyui/cli add ${name}` : undefined
 })
 </script>
 
