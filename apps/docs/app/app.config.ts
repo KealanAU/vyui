@@ -94,7 +94,7 @@ export default defineAppConfig({
     }],
   },
   toc: {
-    title: 'Table of Contents',
+    title: 'On this page',
     bottom: {
       title: 'Community',
       edit: 'https://github.com/KealanAU/vyui/edit/main/apps/docs/content',
