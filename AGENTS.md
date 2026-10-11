@@ -22,6 +22,8 @@ Publishing never happens on merge to main. The flow is:
 2. The changesets action opens a **"chore: release packages"** PR — merge it.
 3. Run the **Release** workflow again to publish to npm (OIDC trusted publishing, no token).
 
+A brand-new package can't go through OIDC: npm only lets you attach a Trusted Publisher to a package that already exists, so CI's first `PUT` 404s. Publish its first version by hand (`pnpm --filter <pkg> build && cd packages/<pkg> && npm publish --access public`), add the Trusted Publisher (repo `KealanAU/vyui`, workflow `release.yml`, environment `npm-publish`) on npmjs.com, then let the workflow handle every later version.
+
 The version step (`pnpm version-packages`) also runs `tools/gen-changelog-docs.ts`, which writes a docs changelog entry (`apps/docs/content/changelog/<pkg>-<version>.md`) for each newly bumped version so the docs site timeline stays in sync. It's generate-if-missing: hand-write a curated entry before releasing to override the auto-generated one. Backfill history with `tsx tools/gen-changelog-docs.ts --all` (auto-entries get today's date — fix `date:` by hand if order matters).
 
 ## Pre-PR checks

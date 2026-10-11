@@ -5,10 +5,10 @@ import { createInterface } from 'node:readline/promises'
 import { parseArgs } from 'node:util'
 import { fileURLToPath } from 'node:url'
 
-const HELP = `create-vyui — scaffold a Vue-Lynx + Vy UI app
+const HELP = `@vyui/create — scaffold a Vue-Lynx + Vy UI app
 
 Usage
-  npm create vyui@latest [dir] [options]
+  npm create @vyui@latest [dir] [options]
 
 Arguments
   [dir]                Target directory (default my-vyui-app)

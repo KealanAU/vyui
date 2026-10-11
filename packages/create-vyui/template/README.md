@@ -1,6 +1,6 @@
 # my-vyui-app
 
-Vue-Lynx + Vy UI starter, scaffolded with `create-vyui`. Tailwind preset,
+Vue-Lynx + Vy UI starter, scaffolded with `@vyui/create`. Tailwind preset,
 worklet allowlist, theme providers, and overlay hosts are already wired.
 
 ## Develop

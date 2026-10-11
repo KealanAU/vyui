@@ -1,4 +1,4 @@
-# create-vyui
+# @vyui/create
 
 ## 0.1.1
 

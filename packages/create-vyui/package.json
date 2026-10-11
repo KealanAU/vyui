@@ -1,5 +1,5 @@
 {
-  "name": "create-vyui",
+  "name": "@vyui/create",
   "type": "module",
   "version": "0.1.1",
   "description": "Scaffold a Vue-Lynx + Vy UI app with all wiring done (Tailwind preset, worklets, providers, overlay hosts)",
