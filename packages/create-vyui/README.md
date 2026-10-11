@@ -1,4 +1,4 @@
-# create-vyui
+# @vyui/create
 
 Scaffold a Vue-Lynx + Vy UI app with the full wiring done, so `npm install
 @vyui/kit` isn't a multi-step manual setup:
@@ -13,7 +13,7 @@ Scaffold a Vue-Lynx + Vy UI app with the full wiring done, so `npm install
 ## Usage
 
 ```bash
-npm create vyui@latest my-app
+npm create @vyui@latest my-app
 cd my-app
 npm run dev
 ```
