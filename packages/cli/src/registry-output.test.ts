@@ -115,4 +115,42 @@ describe('published registry contracts', () => {
     const changed = [...baseTokens].filter(([name, value]) => own.get(name) !== value)
     expect(changed.map(([name]) => name)).toEqual([':root--ui-radius'])
   })
+
+  // Every `@@vyui:` placeholder a component file imports must resolve to a file
+  // written by that same `add` or by the `init` payload. A shared file the
+  // generator omits installs a dangling alias instead — `Button`'s
+  // `useColorMode` and `Calendar`'s `date-iso` both broke the cli-demo build
+  // this way (`Cannot find module '@/lib/vyui/…'`).
+  it.each(styles)('style %s has no dangling @@vyui: placeholders', (style) => {
+    const stripExt = (p: string): string => p.replace(/\.\w+$/, '')
+    const kebab = (s: string): string => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+    const initTargets = new Set(
+      readJson<RegistryItem>(join(publicDir, `r/${style}/init.json`)).files.map(file => stripExt(file.target)),
+    )
+    const index = readJson<{ components: Array<{ name: string }> }>(join(publicDir, `r/${style}/index.json`))
+    const dangling: string[] = []
+    for (const { name } of index.components) {
+      const item = readJson<RegistryItem>(join(publicDir, `r/${style}/${name}.json`))
+      const own = new Set(item.files.map(file => stripExt(file.path)))
+      for (const file of item.files) {
+        for (const [, category, rest] of file.content.matchAll(/@@vyui:(components|theme|composables|utils|lib)\/([^\s'"]+)/g)) {
+          // Top-level component edges (`Foo.vue`) resolve through a separate `add`,
+          // not an inlined file — they must be declared as registryDependencies.
+          // Co-located helpers (`islandContext`, `internal/…`) are inlined.
+          if (category === 'components' && rest.endsWith('.vue') && !rest.includes('/')) {
+            const dep = kebab(rest.replace(/\.vue$/, ''))
+            if (dep !== name && !item.registryDependencies.includes(dep)) {
+              dangling.push(`${name}: undeclared component edge ${rest}`)
+            }
+            continue
+          }
+          const key = category === 'lib' ? rest : `${category}/${rest}`
+          if (!own.has(stripExt(key)) && !initTargets.has(stripExt(key))) {
+            dangling.push(`${name}: ${key}`)
+          }
+        }
+      }
+    }
+    expect(dangling).toEqual([])
+  })
 })
