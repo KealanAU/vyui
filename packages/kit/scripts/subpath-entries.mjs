@@ -17,9 +17,12 @@
 // Anything that needs the entry names must call subpathEntries(): package.json
 // exports them through a single `"./*"` wildcard, and dist/ may not be built.
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const pkgRoot = new URL('..', import.meta.url).pathname
+// Not `new URL('..', import.meta.url)`: under vitest, Vite's asset transform
+// resolves that to the package entry (dist/index.js).
+const pkgRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 // Entries whose bindings live in @vyui/core (no kit SFC to point at) — the
 // js re-export is barrel-shaped here and made deep by rewrite-deep-imports.
