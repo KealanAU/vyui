@@ -16,6 +16,7 @@ import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { codeToHtml } from 'shiki'
+import { subpathEntries } from '../packages/kit/scripts/subpath-entries.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const playground = resolve(root, 'apps/examples/docs-playground')
@@ -57,13 +58,10 @@ const examplesDir = resolve(playground, 'src/examples')
 const toKebab = (name: string) =>
   name.replace(/\.vue$/, '').replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 
-// Valid per-component deep entries, straight from kit's published `exports` —
-// the source of truth, so a shared entry like `keyboard-aware` (which exports
+// The real entry list, so a shared entry like `keyboard-aware` (which exports
 // VyKeyboardAwareRoot/Trigger/Responder) maps right instead of being guessed
 // into a `keyboard-aware-root` path that doesn't exist.
-const kitSubpaths = Object.keys(JSON.parse(readFileSync(resolve(root, 'packages/kit/package.json'), 'utf8')).exports)
-  .filter(k => k.startsWith('./') && !k.includes('.', 2))
-  .map(k => k.slice(2))
+const kitSubpaths = [...subpathEntries().keys()]
 
 /** Longest kit subpath that is a whole-segment prefix of `kebab(Vy-stripped name)`. */
 function subpathFor(name: string): string | undefined {

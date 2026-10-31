@@ -17,6 +17,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { subpathEntries } from '../packages/kit/scripts/subpath-entries.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const componentsDir = resolve(root, 'packages/kit/src/components')
@@ -56,11 +57,7 @@ const docPages = new Set(
 // (`@vyui/kit/button`), not the barrel — a single barrel component import ships
 // the whole set on Vue-Lynx (see the installation guide). Names without a deep
 // entry (the `VyUI` plugin, types) stay on the barrel and are allowed.
-const kitSubpaths = Object.keys(
-  JSON.parse(readFileSync(resolve(root, 'packages/kit/package.json'), 'utf8')).exports as Record<string, unknown>,
-)
-  .filter(k => k.startsWith('./') && !k.includes('.', 2))
-  .map(k => k.slice(2))
+const kitSubpaths = [...subpathEntries().keys()]
 
 const hasDeepEntry = (name: string): boolean => {
   if (!name.startsWith('Vy')) return false
