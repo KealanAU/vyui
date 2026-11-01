@@ -4,15 +4,22 @@
       "name": "defaultOpen",
       "type": "boolean | undefined",
       "required": false,
-      "default": "false",
-      "description": "The open state of the alert dialog when it is initially rendered. Use when you do not need to control its open state."
+      "default": "undefined",
+      "description": "The open state of the dialog when it is initially rendered. Use when you do not need to control its open state."
+    },
+    {
+      "name": "modal",
+      "type": "boolean | undefined",
+      "required": false,
+      "default": "undefined",
+      "description": "The modality of the dialog. When `true`, `DialogOverlay` paints its\ntap-blocking backdrop and the content confines assistive tech via\n`exclusiveFocus`."
     },
     {
       "name": "open",
       "type": "boolean | undefined",
       "required": false,
       "default": "undefined",
-      "description": "The controlled open state of the alert dialog. Can be bound with `v-model`."
+      "description": "The controlled open state of the dialog. Can be bound as `v-model:open`."
     }
   ],
   "events": [
@@ -24,7 +31,7 @@
   "slots": [
     {
       "name": "default",
-      "type": "{ open: boolean; }"
+      "type": "{ open: boolean; close: () => void; }"
     }
   ]
 }

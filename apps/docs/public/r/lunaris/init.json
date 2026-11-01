@@ -2,7 +2,7 @@
   "name": "init",
   "type": "registry:lib",
   "dependencies": [
-    "@vyui/core@^1.0.1",
+    "@vyui/core@^1.0.2",
     "defu@^6.1.5",
     "tailwind-variants@^0.3.1"
   ],

@@ -90,7 +90,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"root\" | \"title\" | \"description\" | \"icon\" | \"close\" | \"wrapper\" | \"actions\" | \"avatar\" | \"progress\" | \"avatarSize\", ClassNameValue>> | undefined",
+      "type": "Partial<Record<\"root\" | \"title\" | \"description\" | \"icon\" | \"close\" | \"wrapper\" | \"actions\" | \"avatar\" | \"progress\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

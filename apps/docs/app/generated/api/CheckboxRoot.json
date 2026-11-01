@@ -29,7 +29,7 @@
       "name": "falseValue",
       "type": "T | undefined",
       "required": false,
-      "default": "(() => false) as unknown as undefined",
+      "default": "false as T & {}",
       "description": "The value used when the checkbox is unchecked. Defaults to `false`."
     },
     {
@@ -61,7 +61,7 @@
       "name": "trueValue",
       "type": "T | undefined",
       "required": false,
-      "default": "(() => true) as unknown as undefined",
+      "default": "true as T & {}",
       "description": "The value used when the checkbox is checked. Defaults to `true`."
     },
     {
