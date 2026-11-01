@@ -34,5 +34,5 @@ fi
 # above is the whole story here.
 
 # --- apps/examples ----------------------------------------------------------
-# Demos have no `typecheck` script, so `pnpm -r typecheck` skips them entirely
-# — eslint above is the only automated gate they get.
+# Demos have no `typecheck` script, so `pnpm -r typecheck` skips them entirely;
+# CI only checks that they build.
