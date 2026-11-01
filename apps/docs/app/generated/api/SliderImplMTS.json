@@ -12,6 +12,13 @@
       "type": "boolean | undefined",
       "required": false,
       "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
+    },
+    {
+      "name": "hitSlop",
+      "type": "string | undefined",
+      "required": false,
+      "default": "\"16px\"",
+      "description": "Native touch-target padding around the control."
     }
   ],
   "events": [],

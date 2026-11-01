@@ -117,7 +117,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"trailingIcon\" | \"root\" | \"item\" | \"content\" | \"leadingIcon\" | \"label\" | \"base\" | \"leading\" | \"trailing\" | \"leadingAvatar\" | \"searchIcon\" | \"handle\" | \"input\" | \"arrow\" | \"sheetHeader\" | \"sheetTitle\" | \"search\" | \"viewport\" | \"group\" | \"empty\" | \"separator\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemTrailing\" | \"itemTrailingIcon\" | \"itemLabel\", ClassNameValue>> | undefined",
+      "type": "Partial<Record<\"trailingIcon\" | \"root\" | \"item\" | \"content\" | \"leadingIcon\" | \"label\" | \"base\" | \"leading\" | \"trailing\" | \"leadingAvatar\" | \"searchIcon\" | \"handle\" | \"input\" | \"sheetHeader\" | \"sheetTitle\" | \"search\" | \"viewport\" | \"group\" | \"empty\" | \"separator\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemTrailing\" | \"itemTrailingIcon\" | \"itemLabel\", ClassNameValue>> | undefined",
       "required": false
     },
     {

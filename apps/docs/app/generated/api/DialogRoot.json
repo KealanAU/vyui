@@ -20,6 +20,13 @@
       "required": false,
       "default": "undefined",
       "description": "The controlled open state of the dialog. Can be bound as `v-model:open`."
+    },
+    {
+      "name": "role",
+      "type": "\"dialog\" | \"alertdialog\" | undefined",
+      "required": false,
+      "default": "\"dialog\"",
+      "description": "Semantic role. `alertdialog` announces an alert dialog AND makes the\ndialog undismissable by an outside tap — the user must pick an explicit\naction, per WAI-ARIA. This is what the `AlertDialog*` aliases preset."
     }
   ],
   "events": [

@@ -17,7 +17,7 @@
     "check:exports:core": "pnpm dlx @arethetypeswrong/cli@0.18.5 --pack packages/core",
     "check:exports:kit": "pnpm dlx @arethetypeswrong/cli@0.18.5 --pack packages/kit",
     "changeset": "changeset",
-    "version-packages": "changeset version && tsx tools/gen-changelog-docs.ts",
+    "version-packages": "changeset version && tsx tools/gen-changelog-docs.ts && pnpm gen:registry",
     "release": "pnpm build && changeset publish",
     "new-component": "tsx tools/make-component.ts",
     "gen:registry": "tsx tools/gen-registry.ts",

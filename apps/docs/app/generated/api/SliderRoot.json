@@ -34,6 +34,12 @@
       "description": "When `true`, prevents the user from interacting with the slider."
     },
     {
+      "name": "hitSlop",
+      "type": "string | undefined",
+      "required": false,
+      "description": "Native touch-target padding around the control, e.g. `\"24px\"`. Grows the\narea a drag can START from; it does NOT grow the element's box, so an\nancestor `<scroll-view>` may still claim a gesture that begins out in the\nslop. Cross-axis padding on the root is the sturdier lever.\nLynx web ignores this."
+    },
+    {
       "name": "inverted",
       "type": "boolean | undefined",
       "required": false,

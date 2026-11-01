@@ -14,7 +14,12 @@
       "description": "Render through the passed child element instead of the default one, merging\ntheir props and behavior while keeping the primitive's."
     }
   ],
-  "events": [],
+  "events": [
+    {
+      "name": "click",
+      "type": "[]"
+    }
+  ],
   "slots": [
     {
       "name": "default",

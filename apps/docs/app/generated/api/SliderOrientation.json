@@ -1,0 +1,36 @@
+{
+  "props": [
+    {
+      "name": "dir",
+      "type": "Direction | undefined",
+      "required": false
+    },
+    {
+      "name": "inverted",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "min",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "orientation",
+      "type": "DataOrientation",
+      "required": true
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "type": "{}"
+    }
+  ]
+}

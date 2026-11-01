@@ -72,7 +72,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"item\" | \"content\" | \"label\" | \"group\" | \"separator\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemTrailing\" | \"itemLabel\" | \"itemLeadingAvatarSize\" | \"itemWrapper\" | \"itemDescription\", ClassNameValue>> | undefined",
+      "type": "Partial<Record<\"item\" | \"content\" | \"label\" | \"group\" | \"separator\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemTrailing\" | \"itemLabel\" | \"itemWrapper\" | \"itemDescription\", ClassNameValue>> | undefined",
       "required": false
     }
   ],

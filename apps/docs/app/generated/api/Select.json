@@ -92,7 +92,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<Record<\"trailingIcon\" | \"root\" | \"item\" | \"content\" | \"leadingIcon\" | \"label\" | \"base\" | \"leading\" | \"trailing\" | \"leadingAvatar\" | \"value\" | \"placeholder\" | \"handle\" | \"arrow\" | \"sheetHeader\" | \"sheetTitle\" | \"viewport\" | \"group\" | \"empty\" | \"separator\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemTrailing\" | \"itemTrailingIcon\" | \"itemLabel\", ClassNameValue>> | undefined",
+      "type": "Partial<Record<\"trailingIcon\" | \"root\" | \"item\" | \"content\" | \"leadingIcon\" | \"label\" | \"base\" | \"leading\" | \"trailing\" | \"leadingAvatar\" | \"value\" | \"placeholder\" | \"handle\" | \"sheetHeader\" | \"sheetTitle\" | \"viewport\" | \"group\" | \"empty\" | \"separator\" | \"itemLeadingIcon\" | \"itemLeadingAvatar\" | \"itemTrailing\" | \"itemTrailingIcon\" | \"itemLabel\", ClassNameValue>> | undefined",
       "required": false
     },
     {
